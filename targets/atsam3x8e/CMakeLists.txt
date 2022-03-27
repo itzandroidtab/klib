@@ -6,12 +6,12 @@ set(SOURCES
 )
 
 set(HEADERS_PRIVATE 
-    # This file needs to be generated usiing the cmsis svd tool
+    # This file needs to be generated using the cmsis svd tool
     ${CMAKE_CURRENT_SOURCE_DIR}/ATSAM3X8E.h
 )
 
 set(HEADERS_PUBLIC 
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/watchdog.hpp
 )
 
 # add the library
