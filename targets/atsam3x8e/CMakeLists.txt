@@ -11,6 +11,7 @@ set(HEADERS_PRIVATE
 )
 
 set(HEADERS_PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/rstc.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/watchdog.hpp
 )
 
