@@ -6,7 +6,9 @@
 // extern c for c linkage in c++. No ifdef cplusplus as targets 
 // should be implemented using c++
 extern "C" {
-    // pointer to the end of the stack
+    // pointer to the end of the stack. Definition is done in the 
+    // linkerscript. Only the address of the variable should be used. The
+    // address points to the correct location of the variable
     extern uint32_t __stack_end;
 
     /**
