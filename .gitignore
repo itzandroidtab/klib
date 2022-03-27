@@ -1,0 +1,11 @@
+# vscode and cmake artifacts
+.vscode/
+build/
+
+# all documentation
+*.pdf
+*.jdebug*
+*.JLinkScript
+
+# project main
+project/main.cpp
