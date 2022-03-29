@@ -20,10 +20,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: arm-none-eabi-gcc
-      uses: fiam/arm-none-eabi-gcc@v1.0.2
-      with:
-        release: latest
+    - name: arm-none-eabi-gcc install
+      uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
+
+    - name: arm-none-eabi-gcc version
+      run: arm-none-eabi-gcc --version
 
     - name: Create main
       # for now create a main file to compile the libraries
