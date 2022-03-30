@@ -5,10 +5,10 @@ set(SOURCES
 )
 
 set(HEADERS_PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/streams/stream_base.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/streams/combined_stream.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/streams/istream.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/streams/ostream.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/stream_base.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/combined_stream.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/istream.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/ostream.hpp
 )
 
 set(HEADERS_PUBLIC 
