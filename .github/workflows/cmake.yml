@@ -65,6 +65,7 @@ jobs:
       
     - name: generate atsam3x8e cmsis header file with modified includes
       run: |
+        chmod +x ${{github.workspace}}/targets/arm/SVDConf && \
         ${{github.workspace}}/targets/arm/SVDConf ${{github.workspace}}/targets/atsam3x8e/ATSAM3X8E.svd --generate=header --fields=struct --fields=macro --fields=enum -o ${{github.workspace}}/targets/atsam3x8e/ && \
         sed -i 's@#include "core_cm3.h"@#include "#include <targets/arm/core_cm3.h>"@g' ${{github.workspace}}/targets/atsam3x8e/ATSAM3X8E.h && \
         sed -i 's@#include "system_ATSAM3X8E.h"@#include "system_ATSAM3X8E.h"@g' ${{github.workspace}}/targets/atsam3x8e/ATSAM3X8E.h
