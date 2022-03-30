@@ -26,6 +26,49 @@ jobs:
     - name: arm-none-eabi-gcc version
       run: arm-none-eabi-gcc --version
 
+    - name: get svdconf
+      run: wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Utilities/Linux64/SVDConv -O ${{github.workspace}}/targets/arm/SVDConf
+      
+    - name: get arm header files
+      run: |
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cachel1_armv7.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armcc.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armclang.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armclang_ltm.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_compiler.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://raw.githubusercontent.com/ARM-software/CMSIS_5/develop/CMSIS/Core/Include/cmsis_gcc.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_iccarm.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_version.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv81mml.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv8mbl.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv8mml.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm0.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm0plus.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm1.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm23.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm3.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm33.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm35p.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm4.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm55.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm7.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_sc000.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_sc300.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_starmc1.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/mpu_armv7.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/mpu_armv8.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/pmu_armv8.h -P ${{github.workspace}}/targets/arm/ && \
+        wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/tz_context.h -P ${{github.workspace}}/targets/arm/
+      
+    - name: get atsam3x8e svd
+      run: wget https://github.com/posborne/cmsis-svd/raw/master/data/Atmel/ATSAM3X8E.svd -O ${{github.workspace}}/targets/atsam3x8e/ATSAM3X8E.svd
+      
+    - name: generate atsam3x8e cmsis header file with modified includes
+      run: |
+        ${{github.workspace}}/targets/arm/SVDConf ${{github.workspace}}/targets/atsam3x8e/ATSAM3X8E.svd --generate=header --fields=struct --fields=macro --fields=enum -o ${{github.workspace}}/targets/atsam3x8e/ && \
+        sed -i 's@#include "core_cm3.h"@#include "#include <targets/arm/core_cm3.h>"@g' ${{github.workspace}}/targets/atsam3x8e/ATSAM3X8E.h && \
+        sed -i 's@#include "system_ATSAM3X8E.h"@#include "system_ATSAM3X8E.h"@g' ${{github.workspace}}/targets/atsam3x8e/ATSAM3X8E.h
+
     - name: Create main
       # for now create a main file to compile the libraries
       run: echo "int main() {return 0;}" >${{github.workspace}}/project/main.cpp
