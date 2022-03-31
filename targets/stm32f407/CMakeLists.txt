@@ -23,7 +23,7 @@ add_library (target_cpu OBJECT
 # alias projectname::target to klib
 add_library(${PROJECT_NAME}::target_cpu ALIAS target_cpu)
 
-# enable C++17 support for the library
+# enable C++20 support for the library
 target_compile_features(target_cpu PUBLIC cxx_std_20)
 
 # set the target_cpu for klib
@@ -44,6 +44,7 @@ target_link_options(target_cpu PUBLIC "-mthumb")
 target_link_options(target_cpu PUBLIC "-mfloat-abi=hard")
 target_link_options(target_cpu PUBLIC "-mfpu=fpv4-sp-d16")
 
+# other compiler settings
 target_compile_options(target_cpu PUBLIC "-Wno-attributes")
 target_compile_options(target_cpu PUBLIC "-fno-non-call-exceptions")
 target_compile_options(target_cpu PUBLIC "-fno-common")
