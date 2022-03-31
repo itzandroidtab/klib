@@ -2,7 +2,7 @@
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m4.cpp
 )
 
 set(HEADERS_PRIVATE 
