@@ -1,6 +1,10 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Mem compare
  * 
@@ -30,3 +34,7 @@ void *memset(void *ptr, int value, size_t num);
  * @return void* 
  */
 void *memcpy(void *destination, const void *source, size_t num);
+
+#ifdef __cplusplus
+}
+#endif
