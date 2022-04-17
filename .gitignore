@@ -6,6 +6,7 @@ build/
 *.pdf
 *.jdebug*
 *.JLinkScript
+*.svd
 
 # project main
 project/main.cpp
