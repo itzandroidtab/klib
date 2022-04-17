@@ -54,7 +54,6 @@ jobs:
         wget https://github.com/ARM-software/CMSIS_5/raw/master/CMSIS/Core/Include/core_cm7.h -q -P ${{github.workspace}}/targets/arm/ && \
         wget https://github.com/ARM-software/CMSIS_5/raw/master/CMSIS/Core/Include/core_sc000.h -q -P ${{github.workspace}}/targets/arm/ && \
         wget https://github.com/ARM-software/CMSIS_5/raw/master/CMSIS/Core/Include/core_sc300.h -q -P ${{github.workspace}}/targets/arm/ && \
-        wget https://github.com/ARM-software/CMSIS_5/raw/master/CMSIS/Core/Include/core_starmc1.h -q -P ${{github.workspace}}/targets/arm/ && \
         wget https://github.com/ARM-software/CMSIS_5/raw/master/CMSIS/Core/Include/mpu_armv7.h -q -P ${{github.workspace}}/targets/arm/ && \
         wget https://github.com/ARM-software/CMSIS_5/raw/master/CMSIS/Core/Include/mpu_armv8.h -q -P ${{github.workspace}}/targets/arm/ && \
         wget https://github.com/ARM-software/CMSIS_5/raw/master/CMSIS/Core/Include/pmu_armv8.h -q -P ${{github.workspace}}/targets/arm/ && \
