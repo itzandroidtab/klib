@@ -7,6 +7,14 @@
 #include <cmath>
 
 namespace klib {
+    /**
+     * @brief Return if the input is not a number
+     * 
+     * @tparam T 
+     * @param arg 
+     * @return true 
+     * @return false 
+     */
     template <
         typename T,
         typename = std::enable_if_t<std::is_floating_point_v<T>>
@@ -15,6 +23,14 @@ namespace klib {
         return __builtin_isnan(arg);
     }
 
+    /**
+     * @brief Return if the input is infinite
+     * 
+     * @tparam T 
+     * @param arg 
+     * @return true 
+     * @return false 
+     */
     template <
         typename T,
         typename = std::enable_if_t<std::is_floating_point_v<T>>
@@ -24,14 +40,16 @@ namespace klib {
     }    
 
     /**
-     * Generic pow function.
+     * @brief Generic pow function.
+     * 
+     * @warning This function is recursive.
      *
      * @tparam T
      * @param base
      * @param exponent
      * @return
      */
-    template<typename T>
+    template <typename T>
     constexpr T pow(const T base, const int_fast32_t exponent) {
         if (exponent == 0) {
             return 1;
@@ -50,15 +68,20 @@ namespace klib {
     }
 
     /**
-     * Round the given number up.
+     * @brief Round the given number up.
      * If the arg is ±infinity, the result is not modified.
      * If the arg is ±0, the result is not modified.
      * If the arg is NaN, NaN is returned.
-     *
-     * @param arg
-     * @return
+     * 
+     * @tparam T 
+     * @param arg 
+     * @return constexpr T 
      */
-    constexpr double ceil(double arg) {
+    template <
+        typename T,
+        typename = std::enable_if_t<std::is_floating_point_v<T>>
+    >
+    constexpr T ceil(T arg) {
         if (isinf(arg)) {
             return arg;
         }
@@ -73,60 +96,32 @@ namespace klib {
 
         // Negative ceiling
         if (arg < 0.0) {
-            return static_cast<double>(
+            return static_cast<T>(
                 static_cast<int64_t>(arg)
             );
         }
 
         // Positive ceiling
-        return static_cast<double>(
+        return static_cast<T>(
             static_cast<int64_t>(arg)
         );
     }
 
     /**
-    * Round the given number up.
-    * If the arg is ±infinity, the result is not modified.
-    * If the arg is ±0, the result is not modified.
-    * If the arg is NaN, NaN is returned.
-    *
-    * @param arg
-    * @return
-    */
-    constexpr float ceil(float arg) {
-        return static_cast<float>(
-            ceil(static_cast<double>(arg))
-        );
-    }
-
-    /**
-    * Round the given number up.
-    * If the arg is ±infinity, the result is not modified.
-    * If the arg is ±0, the result is not modified.
-    * If the arg is NaN, NaN is returned.
-    *
-    * @tparam T
-    * @param arg
-    * @return
-    */
-    template<
-        typename T,
-        typename = std::enable_if_t<std::is_integral_v<T>>
-    >
-    constexpr double ceil(T arg) {
-        return static_cast<double>(arg);
-    }
-
-    /**
-     * Floor the given number.
+     * @brief Floor the given number.
      * If the arg is ±infinity, the result is not modified.
      * If the arg is ±0, the result is not modified.
      * If the arg is NaN, NaN is returned.
-     *
-     * @param arg
-     * @return
+     * 
+     * @tparam T 
+     * @param arg 
+     * @return constexpr double 
      */
-    constexpr double floor(double arg) {
+    template <
+        typename T,
+        typename = std::enable_if_t<std::is_floating_point_v<T>>
+    >
+    constexpr T floor(const T arg) {
         if (isinf(arg)) {
             return arg;
         }
@@ -141,55 +136,29 @@ namespace klib {
 
         // Negative flooring
         if (arg < 0.0) {
-            return static_cast<double>(
+            return static_cast<T>(
                 static_cast<int64_t>(arg) - 1
             );
         }
 
         // Positive flooring
-        return static_cast<double>(
+        return static_cast<T>(
             static_cast<int64_t>(arg)
         );
     }
 
     /**
-     * Floor the given number.
-     * If the arg is ±infinity, the result is not modified.
-     * If the arg is ±0, the result is not modified.
-     * If the arg is NaN, NaN is returned.
-     *
-     * @param arg
-     * @return
-     */
-    constexpr float floor(float arg) {
-        return static_cast<float>(
-            floor(static_cast<double>(arg))
-        );
-    }
-
-    /**
-     * Floor the given number.
-     * If the arg is ±infinity, the result is not modified.
-     * If the arg is ±0, the result is not modified.
-     * If the arg is NaN, NaN is returned.
-     *
-     * @tparam T
-     * @param arg
-     * @return
+     * @brief Calculate squre root of input 
+     * 
+     * @tparam T 
+     * @param input 
+     * @return constexpr T 
      */
     template<
         typename T,
-        typename = std::enable_if_t<std::is_integral_v<T>>
+        typename = std::enable_if_t<std::is_unsigned_v<T>>
     >
-    constexpr double floor(T arg) {
-        return static_cast<double>(arg);
-    }
-
-    template<
-        typename T,
-        typename = std::enable_if_t<std::is_integral_v<T>>
-    >
-    constexpr T sqrt(T input) {
+    constexpr T sqrt(const T input) {
         // https://stackoverflow.com/questions/1100090/looking-for-an-efficient-integer-square-root-algorithm-for-arm-thumb2
         T op = input;
         T res = 0;
@@ -214,16 +183,39 @@ namespace klib {
         return res;
     }
 
+    /**
+     * @brief Get the lowest value between the two inputs
+     * 
+     * @tparam T 
+     * @param a 
+     * @param b 
+     * @return constexpr T 
+     */
     template<typename T>
     constexpr T min(const T a, const T b) {
         return (a > b) ? b : a;
     }
 
+    /**
+     * @brief Get the max between the two input values
+     * 
+     * @tparam T 
+     * @param a 
+     * @param b 
+     * @return constexpr T 
+     */
     template<typename T>
     constexpr T max(const T a, const T b) {
         return (a > b) ? a : b;
     }
 
+    /**
+     * @brief Return the absolute value of the input (positive only)
+     * 
+     * @tparam T 
+     * @param x 
+     * @return T 
+     */
     template<typename T>
     constexpr T abs(const T x) {
         if constexpr (std::is_unsigned_v<T>) {
@@ -233,25 +225,50 @@ namespace klib {
         }
     }
 
+    /**
+     * @brief Returns the binary (base-2) logarithm of the input
+     * 
+     * @param n 
+     * @return constexpr int 
+     */
     constexpr int log2(const uint32_t n) {
         // the buildin clz should get replaced by the 
         // compiler for the clz arm instruction
         return 31 - __builtin_clz(n);
     }
 
-    inline double log(const double n) {
-        int l2 = log2(static_cast<uint32_t>(n));
-        auto divisor = static_cast<double>(1 << l2);
-        double x = n / divisor;    // normalized value between [1.0, 2.0]
+    /**
+     * @brief Returns the natural logarithm of the input
+     * 
+     * @tparam P
+     * @tparam T 
+     * @param n 
+     * @return constexpr T 
+     */
+    template <typename P = float, typename T>
+    constexpr P log(const T n) {
+        const int l2 = log2(static_cast<uint32_t>(n));
+        const auto divisor = static_cast<P>(1 << l2);
+        const P x = n / divisor;    // normalized value between [1.0, 2.0]
 
-        double result = -1.7417939 + (2.8212026 + (-1.4699568 + (0.44717955 - 0.056570851 * x) * x) * x) * x;
-        result += static_cast<double>(l2) * 0.69314718; // ln(2) = 0.69314718
+        P result = static_cast<P>(-1.7417939) + (static_cast<P>(2.8212026) + 
+            (static_cast<P>(-1.4699568) + (static_cast<P>(0.44717955) - static_cast<P>(0.056570851) * x) * x) * x) * x;
+        result += static_cast<P>(l2) * 0.69314718; // ln(2) = 0.69314718
 
         return result;
     }
 
-    inline double log10(const double n) {
-        constexpr double ln10 = 2.3025850929940456840179914546844;
+    /**
+     * @brief Returns the common (base-10) logarithm 
+     * 
+     * @tparam P 
+     * @tparam T 
+     * @param n 
+     * @return constexpr T 
+     */
+    template <typename P = float, typename T>
+    constexpr P log10(const T n) {
+        constexpr P ln10 = 2.3025850929940456840179914546844;
         return log(n) / ln10;
     }
 
@@ -271,7 +288,6 @@ namespace klib {
     constexpr T map(const T x, const G in_min, const G in_max, const G out_min, const G out_max){
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
-
 }
 
 #endif
