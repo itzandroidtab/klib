@@ -9,15 +9,15 @@ void (*const volatile __vectors[])(void) __attribute__ ((section(".vectors"))) =
     __reset_handler,    // The reset handler
     __default_handler,  // The NMI handler
     __default_handler,  // The hard fault handler
-    0,                  // The MPU fault handler
-    0,                  // The bus fault handler
-    0,                  // The usage fault handler
+    0,                  // Reserved
+    0,                  // Reserved
+    0,                  // Reserved
     0,                  // Reserved
     0,                  // Reserved
     0,                  // Reserved
     0,                  // Reserved
     __default_handler,  // SVCall handler
-    0,                  // Debug monitor handler
+    0,                  // Reserved
     0,                  // Reserved
     __default_handler,  // The PendSV handler
     __default_handler   // The SysTick handler
