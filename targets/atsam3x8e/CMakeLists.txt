@@ -32,7 +32,6 @@ target_compile_features(target_cpu PUBLIC cxx_std_20)
 target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=atsam3x8e")
 
 # set the cpu options for the compiler
-target_compile_definitions(target_cpu PUBLIC "__SAM3X8E__")
 target_compile_options(target_cpu PUBLIC "-march=armv7-m")
 target_compile_options(target_cpu PUBLIC "-mcpu=cortex-m3")
 target_compile_options(target_cpu PUBLIC "-mthumb")
