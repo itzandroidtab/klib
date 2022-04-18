@@ -14,7 +14,7 @@ extern "C" {
     /**
      * @brief Generic reset handler that initializes the .bss and .data
      * segments. It calls all the constructors and runs main. When code
-     * for the main needs to be executed the "__constructor__" attribute
+     * before main needs to be executed the "__constructor__" attribute
      * can be added to the function.
      * 
      */
