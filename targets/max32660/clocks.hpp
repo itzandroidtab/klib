@@ -24,7 +24,7 @@ namespace klib::max32660 {
          * @tparam Args
          */
         template<typename P, typename P2, typename ...Args>
-        void enable() {
+        static void enable() {
             enable<P>();
             enable<P2, Args...>();
         }
@@ -47,7 +47,7 @@ namespace klib::max32660 {
          * @tparam Args
          */
         template<typename P, typename P2, typename ...Args>
-        void disable() {
+        static void disable() {
             disable<P>();
             disable<P2, Args...>();
         }
@@ -60,7 +60,7 @@ namespace klib::max32660 {
          * @return false 
          */
         template <typename P> 
-        bool status() {
+        static bool status() {
             // return the inverse of the register (0 = enabled, 1 = disabled)
             return !(GCR->PERCKCN0 & (1 << P::clock_id));
         }
