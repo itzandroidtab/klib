@@ -50,7 +50,20 @@ namespace klib::max32660 {
         void disable() {
             disable<P>();
             disable<P2, Args...>();
-        }        
+        }
+
+        /**
+         * @brief Get the clock status of a peripheral 
+         * 
+         * @tparam P 
+         * @return true 
+         * @return false 
+         */
+        template <typename P> 
+        bool status() {
+            // return the inverse of the register (0 = enabled, 1 = disabled)
+            return !(GCR->PERCKCN0 & (1 << P::clock_id));
+        }
     };
 }
 
