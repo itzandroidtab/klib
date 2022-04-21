@@ -1,8 +1,6 @@
 #ifndef KLIB_MAX32660_GPIO_HPP
 #define KLIB_MAX32660_GPIO_HPP
 
-#include "max32660.h"
-
 #include "pins.hpp"
 #include "pio.hpp"
 
@@ -17,17 +15,17 @@ namespace klib::max32660::io {
 
         constexpr static bool get() {
             // get the status of the pin
-            return io::pins::port<typename Pin::port>->IN & io::pins::mask<Pin>;
+            return pins::detail::port<typename Pin::port>->IN & pins::detail::mask<Pin>;
         }
 
         constexpr static void pullup_enable() {
             // get the status of the pin
-            io::pins::port<typename Pin::port>->PS |= io::pins::mask<Pin>;
+            pins::detail::port<typename Pin::port>->PS |= pins::detail::mask<Pin>;
         }
 
         constexpr static void pullup_disable() {
             // get the status of the pin
-            io::pins::port<typename Pin::port>->PS &= ~io::pins::mask<Pin>;
+            pins::detail::port<typename Pin::port>->PS &= ~pins::detail::mask<Pin>;
         }
     };
 
@@ -39,25 +37,25 @@ namespace klib::max32660::io {
             set_peripheral<Pin, io::detail::periph_func_none>();
 
             // enable the gpio output
-            io::pins::port<typename Pin::port>->OUT_EN_SET = io::pins::mask<Pin>;
+            pins::detail::port<typename Pin::port>->OUT_EN_SET = pins::detail::mask<Pin>;
         }
 
         template<bool Val>
         constexpr static void set() {
             if constexpr (Val) {
-                io::pins::port<typename Pin::port>->OUT_SET = io::pins::mask<Pin>;
+                pins::detail::port<typename Pin::port>->OUT_SET = pins::detail::mask<Pin>;
             }
             else {
-                io::pins::port<typename Pin::port>->OUT_CLR = io::pins::mask<Pin>;
+                pins::detail::port<typename Pin::port>->OUT_CLR = pins::detail::mask<Pin>;
             }
         }
 
         constexpr static void set(const bool val) {
             if (val) {
-                io::pins::port<typename Pin::port>->OUT_SET = io::pins::mask<Pin>;
+                pins::detail::port<typename Pin::port>->OUT_SET = pins::detail::mask<Pin>;
             }
             else {
-                io::pins::port<typename Pin::port>->OUT_CLR = io::pins::mask<Pin>;
+                pins::detail::port<typename Pin::port>->OUT_CLR = pins::detail::mask<Pin>;
             }
         }
     };

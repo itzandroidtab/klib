@@ -3,9 +3,10 @@
 
 #include <type_traits>
 
+#include "max32660.h"
 #include "pio.hpp"
 
-namespace klib::max32660::io::pins {
+namespace klib::max32660::io::pins::detail {
     // get the pin mask of a pin number
     template<typename Pin>
     constexpr uint32_t mask = 1U << Pin::number;
@@ -16,7 +17,7 @@ namespace klib::max32660::io::pins {
 
     // port when using the pio0
     template<>
-    GPIO0_Type *const port<detail::pio0> = GPIO0;
+    GPIO0_Type *const port<io::detail::pio0> = GPIO0;
 }
 
 namespace klib::max32660::io {
@@ -29,34 +30,34 @@ namespace klib::max32660::io {
     template<typename Pin, typename Periph>    
     static void set_peripheral() {
         // set the 3 function registers
-        if constexpr (std::is_same_v<Periph, io::detail::periph_func_1>) {
+        if constexpr (std::is_same_v<Periph, detail::periph_func_1>) {
             // setup alternate function 1
-            io::pins::port<typename Pin::port>->EN2_CLR = io::pins::mask<Pin>;
-            io::pins::port<typename Pin::port>->EN1_CLR = io::pins::mask<Pin>;
-            io::pins::port<typename Pin::port>->EN_CLR = io::pins::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN2_CLR = pins::detail::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN1_CLR = pins::detail::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN_CLR = pins::detail::mask<Pin>;
         }
-        else if (std::is_same_v<Periph, io::detail::periph_func_2>) {
+        else if (std::is_same_v<Periph, detail::periph_func_2>) {
             // setup alternate function 2
-            io::pins::port<typename Pin::port>->EN2_CLR = io::pins::mask<Pin>;
-            io::pins::port<typename Pin::port>->EN1_SET = io::pins::mask<Pin>;
-            io::pins::port<typename Pin::port>->EN_CLR = io::pins::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN2_CLR = pins::detail::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN1_SET = pins::detail::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN_CLR = pins::detail::mask<Pin>;
         }
-        else if (std::is_same_v<Periph, io::detail::periph_func_3>) {
+        else if (std::is_same_v<Periph, detail::periph_func_3>) {
             // setup alternate function 3
-            io::pins::port<typename Pin::port>->EN2_CLR = io::pins::mask<Pin>;
-            io::pins::port<typename Pin::port>->EN1_SET = io::pins::mask<Pin>;
-            io::pins::port<typename Pin::port>->EN_SET = io::pins::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN2_CLR = pins::detail::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN1_SET = pins::detail::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN_SET = pins::detail::mask<Pin>;
         }
         else {
             // setup normal gpio function
-            io::pins::port<typename Pin::port>->EN2_CLR = io::pins::mask<Pin>;
-            io::pins::port<typename Pin::port>->EN1_CLR = io::pins::mask<Pin>;
-            io::pins::port<typename Pin::port>->EN_SET = io::pins::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN2_CLR = pins::detail::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN1_CLR = pins::detail::mask<Pin>;
+            pins::detail::port<typename Pin::port>->EN_SET = pins::detail::mask<Pin>;
         }
     }
 }
 
-namespace klib::max32660::io::wlp::pins {
+namespace klib::max32660::io::pins::wlp {
     struct pa1 {
         // 32KOUT
     };
@@ -83,7 +84,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pb3 {
         // P0.9
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 9;
@@ -91,7 +92,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pb4 {
         // P0.8
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 8;
@@ -99,7 +100,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pc1 {
         // P0.0
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 0;
@@ -107,7 +108,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pc2 {
         // P0.1
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 1;
@@ -115,7 +116,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pc3 {
         // P0.6
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 6;
@@ -123,7 +124,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pc4 {
         // P0.7
-        using port = detail::pio0;
+        using port = io::detail::pio0;
         
         // bit number in port
         constexpr static uint32_t number = 7;
@@ -131,7 +132,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pd1 {
         // P0.2
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 2;
@@ -139,7 +140,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pd2 {
         // P0.3
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 3;
@@ -147,7 +148,7 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pd3 {
         // P0.4
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 4;
@@ -155,17 +156,17 @@ namespace klib::max32660::io::wlp::pins {
 
     struct pd4 {
         // P0.5
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 5;
     };
 }
 
-namespace klib::max32660::io::tqfn_20::pins {
+namespace klib::max32660::io::pins::tqfn_20 {
     struct p1 {
         // P0.1
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 1;
@@ -173,7 +174,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p2 {
         // P0.0
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 0;
@@ -181,7 +182,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p3 {
         // P0.13
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 13;  
@@ -189,7 +190,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p4 {
         // P0.12
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 12;
@@ -221,7 +222,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p11 {
         // P0.9
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 9;
@@ -229,7 +230,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p12 {
         // P0.8
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 8;
@@ -237,7 +238,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p13 {
         // P0.11
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 11;
@@ -245,7 +246,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p14 {
         // P0.10
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 10;
@@ -253,7 +254,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p15 {
         // P0.7
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 7;
@@ -261,7 +262,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p16 {
         // P0.6
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 6;
@@ -269,7 +270,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p17 {
         // P0.5
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 5;
@@ -277,7 +278,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p18 {
         // P0.4
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 4;
@@ -285,7 +286,7 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p19 {
         // P0.3
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 3;
@@ -293,17 +294,17 @@ namespace klib::max32660::io::tqfn_20::pins {
 
     struct p20 {
         // P0.2
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 2;
     };
 }
 
-namespace klib::max32660::io::tqfn_24::pins {
+namespace klib::max32660::io::pins::tqfn_24 {
     struct p1 {
         // P0.1
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 1;
@@ -311,7 +312,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p2 {
         // P0.0
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 0;
@@ -323,7 +324,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p4 {
         // P0.13
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 13;
@@ -331,7 +332,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p5 {
         // P0.12
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 12;
@@ -367,7 +368,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p13 {
         // P0.9
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 9;
@@ -375,7 +376,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p14 {
         // P0.8
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 8;
@@ -387,7 +388,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p16 {
         // P0.11
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 11;
@@ -395,7 +396,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p17 {
         // P0.10
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 10;
@@ -403,7 +404,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p18 {
         // P0.7
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 7;
@@ -411,7 +412,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p19 {
         // P0.6
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 6;
@@ -419,7 +420,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p20 {
         // P0.5
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 5;
@@ -427,7 +428,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p21{
         // P0.4
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 4;
@@ -439,7 +440,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p23 {
         // P0.3
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 3;
@@ -447,7 +448,7 @@ namespace klib::max32660::io::tqfn_24::pins {
 
     struct p24 {
         // P0.2
-        using port = detail::pio0;
+        using port = io::detail::pio0;
 
         // bit number in port
         constexpr static uint32_t number = 2;
