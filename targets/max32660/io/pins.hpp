@@ -1,8 +1,60 @@
 #ifndef KLIB_MAX32660_PINS_HPP
 #define KLIB_MAX32660_PINS_HPP
 
+#include <type_traits>
 
 #include "pio.hpp"
+
+namespace klib::max32660::io::pins {
+    // get the pin mask of a pin number
+    template<typename Pin>
+    constexpr uint32_t mask = 1U << Pin::number;
+
+    // default type when using the port
+    template<typename Pin>
+    const GPIO0_Type *port = nullptr;
+
+    // port when using the pio0
+    template<>
+    GPIO0_Type *const port<detail::pio0> = GPIO0;
+}
+
+namespace klib::max32660::io {
+    /**
+     * @brief Set the peripheral of a pin
+     * 
+     * @tparam Pin 
+     * @tparam Periph 
+     */
+    template<typename Pin, typename Periph>    
+    static void set_peripheral() {
+        // set the 3 function registers
+        if constexpr (std::is_same_v<Periph, io::detail::periph_func_1>) {
+            // setup alternate function 1
+            io::pins::port<typename Pin::port>->EN2_CLR = io::pins::mask<Pin>;
+            io::pins::port<typename Pin::port>->EN1_CLR = io::pins::mask<Pin>;
+            io::pins::port<typename Pin::port>->EN_CLR = io::pins::mask<Pin>;
+        }
+        else if (std::is_same_v<Periph, io::detail::periph_func_2>) {
+            // setup alternate function 2
+            io::pins::port<typename Pin::port>->EN2_CLR = io::pins::mask<Pin>;
+            io::pins::port<typename Pin::port>->EN1_SET = io::pins::mask<Pin>;
+            io::pins::port<typename Pin::port>->EN_CLR = io::pins::mask<Pin>;
+        }
+        else if (std::is_same_v<Periph, io::detail::periph_func_3>) {
+            // setup alternate function 3
+            io::pins::port<typename Pin::port>->EN2_CLR = io::pins::mask<Pin>;
+            io::pins::port<typename Pin::port>->EN1_SET = io::pins::mask<Pin>;
+            io::pins::port<typename Pin::port>->EN_SET = io::pins::mask<Pin>;
+        }
+        else {
+            // setup normal gpio function
+            io::pins::port<typename Pin::port>->EN2_CLR = io::pins::mask<Pin>;
+            io::pins::port<typename Pin::port>->EN1_CLR = io::pins::mask<Pin>;
+            io::pins::port<typename Pin::port>->EN_SET = io::pins::mask<Pin>;
+        }
+    }
+}
 
 namespace klib::max32660::io::wlp::pins {
     struct pa1 {
