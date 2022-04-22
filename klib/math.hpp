@@ -40,6 +40,16 @@ namespace klib {
     }    
 
     /**
+     * @brief Computes 2 raised to the given power
+     * 
+     * @param exponent 
+     * @return constexpr uint32_t 
+     */
+    constexpr uint32_t exp2(const uint32_t exponent) {
+        return 1 << exponent;
+    }
+
+    /**
      * @brief Generic pow function.
      * 
      * @warning This function is recursive.
