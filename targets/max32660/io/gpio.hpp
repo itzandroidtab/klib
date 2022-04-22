@@ -18,14 +18,28 @@ namespace klib::max32660::io {
             return pins::detail::port<typename Pin::port>->IN & pins::detail::mask<Pin>;
         }
 
+        template <bool Val>
         constexpr static void pullup_enable() {
-            // get the status of the pin
-            pins::detail::port<typename Pin::port>->PS |= pins::detail::mask<Pin>;
+            // enable/disable the pullups
+            if constexpr (Val) {
+                pins::detail::port<typename Pin::port>->PS |= pins::detail::mask<Pin>;
+                pins::detail::port<typename Pin::port>->PAD_CFG1 |= pins::detail::mask<Pin>;
+            }
+            else {
+                pins::detail::port<typename Pin::port>->PAD_CFG1 &= ~pins::detail::mask<Pin>;
+            }
         }
 
-        constexpr static void pullup_disable() {
-            // get the status of the pin
-            pins::detail::port<typename Pin::port>->PS &= ~pins::detail::mask<Pin>;
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            // enable/disable the pulldowns
+            if constexpr (Val) {
+                pins::detail::port<typename Pin::port>->PS &= ~pins::detail::mask<Pin>;
+                pins::detail::port<typename Pin::port>->PAD_CFG1 |= pins::detail::mask<Pin>;
+            }
+            else {
+                pins::detail::port<typename Pin::port>->PAD_CFG1 &= ~pins::detail::mask<Pin>;
+            }            
         }
     };
 
@@ -73,12 +87,14 @@ namespace klib::max32660::io {
             return pin_in<Pin>::get();
         }
 
+        template <bool Val>
         constexpr static void pullup_enable() {
-            pin_in<Pin>::pullup_enable();
+            pin_in<Pin>::template pullup_enable<Val>();
         }
 
-        constexpr static void pullup_disable() {
-            pin_in<Pin>::pullup_disable();
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            pin_in<Pin>::template pulldown_enable<Val>();
         }
 
         template<bool Val>
@@ -89,7 +105,7 @@ namespace klib::max32660::io {
         constexpr static void set(const bool val) {
             pin_out<Pin>::set(val);
         }
-    };   
+    };
 }
 
 #endif
