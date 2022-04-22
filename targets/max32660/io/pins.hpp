@@ -20,7 +20,7 @@ namespace klib::max32660::io::pins::detail {
     GPIO0_Type *const port<io::detail::pio0> = GPIO0;
 }
 
-namespace klib::max32660::io {
+namespace klib::max32660::io::detail {
     /**
      * @brief Set the peripheral of a pin
      * 
@@ -57,7 +57,7 @@ namespace klib::max32660::io {
     }
 }
 
-namespace klib::max32660::io::pins::wlp {
+namespace klib::max32660::io::pins::package::wlp {
     struct pa1 {
         // 32KOUT
     };
@@ -163,7 +163,7 @@ namespace klib::max32660::io::pins::wlp {
     };
 }
 
-namespace klib::max32660::io::pins::tqfn_20 {
+namespace klib::max32660::io::pins::package::tqfn_20 {
     struct p1 {
         // P0.1
         using port = io::detail::pio0;
@@ -301,7 +301,7 @@ namespace klib::max32660::io::pins::tqfn_20 {
     };
 }
 
-namespace klib::max32660::io::pins::tqfn_24 {
+namespace klib::max32660::io::pins::package::tqfn_24 {
     struct p1 {
         // P0.1
         using port = io::detail::pio0;

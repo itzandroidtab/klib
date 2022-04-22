@@ -10,7 +10,7 @@ namespace klib::max32660::io {
     public:
         constexpr static void init() {
             // clear all the alternate functions
-            set_peripheral<Pin, io::detail::periph_func_none>();
+            detail::set_peripheral<Pin, io::detail::periph_func_none>();
         }
 
         constexpr static bool get() {
@@ -34,7 +34,7 @@ namespace klib::max32660::io {
     public:
         constexpr static void init() {
             // clear all the alternate functions
-            set_peripheral<Pin, io::detail::periph_func_none>();
+            detail::set_peripheral<Pin, io::detail::periph_func_none>();
 
             // enable the gpio output
             pins::detail::port<typename Pin::port>->OUT_EN_SET = pins::detail::mask<Pin>;
