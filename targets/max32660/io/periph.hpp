@@ -79,6 +79,9 @@ namespace klib::max32660::io::periph::wlp {
         // peripheral id (e.g i2c0, i2c1)
         constexpr static uint32_t id = 0;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 13;
+
         using sda = detail::i2c::i2c<io::pins::package::wlp::pb3, detail::i2c::mode::sda, io::detail::periph_func_1>;
         using scl = detail::i2c::i2c<io::pins::package::wlp::pb4, detail::i2c::mode::scl, io::detail::periph_func_1>;
     };
@@ -86,6 +89,9 @@ namespace klib::max32660::io::periph::wlp {
     struct i2c1 {
         // peripheral id (e.g i2c0, i2c1)
         constexpr static uint32_t id = 1;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 28;
 
         using sda = detail::i2c::i2c<io::pins::package::wlp::pd2, detail::i2c::mode::sda, io::detail::periph_func_1>;
         using scl = detail::i2c::i2c<io::pins::package::wlp::pd1, detail::i2c::mode::scl, io::detail::periph_func_1>;
