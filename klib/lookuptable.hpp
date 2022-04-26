@@ -23,7 +23,7 @@ namespace klib {
                 }
             }
 
-            constexpr T get(uint32_t index) const {
+            constexpr T get(const uint32_t index) const {
                 return table[index];
             }
     };
