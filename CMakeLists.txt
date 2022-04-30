@@ -29,10 +29,11 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     add_compile_options("-g")
     add_compile_options("-Os")
 else()
-    message("Release build ${CMAKE_BUILD_TYPE}")
+    message("Release build")
     add_compile_options("-O2")
 endif()
 
+# change all floating point constants to single precision
 add_compile_options("-fsingle-precision-constant")
 
 # enable stack usage
