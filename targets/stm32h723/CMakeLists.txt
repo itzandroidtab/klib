@@ -1,6 +1,34 @@
 # export our linkerscript
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
+# set the max32660 cpu options as a seperate target so the driver layer can link agains klib
+add_library (target_cpu_options INTERFACE)
+
+# alias projectname::target_cpu_options to target_cpu_options
+add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
+
+# set the cpu options for the compiler
+target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m7")
+target_compile_options(target_cpu_options INTERFACE "-mthumb")
+# target_compile_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
+# target_compile_options(target_cpu_options INTERFACE "-mfpu=fpv4-sp-d16")
+
+# set the cpu options for the linker
+target_link_options(target_cpu_options INTERFACE "-mcpu=cortex-m7")
+target_link_options(target_cpu_options INTERFACE "-mthumb")
+# target_link_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
+# target_link_options(target_cpu_options INTERFACE "-mfpu=fpv4-sp-d16")
+
+# other compiler settings
+target_compile_options(target_cpu_options INTERFACE "-Wno-attributes")
+target_compile_options(target_cpu_options INTERFACE "-fno-non-call-exceptions")
+target_compile_options(target_cpu_options INTERFACE "-fno-common")
+target_compile_options(target_cpu_options INTERFACE "-ffunction-sections")
+target_compile_options(target_cpu_options INTERFACE "-fdata-sections")
+target_compile_options(target_cpu_options INTERFACE "-fno-exceptions")
+target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-tables")
+
+
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m7.cpp
 )
@@ -27,25 +55,12 @@ target_compile_features(target_cpu PUBLIC cxx_std_20)
 # set the target_cpu for klib
 target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=stm32h723")
 
-# set the cpu options for the compiler
-target_compile_options(target_cpu PUBLIC "-mcpu=cortex-m7")
-target_compile_options(target_cpu PUBLIC "-mthumb")
-
-# set the cpu options for the linker
-target_link_options(target_cpu PUBLIC "-mcpu=cortex-m7")
-target_link_options(target_cpu PUBLIC "-mthumb")
-
-# other compiler settings
-target_compile_options(target_cpu PUBLIC "-Wno-attributes")
-target_compile_options(target_cpu PUBLIC "-fno-non-call-exceptions")
-target_compile_options(target_cpu PUBLIC "-fno-common")
-target_compile_options(target_cpu PUBLIC "-ffunction-sections")
-target_compile_options(target_cpu PUBLIC "-fdata-sections")
-target_compile_options(target_cpu PUBLIC "-fno-exceptions")
-target_compile_options(target_cpu PUBLIC "-fno-asynchronous-unwind-tables")
-
 # include for the generated file from svd and for the coprocessors
 target_include_directories(target_cpu PUBLIC "${CMAKE_SOURCE_DIR}/targets/arm/")
+
+# link to klib and target_cpu_options
+target_link_libraries(target_cpu PUBLIC target_cpu_options)
+target_link_libraries(target_cpu PUBLIC klib)
 
 # Add definitions for targets
 # Values:
