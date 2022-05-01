@@ -21,7 +21,7 @@ jobs:
       matrix:
         cpu: [max32660, atsam3x8e, stm32f407]
 
-      steps:
+    steps:
       - uses: actions/checkout@v3
 
       - name: arm-none-eabi-gcc install
