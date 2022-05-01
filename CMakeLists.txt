@@ -40,8 +40,20 @@ add_compile_options("-fsingle-precision-constant")
 add_compile_options(-fstack-usage)
 
 # include the target cpu and set a target board
-add_subdirectory(${CMAKE_SOURCE_DIR}/targets/max32660)
-target_compile_definitions(target_cpu PUBLIC "TARGET_BOARD=evsys")
+if (DEFINED TARGET_CPU)
+    message("Building for target: ${TARGET_CPU}")
+    add_subdirectory(${CMAKE_SOURCE_DIR}/targets/${TARGET_CPU})
+
+    if (DEFINED TARGET_BOARD)
+        message("Building for target board: ${TARGET_BOARD}")
+        target_compile_definitions(target_cpu PUBLIC "TARGET_BOARD=${TARGET_BOARD}")
+    endif()
+else()
+    message("Building defualt target: max32660")
+    add_subdirectory(${CMAKE_SOURCE_DIR}/targets/max32660)
+    message("Building for default target board: evsys")
+    target_compile_definitions(target_cpu PUBLIC "TARGET_BOARD=evsys")
+endif()
 
 # add the klib library
 add_subdirectory(${CMAKE_SOURCE_DIR}/klib)
