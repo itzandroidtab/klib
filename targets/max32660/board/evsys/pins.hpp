@@ -1,7 +1,7 @@
 #ifndef KLIB_MAX32660_EVSYS_PINS_HPP
 #define KLIB_MAX32660_EVSYS_PINS_HPP
 
-#include "../../io/pins.hpp"
+#include <io/pins.hpp>
 
 namespace klib::max32660::io::pins::board::evsys {
     // using the tqfn_24 pins
