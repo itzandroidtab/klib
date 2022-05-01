@@ -44,9 +44,8 @@ add_library(${PROJECT_NAME}::klib ALIAS klib)
 # enable C++20 support for the library
 target_compile_features(klib PUBLIC cxx_std_20)
 
-# link to the cpu target to get all the compile options and linker options 
-# in the library
-target_link_libraries(klib PUBLIC target_cpu)
+# link to the traget_cpu_options to get all the cpu flags
+target_link_libraries(klib PUBLIC target_cpu_options)
 
 # set the common flags
 target_compile_options(klib PRIVATE "-Wall")
@@ -57,8 +56,6 @@ target_compile_options(klib PRIVATE "-Wno-unused-local-typedefs")
 target_compile_options(klib PRIVATE "-Wno-unused-but-set-variable")
 target_compile_options(klib PRIVATE "-Wno-unused-function")
 target_compile_options(klib PRIVATE "-fomit-frame-pointer")
-
-target_compile_options(klib PUBLIC "-nostdlib")
 
 # set the c++ only options
 target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-threadsafe-statics>)
