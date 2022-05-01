@@ -32,8 +32,8 @@ target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=stm32f407")
 # set the cpu options for the compiler
 target_compile_options(target_cpu PUBLIC "-mcpu=cortex-m4")
 target_compile_options(target_cpu PUBLIC "-mthumb")
-target_compile_options(target_cpu PUBLIC "-mfloat-abi=hard")
-target_compile_options(target_cpu PUBLIC "-mfpu=fpv4-sp-d16")
+# target_compile_options(target_cpu PUBLIC "-mfloat-abi=hard")
+# target_compile_options(target_cpu PUBLIC "-mfpu=fpv4-sp-d16")
 
 # other compile options
 target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile>)
@@ -41,8 +41,8 @@ target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile
 # set the cpu options for the linker
 target_link_options(target_cpu PUBLIC "-mcpu=cortex-m4")
 target_link_options(target_cpu PUBLIC "-mthumb")
-target_link_options(target_cpu PUBLIC "-mfloat-abi=hard")
-target_link_options(target_cpu PUBLIC "-mfpu=fpv4-sp-d16")
+# target_link_options(target_cpu PUBLIC "-mfloat-abi=hard")
+# target_link_options(target_cpu PUBLIC "-mfpu=fpv4-sp-d16")
 
 # other compiler settings
 target_compile_options(target_cpu PUBLIC "-Wno-attributes")
@@ -52,6 +52,9 @@ target_compile_options(target_cpu PUBLIC "-ffunction-sections")
 target_compile_options(target_cpu PUBLIC "-fdata-sections")
 target_compile_options(target_cpu PUBLIC "-fno-exceptions")
 target_compile_options(target_cpu PUBLIC "-fno-asynchronous-unwind-tables")
+
+# include for the generated file from svd and for the coprocessors
+target_include_directories(target_cpu PUBLIC "${CMAKE_SOURCE_DIR}/targets/arm/")
 
 # Add definitions for targets
 # Values:

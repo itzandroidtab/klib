@@ -53,6 +53,9 @@ target_compile_options(target_cpu PUBLIC "-fdata-sections")
 target_compile_options(target_cpu PUBLIC "-fno-exceptions")
 target_compile_options(target_cpu PUBLIC "-fno-asynchronous-unwind-tables")
 
+# include for the generated file from svd and for the coprocessors
+target_include_directories(target_cpu PUBLIC "${CMAKE_SOURCE_DIR}/targets/arm/")
+
 # Add definitions for targets
 # Values:
 #   - Debug  : -DTARGET_DEBUG=1
