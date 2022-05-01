@@ -11,8 +11,8 @@ namespace klib::max32660::io::periph::wlp {
         constexpr static uint32_t id = 0;
 
         // configuration of the pins
-        using dio = detail::swd::swd<io::pins::package::wlp::pc1, detail::swd::mode::dio, io::detail::periph_func_2>;
-        using clk = detail::swd::swd<io::pins::package::wlp::pc2, detail::swd::mode::clk, io::detail::periph_func_2>;
+        using dio = detail::swd::swd<io::pins::package::wlp::pc1, detail::swd::mode::dio, io::detail::periph_func_1>;
+        using clk = detail::swd::swd<io::pins::package::wlp::pc2, detail::swd::mode::clk, io::detail::periph_func_1>;
     };
 
     struct swd0_1 {
