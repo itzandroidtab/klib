@@ -39,8 +39,9 @@ add_compile_options("-fsingle-precision-constant")
 # enable stack usage
 add_compile_options(-fstack-usage)
 
-# include the target cpu
-add_subdirectory(${CMAKE_SOURCE_DIR}/targets/atsam3x8e)
+# include the target cpu and set a target board
+add_subdirectory(${CMAKE_SOURCE_DIR}/targets/max32660)
+target_compile_definitions(target_cpu PUBLIC "TARGET_BOARD=evsys")
 
 # add the klib library
 add_subdirectory(${CMAKE_SOURCE_DIR}/klib)
