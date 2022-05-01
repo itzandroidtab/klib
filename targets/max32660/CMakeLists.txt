@@ -31,7 +31,6 @@ target_compile_options(target_cpu_options INTERFACE "-fno-exceptions")
 target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-tables")
 
 
-
 # cpu max32660 target drivers 
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m4.cpp
