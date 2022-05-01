@@ -23,10 +23,10 @@ namespace klib::max32660::io::pins::board::evsys {
 }
 
 namespace klib::max32660::io::periph {
-    namespace wlp {};
+    namespace tqfn_24 {};
 
     // move target package peripherals into current namespace
-    using namespace wlp;
+    using namespace tqfn_24;
 }
 
 #endif
