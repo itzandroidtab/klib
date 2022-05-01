@@ -1,7 +1,8 @@
 #ifndef SWO_STREAM_HPP
 #define SWO_STREAM_HPP
 
-#include "../swo/swo.hpp"
+#include <klib/comm/swo/swo.hpp>
+
 #include "stream_base.hpp"
 #include "ostream.hpp"
 #include "istream.hpp"

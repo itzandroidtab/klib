@@ -1,7 +1,8 @@
 #ifndef RTT_STREAM_HPP
 #define RTT_STREAM_HPP
 
-#include "../segger/rtt.hpp"
+#include <klib/comm/segger/rtt.hpp>
+
 #include "stream_base.hpp"
 #include "ostream.hpp"
 #include "istream.hpp"

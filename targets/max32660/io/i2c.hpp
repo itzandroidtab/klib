@@ -3,9 +3,10 @@
 
 #include <cstdint>
 
-#include "max32660.h"
-#include "klib/core_clock.hpp"
-#include "../clocks.hpp"
+#include <klib/core_clock.hpp>
+#include <clocks.hpp>
+#include <max32660.h>
+
 #include "pio.hpp"
 
 namespace klib::max32660::io::detail::i2c {
