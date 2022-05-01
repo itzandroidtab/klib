@@ -1,5 +1,5 @@
-#ifndef LLIB_PORTS_HPP
-#define LLIB_PORTS_HPP
+#ifndef KLIB_PORTS_HPP
+#define KLIB_PORTS_HPP
 
 #include <tuple>
 #include <klib/math.hpp>
@@ -135,8 +135,7 @@ namespace klib::max32660::io {
     };
 
     /**
-     * Port that combines multiple llib::pin_out pins
-     * into a single type.
+     * Port that combines multiple pins into a single type.
      *
      * @tparam Pins
      */
@@ -328,4 +327,4 @@ namespace klib::max32660::io {
     };
 }
 
-#endif //LLIB_PORTS_HPP
+#endif
