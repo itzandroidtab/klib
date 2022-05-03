@@ -149,7 +149,7 @@ namespace klib::max32660::io {
             port->CTRL = 0x1;
 
             // clear the fifo's
-            port->RX_CTRL0 |= (1 << 7);
+            port->TX_CTRL0 |= (1 << 7);
             port->RX_CTRL0 |= (1 << 7);
 
             // set the thresholds
