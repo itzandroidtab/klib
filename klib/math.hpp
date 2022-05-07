@@ -39,6 +39,17 @@ namespace klib {
         return __builtin_isinf(arg);
     }    
 
+
+    /**
+     * @brief 16 bit bitswap (converts 0xaabb to 0xbbaa)
+     * 
+     * @param data 
+     * @return constexpr uint16_t 
+     */
+    constexpr uint16_t bswap(const uint16_t data) {
+        return __builtin_bswap16(data);
+    }
+
     /**
      * @brief Computes 2 raised to the given power
      * 
