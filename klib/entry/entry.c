@@ -79,3 +79,6 @@ void __default_handler() {
     // do nothing and wait
     while (true) {}
 }
+
+// called when a vft entry is not yet filled in
+void __cxa_pure_virtual() {}
