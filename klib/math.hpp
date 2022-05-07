@@ -4,7 +4,6 @@
 #include <limits>
 #include <type_traits>
 #include <cstdint>
-#include <cmath>
 
 namespace klib {
     /**
@@ -112,7 +111,7 @@ namespace klib {
         }
 
         if (isnan(arg)) {
-            return NAN;
+            return (__builtin_nanf(""));
         }
 
         // Negative ceiling
@@ -152,7 +151,7 @@ namespace klib {
         }
 
         if (isnan(arg)) {
-            return NAN;
+            return (__builtin_nanf(""));
         }
 
         // Negative flooring
