@@ -35,7 +35,7 @@ namespace klib::hardware::adc {
             output_enabled = enabled;
 
             // create a array to write to the bus
-            uint8_t buffer[] = {static_cast<uint8_t>(output_enabled << 6), value};
+            const uint8_t buffer[] = {static_cast<uint8_t>(output_enabled << 6), value};
 
             // write the full data only if the output is enabled
             if (output_enabled) {
