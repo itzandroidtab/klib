@@ -4,7 +4,7 @@
 #include "polyfill.h"
 
 // type for constructors
-typedef void (*entry_constructor)(void);
+typedef void (*volatile entry_constructor)(void);
 
 // declaration to the main function
 int main();
@@ -26,14 +26,18 @@ void __attribute__((__noreturn__, __naked__)) __reset_handler() {
     extern uint8_t __bss_end;
 
     // set the bss section to 0x00
-    memset(&__bss_start, 0x00, (&__bss_end - &__bss_start));
+    for (uint32_t i = 0; i < (&__bss_end - &__bss_start); i++) {
+        ((volatile uint8_t*)(&__bss_start))[i] = 0x00;
+    }
 
     extern const uint8_t __data_init_start;
     extern uint8_t __data_start;
     extern uint8_t __data_end;
 
     // copy rom to ram
-    memcpy(&__data_start, &__data_init_start, (&__data_end - &__data_start));
+    for (uint32_t i = 0; i < (&__data_end - &__data_start); i++) {
+        ((volatile uint8_t*)(&__data_start))[i] = (&__data_init_start)[i];
+    }
 
     extern const entry_constructor __preinit_array_start;
     extern const entry_constructor __preinit_array_end;
