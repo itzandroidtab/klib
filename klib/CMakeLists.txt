@@ -1,7 +1,6 @@
 # set the sources
 set(SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/entry/entry.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/entry/polyfill.c
 )
 
 set(HEADERS_PRIVATE 
@@ -62,6 +61,7 @@ target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-threadsafe-sta
 target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fconcepts>)
 target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-get-exception-ptr>)
+target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-atexit>)
 
 # add other linker options
 target_link_options(klib PUBLIC "-nostdlib")
