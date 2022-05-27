@@ -27,7 +27,7 @@ namespace klib {
          * @param x
          * @param y
          */
-        constexpr vector2(T x, T y)
+        constexpr vector2(const T x, const T y)
             : x(x), y(y) {}
 
         /**
@@ -36,7 +36,7 @@ namespace klib {
          *
          * @param val
          */
-        constexpr explicit vector2(T val)
+        constexpr explicit vector2(const T val)
             : x(val), y(val) {}
 
         /**
