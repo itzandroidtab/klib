@@ -55,8 +55,9 @@ namespace klib {
      * @param exponent 
      * @return constexpr uint32_t 
      */
-    constexpr uint32_t exp2(const uint32_t exponent) {
-        return 1 << exponent;
+    template <typename Precision = uint32_t>
+    constexpr Precision exp2(const uint32_t exponent) {
+        return static_cast<Precision>(1) << exponent;
     }
 
     /**
