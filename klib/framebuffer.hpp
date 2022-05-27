@@ -7,6 +7,76 @@
 #include <klib/vector2.hpp>
 
 namespace klib {
+    template <typename FrameBuffer, bool XMirror, bool YMirror>
+    class flipped_framebuffer {
+    protected:
+        FrameBuffer &fb;
+
+    public:
+        using display = FrameBuffer::display;
+
+        flipped_framebuffer(FrameBuffer &fb):
+            fb(fb)
+        {}
+
+        constexpr void init() {
+            // call the framebuffer init
+            fb.init();
+        }
+
+        constexpr void flush() {
+            // call the framebuffer flush
+            fb.flush();
+        }
+
+        constexpr void set_pixel(const klib::vector2<uint32_t> position, const display::pixel_type raw) {
+            // mirror using the parameters
+            if constexpr (XMirror && YMirror) {
+                const klib::vector2<uint32_t> pos = (klib::vector2<uint32_t>(
+                    (display::width - 1), (display::height - 1)) - 
+                    position
+                );
+
+                fb.set_pixel(pos, raw);
+            }
+            else if (XMirror) {
+                const klib::vector2<uint32_t> pos = (klib::vector2<uint32_t>(
+                    (display::width - 1) - position.x, position.y)
+                );
+
+                fb.set_pixel(pos, raw);
+            }
+            else if (YMirror) {
+                const klib::vector2<uint32_t> pos = (klib::vector2<uint32_t>(
+                    position.x, (display::height - 1) - position.y)
+                );
+
+                fb.set_pixel(pos, raw);
+            }
+            else {
+                fb.set_pixel(position, raw);
+            }
+        }
+
+        constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+            // convert the color to raw
+            const auto raw = display::color_to_raw(col);
+
+            // set the pixel using the mirror set_pixel
+            set_pixel(position, raw);
+        }
+
+        constexpr void clear(const display::pixel_type raw) {
+            // clear using raw value
+            fb.clear(raw);
+        }
+
+        constexpr void clear(const klib::color &col) {
+            // clear using color
+            fb.clear(col);
+        }
+    };
+
     /**
      * @brief Direct framebuffer. Implements framebuffer without buffer 
      * and directly writes to the display.
