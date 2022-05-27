@@ -157,15 +157,15 @@ namespace klib {
          * @param other
          * @return
          */
-        constexpr vector2 operator/(const vector2 &other) const {
-            return vector2(x / other.x, y / other.y);
+        constexpr vector2<T> operator/(const vector2<T> &other) const {
+            return vector2<T>(x / other.x, y / other.y);
         }
 
         /**
          * @param other
          * @return
          */
-        constexpr vector2 &operator/=(const vector2 &other) {
+        constexpr vector2<T> &operator/=(const vector2<T> &other) {
             x /= other.x;
             y /= other.y;
 
@@ -176,17 +176,17 @@ namespace klib {
          * @param other
          * @return
          */
-        constexpr vector2 operator/(T other) const {
-            return vector2(x / other.x, y / other.y);
+        constexpr vector2<T> operator/(const T other) const {
+            return vector2<T>(x / other, y / other);
         }
 
         /**
          * @param other
          * @return
          */
-        constexpr vector2 &operator/=(T other) {
-            x /= other.x;
-            y /= other.y;
+        constexpr vector2<T> &operator/=(const T other) {
+            x /= other;
+            y /= other;
 
             return *this;
         }
