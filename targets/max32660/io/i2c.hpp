@@ -92,23 +92,41 @@ namespace klib::max32660::io {
             }
         }
 
+        /**
+         * @brief Send a slave address to the i2c bus using a repeated start or a normal start
+         * 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param read 
+         * @return true 
+         * @return false 
+         */
         template <bool RepeatedStart>
         constexpr static bool send_slave_address(const uint8_t address, const bool read) {
-            // write the slave address to the fifo and leave the R/W bit set to 1
-            port->FIFO = (address << 1) | read;
-
             // check if we need to write a repeated start or a normal start
             if constexpr (!RepeatedStart) {
+                // write the slave address to the fifo and leave the R/W bit set to 1
+                port->FIFO = (address << 1) | read;
+
                 // send a start
                 port->MASTER_CTRL |= 0x1;
             }
             else {
                 // send a repeated start
                 port->MASTER_CTRL |= (0x1 << 1);
+
+                // wait until the repeated start is done
+                while (port->MASTER_CTRL & (0x1 << 1)) {
+                    // do nothing
+                }
+
+                // write the slave address to the fifo and leave the R/W bit set to 1
+                port->FIFO = (address << 1) | read;
             }
 
             // wait until we get a ack or nack on the address
             while (!(port->INT_FL0 & (1 << 7 | 1 << 10))) {
+                // TODO: fix the issue where this loop gets endless
                 // do nothing
             }
 
@@ -166,8 +184,9 @@ namespace klib::max32660::io {
             // set the high speed settings
             port->HS_CLK = (sp.hs_high_clk << 8) | sp.hs_low_clk;
 
-            // configure the i2c peripheral
-            port->CTRL |= (0x1 << 1) | (sp.hs_bit << 15); 
+            // configure the i2c peripheral (set master mode, set the high 
+            // speed bit and disable clock stretching)
+            port->CTRL |= (0x1 << 1) | (sp.hs_bit << 15) | (1 << 12); 
         }  
 
         /**
