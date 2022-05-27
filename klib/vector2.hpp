@@ -192,6 +192,22 @@ namespace klib {
         }
 
         /**
+         * @param other 
+         * @return bool 
+         */
+        constexpr bool operator==(const vector2<T> other) const {
+            return (x == other.x) && (y == other.y);
+        }
+
+        /**
+         * @param other 
+         * @return bool 
+         */
+        constexpr bool operator!=(const vector2<T> other) const {
+            return !operator==(other);
+        }
+
+        /**
          * Helper function for casting a
          * vector to another vector.
          *
