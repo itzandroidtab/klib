@@ -16,6 +16,8 @@ namespace klib {
             T table[N] = {};
 
         public:
+            constexpr static uint32_t size = N;
+
             template <typename F>
             constexpr lookuptable(const F function) {
                 for(uint32_t i = 0; i < N; ++i){
@@ -24,7 +26,12 @@ namespace klib {
             }
 
             constexpr T get(const uint32_t index) const {
-                return table[index];
+                if (index < size) {
+                    return table[index];
+                }
+                else {
+                    return T();
+                }
             }
     };
 }
