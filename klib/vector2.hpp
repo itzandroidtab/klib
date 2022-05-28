@@ -208,6 +208,19 @@ namespace klib {
         }
 
         /**
+         * @brief Swap the x and y of the vector2
+         * 
+         */
+        constexpr void swap() {
+            // create a copy of x
+            const T tmp_x = x;
+
+            // swap the vars
+            x = y;
+            y = tmp_x;
+        }
+
+        /**
          * Helper function for casting a
          * vector to another vector.
          *
