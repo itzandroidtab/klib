@@ -11,15 +11,19 @@ add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
 target_compile_options(target_cpu_options INTERFACE "-march=armv7e-m")
 target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m4")
 target_compile_options(target_cpu_options INTERFACE "-mthumb")
-# target_compile_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
-# target_compile_options(target_cpu_options INTERFACE "-mfpu=fpv4-sp-d16")
+if (DEFINED TARGET_FPU_ENABLED)
+    target_compile_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
+    target_compile_options(target_cpu_options INTERFACE "-mfpu=fpv4-sp-d16")
+endif()
 
 # set the cpu options for the linker
 target_link_options(target_cpu_options INTERFACE "-march=armv7e-m")
 target_link_options(target_cpu_options INTERFACE "-mcpu=cortex-m4")
 target_link_options(target_cpu_options INTERFACE "-mthumb")
-# target_link_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
-# target_link_options(target_cpu_options INTERFACE "-mfpu=fpv4-sp-d16")
+if (DEFINED TARGET_FPU_ENABLED)
+    target_link_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
+    target_link_options(target_cpu_options INTERFACE "-mfpu=fpv4-sp-d16")
+endif()
 
 # other compiler settings
 target_compile_options(target_cpu_options INTERFACE "-Wno-attributes")
