@@ -7,6 +7,10 @@ add_library (target_cpu_options INTERFACE)
 # alias projectname::target_cpu_options to target_cpu_options
 add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
 
+if (DEFINED TARGET_FPU_ENABLED)
+    message(FATAL_ERROR "Target does not have a FPU")
+endif()
+
 # set the cpu options for the compiler
 target_compile_options(target_cpu_options INTERFACE "-march=armv7-m")
 target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m3")
