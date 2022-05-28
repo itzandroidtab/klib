@@ -75,6 +75,42 @@ namespace klib::max32660::io {
     };
 
     template<typename Pin>
+    class pin_oc {
+    public:
+        constexpr static void init() {
+            // clear all the alternate functions
+            detail::set_peripheral<Pin, io::detail::periph_func_none>();
+        }
+
+        template<bool Val>
+        constexpr static void set() {
+            if constexpr (Val) {
+                // enable the gpio output
+                pins::detail::port<typename Pin::port>->OUT_EN_SET = pins::detail::mask<Pin>;
+
+                pins::detail::port<typename Pin::port>->OUT_SET = pins::detail::mask<Pin>;
+            }
+            else {
+                // disable the gpio output
+                pins::detail::port<typename Pin::port>->OUT_EN_CLR = pins::detail::mask<Pin>;
+            }
+        }
+
+        constexpr static void set(const bool val) {
+            if (val) {
+                // enable the gpio output
+                pins::detail::port<typename Pin::port>->OUT_EN_SET = pins::detail::mask<Pin>;
+
+                pins::detail::port<typename Pin::port>->OUT_SET = pins::detail::mask<Pin>;
+            }
+            else {
+                // disable the gpio output
+                pins::detail::port<typename Pin::port>->OUT_EN_CLR = pins::detail::mask<Pin>;
+            }
+        }
+    };
+
+    template<typename Pin>
     class pin_in_out {
     public:
         constexpr static void init() {
@@ -104,6 +140,39 @@ namespace klib::max32660::io {
 
         constexpr static void set(const bool val) {
             pin_out<Pin>::set(val);
+        }
+    };
+
+    template<typename Pin>
+    class pin_in_out_oc {
+    public:
+        constexpr static void init() {
+            // init using pin_out as we can read the pin anyway
+            pin_oc<Pin>::init();
+        }
+
+        constexpr static bool get() {
+            // get the status of the pin
+            return pin_in<Pin>::get();
+        }
+
+        template <bool Val>
+        constexpr static void pullup_enable() {
+            pin_in<Pin>::template pullup_enable<Val>();
+        }
+
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            pin_in<Pin>::template pulldown_enable<Val>();
+        }
+
+        template<bool Val>
+        constexpr static void set() {
+            pin_oc<Pin>::template set<Val>();
+        }
+
+        constexpr static void set(const bool val) {
+            pin_oc<Pin>::set(val);
         }
     };
 }
