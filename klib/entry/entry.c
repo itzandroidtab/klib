@@ -4,7 +4,7 @@
 #include "polyfill.h"
 
 // type for constructors
-typedef void (*volatile entry_constructor)(void);
+typedef void (*entry_constructor)(void);
 
 // declaration to the main function
 int main();
