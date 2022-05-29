@@ -70,6 +70,7 @@ target_link_options(klib PUBLIC "-nostartfiles")
 target_link_options(klib PUBLIC "-Wl,--gc-sections")
 target_link_options(klib PUBLIC "-Wl,-fatal-warnings")
 target_link_options(klib PUBLIC "-Wl,-cref,-Map=klib.map")
+target_link_options(klib PUBLIC "-Wl,--print-memory-usage")
 
 # Add definitions for targets
 # Values:
