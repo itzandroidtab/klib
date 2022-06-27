@@ -17,7 +17,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
         using coprocessor = klib::arm::coprocessor;
 
         // enable the floating point coprocessors
-        coprocessor::enable<10>(coprocessor::access::full, &SCB->CPACR);
-        coprocessor::enable<11>(coprocessor::access::full, &SCB->CPACR);
+        // coprocessor::enable<10>(coprocessor::access::full, &SCB->CPACR);
+        // coprocessor::enable<11>(coprocessor::access::full, &SCB->CPACR);
     }
 }
