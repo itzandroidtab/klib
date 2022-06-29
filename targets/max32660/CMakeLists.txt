@@ -7,6 +7,9 @@ add_library (target_cpu_options INTERFACE)
 # alias projectname::target_cpu_options to target_cpu_options
 add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
 
+# include the arm directory for all the cmsis files
+target_include_directories(target_cpu_options INTERFACE ${CMAKE_SOURCE_DIR}/targets/arm/)
+
 # set the cpu options for the compiler
 target_compile_options(target_cpu_options INTERFACE "-march=armv7e-m")
 target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m4")
@@ -63,9 +66,6 @@ target_compile_features(target_cpu PUBLIC cxx_std_20)
 
 # set the target_cpu for klib
 target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=max32660")
-
-# include for the generated file from svd and for the coprocessors
-target_include_directories(target_cpu PUBLIC "${CMAKE_SOURCE_DIR}/targets/arm/")
 
 # add target specific compile options
 target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile>)
