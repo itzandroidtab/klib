@@ -26,7 +26,7 @@ namespace klib {
             }
 
             constexpr T get(const uint32_t index) const {
-                if (index < size) {
+                if (index < N) {
                     return table[index];
                 }
                 else {
