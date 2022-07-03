@@ -126,7 +126,7 @@ namespace klib {
          */
         template <uint32_t Irq>
         static void unregister_irq() {
-            static_assert(Irq < IrqCount, "Invalid IRQ given to register");
+            static_assert(Irq < IrqCount, "Invalid IRQ given to unregister");
 
             // clear the callback
             callbacks[Irq] = default_handler;
