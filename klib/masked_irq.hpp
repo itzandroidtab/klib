@@ -44,7 +44,7 @@ namespace klib {
             uint8_t trailing_zeros = 0;
 
             // loop until we dont have any bits set anymore (32 == zero's)
-            while ((trailing_zeros = __CLZ(masked_register)) < 32) {
+            while ((trailing_zeros = klib::clz(masked_register)) < 32) {
                 // get the current bit to handle in the callback list
                 const auto bit = static_cast<uint8_t>(trailing_zeros);
 
