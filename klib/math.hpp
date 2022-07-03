@@ -50,6 +50,26 @@ namespace klib {
     }
 
     /**
+     * @brief Count leading zero's
+     * 
+     * @param data 
+     * @return constexpr uint32_t 
+     */
+    constexpr uint32_t clz(const uint32_t data) {
+        return __builtin_clz(data);
+    }
+
+    /**
+     * @brief Return the amount of bits set to 1
+     * 
+     * @param data 
+     * @return constexpr uint32_t 
+     */
+    constexpr uint32_t popcount(const uint32_t data) {
+        return __builtin_popcount(data);
+    }
+
+    /**
      * @brief Computes 2 raised to the given power
      * 
      * @param exponent 
