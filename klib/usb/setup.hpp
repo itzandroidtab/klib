@@ -29,7 +29,6 @@ namespace klib::usb {
         // 0x1 = interface
         // 0x2 = endpoint
         // 0x3 = Other
-        // 0x4..31 = reserved
         // b[5..6] = Type
         // 0x0 = standard
         // 0x1 = interface
