@@ -15,6 +15,21 @@ namespace klib::usb::descriptor {
      */
 
     /**
+     * Descriptor types from the usb 2.0 specification
+     * 
+     */ 
+    enum class descriptor_type {
+        device = 1,
+        configuration = 2,
+        string = 3,
+        interface = 4,
+        endpoint = 5,
+        device_qualifier,
+        other_speed_config = 7,
+        interface_power = 8
+    };
+
+    /**
      * Transfer types
      * (bmAttributes)
      * 
@@ -64,7 +79,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLenght = sizeof(device);
 
         // descriptorType
-        const uint8_t bDescriptionType = 0x01;
+        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::device);
 
         // usb specification number wich device compies to
         uint16_t bcdUSB;
@@ -115,7 +130,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLenght = sizeof(configuration);
 
         // descriptorType
-        const uint8_t bDescriptionType = 0x02;
+        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::configuration);
 
         // total length in bytes of data returned
         uint16_t wTotalLength;
@@ -166,7 +181,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLenght = sizeof(string);
 
         // descriptorType
-        const uint8_t bDescriptionType = 0x03;
+        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::string);
 
         // unicode encoded string
         uint16_t bString[Size];
@@ -185,7 +200,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLenght = sizeof(interface);
 
         // descriptorType
-        const uint8_t bDescriptionType = 0x04;
+        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::interface);
 
         // number of interface
         uint8_t bInterfaceNumber;
@@ -223,7 +238,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLenght = sizeof(endpoint);
 
         // descriptorType
-        const uint8_t bDescriptionType = 0x05;
+        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::endpoint);
 
         // endpoint address
         // b[0..3] = endpoint number
