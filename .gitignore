@@ -8,5 +8,8 @@ build/
 *.JLinkScript
 *.svd
 
+# mac os x stuff
+.DS_Store
+
 # project main
 project/main.cpp
