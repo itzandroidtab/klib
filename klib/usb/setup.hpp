@@ -143,7 +143,25 @@ namespace klib::usb::setup {
         // wIndex = zero
         // wLength = zero
         // data = none
-        set_configuration = 0x09
+        set_configuration = 0x09,
+
+        // wValue = zero
+        // wIndex = interface
+        // wlength = one
+        // data = alternate interface
+        get_interface = 0x0a,
+
+        // wValue = alternate setting
+        // wIndex = interface
+        // wlength = zero
+        // data = none
+        set_interface = 0x0b,
+
+        // wValue = zero
+        // wIndex = endpoint
+        // wlength = two
+        // data = frame number
+        synch_frame = 0x0c,
     };
 
     /**
@@ -231,6 +249,16 @@ namespace klib::usb::setup {
         synch_frame = 0x12
     };
 
+    /**
+     * USB features
+     * (wValue)
+     * 
+     */
+    enum class feature {
+        endpoint_halt = 0,
+        remote_wake = 1,
+        test_mode = 2,
+    };
 }
 
 // release the old pack so the rest of the structs are not 
