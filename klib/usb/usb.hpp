@@ -12,7 +12,6 @@ namespace klib::usb {
             uint32_t size;
         };
     
-    protected:
         /**
          * @brief Helper function to get the direction of a packet
          * 
@@ -43,6 +42,7 @@ namespace klib::usb {
             return static_cast<setup::feature>(packet.wValue);
         }
 
+    protected:
         /**
          * @brief Send the status of the usb device
          * 
