@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "polyfill.h"
-
 // type for constructors
 typedef void (*entry_constructor)(void);
 
