@@ -454,7 +454,7 @@ namespace klib::usb {
             // check if we have a error
             if (!error_code) {
                 // no error send a ack
-                Usb::ack_endpoint(0);
+                Usb::ack(0);
             }
             else {
                 // we have a error send a stall
