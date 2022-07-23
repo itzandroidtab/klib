@@ -7,6 +7,15 @@
 #include <klib/vector2.hpp>
 
 namespace klib {
+    /**
+     * @brief Framebuffer that can flip another framebuffer. Uses all the 
+     * parameters from the original framebuffer. Can be flipped in the x-axis
+     * and the y-axis independently.
+     * 
+     * @tparam FrameBuffer 
+     * @tparam XMirror 
+     * @tparam YMirror 
+     */
     template <typename FrameBuffer, bool XMirror, bool YMirror>
     class flipped_framebuffer {
     protected:
