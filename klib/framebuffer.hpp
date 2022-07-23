@@ -24,7 +24,7 @@ namespace klib {
     public:
         using display = FrameBuffer::display;
 
-        flipped_framebuffer(FrameBuffer &fb):
+        constexpr flipped_framebuffer(FrameBuffer &fb):
             fb(fb)
         {}
 
@@ -42,8 +42,7 @@ namespace klib {
             // mirror using the parameters
             if constexpr (XMirror && YMirror) {
                 const klib::vector2<uint32_t> pos = (klib::vector2<uint32_t>(
-                    (display::width - 1), (display::height - 1)) - 
-                    position
+                    (display::width - 1), (display::height - 1)) - position
                 );
 
                 fb.set_pixel(pos, raw);
