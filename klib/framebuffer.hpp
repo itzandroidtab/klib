@@ -8,6 +8,72 @@
 
 namespace klib {
     /**
+     * @brief Framebuffer that scales input into multiple pixels to another framebuffer
+     * 
+     * @tparam FrameBuffer 
+     * @tparam XScale 
+     * @tparam YScale 
+     */
+    template <typename FrameBuffer, uint32_t XScale, uint32_t YScale>
+    class scaled_framebuffer {
+    protected:
+        FrameBuffer &fb;
+
+        // make sure we have a positive scale factor
+        static_assert((XScale >= 1) && (YScale >= 1), "Framebuffer scale factor cannot be 0");
+
+    public:
+        using display = FrameBuffer::display;
+
+        constexpr scaled_framebuffer(FrameBuffer &fb):
+            fb(fb)
+        {}
+
+        constexpr void init() {
+            // call the framebuffer init
+            fb.init();
+        }
+
+        constexpr void flush() {
+            // call the framebuffer flush
+            fb.flush();
+        }
+
+        constexpr void set_pixel(const klib::vector2<uint32_t> position, const display::pixel_type raw) {
+            // convert to the scaled position
+            const klib::vector2<uint32_t> scaled_position = (
+                position * klib::vector2<uint32_t>{XScale, YScale}
+            );
+
+            // scale every pixel scale amount of times
+            for (uint32_t y = 0; y < YScale; y++) {
+                for (uint32_t x = 0; x < XScale; x++) {
+                    // set the pixel multiple times
+                    fb.set_pixel(scaled_position + klib::vector2<uint32_t>{x, y}, raw);
+                }
+            }
+        }
+
+        constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+            // convert the color to raw
+            const auto raw = display::color_to_raw(col);
+
+            // set the pixel using the set_pixel
+            set_pixel(position, raw);
+        }
+
+        constexpr void clear(const display::pixel_type raw) {
+            // clear using raw value
+            fb.clear(raw);
+        }
+
+        constexpr void clear(const klib::color &col) {
+            // clear using color
+            fb.clear(col);
+        }
+    };
+
+    /**
      * @brief Framebuffer that can flip another framebuffer. Uses all the 
      * parameters from the original framebuffer. Can be flipped in the x-axis
      * and the y-axis independently.
