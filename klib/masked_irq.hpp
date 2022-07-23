@@ -13,17 +13,22 @@ namespace klib {
      * to be called when specific bits are set
      * 
      */
+    template <uint32_t Size>
     class masked_irq {
     public:
         // using for the array of callbacks
         using interrupt_callback = void (*)(const uint32_t status_register, const uint32_t interrupt_mask);
         
+        // size of the masked interrupt
+        constexpr static uint32_t size = Size;
+
     protected:
-        // max amount of interrupts that fit 
-        constexpr static uint32_t max_irq_amount = 32;
+        // make sure the size is within a 32bit value and at least 1 bit
+        static_assert(Size <= 32, "Masked interrupt only supports up to 32 bits");
+        static_assert(Size >= 1, "Masked interrupt needs at least 1 item");
 
         // array with all the function callbacks. 
-        interrupt_callback callbacks[max_irq_amount] = {};
+        interrupt_callback callbacks[Size] = {};
 
     public:
         /**
@@ -37,8 +42,11 @@ namespace klib {
          * @param interrupt_mask 
          */
         void handle_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+            // create the mask for the input size (uint64_t should be optimized away during compilation)
+            constexpr static uint32_t size_mask = static_cast<uint32_t>(klib::exp2<uint64_t>(Size) - 1);
+
             // Reverse the bit order for the count trailing zero's.
-            uint32_t masked_register = klib::rbit(status_register & interrupt_mask);
+            uint32_t masked_register = klib::rbit(status_register & interrupt_mask & size_mask);
 
             // amount of trailing zeros in the status register
             uint8_t trailing_zeros = 0;
@@ -66,7 +74,7 @@ namespace klib {
          */
         template <uint32_t Irq>
         void register_irq(const interrupt_callback &callback) {
-            static_assert(Irq < max_irq_amount, "Invalid IRQ given to register");
+            static_assert(Irq < Size, "Invalid IRQ given to register");
 
             // set the callback in the list of callbacks
             callbacks[Irq] = callback;
@@ -79,12 +87,15 @@ namespace klib {
          */
         template <uint32_t Irq>
         void unregister_irq() {
-            static_assert(Irq < max_irq_amount, "Invalid IRQ given to unregister");
+            static_assert(Irq < Size, "Invalid IRQ given to unregister");
 
             // clear the callback
             callbacks[Irq] = nullptr;
         }
     };
+
+    // create a using for a register
+    using masked_register_irq = masked_irq<32>;
 }
 
 #endif

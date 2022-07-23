@@ -178,7 +178,7 @@ namespace klib::usb::descriptor {
     template<uint32_t Size>
     struct string {
         // size of descriptor in bytes
-        const uint8_t bLenght = sizeof(string);
+        const uint8_t bLenght = sizeof(string<Size>);
 
         // descriptorType
         const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::string);

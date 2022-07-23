@@ -38,7 +38,6 @@ namespace klib {
         return __builtin_isinf(arg);
     }    
 
-
     /**
      * @brief 16 bit bitswap (converts 0xaabb to 0xbbaa)
      * 
@@ -56,6 +55,11 @@ namespace klib {
      * @return constexpr uint32_t 
      */
     constexpr uint32_t clz(const uint32_t data) {
+        // handle the 0 case as buildin_clz(0) is undefined
+        if (data == 0x00) {
+            return 32;
+        }
+
         return __builtin_clz(data);
     }
 
