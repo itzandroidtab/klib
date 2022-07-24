@@ -8,6 +8,63 @@
 
 namespace klib {
     /**
+     * @brief Framebuffer with a different start position in a another framebuffer
+     * 
+     * @tparam FrameBuffer 
+     * @tparam XStart 
+     * @tparam YStart 
+     */
+    template <typename FrameBuffer, uint32_t XStart, uint32_t YStart>
+    class sub_framebuffer {
+    protected:
+        FrameBuffer &fb;
+
+    public:
+        using display = FrameBuffer::display;
+
+        constexpr sub_framebuffer(FrameBuffer &fb):
+            fb(fb)
+        {}
+
+        constexpr void init() {
+            // call the framebuffer init
+            fb.init();
+        }
+
+        constexpr void flush() {
+            // call the framebuffer flush
+            fb.flush();
+        }
+
+        constexpr void set_pixel(const klib::vector2<uint32_t> position, const display::pixel_type raw) {
+            // move the position with the offset
+            const klib::vector2<uint32_t> sub_position = (
+                position + klib::vector2<uint32_t>{XStart, YStart}
+            );
+
+            fb.set_pixel(sub_position, raw);
+        }
+
+        constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+            // convert the color to raw
+            const auto raw = display::color_to_raw(col);
+
+            // set the pixel using the set_pixel
+            set_pixel(position, raw);
+        }
+
+        constexpr void clear(const display::pixel_type raw) {
+            // clear using raw value
+            fb.clear(raw);
+        }
+
+        constexpr void clear(const klib::color &col) {
+            // clear using color
+            fb.clear(col);
+        }
+    };
+
+    /**
      * @brief Framebuffer that scales input into multiple pixels to another framebuffer
      * 
      * @tparam FrameBuffer 
