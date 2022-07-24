@@ -18,6 +18,9 @@ namespace klib {
 
         // blue color
         uint8_t blue;
+
+        // is pixel is transparant
+        bool transparant;
     };
 }
 

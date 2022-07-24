@@ -214,6 +214,11 @@ namespace klib {
         }
 
         constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+            // check if the pixel is transparant. Skip if it is
+            if (col.transparant) {
+                return;
+            }
+            
             // convert using the display conversion function
             const auto raw = display::color_to_raw(col);
 
@@ -283,6 +288,11 @@ namespace klib {
         }
 
         constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+            // check if the pixel is transparant. Skip if it is
+            if (col.transparant) {
+                return;
+            }
+            
             // convert using the display conversion function
             const auto raw = display::color_to_raw(col);
 
