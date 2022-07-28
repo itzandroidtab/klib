@@ -2,20 +2,9 @@
 #define KLIB_STREAM_BASE_HPP
 
 #include <klib/vector2.hpp>
+#include <klib/units.hpp>
 
 namespace klib {
-    enum class base {
-        HEX,
-        DEC,
-        OCT,
-        BIN
-    };
-
-    namespace {
-        constexpr base _default_base = base::DEC;
-        constexpr bool _default_boolalpha = false;
-    }
-
     template<base B = _default_base, bool Boolalpha = _default_boolalpha>
     class ostream {
     public:

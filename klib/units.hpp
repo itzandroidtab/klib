@@ -3,6 +3,20 @@
 
 #include <cstdint>
 
+namespace klib {
+    enum class base {
+        HEX,
+        DEC,
+        OCT,
+        BIN
+    };
+
+    namespace {
+        constexpr base _default_base = base::DEC;
+        constexpr bool _default_boolalpha = false;
+    }
+}
+
 namespace klib::time {
     struct ms {
         uint32_t value;
