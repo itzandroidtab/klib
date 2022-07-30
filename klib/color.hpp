@@ -22,6 +22,25 @@ namespace klib {
         // is pixel is transparant
         bool transparant;
     };
+
+    // some default colors
+    [[maybe_unused]]
+    constexpr color white = {0xff, 0xff, 0xff, false};
+
+    [[maybe_unused]]
+    constexpr color black = {0x00, 0x00, 0x00, false};
+    
+    [[maybe_unused]]
+    constexpr color red = {0xff, 0x00, 0x00, false};
+
+    [[maybe_unused]]
+    constexpr color green = {0x00, 0xff, 0x00, false};
+
+    [[maybe_unused]]
+    constexpr color blue = {0x00, 0x00, 0xff, false};
+
+    [[maybe_unused]]
+    constexpr color transparent = {0x00, 0x00, 0x00, true};
 }
 
 #endif
