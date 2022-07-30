@@ -173,6 +173,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 9;
 
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 30;
+
         // configuration of the pins
         using txd = detail::uart::uart<io::pins::package::tqfn_24::p21, detail::uart::mode::txd, io::detail::periph_func_2>;
         using rxd = detail::uart::uart<io::pins::package::tqfn_24::p20, detail::uart::mode::rxd, io::detail::periph_func_2>;
@@ -186,6 +189,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 10;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 31;
 
         // configuration of the pins
         using txd = detail::uart::uart<io::pins::package::tqfn_24::p14, detail::uart::mode::txd, io::detail::periph_func_2>;
@@ -201,6 +207,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 10;
 
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 31;
+
         // configuration of the pins
         using txd = detail::uart::uart<io::pins::package::tqfn_24::p2, detail::uart::mode::txd, io::detail::periph_func_3>;
         using rxd = detail::uart::uart<io::pins::package::tqfn_24::p1, detail::uart::mode::rxd, io::detail::periph_func_3>;
@@ -214,6 +223,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 10;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 31;
 
         // configuration of the pins
         using txd = detail::uart::uart<io::pins::package::tqfn_24::p19, detail::uart::mode::txd, io::detail::periph_func_3>;
@@ -229,6 +241,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 6;
 
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 32;
+
         // configuration of the pins 
         using mosi = detail::spi::spi<io::pins::package::tqfn_24::p20, detail::spi::mode::mosi, io::detail::periph_func_1>;
         using miso = detail::spi::spi<io::pins::package::tqfn_24::p21, detail::spi::mode::miso, io::detail::periph_func_1>;
@@ -242,6 +257,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 7;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 33;
 
         // configuration of the pins 
         using mosi = detail::spi::spi<io::pins::package::tqfn_24::p16, detail::spi::mode::mosi, io::detail::periph_func_1>;
@@ -257,6 +275,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 7;
 
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 33;
+
         // configuration of the pins 
         using mosi = detail::spi::spi<io::pins::package::tqfn_24::p1, detail::spi::mode::mosi, io::detail::periph_func_2>;
         using miso = detail::spi::spi<io::pins::package::tqfn_24::p2, detail::spi::mode::miso, io::detail::periph_func_2>;
@@ -271,6 +292,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 13;
 
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 29;
+
         using sda = detail::i2c::i2c<io::pins::package::tqfn_24::p13, detail::i2c::mode::sda, io::detail::periph_func_1>;
         using scl = detail::i2c::i2c<io::pins::package::tqfn_24::p14, detail::i2c::mode::scl, io::detail::periph_func_1>;
     };
@@ -281,6 +305,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 28;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 52;
 
         using sda = detail::i2c::i2c<io::pins::package::tqfn_24::p23, detail::i2c::mode::sda, io::detail::periph_func_1>;
         using scl = detail::i2c::i2c<io::pins::package::tqfn_24::p24, detail::i2c::mode::scl, io::detail::periph_func_1>;
@@ -293,6 +320,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 15;
 
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 21;
+
         using tmr = detail::tc::tc<io::pins::package::tqfn_24::p23, detail::tc::mode::tmr, io::detail::periph_func_3>;
     };
 
@@ -302,6 +332,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 16;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 22;
     };
 
     struct tc2 {
@@ -310,6 +343,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 17;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 23;
     };
 
     struct dma0 {
@@ -318,6 +354,9 @@ namespace klib::max32660::io::periph::tqfn_24 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 5;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 44;
     }; 
 }
 
