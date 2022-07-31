@@ -357,7 +357,12 @@ namespace klib::max32660::io::periph::tqfn_24 {
 
         // peripheral interrupt position
         constexpr static uint32_t irq_id = 44;
-    }; 
+    };
+
+    struct flc0 {
+        // peripheral id (e.g flc0, flc1)
+        constexpr static uint32_t id = 0;
+    };
 }
 
 #endif
