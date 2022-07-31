@@ -4,6 +4,55 @@
 #include "pio.hpp"
 #include "pins.hpp"
 
+// global peripherals, not affected by chip package
+namespace klib::max32660::io::periph {
+    struct wdt0 {
+        // peripheral id (e.g wdt0, wdt1)
+        constexpr static uint32_t id = 0;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 17;
+    };
+
+    struct tc1 {
+        // peripheral id (e.g tc0, tc1)
+        constexpr static uint32_t id = 1;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 16;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 22;
+    };
+
+    struct tc2 {
+        // peripheral id (e.g tc0, tc1)
+        constexpr static uint32_t id = 2;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 17;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 23;
+    };
+
+    struct dma0 {
+        // peripheral id (e.g dma0, dma1)
+        constexpr static uint32_t id = 0;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 5;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 44;
+    };
+
+    struct flc0 {
+        // peripheral id (e.g flc0, flc1)
+        constexpr static uint32_t id = 0;
+    };
+}
+
 // peripheral pin mapping to alternate functions.
 namespace klib::max32660::io::periph::wlp {
     struct swd0_0 {
@@ -166,14 +215,6 @@ namespace klib::max32660::io::periph::tqfn_24 {
         using clk = detail::swd::swd<io::pins::package::tqfn_24::p13, detail::swd::mode::clk, io::detail::periph_func_2>;
     };
 
-    struct wdt0 {
-        // peripheral id (e.g wdt0, wdt1)
-        constexpr static uint32_t id = 0;
-
-        // peripheral interrupt position
-        constexpr static uint32_t irq_id = 17;
-    };
-
     struct uart0 {
         // peripheral id (e.g uart0, uart1)
         constexpr static uint32_t id = 0;
@@ -332,44 +373,6 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t irq_id = 21;
 
         using tmr = detail::tc::tc<io::pins::package::tqfn_24::p23, detail::tc::mode::tmr, io::detail::periph_func_3>;
-    };
-
-    struct tc1 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 1;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 16;
-
-        // peripheral interrupt position
-        constexpr static uint32_t irq_id = 22;
-    };
-
-    struct tc2 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 2;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 17;
-
-        // peripheral interrupt position
-        constexpr static uint32_t irq_id = 23;
-    };
-
-    struct dma0 {
-        // peripheral id (e.g dma0, dma1)
-        constexpr static uint32_t id = 0;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 5;
-
-        // peripheral interrupt position
-        constexpr static uint32_t irq_id = 44;
-    };
-
-    struct flc0 {
-        // peripheral id (e.g flc0, flc1)
-        constexpr static uint32_t id = 0;
     };
 }
 
