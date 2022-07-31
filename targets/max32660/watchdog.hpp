@@ -27,7 +27,7 @@ namespace klib::max32660 {
         static void feed() {
             // reset the counter by writing the reset sequence twice
             WDT0->RST = 0xa5;
-            WDT0->RST = 0xa5;
+            WDT0->RST = 0x5a;
         }
 
         /**
