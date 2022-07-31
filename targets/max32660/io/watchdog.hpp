@@ -5,8 +5,23 @@
 
 #include "max32660.h"
 
-namespace klib::max32660 {
+namespace klib::max32660::io::detail::watchdog {
+    // default type when using the port
+    template<uint32_t Wdt>
+    WDT0_Type *const port = nullptr;
+
+    // port when using the Wdt0
+    template<>
+    WDT0_Type *const port<0> = WDT0;
+}
+
+namespace klib::max32660::io {
+    template <typename Wdt>
     class watchdog {
+    protected:
+        // port to the Flc peripheral
+        static inline WDT0_Type *const port = detail::watchdog::port<Wdt::id>;
+
     public:
         // interrupt number
         constexpr static uint32_t irq_id = 17;
@@ -17,7 +32,7 @@ namespace klib::max32660 {
          */
         static void disable() {
             // clear the enable bit
-            WDT0->CTRL = 0;
+            port->CTRL = 0;
         }
 
         /**
@@ -26,8 +41,8 @@ namespace klib::max32660 {
          */
         static void feed() {
             // reset the counter by writing the reset sequence twice
-            WDT0->RST = 0xa5;
-            WDT0->RST = 0x5a;
+            port->RST = 0xa5;
+            port->RST = 0x5a;
         }
 
         /**
@@ -43,13 +58,13 @@ namespace klib::max32660 {
         template<bool Irq = true, uint8_t IrqPeriod = 0, bool Rst = false, uint8_t RstPeriod = 0>
         static void init() {
             // setup the parameters of the watchdog
-            WDT0->CTRL = (Irq << 10) | (IrqPeriod & 0xF) | (Rst << 11) | ((RstPeriod & 0xF) << 4);
+            port->CTRL = (Irq << 10) | (IrqPeriod & 0xF) | (Rst << 11) | ((RstPeriod & 0xF) << 4);
 
             // feed the watchdog before enabling the watchdog timer
             feed();
 
             // enable the watchdog
-            WDT0->CTRL |= (1 << 8);
+            port->CTRL |= (1 << 8);
         }
     };
 }

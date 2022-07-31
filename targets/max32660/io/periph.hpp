@@ -166,6 +166,14 @@ namespace klib::max32660::io::periph::tqfn_24 {
         using clk = detail::swd::swd<io::pins::package::tqfn_24::p13, detail::swd::mode::clk, io::detail::periph_func_2>;
     };
 
+    struct wdt0 {
+        // peripheral id (e.g wdt0, wdt1)
+        constexpr static uint32_t id = 0;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 17;
+    };
+
     struct uart0 {
         // peripheral id (e.g uart0, uart1)
         constexpr static uint32_t id = 0;
