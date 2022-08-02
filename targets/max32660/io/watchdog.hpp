@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include "max32660.h"
+#include <max32660.h>
 
 namespace klib::max32660::io::detail::watchdog {
     // default type when using the port

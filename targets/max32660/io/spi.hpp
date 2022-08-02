@@ -2,16 +2,16 @@
 #define KLIB_MAX32660_SPI_HPP
 
 #include <cstdint>
+
 #include <klib/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
 #include <klib/math.hpp>
-
-#include <clocks.hpp>
 #include <max32660.h>
 
 // disable the DMA define (TODO: switch over to a generate that does not generate defines)
 #undef DMA
 
+#include "clocks.hpp"
 #include "pio.hpp"
 
 namespace klib::max32660::io::detail::spi {

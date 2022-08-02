@@ -2,9 +2,9 @@
 #define KLIB_MAX32660_TIMER_HPP
 
 #include <klib/core_clock.hpp>
+#include <max32660.h>
 
-#include "max32660.h"
-#include <clocks.hpp>
+#include "clocks.hpp"
 
 namespace klib::max32660::io::detail::timer {
     // default type when using the port
