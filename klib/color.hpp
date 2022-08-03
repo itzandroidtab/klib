@@ -31,6 +31,9 @@ namespace klib {
     constexpr color black = {0x00, 0x00, 0x00, false};
     
     [[maybe_unused]]
+    constexpr color grey = {0xa0, 0xa0, 0xa0, false};
+
+    [[maybe_unused]]
     constexpr color red = {0xff, 0x00, 0x00, false};
 
     [[maybe_unused]]
