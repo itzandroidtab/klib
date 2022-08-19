@@ -9,7 +9,17 @@ extern "C" {
     // pointer to the end of the stack. Definition is done in the 
     // linkerscript. Only the address of the variable should be used. The
     // address points to the correct location of the variable
-    extern uint32_t __stack_end;
+    extern const uint32_t __stack_end;
+
+    // pointer to the start of the heap. Definition is done in the 
+    // linkerscript. Only the address of the variable should be used. The
+    // address points to the correct location of the variable
+    extern const uint32_t __heap_start;
+
+    // pointer to the end of the heap. Definition is done in the 
+    // linkerscript. Only the address of the variable should be used. The
+    // address points to the correct location of the variable
+    extern const uint32_t __heap_end;
 
     /**
      * @brief Generic reset handler that initializes the .bss and .data
