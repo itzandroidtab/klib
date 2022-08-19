@@ -230,7 +230,7 @@ namespace klib::hardware::display {
                 );
             }
 
-            static void set_cursor(const klib::vector2<uint32_t> &start_pos, const klib::vector2<uint32_t> &end_pos) {
+            static void set_cursor(const klib::vector2u &start_pos, const klib::vector2u &end_pos) {
                 // set cursor on correct position
                 set_cursor(start_pos.x, start_pos.y, end_pos.x, end_pos.y);
             }
@@ -250,7 +250,7 @@ namespace klib::hardware::display {
                 return klib::bswap(data); 
             }
 
-            constexpr static uint32_t position_to_buffer(const klib::vector2<uint32_t> &pos) {
+            constexpr static uint32_t position_to_buffer(const klib::vector2u &pos) {
                 // convert the xy position to a position in a array
                 return (pos.y * width) + pos.x;
             }
