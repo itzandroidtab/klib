@@ -237,8 +237,8 @@ namespace klib {
     };
 
     // some nice aliases
-    using vector2i = vector2<int_fast32_t>;
-    using vector2u = vector2<uint_fast32_t>;
+    using vector2i = vector2<int32_t>;
+    using vector2u = vector2<uint32_t>;
 }
 
 #endif

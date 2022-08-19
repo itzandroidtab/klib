@@ -36,16 +36,16 @@ namespace klib {
             fb.flush();
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const display::pixel_type raw) {
+        constexpr void set_pixel(const klib::vector2u position, const display::pixel_type raw) {
             // move the position with the offset
-            const klib::vector2<uint32_t> sub_position = (
-                position + klib::vector2<uint32_t>{XStart, YStart}
+            const klib::vector2u sub_position = (
+                position + klib::vector2u{XStart, YStart}
             );
 
             fb.set_pixel(sub_position, raw);
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
             // convert the color to raw
             const auto raw = display::color_to_raw(col);
 
@@ -96,22 +96,22 @@ namespace klib {
             fb.flush();
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const display::pixel_type raw) {
+        constexpr void set_pixel(const klib::vector2u position, const display::pixel_type raw) {
             // convert to the scaled position
-            const klib::vector2<uint32_t> scaled_position = (
-                position * klib::vector2<uint32_t>{XScale, YScale}
+            const klib::vector2u scaled_position = (
+                position * klib::vector2u{XScale, YScale}
             );
 
             // scale every pixel scale amount of times
             for (uint32_t y = 0; y < YScale; y++) {
                 for (uint32_t x = 0; x < XScale; x++) {
                     // set the pixel multiple times
-                    fb.set_pixel(scaled_position + klib::vector2<uint32_t>{x, y}, raw);
+                    fb.set_pixel(scaled_position + klib::vector2u{x, y}, raw);
                 }
             }
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
             // convert the color to raw
             const auto raw = display::color_to_raw(col);
 
@@ -161,24 +161,24 @@ namespace klib {
             fb.flush();
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const display::pixel_type raw) {
+        constexpr void set_pixel(const klib::vector2u position, const display::pixel_type raw) {
             // mirror using the parameters
             if constexpr (XMirror && YMirror) {
-                const klib::vector2<uint32_t> pos = (klib::vector2<uint32_t>(
+                const klib::vector2u pos = (klib::vector2u(
                     (display::width - 1), (display::height - 1)) - position
                 );
 
                 fb.set_pixel(pos, raw);
             }
             else if (XMirror) {
-                const klib::vector2<uint32_t> pos = (klib::vector2<uint32_t>(
+                const klib::vector2u pos = (klib::vector2u(
                     (display::width - 1) - position.x, position.y)
                 );
 
                 fb.set_pixel(pos, raw);
             }
             else if (YMirror) {
-                const klib::vector2<uint32_t> pos = (klib::vector2<uint32_t>(
+                const klib::vector2u pos = (klib::vector2u(
                     position.x, (display::height - 1) - position.y)
                 );
 
@@ -189,7 +189,7 @@ namespace klib {
             }
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
             // convert the color to raw
             const auto raw = display::color_to_raw(col);
 
@@ -225,7 +225,7 @@ namespace klib {
     class direct_framebuffer {
     protected:
         // cache for the where the cursor is located
-        klib::vector2<uint32_t> cursor;
+        klib::vector2u cursor;
     
     public:
         using display = Display;
@@ -242,9 +242,9 @@ namespace klib {
             // not used in the direct framebuffer
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const display::pixel_type raw) {
+        constexpr void set_pixel(const klib::vector2u position, const display::pixel_type raw) {
             // limit the input to the display size
-            const auto pos = klib::vector2<uint32_t>(
+            const auto pos = klib::vector2u(
                 klib::min(position.x, display::width - 1), klib::min(position.y, display::height - 1)
             );
 
@@ -266,11 +266,11 @@ namespace klib {
 
             if constexpr (AutoIncrement) {
                 // update the cursor on the screen
-                cursor = pos + klib::vector2<uint32_t>(1, 0);
+                cursor = pos + klib::vector2u(1, 0);
             }
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
                 return;
@@ -326,17 +326,17 @@ namespace klib {
         constexpr void flush() {
             // set the cursor to the start of the display
             display::set_cursor(
-                klib::vector2<uint32_t>{0, 0}, 
-                klib::vector2<uint32_t>{display::width - 1, display::height - 1}
+                klib::vector2u{0, 0}, 
+                klib::vector2u{display::width - 1, display::height - 1}
             );
 
             // write the buffer to the screen
             display::raw_write_screen(buffer, display::width * display::height);
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const display::pixel_type raw) {
+        constexpr void set_pixel(const klib::vector2u position, const display::pixel_type raw) {
             // limit the input to the display size
-            const auto pos = klib::vector2<uint32_t>(
+            const auto pos = klib::vector2u(
                 klib::min(position.x, display::width - 1), klib::min(position.y, display::height - 1)
             );
 
@@ -344,7 +344,7 @@ namespace klib {
             buffer[display::position_to_buffer(pos)] = raw;
         }
 
-        constexpr void set_pixel(const klib::vector2<uint32_t> position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
                 return;
