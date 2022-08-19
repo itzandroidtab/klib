@@ -43,6 +43,9 @@ namespace klib {
     constexpr color blue = {0x00, 0x00, 0xff, false};
 
     [[maybe_unused]]
+    constexpr color yellow = {0xff, 0xff, 0x00, false};
+
+    [[maybe_unused]]
     constexpr color transparent = {0x00, 0x00, 0x00, true};
 }
 
