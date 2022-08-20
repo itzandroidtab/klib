@@ -2,9 +2,12 @@
 #define KLIB_MAX32660_TIMER_HPP
 
 #include <klib/core_clock.hpp>
+#include <klib/math.hpp>
+
 #include <max32660.h>
 
 #include "clocks.hpp"
+#include "pins.hpp"
 
 namespace klib::max32660::io::detail::timer {
     // default type when using the port
@@ -96,6 +99,11 @@ namespace klib::max32660::io {
             Irq::template enable_irq<Timer::irq_id>();
         }
 
+        /**
+         * @brief Set the frequency of the timer
+         * 
+         * @tparam Frequency 
+         */
         template <uint32_t Frequency>
         static void set_frequency() {
             // make sure the frequency is valid
@@ -150,6 +158,127 @@ namespace klib::max32660::io {
          */
         static void clear_counter() {
             port->CNT = 1;
+        }
+    };
+
+    template <typename Timer, uint32_t Frequency = 50'000, uint8_t Bits = 8>
+    class pin_timer {
+    protected:
+        // port to the timer peripheral
+        static inline TMR0_Type *const port = io::detail::timer::port<Timer::id>;
+
+        // check if the amount of bits is valid
+        static_assert(Bits >= 1 && Bits <= 16, "Amount of bits must be >= 1 && <= 16");
+
+        // make sure the frequency is valid
+        static_assert(Frequency != 0, "Timer frequency cannot be 0");
+
+        // multiplier for the frequency
+        constexpr static uint32_t multiplier = (klib::exp2(Bits) - 1);
+
+        /**
+         * @brief Calculate the stepsize used in the set functions
+         * 
+         * @return float 
+         */
+        static float calculate_stepsize() {
+            // get the peripheral clock
+            const uint32_t periph_clock = klib::clock::get() / 2;
+
+            // calculate the maximum compare value
+            const uint32_t cmp = (periph_clock / Frequency) + 1;
+
+            // calculate the step size
+            return klib::max(static_cast<float>(cmp) / multiplier, 1.f);
+        }
+
+    public:
+        /**
+         * @brief Init the timer pin.
+         * 
+         * @tparam Frequency 
+         */
+        template <typename Irq>
+        static void init() {
+            // enable the clock on the timer peripheral
+            clocks::enable<Timer>();
+
+            // disable the timer
+            port->CN &= ~(0x1 << 7);
+
+            // setup the timer (pwm mode and prescaler of 1)
+            port->CN = (static_cast<uint8_t>(detail::timer::mode::pwm));
+
+            // init the gpio pin as a output from the timer
+            detail::set_peripheral<typename Timer::tmr::pin, typename Timer::tmr::periph>();
+
+            // clear the prescaler
+            port->CN &= ~((0x7 << 3) | (0x1 << 8));
+
+            // set the new prescaler
+            port->CN |= ((0x00 << 3) | (0x0 << 8));
+
+            // get the peripheral clock
+            const uint32_t periph_clock = klib::clock::get() / 2;
+
+            // calculate the maximum compare value (minimum of 1)
+            port->CMP = (periph_clock / Frequency) + 1;
+        }
+
+        /**
+         * @brief Disable the timer pin
+         * 
+         */
+        static void disable() {
+            // disable the timer
+            timer<Timer>::disable();
+        }
+
+        /**
+         * @brief Enable the timer pin
+         * 
+         */
+        static void enable() {
+            // enable the timer
+            timer<Timer>::enable();
+        }
+
+        /**
+         * @brief Set the dutycycle of the timer pin
+         * 
+         * @tparam Dutycycle 
+         */
+        template <uint16_t Dutycycle>
+        static void set() {
+            // set the dutycycle
+            port->PWM = calculate_stepsize() * (Dutycycle & multiplier);
+        }
+
+        /**
+         * @brief Set the dutycycle of the timer pin
+         * 
+         * @param dutycycle
+         */
+        static void set(uint16_t dutycycle) {
+            // set the dutycycle
+            port->PWM = calculate_stepsize() * (dutycycle & multiplier);
+        }
+
+        /**
+         * @brief Returns the current value of a counter
+         * 
+         * @return uint32_t 
+         */
+        static uint32_t get_counter() {
+            return timer<Timer>::get_counter();
+        }
+
+        /**
+         * @brief Clear the counter in the timer
+         * 
+         */
+        static void clear_counter() {
+            timer<Timer>::clear_counter();
         }
     };
 }
