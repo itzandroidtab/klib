@@ -3,7 +3,7 @@
 
 #include <io/pins.hpp>
 
-namespace klib::max32660::io::pins::board::evsys {
+namespace klib::max32660::io::pins::board::temp_camera {
     // using the tqfn_24 pins
 
     // display pins
