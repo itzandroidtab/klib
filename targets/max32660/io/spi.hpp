@@ -73,16 +73,6 @@ namespace klib::max32660::io {
             }
         }
 
-        static uint8_t convert_bits(const uint8_t bits) {
-            // convert the value back to the amount of bits
-            if (bits == 0) {
-                return 16;
-            }
-            else {
-                return bits;
-            }
-        }
-
         template <uint32_t Frequency>
         static clock_info calculate_clock() {
             // get the amount of ticks for the spi frequency
