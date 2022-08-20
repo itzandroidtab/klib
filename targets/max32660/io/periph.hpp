@@ -170,30 +170,6 @@ namespace klib::max32660::io::periph::wlp {
 
         using tmr = detail::tc::tc<io::pins::package::wlp::pd2, detail::tc::mode::tmr, io::detail::periph_func_3>;
     };
-
-    struct tc1 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 1;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 16;
-    };
-
-    struct tc2 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 2;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 17;
-    };
-
-    struct dma0 {
-        // peripheral id (e.g dma0, dma1)
-        constexpr static uint32_t id = 0;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 5;
-    };
 }
 
 namespace klib::max32660::io::periph::tqfn_24 {
