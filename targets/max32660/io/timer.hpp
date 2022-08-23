@@ -71,12 +71,10 @@ namespace klib::max32660::io {
         /**
          * @brief Init the provided timer
          * 
-         * @tparam Irq 
-         * @tparam Frequency 
-         * @param callback 
+         * @param irq 
+         * @param frequency 
          */
-        template <typename Irq, uint32_t Frequency = 100'000>
-        static void init(const interrupt_callback& irq) {
+        static void init(const interrupt_callback& irq, const uint32_t frequency) {
             // enable the clock on the timer peripheral
             clocks::enable<Timer>();
 
@@ -87,28 +85,24 @@ namespace klib::max32660::io {
             port->CN = (static_cast<uint8_t>(detail::timer::mode::continuous));
 
             // set the frequency of the timer
-            set_frequency<Frequency>();
+            set_frequency(frequency);
 
             // register the callback
             callback = irq;
 
             // register our handler
-            Irq::template register_irq<Timer::irq_id>(isr_handler);
+            max32660::irq::template register_irq<Timer::irq_id>(isr_handler);
 
             // enable the interrupt
-            Irq::template enable_irq<Timer::irq_id>();
+            max32660::template enable_irq<Timer::irq_id>();
         }
 
         /**
          * @brief Set the frequency of the timer
          * 
-         * @tparam Frequency 
+         * @param Frequency 
          */
-        template <uint32_t Frequency>
-        static void set_frequency() {
-            // make sure the frequency is valid
-            static_assert(Frequency != 0, "Timer frequency cannot be 0");
-
+        static void set_frequency(const uint32_t frequency) {
             // clear the prescaler
             port->CN &= ~((0x7 << 3) | (0x1 << 8));
 
@@ -119,7 +113,7 @@ namespace klib::max32660::io {
             const auto periph_clock = klib::clock::get() / 2;
 
             // calculate cmp value for the timer
-            const uint32_t cmp = (periph_clock / Frequency) + 1;
+            const uint32_t cmp = (periph_clock / frequency) + 1;
 
             // set the compare value
             port->CMP = cmp;
@@ -193,12 +187,18 @@ namespace klib::max32660::io {
         }
 
     public:
+        // provide the amount of bits used and the frequency for if
+        // someone wants to set the dutycycle
+        [[maybe_unused]]
+        constexpr static uint32_t bits = Bits;
+
+        [[maybe_unused]]
+        constexpr static uint32_t frequency = Frequency;
+
         /**
          * @brief Init the timer pin.
          * 
-         * @tparam Frequency 
          */
-        template <typename Irq>
         static void init() {
             // enable the clock on the timer peripheral
             clocks::enable<Timer>();
