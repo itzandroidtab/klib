@@ -32,6 +32,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Custom commands for processing the build binary and show some statistics and debug info 
 add_custom_command(TARGET kproject DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-objcopy ARGS -O binary -R .bss -R .stack klib.elf klib.bin)
-add_custom_command(TARGET kproject DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-objdump ARGS -S klib.elf > klib.lss)
-add_custom_command(TARGET kproject DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-objdump ARGS -sj .data -sj .rodata -S klib.elf > klib.memory)
+add_custom_command(TARGET kproject DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-objdump ARGS -C -S klib.elf > klib.lss)
+add_custom_command(TARGET kproject DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-objdump ARGS -C -sj .bss -sj .data -sj .rodata -S klib.elf > klib.memory)
 add_custom_command(TARGET kproject DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-size ARGS -A klib.elf -x)
