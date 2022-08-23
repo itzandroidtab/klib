@@ -20,14 +20,24 @@ namespace klib {
     namespace target = klib::TARGET_CPU;
 }
 
-// import our board files when we have them
-#if defined(TARGET_CPU) && defined(TARGET_BOARD)
+// check if a cpu is defined
+#if defined(TARGET_CPU)
     // define to expand strings
     #define XSTR(x) #x
     #define STR(x) XSTR(x)
 
-    // use define to expand target board define
-    #include STR(board/TARGET_BOARD/pins.hpp)
+    // include the generated source file
+    #include STR(TARGET_CPU.hpp)
+
+    // import our board files when we have them
+    #if defined(TARGET_BOARD)
+        // use define to expand target board define
+        #include STR(board/TARGET_BOARD/pins.hpp)
+    #endif
+
+    // clear the defines
+    #undef XSTR
+    #undef STR
 #endif
 
 #endif
