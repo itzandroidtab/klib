@@ -2,6 +2,7 @@
 #define KLIB_IRQ_HPP
 
 #include <cstdint>
+
 #include <klib/entry/entry.hpp>
 
 namespace klib {

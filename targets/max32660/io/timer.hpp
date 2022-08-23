@@ -4,7 +4,7 @@
 #include <klib/core_clock.hpp>
 #include <klib/math.hpp>
 
-#include <max32660.h>
+#include <max32660.hpp>
 
 #include "clocks.hpp"
 #include "pins.hpp"

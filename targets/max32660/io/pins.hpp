@@ -3,7 +3,7 @@
 
 #include <type_traits>
 
-#include "max32660.h"
+#include <max32660.hpp>
 #include "pio.hpp"
 
 namespace klib::max32660::io::pins::detail {

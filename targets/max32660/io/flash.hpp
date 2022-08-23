@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <klib/core_clock.hpp>
 
-#include <max32660.h>
+#include <max32660.hpp>
 
 namespace klib::max32660::io::detail::flash {
     // default type when using the port

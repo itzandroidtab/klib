@@ -6,7 +6,7 @@
 #include <klib/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
 #include <klib/math.hpp>
-#include <max32660.h>
+#include <max32660.hpp>
 
 // disable the DMA define (TODO: switch over to a generate that does not generate defines)
 #undef DMA
