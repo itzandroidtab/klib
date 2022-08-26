@@ -85,27 +85,65 @@ namespace klib::max32660::io {
         template<bool Val>
         constexpr static void set() {
             if constexpr (Val) {
-                // enable the gpio output
+                // setup the gpio as a output
                 pins::detail::port<typename Pin::port>->OUT_EN_SET = pins::detail::mask<Pin>;
 
-                pins::detail::port<typename Pin::port>->OUT_SET = pins::detail::mask<Pin>;
+                // enable the gpio output
+                pin_out<Pin>::template set<true>();
             }
             else {
-                // disable the gpio output
+                // clear the gpio output flag
                 pins::detail::port<typename Pin::port>->OUT_EN_CLR = pins::detail::mask<Pin>;
             }
         }
 
         constexpr static void set(const bool val) {
             if (val) {
+                // setup the gpio as a output
+                pins::detail::port<typename Pin::port>->OUT_EN_SET = pins::detail::mask<Pin>;
+
+                // enable the gpio output
+                pin_out<Pin>::template set<true>();
+            }
+            else {
+                // clear the gpio output flag
+                pins::detail::port<typename Pin::port>->OUT_EN_CLR = pins::detail::mask<Pin>;
+            }
+        }
+    };
+
+    template<typename Pin>
+    class pin_od {
+    public:
+        constexpr static void init() {
+            // clear all the alternate functions
+            detail::set_peripheral<Pin, io::detail::periph_func_none>();
+        }
+
+        template<bool Val>
+        constexpr static void set() {
+            if constexpr (Val) {
+                // disable the gpio output
+                pins::detail::port<typename Pin::port>->OUT_EN_CLR = pins::detail::mask<Pin>;
+            }
+            else {
                 // enable the gpio output
                 pins::detail::port<typename Pin::port>->OUT_EN_SET = pins::detail::mask<Pin>;
 
-                pins::detail::port<typename Pin::port>->OUT_SET = pins::detail::mask<Pin>;
+                pin_out<Pin>::template set<false>();
             }
-            else {
+        }
+
+        constexpr static void set(const bool val) {
+            if (val) {
                 // disable the gpio output
                 pins::detail::port<typename Pin::port>->OUT_EN_CLR = pins::detail::mask<Pin>;
+            }
+            else {
+                // enable the gpio output
+                pins::detail::port<typename Pin::port>->OUT_EN_SET = pins::detail::mask<Pin>;
+
+                pin_out<Pin>::template set<false>();
             }
         }
     };
@@ -147,7 +185,7 @@ namespace klib::max32660::io {
     class pin_in_out_oc {
     public:
         constexpr static void init() {
-            // init using pin_out as we can read the pin anyway
+            // init using pin_oc as we can read the pin anyway
             pin_oc<Pin>::init();
         }
 
@@ -173,6 +211,39 @@ namespace klib::max32660::io {
 
         constexpr static void set(const bool val) {
             pin_oc<Pin>::set(val);
+        }
+    };
+
+    template<typename Pin>
+    class pin_in_out_od {
+    public:
+        constexpr static void init() {
+            // init using pin_od as we can read the pin anyway
+            pin_od<Pin>::init();
+        }
+
+        constexpr static bool get() {
+            // get the status of the pin
+            return pin_in<Pin>::get();
+        }
+
+        template <bool Val>
+        constexpr static void pullup_enable() {
+            pin_in<Pin>::template pullup_enable<Val>();
+        }
+
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            pin_in<Pin>::template pulldown_enable<Val>();
+        }
+
+        template<bool Val>
+        constexpr static void set() {
+            pin_od<Pin>::template set<Val>();
+        }
+
+        constexpr static void set(const bool val) {
+            pin_od<Pin>::set(val);
         }
     };
 }
