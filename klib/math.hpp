@@ -232,12 +232,13 @@ namespace klib {
      * @brief Get the lowest value between the two inputs
      * 
      * @tparam T 
+     * @tparam G
      * @param a 
      * @param b 
-     * @return constexpr T 
+     * @return constexpr auto 
      */
-    template<typename T>
-    constexpr T min(const T a, const T b) {
+    template<typename T, typename G>
+    constexpr auto min(const T a, const G b) {
         return (a > b) ? b : a;
     }
 
@@ -245,12 +246,13 @@ namespace klib {
      * @brief Get the max between the two input values
      * 
      * @tparam T 
+     * @tparam G
      * @param a 
      * @param b 
-     * @return constexpr T 
+     * @return constexpr auto 
      */
-    template<typename T>
-    constexpr T max(const T a, const T b) {
+    template<typename T, typename G>
+    constexpr auto max(const T a, const G b) {
         return (a > b) ? a : b;
     }
 
