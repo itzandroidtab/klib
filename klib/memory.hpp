@@ -2,6 +2,7 @@
 #define KLIB_MEMORY_HPP
 
 #include <cstdint>
+#include <cstdlib>
 
 #include <klib/entry/entry.hpp>
 #include <klib/math.hpp>
