@@ -24,6 +24,12 @@ namespace klib::detail {
      */
     template <typename Timer>
     static void delay_impl(const time::us time) {
+        // do nothing when the value is 0
+        if (time.value == 0) {
+            // do a early return
+            return;
+        }
+
         // reset the flag we are waiting on
         done<Timer> = false;
 
