@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <klib/klib.hpp>
+// #include <klib/klib.hpp>
 #include <klib/math.hpp>
 
 namespace klib {
@@ -46,13 +46,13 @@ namespace klib {
          */
         void handle_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
             // Reverse the bit order for the count trailing zero's.
-            uint32_t masked_register = klib::rbit(status_register & interrupt_mask & size_mask);
+            uint32_t masked_register = status_register & interrupt_mask & size_mask;
 
             // amount of trailing zeros in the status register
             uint8_t trailing_zeros = 0;
 
             // loop until we dont have any bits set anymore (32 == zero's)
-            while ((trailing_zeros = klib::clz(masked_register)) < 32) {
+            while ((trailing_zeros = klib::ctz(masked_register)) < 32) {
                 // get the current bit to handle in the callback list
                 const auto bit = static_cast<uint8_t>(trailing_zeros);
 
