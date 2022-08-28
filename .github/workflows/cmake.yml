@@ -35,10 +35,12 @@ jobs:
         run: |
           echo "Klib folder"
           ls ${{github.workspace}}/klib/
+          find ${{github.workspace}}/klib/ -regex ".*\.hpp$"
           find ${{github.workspace}}/klib/ -regex ".*\.hpp$" -exec echo "#import \"{}\"" >> ${{github.workspace}}/project/main.cpp \;
 
           echo "Targets folder"
           ls ${{github.workspace}}/targets/
+          find ${{github.workspace}}/targets/${{matrix.cpu}} -regex ".*\.hpp$"
           find ${{github.workspace}}/targets/${{matrix.cpu}} -regex ".*\.hpp$" -exec echo "#import \"{}\"" >> ${{github.workspace}}/project/main.cpp \;
 
           echo "int main() {return 0;}" >${{github.workspace}}/project/main.cpp
