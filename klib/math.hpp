@@ -64,6 +64,21 @@ namespace klib {
     }
 
     /**
+     * @brief Count trailing zero's
+     * 
+     * @param data 
+     * @return constexpr uint32_t 
+     */
+    constexpr uint32_t ctz(const uint32_t data) {
+        // handle the 0 case as buildin_ctz(0) is undefined
+        if (data == 0x00) {
+            return 32;
+        }
+
+        return __builtin_ctz(data);
+    }
+
+    /**
      * @brief Return the amount of bits set to 1
      * 
      * @param data 
