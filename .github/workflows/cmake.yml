@@ -31,8 +31,11 @@ jobs:
         run: arm-none-eabi-gcc --version
 
       - name: Create main
-        # for now create a main file to compile the libraries
-        run: echo "int main() {return 0;}" >${{github.workspace}}/project/main.cpp
+        # create a main file that includes all the header files for the current target
+        run: |
+          find ${{github.workspace}}/klib/ -regex ".*\.h$" -exec echo "#import \"{}\"" >> main.cpp \;
+          find ${{github.workspace}}/targets/${{matrix.cpu}} -regex ".*\.h$" -exec echo "#import \"{}\"" >> main.cpp \;
+          echo "int main() {return 0;}" >${{github.workspace}}/project/main.cpp
       
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
