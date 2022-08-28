@@ -30,6 +30,9 @@ namespace klib {
         // array with all the function callbacks. 
         interrupt_callback callbacks[Size] = {};
 
+        // create the mask for the input size (uint64_t should be optimized away during compilation)
+        constexpr static uint32_t size_mask = static_cast<uint32_t>(klib::exp2<uint64_t>(Size) - 1);
+
     public:
         /**
          * @brief Handle all the bits in the status register (masked by the interrupt mask) by 
@@ -42,9 +45,6 @@ namespace klib {
          * @param interrupt_mask 
          */
         void handle_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
-            // create the mask for the input size (uint64_t should be optimized away during compilation)
-            constexpr static uint32_t size_mask = static_cast<uint32_t>(klib::exp2<uint64_t>(Size) - 1);
-
             // Reverse the bit order for the count trailing zero's.
             uint32_t masked_register = klib::rbit(status_register & interrupt_mask & size_mask);
 
