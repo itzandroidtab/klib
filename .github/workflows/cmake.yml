@@ -33,17 +33,10 @@ jobs:
       - name: Create main
         # create a main file that includes all the header files for the current target
         run: |
-          echo "Klib folder"
-          ls ${{github.workspace}}/klib/
-          find ${{github.workspace}}/klib/ -regex ".*\.hpp$"
           find ${{github.workspace}}/klib/ -regex ".*\.hpp$" -exec echo "#import \"{}\"" >> ${{github.workspace}}/project/main.cpp \;
-
-          echo "Targets folder"
-          ls ${{github.workspace}}/targets/
-          find ${{github.workspace}}/targets/${{matrix.cpu}} -regex ".*\.hpp$"
           find ${{github.workspace}}/targets/${{matrix.cpu}} -regex ".*\.hpp$" -exec echo "#import \"{}\"" >> ${{github.workspace}}/project/main.cpp \;
 
-          echo "int main() {return 0;}" >${{github.workspace}}/project/main.cpp
+          echo "int main() {return 0;}" >> ${{github.workspace}}/project/main.cpp
 
           echo "Contents of main:"
           cat ${{github.workspace}}/project/main.cpp
