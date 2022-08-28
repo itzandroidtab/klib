@@ -51,20 +51,22 @@ namespace klib {
         static volatile inline uint32_t *const vtor = ((volatile uint32_t*)0xE000ED08);
 
         /**
+         * @brief Reserved handler. Used to fill the vector table with a valid pointer
+         * 
+         */
+        static void reserved() {
+            // loop as some arm interrupt has happend that is not registered. Probably 
+            // a hardfault, busfault or a usagefault.
+            while (true) {}
+        }
+
+        /**
          * @brief Default handler that just returns as soon as its called
          * 
          */
         static void default_handler() {
             // return straight away
             return;
-        }
-
-        /**
-         * @brief Reserved handler. Used to fill the vector table with a valid pointer
-         * 
-         */
-        static void reserved() {
-            // do nothing
         }
 
     public:
