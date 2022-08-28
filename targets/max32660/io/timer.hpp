@@ -38,14 +38,18 @@ namespace klib::max32660::io::detail::timer {
         gated = 0x6,
         capture_compare = 0x7
     };
-}
 
-namespace klib::max32660::io {
-    template <typename Timer>
-    class timer {
+    /**
+     * @brief Base timer for the max32660
+     * 
+     * @tparam Timer 
+     * @tparam Mode 
+     */
+    template <typename Timer, mode Mode = mode::continuous>
+    class base_timer {
     protected:
         // port to the timer peripheral
-        static inline TMR0_Type *const port = io::detail::timer::port<Timer::id>;
+        static inline TMR0_Type *const port = port<Timer::id>;
 
         // using for the array of callbacks
         using interrupt_callback = void (*)();
@@ -81,8 +85,8 @@ namespace klib::max32660::io {
             // disable the timer
             port->CN &= ~(0x1 << 7);
 
-            // setup the timer (continuous mode and prescaler of 1)
-            port->CN = (static_cast<uint8_t>(detail::timer::mode::continuous));
+            // setup the timer (provided mode and prescaler of 1)
+            port->CN = (static_cast<uint8_t>(Mode));
 
             // set the frequency of the timer
             set_frequency(frequency);
@@ -90,11 +94,18 @@ namespace klib::max32660::io {
             // register the callback
             callback = irq;
 
-            // register our handler
-            max32660::irq::template register_irq<Timer::irq_id>(isr_handler);
+            // make sure the irq is valid
+            if (irq) {
+                // register our handler
+                max32660::irq::template register_irq<Timer::irq_id>(isr_handler);
 
-            // enable the interrupt
-            max32660::template enable_irq<Timer::irq_id>();
+                // enable the interrupt
+                max32660::template enable_irq<Timer::irq_id>();
+            }
+            else {
+                // disable the interrupt
+                max32660::template disable_irq<Timer::irq_id>();
+            }
         }
 
         /**
@@ -154,7 +165,34 @@ namespace klib::max32660::io {
             port->CNT = 1;
         }
     };
+}
 
+namespace klib::max32660::io {
+    /**
+     * @brief Basic timer. Uses interrupts to call a callback.
+     * 
+     * @tparam Timer 
+     */
+    template <typename Timer>
+    using timer = detail::timer::base_timer<Timer, detail::timer::mode::continuous>;
+
+    /**
+     * @brief Oneshot timer. Uses interrupt to call a callback once.
+     * 
+     * @tparam Timer 
+     */
+    template <typename Timer>
+    using oneshot_timer = detail::timer::base_timer<Timer, detail::timer::mode::continuous>;
+
+    /**
+     * @brief Pin that uses a timer to toggle the output.
+     * 
+     * @warning When disabling the timer the output of the gpio is not changed.
+     * 
+     * @tparam Timer 
+     * @tparam Frequency 
+     * @tparam Bits 
+     */
     template <typename Timer, uint32_t Frequency = 50'000, uint8_t Bits = 8>
     class pin_timer {
     protected:
