@@ -4,15 +4,20 @@
 #include <cstdint>
 
 #include <klib/entry/entry.hpp>
+#include <klib/math.hpp>
 
 namespace klib {
     /**
      * @brief IRQ handler that relocates the vector table.
      * 
+     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
+     * default arm interrupts). For more interrupts the amount should be aligned to the next
+     * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
+     * 
      * @tparam IrqCount 
-     * @tparam Allignment 
+     * @tparam Alignment 
      */
-    template <uint32_t IrqCount, uint32_t Allignment>
+    template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * 4)), (32 * 4))>
     class irq {
     public:
         // using for the array of callbacks
@@ -45,7 +50,7 @@ namespace klib {
         
     private:
         // array with all the function callbacks. 
-        alignas(Allignment) static inline volatile interrupt_callback callbacks[IrqCount] = {};
+        alignas(Alignment) static inline volatile interrupt_callback callbacks[IrqCount] = {};
 
         // pointer to the vector table offset register
         static volatile inline uint32_t *const vtor = ((volatile uint32_t*)0xE000ED08);
