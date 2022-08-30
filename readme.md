@@ -1,4 +1,4 @@
-# C++ cmake library for cortex hardware
+# C++ cortex-m hardware library
 
 ![klib library](https://github.com/itzandroidtab/klib/actions/workflows/cmake.yml/badge.svg)
 
