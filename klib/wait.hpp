@@ -70,7 +70,7 @@ namespace klib {
 
         // buys wait until the time has ran out
         for (uint32_t i = 0; i < msec.value; i++) {
-            for (volatile int j = 0; j < interate_cycles; j += 36) {
+            for (volatile int j = 0; j < interate_cycles; j = j + 36) {
                 asm("NOP");
             }
         }
