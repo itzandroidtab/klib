@@ -62,6 +62,9 @@ target_compile_features(target_cpu PUBLIC cxx_std_20)
 # set the target_cpu for klib
 target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=stm32h723")
 
+# add target specific compile options
+target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile>)
+
 # link to klib and target_cpu_options
 target_link_libraries(target_cpu PUBLIC target_cpu_options)
 target_link_libraries(target_cpu PUBLIC klib)
