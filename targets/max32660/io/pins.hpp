@@ -3,8 +3,8 @@
 
 #include <type_traits>
 
-#include <max32660.hpp>
 #include "pio.hpp"
+#include <max32660.hpp>
 
 namespace klib::max32660::io::pins::detail {
     // get the pin mask of a pin number

@@ -8,7 +8,7 @@
 #include <klib/math.hpp>
 #include <max32660.hpp>
 
-// disable the DMA define (TODO: switch over to a generate that does not generate defines)
+// disable the DMA define (TODO: switch over to a generator that does not generate defines)
 #undef DMA
 
 #include "clocks.hpp"
@@ -121,17 +121,120 @@ namespace klib::max32660::io {
         }
 
         /**
-         * @brief Write data to the fifo register. Maximum of fifo_size of bytes is allowed
+         * @brief Write size amount of data to the fifo buffer
          * 
          * @param data 
          * @param size 
+         * @param transmitted 
+         * @return uint16_t 
          */
-        static void write_fifo(const uint8_t *const data, const uint8_t size) {
-            for (uint32_t i = 0; i < size; i++) {
-                // write to the fifo
-                port->DATA8[0] = data[i];
+        static uint16_t write_fifo(const uint8_t *const data, const uint8_t size, const uint16_t transmitted) {
+            // get the amount of space available in the fifo
+            const uint8_t available_bytes = (fifo_size - (port->DMA >> 8) & 0x7f);
+
+            // skip if we cannot write anything
+            if (!available_bytes) {
+                return 0;
             }
+
+            // get the amount of data we can transfer at once
+            const uint32_t t = klib::min(size - transmitted, static_cast<uint32_t>(available_bytes));
+
+            // check if we need to write something
+            if (!t) {
+                return 0;
+            }
+
+            // write using the most optimal size
+            for (uint32_t i = 0; i < t; ) {
+                if ((t - i) >= 3) {
+                    // write 4 bytes at the time if we can
+                    port->DATA32 = (*reinterpret_cast<const uint32_t *const>(&data[transmitted + i]));
+
+                    // move 4 bytes
+                    i += 4;
+                }
+                else if ((t - i) >= 2) {
+                    // write 2 bytes at the time if we can
+                    port->DATA16[0] = (*reinterpret_cast<const uint16_t *const>(&data[transmitted + i]));
+
+                    // move 2 bytes
+                    i += 2;
+                }
+                else {
+                    // write 1 byte at the time
+                    port->DATA8[0] = data[transmitted + i];
+
+                    // move 1 byte at the time
+                    i++;
+                }
+            }
+
+            return t;
         }
+
+        /**
+         * @brief Read size amount of data from the fifo buffer
+         * 
+         * @param data 
+         * @param size 
+         * @param received 
+         * @return uint16_t 
+         */
+        static uint16_t read_fifo(uint8_t *const data, const uint8_t size, const uint16_t received) {
+            // get the amount of space available in the fifo
+            const uint8_t available_bytes = ((port->DMA >> 24) & 0x7f);
+
+            // skip if we cannot write anything
+            if (!available_bytes) {
+                return 0;
+            }
+
+            // get the amount of data we can read at once
+            const uint32_t t = klib::min(size - received, static_cast<uint32_t>(available_bytes));
+
+            // check if we need to read something
+            if (!t) {
+                return 0;
+            }
+
+            // read using the most optimal size
+            for (uint32_t i = 0; i < t; ) {
+                if ((t - i) >= 3) {
+                    // read 4 bytes at the time if we can
+                    (*reinterpret_cast<uint32_t *const>(&data[received + i])) = port->DATA32;
+
+                    // move 4 bytes
+                    i += 4;
+                }
+                else if ((t - i) >= 2) {
+                    // read 2 bytes at the time if we can
+                    (*reinterpret_cast<uint16_t *const>(&data[received + i])) = port->DATA16[0];
+
+                    // move 2 bytes
+                    i += 2;
+                }
+                else {
+                    // read 1 byte at the time
+                    data[received + i] = port->DATA8[0];
+
+                    // move 1 byte at the time
+                    i++;
+                }
+            }
+
+            return t;
+        }
+
+        /**
+         * @brief Wait until the transaction is done
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool is_done() {
+            return (port->INT_FL & (0x1 << 11));
+        } 
 
     public:
         template <
@@ -183,6 +286,69 @@ namespace klib::max32660::io {
             port->SS_TIME = (0x1 << 16) | (0x1);
         }
 
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         * @param size 
+         */
+        static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
+            // clear the fifo buffers
+            port->DMA |= (0x1 << 23) | (0x1 << 7);
+
+            // clear the master data transmission done flag
+            port->INT_FL = (0x1 << 11);
+
+            // enable the transmit fifo port
+            setup_fifo<true, true>();
+
+            // set the amount of character we want to receive/write
+            port->CTRL1 = size;
+
+            // amount of data received/transmitted
+            uint32_t transmitted = 0;
+            uint32_t received = 0;
+
+            bool started = false;
+
+            while ((size - transmitted) > 0 || (size - received) > 0) {
+                // write the tx data
+                const uint16_t t = write_fifo(tx, size, transmitted);
+
+                // read the rx data
+                const uint16_t r = read_fifo(rx, size, received);
+
+                // check if we did something
+                if (!t && !r) {
+                    continue;
+                }
+
+                // check if the transmission is already started
+                if (!started) {
+                    // start the transmission
+                    port->CTRL0 |= (0x1 << 5);
+
+                    started = true;
+                }
+
+                // add the amount of data we have transmitted
+                transmitted += t;
+                received += r;
+            }
+
+            // wait until we are done
+            while (!is_done()) {
+                // do nothing
+            }
+        }
+
+        /**
+         * @brief Write to the spi bus
+         * 
+         * @param data 
+         * @param size 
+         */
         static void write(const uint8_t *const data, const uint16_t size) {
             // clear the fifo buffers
             port->DMA |= (0x1 << 23) | (0x1 << 7);
@@ -200,19 +366,13 @@ namespace klib::max32660::io {
             bool started = false;
 
             while ((size - transmitted) > 0) {
-                // get the amount of space available in the fifo
-                const uint8_t available_bytes = (fifo_size - (port->DMA >> 8) & 0x7f);
+                // write the tx data
+                const uint16_t t = write_fifo(data, size, transmitted);
 
-                // skip if we cannot write anything
-                if (!available_bytes) {
+                // check if we did something
+                if (!t) {
                     continue;
                 }
-
-                // get the amount of data we can transfer at once
-                const uint32_t t = klib::min(size - transmitted, static_cast<uint32_t>(available_bytes));
-
-                // write the data to the fifo
-                write_fifo(&data[transmitted], t);
 
                 // check if the transmission is already started
                 if (!started) {
@@ -227,11 +387,10 @@ namespace klib::max32660::io {
             }
 
             // wait until we are done
-            while (!(port->INT_FL & (0x1 << 11))) {
+            while (!is_done()) {
                 // do nothing
             }
         }
-
     };
 
     template <typename Spi>
