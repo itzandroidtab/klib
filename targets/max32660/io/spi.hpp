@@ -128,7 +128,7 @@ namespace klib::max32660::io {
          * @param transmitted 
          * @return uint16_t 
          */
-        static uint16_t write_fifo(const uint8_t *const data, const uint8_t size, const uint16_t transmitted) {
+        static uint16_t write_fifo(const uint8_t *const data, const uint16_t size, const uint16_t transmitted) {
             // get the amount of space available in the fifo
             const uint8_t available_bytes = (fifo_size - (port->DMA >> 8) & 0x7f);
 
@@ -145,29 +145,10 @@ namespace klib::max32660::io {
                 return 0;
             }
 
-            // write using the most optimal size
-            for (uint32_t i = 0; i < t; ) {
-                if ((t - i) >= 3) {
-                    // write 4 bytes at the time if we can
-                    port->DATA32 = (*reinterpret_cast<const uint32_t *const>(&data[transmitted + i]));
-
-                    // move 4 bytes
-                    i += 4;
-                }
-                else if ((t - i) >= 2) {
-                    // write 2 bytes at the time if we can
-                    port->DATA16[0] = (*reinterpret_cast<const uint16_t *const>(&data[transmitted + i]));
-
-                    // move 2 bytes
-                    i += 2;
-                }
-                else {
-                    // write 1 byte at the time
-                    port->DATA8[0] = data[transmitted + i];
-
-                    // move 1 byte at the time
-                    i++;
-                }
+            // write all the data to the fifo
+            for (uint32_t i = 0; i < t; i++) {
+                // write 1 byte at the time
+                port->DATA8[0] = data[transmitted + i];
             }
 
             return t;
@@ -181,7 +162,7 @@ namespace klib::max32660::io {
          * @param received 
          * @return uint16_t 
          */
-        static uint16_t read_fifo(uint8_t *const data, const uint8_t size, const uint16_t received) {
+        static uint16_t read_fifo(uint8_t *const data, const uint16_t size, const uint16_t received) {
             // get the amount of space available in the fifo
             const uint8_t available_bytes = ((port->DMA >> 24) & 0x7f);
 
@@ -198,29 +179,10 @@ namespace klib::max32660::io {
                 return 0;
             }
 
-            // read using the most optimal size
-            for (uint32_t i = 0; i < t; ) {
-                if ((t - i) >= 3) {
-                    // read 4 bytes at the time if we can
-                    (*reinterpret_cast<uint32_t *const>(&data[received + i])) = port->DATA32;
-
-                    // move 4 bytes
-                    i += 4;
-                }
-                else if ((t - i) >= 2) {
-                    // read 2 bytes at the time if we can
-                    (*reinterpret_cast<uint16_t *const>(&data[received + i])) = port->DATA16[0];
-
-                    // move 2 bytes
-                    i += 2;
-                }
-                else {
-                    // read 1 byte at the time
-                    data[received + i] = port->DATA8[0];
-
-                    // move 1 byte at the time
-                    i++;
-                }
+            // read from the fifo buffer
+            for (uint32_t i = 0; i < t; i++) {
+                // read 1 byte at the time
+                data[received + i] = port->DATA8[0];
             }
 
             return t;
