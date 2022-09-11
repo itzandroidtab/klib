@@ -49,6 +49,16 @@ namespace klib {
     }
 
     /**
+     * @brief 32 bit bitswap (converts 0xaabb to 0xbbaa)
+     * 
+     * @param data 
+     * @return constexpr uint32_t 
+     */
+    constexpr uint16_t bswap(const uint32_t data) {
+        return __builtin_bswap32(data);
+    }
+
+    /**
      * @brief Count leading zero's
      * 
      * @param data 
