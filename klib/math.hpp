@@ -54,7 +54,7 @@ namespace klib {
      * @param data 
      * @return constexpr uint32_t 
      */
-    constexpr uint16_t bswap(const uint32_t data) {
+    constexpr uint32_t bswap(const uint32_t data) {
         return __builtin_bswap32(data);
     }
 
