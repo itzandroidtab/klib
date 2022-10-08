@@ -72,6 +72,14 @@ target_link_options(klib PUBLIC "-Wl,-fatal-warnings")
 target_link_options(klib PUBLIC "-Wl,-cref,-Map=klib.map")
 target_link_options(klib PUBLIC "-Wl,--print-memory-usage")
 
+# enabled segger support in the defines to prevent a 
+# include of the segger files
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/)
+    target_compile_definitions(klib PUBLIC "KLIB_SEGGER_SUPPORT=1")
+else()
+    target_compile_definitions(klib PUBLIC "KLIB_SEGGER_SUPPORT=0")
+endif()
+
 # Add definitions for targets
 # Values:
 #   - Debug  : -DKLIB_DEBUG=1
