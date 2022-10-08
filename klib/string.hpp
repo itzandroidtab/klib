@@ -321,6 +321,8 @@ namespace klib::string::detail {
             // go to the next character
             s++;
         }
+
+        return value;
     }
 
     template<base B = _default_base>
