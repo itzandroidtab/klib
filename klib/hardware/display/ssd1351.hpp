@@ -6,7 +6,7 @@
 #include <klib/color.hpp>
 
 namespace klib::hardware::display {
-    template<typename Bus, typename PinDC, typename PinRst>
+    template <typename Bus, typename PinDC, typename PinRst>
     class ssd1351 {
         public:
             // type for framebuffers

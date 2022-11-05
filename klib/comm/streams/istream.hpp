@@ -6,7 +6,7 @@
 #include "stream_base.hpp"
 
 namespace klib {
-    template<
+    template <
         typename InputStream, 
         typename = std::enable_if<std::is_base_of<klib::istream, InputStream>::value>::type
     >
@@ -16,7 +16,7 @@ namespace klib {
         return str;
     }
 
-    template<
+    template <
         typename InputStream,
         typename = std::enable_if<std::is_base_of<klib::istream, InputStream>::value>::type
     >
@@ -26,7 +26,7 @@ namespace klib {
         return str;
     }
 
-    template<
+    template <
         typename InputStream,
         typename = std::enable_if<std::is_base_of<klib::istream, InputStream>::value>::type    
     >

@@ -11,17 +11,17 @@
 
 namespace klib::max32660::io::detail::timer {
     // default type when using the port
-    template<uint32_t Timer>
+    template <uint32_t Timer>
     TMR0_Type *const port = nullptr;
 
     // port when using the pio0
-    template<>
+    template <>
     TMR0_Type *const port<0> = TMR0;
 
-    template<>
+    template <>
     TMR0_Type *const port<1> = TMR1;
 
-    template<>
+    template <>
     TMR0_Type *const port<2> = TMR2; 
 
     /**

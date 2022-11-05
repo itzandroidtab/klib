@@ -226,7 +226,7 @@ namespace klib::string {
 }
 
 namespace klib::string::detail {
-    template<base B = _default_base>
+    template <base B = _default_base>
     constexpr uint8_t add_prefix(char *const str) {
         // add the correct prefix for every base
         if constexpr (B == base::BIN) {
@@ -249,7 +249,7 @@ namespace klib::string::detail {
         return 0;
     }
 
-    template<base B = _default_base, typename T = int>
+    template <base B = _default_base, typename T = int>
     constexpr uint32_t count_chars(T value) {
         uint32_t chars = 0;
 
@@ -325,7 +325,7 @@ namespace klib::string::detail {
         return value;
     }
 
-    template<base B = _default_base>
+    template <base B = _default_base>
     constexpr uint32_t get_base() {
         if constexpr (B == base::BIN) {
             return 2;
@@ -341,7 +341,7 @@ namespace klib::string::detail {
         }
     }
 
-    template<base B = _default_base, bool BoolAlpha = _default_boolalpha, typename T = int>
+    template <base B = _default_base, bool BoolAlpha = _default_boolalpha, typename T = int>
     constexpr void itoa_impl(T value, char *const str) {
         // handle the boolalpha case first
         if constexpr (BoolAlpha) {
@@ -424,7 +424,7 @@ namespace klib::string {
      * @param base
      * @return constexpr int 
      */
-    template<base B = _default_base>
+    template <base B = _default_base>
     constexpr int stoi(const char *const str) {
         // return the implementation
         return detail::stoi_impl<B, int>(str);
@@ -441,7 +441,7 @@ namespace klib::string {
      * @param max_size 
      * @param base 
      */
-    template<base B = _default_base, bool Boolalpha = _default_boolalpha, typename T = int>
+    template <base B = _default_base, bool Boolalpha = _default_boolalpha, typename T = int>
     constexpr void itoa(const T value, char *const str) {
         // return the implementation
         return detail::itoa_impl<B, Boolalpha, T>(value, str);

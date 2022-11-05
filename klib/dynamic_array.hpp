@@ -8,7 +8,7 @@
 #include "math.hpp"
 
 namespace klib {
-    template<typename T, size_t Size>
+    template <typename T, size_t Size>
     class dynamic_array {
     protected:
         T store[Size] = {};
@@ -50,7 +50,7 @@ namespace klib {
          * @param first
          * @param last
          */
-        template<typename InputIterator>
+        template <typename InputIterator>
         constexpr dynamic_array(InputIterator first, InputIterator last) {
             for (auto it = first; it != last; ++it) {
                 push_back(*it);
@@ -708,7 +708,7 @@ namespace klib {
          * @param last
          * @return
          */
-        template<typename InputIterator>
+        template <typename InputIterator>
         constexpr iterator insert(const_iterator &it, InputIterator first, InputIterator last) {
             size_t i = 0;
 
@@ -754,7 +754,7 @@ namespace klib {
          * @param pos
          * @param args
          */
-        template<typename ...Args>
+        template <typename ...Args>
         constexpr void emplace(const size_t pos, Args &&... args) {
             free_position(pos);
             store[pos] = T(std::forward<Args>(args)...);
@@ -768,7 +768,7 @@ namespace klib {
          * @param pos
          * @param args
          */
-        template<typename ...Args>
+        template <typename ...Args>
         constexpr void emplace(const_iterator &it, Args &&... args) {
             emplace(it.at, std::forward<Args>(args)...);
         }
@@ -816,7 +816,7 @@ namespace klib {
          * @param first
          * @param last
          */
-        template<typename InputIterator>
+        template <typename InputIterator>
         constexpr void assign(InputIterator first, InputIterator last) {
             clear();
 
@@ -879,7 +879,7 @@ namespace klib {
          * @tparam Args
          * @param args
          */
-        template<typename ...Args>
+        template <typename ...Args>
         constexpr void emplace_back(Args &&... args) {
             store[index++] = T(std::forward<Args>(args)...);
         }

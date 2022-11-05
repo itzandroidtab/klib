@@ -37,7 +37,7 @@ namespace klib::atsam3x8e {
                 RSTC->RSTC_MR = (RSTC->RSTC_MR & ~RSTC_MR_URSTEN_Msk) | Enabled | key;
             }
 
-            template<uint8_t ExtRstLen>
+            template <uint8_t ExtRstLen>
             static void set_ext_rst_length(){
                 // sets the external reset length (nrst). time is 2^(erstl + 1)
                 // configurable between 60us and 2 sec

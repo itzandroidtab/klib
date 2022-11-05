@@ -23,7 +23,7 @@ namespace klib::max32660 {
          * @tparam P
          * @tparam Args
          */
-        template<typename P, typename P2, typename ...Args>
+        template <typename P, typename P2, typename ...Args>
         static void enable() {
             enable<P>();
             enable<P2, Args...>();
@@ -46,7 +46,7 @@ namespace klib::max32660 {
          * @tparam P
          * @tparam Args
          */
-        template<typename P, typename P2, typename ...Args>
+        template <typename P, typename P2, typename ...Args>
         static void disable() {
             disable<P>();
             disable<P2, Args...>();

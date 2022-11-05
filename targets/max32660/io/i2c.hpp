@@ -11,14 +11,14 @@
 
 namespace klib::max32660::io::detail::i2c {
     // default type when using the port
-    template<uint32_t I2c>
+    template <uint32_t I2c>
     I2C0_Type *const port = nullptr;
 
     // port when using the pio0
-    template<>
+    template <>
     I2C0_Type *const port<0> = I2C0;
 
-    template<>
+    template <>
     I2C0_Type *const port<1> = I2C1;
 }
 

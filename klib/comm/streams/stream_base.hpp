@@ -5,13 +5,13 @@
 #include <klib/units.hpp>
 
 namespace klib {
-    template<base B = _default_base, bool Boolalpha = _default_boolalpha>
+    template <base B = _default_base, bool Boolalpha = _default_boolalpha>
     class ostream {
     public:
         constexpr static klib::base base = B;
         constexpr static bool boolalpha = Boolalpha;
 
-        template<klib::base IB, bool IBoolalpha>
+        template <klib::base IB, bool IBoolalpha>
         using instance = ostream<IB, IBoolalpha>;
 
         // Defined by child implementation

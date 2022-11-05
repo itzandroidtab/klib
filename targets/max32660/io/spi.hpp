@@ -16,21 +16,21 @@
 
 namespace klib::max32660::io::detail::spi {
     // default type when using the port
-    template<uint32_t Spi>
+    template <uint32_t Spi>
     SPI17Y_Type *const port = nullptr;
 
-    // port when using the pio0
-    template<>
+    // port when using the spi0
+    template <>
     SPI17Y_Type *const port<0> = SPI17Y;
 }
 
 namespace klib::max32660::io::detail::spi_i2s {
     // default type when using the port
-    template<uint32_t Spi>
+    template <uint32_t Spi>
     SPIMSS_Type *const port = nullptr;
 
-    // port when using the pio0
-    template<>
+    // port when using the spi0
+    template <>
     SPIMSS_Type *const port<1> = SPIMSS;
 }
 

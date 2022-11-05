@@ -9,9 +9,9 @@
 
 namespace klib {
     namespace rtt {
-        template<base B = _default_base, bool Boolalpha = _default_boolalpha>
+        template <base B = _default_base, bool Boolalpha = _default_boolalpha>
         struct cout: public ostream<B, Boolalpha> {
-            template<klib::base IB, bool IBoolalpha>
+            template <klib::base IB, bool IBoolalpha>
             using instance = cout<IB, IBoolalpha>;
 
             void putc(const char c) const {

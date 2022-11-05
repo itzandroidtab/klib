@@ -7,11 +7,11 @@
 
 namespace klib::max32660::io::detail::watchdog {
     // default type when using the port
-    template<uint32_t Wdt>
+    template <uint32_t Wdt>
     WDT0_Type *const port = nullptr;
 
     // port when using the Wdt0
-    template<>
+    template <>
     WDT0_Type *const port<0> = WDT0;
 }
 
@@ -52,7 +52,7 @@ namespace klib::max32660::io {
          * @tparam Rst enable/disable if the cpu resets when the watchdog timer overflows 
          * @tparam RstPeriod reset period (refer to the datasheet for the timing)
          */
-        template<bool Irq = true, uint8_t IrqPeriod = 0, bool Rst = false, uint8_t RstPeriod = 0>
+        template <bool Irq = true, uint8_t IrqPeriod = 0, bool Rst = false, uint8_t RstPeriod = 0>
         static void init() {
             // setup the parameters of the watchdog
             port->CTRL = (Irq << 10) | (IrqPeriod & 0xF) | (Rst << 11) | ((RstPeriod & 0xF) << 4);

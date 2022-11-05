@@ -10,7 +10,7 @@ namespace klib {
      *
      * @tparam T
      */
-    template<typename T>
+    template <typename T>
     struct vector2 {
         T x;
         T y;
@@ -227,7 +227,7 @@ namespace klib {
          * @tparam U
          * @return
          */
-        template<typename U>
+        template <typename U>
         constexpr vector2<U> cast() const {
             return vector2<U>(
                 static_cast<U>(x),

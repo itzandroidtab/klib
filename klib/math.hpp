@@ -224,7 +224,7 @@ namespace klib {
      * @param input 
      * @return constexpr T 
      */
-    template<
+    template <
         typename T,
         typename = std::enable_if_t<std::is_unsigned_v<T>>
     >
@@ -262,7 +262,7 @@ namespace klib {
      * @param b 
      * @return constexpr auto 
      */
-    template<typename T, typename G>
+    template <typename T, typename G>
     constexpr auto min(const T a, const G b) {
         return (a > b) ? b : a;
     }
@@ -276,7 +276,7 @@ namespace klib {
      * @param b 
      * @return constexpr auto 
      */
-    template<typename T, typename G>
+    template <typename T, typename G>
     constexpr auto max(const T a, const G b) {
         return (a > b) ? a : b;
     }
@@ -288,7 +288,7 @@ namespace klib {
      * @param x 
      * @return T 
      */
-    template<typename T>
+    template <typename T>
     constexpr T abs(const T x) {
         if constexpr (std::is_unsigned_v<T>) {
             return x;
@@ -356,7 +356,7 @@ namespace klib {
      * @param out_max
      * @return
      */
-    template<typename T, typename G = T>
+    template <typename T, typename G = T>
     constexpr T map(const T x, const G in_min, const G in_max, const G out_min, const G out_max){
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }

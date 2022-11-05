@@ -12,7 +12,7 @@ namespace klib {
      * @tparam S2
      * @tparam Ostream
      */
-    template<typename S1, typename S2, typename Ostream = klib::ostream<>>
+    template <typename S1, typename S2, typename Ostream = klib::ostream<>>
     class combined_stream : public Ostream {
     protected:
         S1 &s1;
@@ -45,7 +45,7 @@ namespace klib {
      * @param s2
      * @return
      */
-    template<typename S1, typename S2, typename Ostream = klib::ostream<>>
+    template <typename S1, typename S2, typename Ostream = klib::ostream<>>
     combined_stream<S1, S2, Ostream> tee(S1 &s1, S2 &s2) {
         return combined_stream(s1, s2);
     }

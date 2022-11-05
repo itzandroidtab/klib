@@ -6,7 +6,7 @@
 #include <klib/color.hpp>
 
 namespace klib::hardware::display {
-    template<typename Bus, typename PinDC, typename PinRst, uint32_t Width = 80, uint32_t Height = 160, uint32_t XOffset = 26, uint32_t YOffset = 1>
+    template <typename Bus, typename PinDC, typename PinRst, uint32_t Width = 80, uint32_t Height = 160, uint32_t XOffset = 26, uint32_t YOffset = 1>
     class st7735 {
         public:
             // type for framebuffers

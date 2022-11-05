@@ -8,11 +8,11 @@
 
 namespace klib::max32660::io::detail::flash {
     // default type when using the port
-    template<uint32_t Flc>
+    template <uint32_t Flc>
     FLC_Type *const port = nullptr;
 
     // port when using the flc0
-    template<>
+    template <>
     FLC_Type *const port<0> = FLC;
 }
 

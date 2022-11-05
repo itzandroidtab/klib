@@ -19,7 +19,7 @@ namespace klib::atsam3x8e {
             WDT->WDT_CR = WDT_CR_WDRSTT_Msk | WDT_CR_KEY_PASSWD;
         }
 
-        template<unsigned int CounterStart = 0xFFF, unsigned int Delta = 0xFFF, bool Reset = true>
+        template <unsigned int CounterStart = 0xFFF, unsigned int Delta = 0xFFF, bool Reset = true>
         static void init() {
             WDT->WDT_MR = WDT_MR_WDIDLEHLT_Msk // Stop watchdog if cpu is in idle mode
                         | WDT_MR_WDDBGHLT_Msk // Stop watchdog if cpu is in debug state
