@@ -23,9 +23,6 @@ namespace klib::max32660::io {
         static inline WDT0_Type *const port = detail::watchdog::port<Wdt::id>;
 
     public:
-        // interrupt number
-        constexpr static uint32_t irq_id = 17;
-
         /**
          * @brief Disable the watchdog timer
          * 
