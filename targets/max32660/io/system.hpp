@@ -6,7 +6,7 @@
 #include <max32660.hpp>
 #include <klib/core_clock.hpp>
 
-namespace klib::max32660::system {
+namespace klib::max32660::io::system {
     /**
      * @brief System control register
      * 
