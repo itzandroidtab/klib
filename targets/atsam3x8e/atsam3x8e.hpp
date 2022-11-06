@@ -1,13 +1,13 @@
-#ifndef KLIB_MAX32660_HPP
-#define KLIB_MAX32660_HPP
+#ifndef KLIB_ATSAM3X8E_HPP
+#define KLIB_ATSAM3X8E_HPP
 
 #include <klib/irq.hpp>
 
-// #include "max32660.h"
+// #include <atsam3x8e.h>
 
-namespace klib::max32660 {
-    // irq for the max32660
-    using irq = klib::irq<70>;
+namespace klib::atsam3x8e {
+    // irq for the atsam3x8e
+    using irq = klib::irq<44>;
 
     // /**
     //  * @brief Enable a interrupt

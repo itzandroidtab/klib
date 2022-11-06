@@ -1,13 +1,13 @@
-#ifndef KLIB_MAX32660_HPP
-#define KLIB_MAX32660_HPP
+#ifndef KLIB_MAX32625_HPP
+#define KLIB_MAX32625_HPP
 
 #include <klib/irq.hpp>
 
-// #include "max32660.h"
+// #include "max32625.h"
 
-namespace klib::max32660 {
-    // irq for the max32660
-    using irq = klib::irq<70>;
+namespace klib::max32625 {
+    // irq for the max32625
+    using irq = klib::irq<65>;
 
     // /**
     //  * @brief Enable a interrupt

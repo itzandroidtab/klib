@@ -1,13 +1,13 @@
-#ifndef KLIB_MAX32660_HPP
-#define KLIB_MAX32660_HPP
+#ifndef KLIB_STM32F407_HPP
+#define KLIB_STM32F407_HPP
 
 #include <klib/irq.hpp>
 
-// #include "max32660.h"
+// #include "stm32f407.h"
 
-namespace klib::max32660 {
-    // irq for the max32660
-    using irq = klib::irq<70>;
+namespace klib::stm32f407 {
+    // irq for the stm32f407
+    using irq = klib::irq<88>;
 
     // /**
     //  * @brief Enable a interrupt
