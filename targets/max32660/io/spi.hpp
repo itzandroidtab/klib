@@ -12,7 +12,7 @@
 #undef DMA
 
 #include "clocks.hpp"
-#include "pio.hpp"
+#include "port.hpp"
 
 namespace klib::max32660::io::detail::spi {
     // default type when using the port
@@ -210,13 +210,13 @@ namespace klib::max32660::io {
             clocks::enable<Spi>();
 
             // configure the gpio pins
-            io::detail::set_peripheral<typename Spi::sck::pin, typename Spi::sck::periph>();
-            io::detail::set_peripheral<typename Spi::mosi::pin, typename Spi::mosi::periph>();
-            io::detail::set_peripheral<typename Spi::miso::pin, typename Spi::miso::periph>();
+            io::detail::pins::set_peripheral<typename Spi::sck::pin, typename Spi::sck::periph>();
+            io::detail::pins::set_peripheral<typename Spi::mosi::pin, typename Spi::mosi::periph>();
+            io::detail::pins::set_peripheral<typename Spi::miso::pin, typename Spi::miso::periph>();
 
             // only configure the chipselect when not using a different pin
             if constexpr (!ExternalCs) {
-                io::detail::set_peripheral<typename Spi::cs0::pin, typename Spi::cs0::periph>();
+                io::detail::pins::set_peripheral<typename Spi::cs0::pin, typename Spi::cs0::periph>();
             }
 
             // set if we are using the cs pin, enable that the slave select stays asserted at 

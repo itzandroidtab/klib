@@ -248,7 +248,7 @@ namespace klib::max32660::io {
             port->CN = (static_cast<uint8_t>(detail::timer::mode::pwm));
 
             // init the gpio pin as a output from the timer
-            detail::set_peripheral<typename Timer::tmr::pin, typename Timer::tmr::periph>();
+            detail::pins::set_peripheral<typename Timer::tmr::pin, typename Timer::tmr::periph>();
 
             // clear the prescaler
             port->CN &= ~((0x7 << 3) | (0x1 << 8));

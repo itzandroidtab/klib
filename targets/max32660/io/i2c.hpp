@@ -7,7 +7,7 @@
 #include <max32660.hpp>
 
 #include "clocks.hpp"
-#include "pio.hpp"
+#include "port.hpp"
 
 namespace klib::max32660::io::detail::i2c {
     // default type when using the port
@@ -160,8 +160,8 @@ namespace klib::max32660::io {
             clocks::enable<I2c>();
 
             // configure the gpio pins
-            io::detail::set_peripheral<typename I2c::sda::pin, typename I2c::sda::periph>();
-            io::detail::set_peripheral<typename I2c::scl::pin, typename I2c::scl::periph>();
+            io::detail::pins::set_peripheral<typename I2c::sda::pin, typename I2c::sda::periph>();
+            io::detail::pins::set_peripheral<typename I2c::scl::pin, typename I2c::scl::periph>();
 
             // enable the peripheral
             port->CTRL = 0x1;
