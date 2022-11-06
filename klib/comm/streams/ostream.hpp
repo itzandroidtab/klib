@@ -187,7 +187,7 @@ namespace klib {
          * @param v
          * @return
          */
-        template<typename T>
+        template <typename T>
         constexpr int _count_chars(T v, const int base) {
             if (v < 0) {
                 v *= -1;
@@ -211,7 +211,7 @@ namespace klib {
          * @param v
          * @param buffer
          */
-        template<typename T>
+        template <typename T>
         void _integral_to_bin_buffer(T v, char *buffer) {
             char *p = buffer;
 
@@ -250,7 +250,7 @@ namespace klib {
         return _setpos{pos};
     }
 
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -260,7 +260,7 @@ namespace klib {
         return str;
     }
 
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -270,7 +270,7 @@ namespace klib {
         return str;
     }
 
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -284,7 +284,7 @@ namespace klib {
         return str;
     }
 
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -296,7 +296,7 @@ namespace klib {
         return str;
     }
 
-    template<
+    template <
         typename T,
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha,
@@ -355,7 +355,7 @@ namespace klib {
      * @endcode
      * @tparam T
      */
-    template<typename T>
+    template <typename T>
     struct array_values {
         const T *arr;
         size_t size;
@@ -376,7 +376,7 @@ namespace klib {
          * @tparam Size
          * @param arr
          */
-        template<size_t Size>
+        template <size_t Size>
         constexpr array_values(const std::array<T, Size> &arr)
             : arr(arr.data()), size(Size) {}
 
@@ -386,7 +386,7 @@ namespace klib {
          * @tparam Size
          * @param arr
          */
-        template<size_t Size>
+        template <size_t Size>
         constexpr array_values(const klib::dynamic_array<T, Size> &arr)
             : arr(arr.data()), size(arr.size()) {}
     };
@@ -400,7 +400,7 @@ namespace klib {
      * @param values
      * @return
      */
-    template<
+    template <
         typename T,
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
@@ -428,7 +428,7 @@ namespace klib {
      * @param v
      * @return
      */
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha,
         typename T,
@@ -489,7 +489,7 @@ namespace klib {
      * @tparam OutputStream
      * @return
      */
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -504,7 +504,7 @@ namespace klib {
      * @tparam OutputStream
      * @return
      */
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -519,7 +519,7 @@ namespace klib {
      * @tparam OutputStream
      * @return
      */
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -534,7 +534,7 @@ namespace klib {
      * @tparam OutputStream
      * @return
      */
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -549,7 +549,7 @@ namespace klib {
      * @tparam OutputStream
      * @return
      */
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
@@ -564,7 +564,7 @@ namespace klib {
      * @tparam OutputStream
      * @return
      */
-    template<
+    template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
     >
