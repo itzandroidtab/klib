@@ -60,6 +60,14 @@ if (DEFINED TARGET_CPU)
         message("FPU disabled for target: ${TARGET_CPU}")
         target_compile_definitions(target_cpu PUBLIC "TARGET_FPU_ENABLED=0")
     endif()
+
+    if (DEFINED TARGET_LOW_POWER_SLEEP)
+        message("Low Power sleep is enabled for target: ${TARGET_CPU}")
+        target_compile_definitions(target_cpu PUBLIC "TARGET_LOW_POWER_SLEEP=1")
+    else()
+        message("Low Power sleep is disabled for target: ${TARGET_CPU}")
+        target_compile_definitions(target_cpu PUBLIC "TARGET_LOW_POWER_SLEEP=0")
+    endif()
 else()
     message("Building defualt target: ${DEFAULT_TARGET_CPU}")
     add_subdirectory(${CMAKE_SOURCE_DIR}/targets/${DEFAULT_TARGET_CPU})
@@ -69,6 +77,9 @@ else()
     
     message("FPU disabled for target: ${DEFAULT_TARGET_CPU}")
     target_compile_definitions(target_cpu PUBLIC "TARGET_FPU_ENABLED=0")
+
+    message("Low Power sleep is disabled for target: ${DEFAULT_TARGET_CPU}")
+    target_compile_definitions(target_cpu PUBLIC "TARGET_LOW_POWER_SLEEP=0")
 endif()
 
 # add the klib library
