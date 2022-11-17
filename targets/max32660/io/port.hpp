@@ -525,14 +525,14 @@ namespace klib::max32660::io {
             if constexpr (Index + 1 < sizeof...(Pins)) {
                 // recursively get the get input bit and map to input pin using msb
                 return (
-                    ((mask >> Index) << pin<(sizeof...(Pins) - 1) - Index>::number) | 
+                    (((mask >> Index) & 0x1) << pin<(sizeof...(Pins) - 1) - Index>::number) | 
                     map_to_pio_order<Index + 1>(mask)
                 );
             }
             else {
                 // get the correct input bit and use msb to map these to the input pins
                 return (
-                    (mask >> Index) << pin<(sizeof...(Pins) - 1) - Index>::number
+                    ((mask >> Index) & 0x1) << pin<(sizeof...(Pins) - 1) - Index>::number
                 );
             }
         }
