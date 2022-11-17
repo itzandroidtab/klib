@@ -242,9 +242,9 @@ namespace klib::hardware::display {
 
             constexpr static pixel_type color_to_raw(const klib::color &col) {
                 // conver the color to raw data 
-                const pixel_type data = (((static_cast<pixel_type>(col.red) * 0x1F) / 0xFF) << 11) | 
-                                        (((static_cast<pixel_type>(col.green) * 0x3F) / 0xFF) << 5) |
-                                        ((static_cast<pixel_type>(col.blue) * 0x1F) / 0xFF);
+                const pixel_type data = ((static_cast<pixel_type>(col.red) >> 3) << 11) | 
+                                        ((static_cast<pixel_type>(col.green) >> 2) << 5) |
+                                        (static_cast<pixel_type>(col.blue) >> 3);
 
                 // reverse the byte order of the data
                 return klib::bswap(data); 
