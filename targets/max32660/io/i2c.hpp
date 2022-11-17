@@ -105,11 +105,16 @@ namespace klib::max32660::io {
         constexpr static bool send_slave_address(const uint8_t address, const bool read) {
             // check if we need to write a repeated start or a normal start
             if constexpr (!RepeatedStart) {
-                // write the slave address to the fifo and leave the R/W bit set to 1
-                port->FIFO = (address << 1) | read;
-
                 // send a start
                 port->MASTER_CTRL |= 0x1;
+
+                // wait until the repeated start is done
+                while (port->MASTER_CTRL & (0x1 << 1)) {
+                    // do nothing
+                }
+
+                // write the slave address to the fifo and leave the R/W bit set to 1
+                port->FIFO = (address << 1) | read;
             }
             else {
                 // send a repeated start
@@ -243,6 +248,11 @@ namespace klib::max32660::io {
                             // notify we have failed if we dont have enough
                             failed = true;
                         }
+
+                        // clear the done flag
+                        port->INT_FL0 = 0x1;
+
+                        break;
                     }
                     else {
                         // clear the flag we have data
@@ -251,7 +261,7 @@ namespace klib::max32660::io {
                 }
                 // check if we had a error
                 else {
-                    // set the failed flag
+                    // send a stop when we have a error
                     send_stop();
 
                     // stop the loop. Notify we have failed
@@ -320,6 +330,16 @@ namespace klib::max32660::io {
             }
 
             return true;
+        }
+
+        /**
+         * @brief Stop a transmission that has been started did 
+         * not send a stop
+         * 
+         */
+        constexpr static void stop() {
+            // stop the current transmission
+            send_stop();   
         }
     };
 }
