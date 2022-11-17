@@ -149,7 +149,7 @@ namespace klib::hardware::display {
                 }
             }
 
-            // move the adset command before the first data byte
+            // move the adset command before the first data byte (- 1 to move before the first written index)
             framebuffer[(offset / 8) - 1] = static_cast<uint8_t>(cmd::adset);
 
             // amount of data we need to send over the bus (+ 1 for the command)

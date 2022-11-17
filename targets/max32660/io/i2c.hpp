@@ -133,10 +133,7 @@ namespace klib::max32660::io {
             // check if we received a nack
             if (port->INT_FL0 & (1 << 10)) {
                 // send a stop
-                port->MASTER_CTRL |= (0x1 << 2);
-
-                // wait stop transaction   
-                while (!(port->INT_FL0 & (0x1 << 6)));
+                send_stop();
 
                 // return an error
                 return false;
@@ -171,8 +168,13 @@ namespace klib::max32660::io {
             port->RX_CTRL0 |= (1 << 7);
 
             // set the thresholds
-            port->TX_CTRL0 &= (port->TX_CTRL0 & ~(0xf << 8)) | (2 << 8);
-            port->RX_CTRL0 &= (port->RX_CTRL0 & ~(0xf << 8)) | (6 << 8);
+            port->RX_CTRL0 &= ~(0xf << 8);
+            port->RX_CTRL0 |= (1 << 8);
+            port->TX_CTRL0 &= ~(0xf << 8);
+            port->TX_CTRL0 |= (1 << 8);
+
+            // set the timeout
+            port->TIMEOUT = (8 * 50);
 
             // calculate the speed of the i2c clock
             clock_info sp = calculate_clock<Speed>();
@@ -252,8 +254,8 @@ namespace klib::max32660::io {
                     // set the failed flag
                     send_stop();
 
-                    // stop the loop
-                    break;
+                    // stop the loop. Notify we have failed
+                    return false;
                 }
             }
 
