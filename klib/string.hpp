@@ -12,7 +12,7 @@ namespace klib::string {
      * @return true 
      * @return false 
      */
-    constexpr bool is_binary(char c) {
+    constexpr bool is_binary(const char c) {
         return (c == '0' || c == '1');
     }
 
@@ -23,7 +23,7 @@ namespace klib::string {
      * @return true 
      * @return false 
      */
-    constexpr bool is_octal(char c) {
+    constexpr bool is_octal(const char c) {
         return (c >= '0' && c <= '7');
     }
 
@@ -34,7 +34,7 @@ namespace klib::string {
      * @return true 
      * @return false 
      */
-    constexpr bool is_digit(char c) {
+    constexpr bool is_digit(const char c) {
         return (c >= '0' && c <= '9');
     }
 
@@ -45,7 +45,7 @@ namespace klib::string {
      * @return true 
      * @return false 
      */
-    constexpr bool is_hex(char c) {
+    constexpr bool is_hex(const char c) {
         return is_digit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
     }
 
@@ -56,7 +56,7 @@ namespace klib::string {
      * @return true 
      * @return false 
      */
-    constexpr bool is_upper(char c) {
+    constexpr bool is_upper(const char c) {
         return (c >= 'A' && c <= 'Z');
     }
 
@@ -67,8 +67,18 @@ namespace klib::string {
      * @return true 
      * @return false 
      */
-    constexpr bool is_lower(char c) {
-        return (c >= 'a' && c <= 'f');
+    constexpr bool is_lower(const char c) {
+        return (c >= 'a' && c <= 'z');
+    }
+
+    /**
+     * @brief Returns if we have a lower or upper case character
+     * 
+     * @return true 
+     * @return false 
+     */
+    constexpr bool is_character(const char c) {
+        return is_lower(c) || is_upper(c);
     }
 
     /**
@@ -77,7 +87,7 @@ namespace klib::string {
      * @param c 
      * @return constexpr char 
      */
-    constexpr char to_upper(char c) {
+    constexpr char to_upper(const char c) {
         return (is_lower(c) ? c & (~0x20) : c);
     }
 
@@ -87,7 +97,7 @@ namespace klib::string {
      * @param c 
      * @return constexpr char 
      */
-    constexpr char to_lower(char c) {
+    constexpr char to_lower(const char c) {
         return (is_upper(c) ? c | 0x20 : c);
     }
 
