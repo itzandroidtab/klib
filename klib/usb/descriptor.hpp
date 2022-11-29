@@ -76,12 +76,12 @@ namespace klib::usb::descriptor {
      */
     struct device {
         // size of descriptor in bytes
-        const uint8_t bLenght = sizeof(device);
+        const uint8_t bLength = sizeof(device);
 
         // descriptorType
         const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::device);
 
-        // usb specification number wich device compies to
+        // usb specification number which device compies to
         uint16_t bcdUSB;
 
         // class code
@@ -127,7 +127,7 @@ namespace klib::usb::descriptor {
      */
     struct configuration {
         // size of descriptor in bytes
-        const uint8_t bLenght = sizeof(configuration);
+        const uint8_t bLength = sizeof(configuration);
 
         // descriptorType
         const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::configuration);
@@ -178,13 +178,13 @@ namespace klib::usb::descriptor {
     template <uint32_t Size>
     struct string {
         // size of descriptor in bytes
-        const uint8_t bLenght = sizeof(string<Size>);
+        const uint8_t bLength = sizeof(string<Size>);
 
         // descriptorType
         const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::string);
 
         // unicode encoded string
-        uint16_t bString[Size];
+        char16_t bString[Size];
     };
 
     static_assert(sizeof(string<1>) == 4, "String descriptor with 1 entry is not 4 bytes in length");
@@ -197,7 +197,7 @@ namespace klib::usb::descriptor {
      */
     struct interface {
         // size of descriptor in bytes
-        const uint8_t bLenght = sizeof(interface);
+        const uint8_t bLength = sizeof(interface);
 
         // descriptorType
         const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::interface);
@@ -235,7 +235,7 @@ namespace klib::usb::descriptor {
      */
     struct endpoint {
         // size of descriptor in bytes
-        const uint8_t bLenght = sizeof(endpoint);
+        const uint8_t bLength = sizeof(endpoint);
 
         // descriptorType
         const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::endpoint);
