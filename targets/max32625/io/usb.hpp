@@ -64,19 +64,19 @@ namespace klib::max32625::io::detail::usb {
         volatile bool is_busy;
 
         // max size of the endpoint
-        volatile uint8_t max_size;
+        uint8_t max_size;
 
         // requested size of the current endpoint
-        volatile uint32_t requested_size;
+        uint32_t requested_size;
 
         // transmitted/received amount of data.
         volatile uint32_t transferred_size; 
 
         // pointer to the data
-        const uint8_t *volatile data;
+        const uint8_t* data;
 
         // callback function
-        volatile klib::usb::usb::usb_callback callback;
+        klib::usb::usb::usb_callback callback;
     };
 
     // restore the old packing
