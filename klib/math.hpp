@@ -39,7 +39,7 @@ namespace klib {
     }    
 
     /**
-     * @brief 16 bit bitswap (converts 0xaabb to 0xbbaa)
+     * @brief 16 bit byteswap (converts 0xaabb to 0xbbaa)
      * 
      * @param data 
      * @return constexpr uint16_t 
@@ -49,13 +49,37 @@ namespace klib {
     }
 
     /**
-     * @brief 32 bit bitswap (converts 0xaabb to 0xbbaa)
+     * @brief 32 bit byteswap (converts 0xaabb to 0xbbaa)
      * 
      * @param data 
      * @return constexpr uint32_t 
      */
     constexpr uint32_t bswap(const uint32_t data) {
         return __builtin_bswap32(data);
+    }
+
+    /**
+     * @brief 16 bit byteswap (converts 0xaabb to 0xbbaa). Explicit 16 bit
+     * 
+     * @tparam T 
+     * @param data 
+     * @return constexpr uint16_t 
+     */
+    template <typename T>
+    constexpr uint16_t bswap16(const T data) {
+        return bswap(static_cast<uint16_t>(data));
+    }
+
+    /**
+     * @brief 32 bit byteswap (converts 0xaabb to 0xbbaa). Explicit 32 bit
+     * 
+     * @tparam T 
+     * @param data 
+     * @return constexpr uint32_t 
+     */
+    template <typename T>
+    constexpr uint32_t bswap32(const T data) {
+        return bswap(static_cast<uint32_t>(data));
     }
 
     /**
