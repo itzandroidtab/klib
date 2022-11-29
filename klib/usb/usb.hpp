@@ -1,17 +1,77 @@
 #ifndef KLIB_USB_HPP
 #define KLIB_USB_HPP
 
+#include <klib/math.hpp>
+
 #include "descriptor.hpp"
 #include "setup.hpp"
 
 namespace klib::usb {
     class usb {
     public:
-        struct descriptor_desc {
-            const void *desc;
+        /**
+         * @brief Struct to store information about a descriptor that 
+         * should be transmitted.
+         * 
+         */
+        struct description {
+            // pointer to the descriptor
+            const uint8_t *desc;
+
+            // size of the descriptor
             uint32_t size;
         };
-    
+
+        /**
+         * @brief Different error cases for stopping a usb transaction
+         * 
+         */
+        enum class error: uint8_t {
+            no_error,
+            reset,
+            stall,
+            un_stall,
+        };
+
+        /**
+         * @brief Struct with information used in the usb callback
+         * 
+         */
+        struct callback_data {
+            // current endpoint
+            uint8_t endpoint;
+
+            // pointer to the data we are transmitting
+            const uint8_t* data;
+
+            // requested amount to transmit 
+            uint32_t requested_size;
+
+            // amount of data that is transmitted
+            uint32_t transferred_size;
+
+            // error code
+            error error_code;
+        };
+
+        /**
+         * @brief Different endpoint modes
+         * 
+         */
+        enum class endpoint_mode {
+            disabled,
+            out,
+            in,
+            control
+        };
+
+        /**
+         * @brief Callback function. Called after a read/write is completed
+         * 
+         * @return true if the request is complete
+         */
+        using usb_callback = void (*)(const callback_data& data);
+
         /**
          * @brief Helper function to get the direction of a packet
          * 
@@ -86,19 +146,18 @@ namespace klib::usb {
                     break;
                 
                 case setup::recipient_code::device:
-                    // response[0] = Usb::device::get_device_status();
-                    response[0] = 0x00; // dont enable remote wake or self powered for now
+                    response[0] = Usb::device::template get_device_status<Usb>();
                     response[1] = 0x00;
                 
                 default:
-                    // this should not happen only with reserved. 
+                    // this should not happen, only with reserved. 
                     // send a stall when that happens
                     Usb::stall(0);
                     return;
             }
 
             // write and check if we got any errors straight away
-            if (Usb::write_endpoint(0, response, sizeof(response))) {
+            if (Usb::write(status_callback<Usb>, 0, response, sizeof(response))) {
                 // no errors return
                 return;
             }
@@ -144,8 +203,19 @@ namespace klib::usb {
                 return;
             }
 
-            // call the device clear feature
-            Usb::device::template clear_feature<Usb>(feature, packet);
+            // check if we need to unstall a endpoint
+            if (feature == setup::feature::endpoint_halt && packet.wIndex > 0) {
+                // unstall the endpoint
+                Usb::un_stall(packet.wIndex & 0x0f);
+            }
+            else if (feature == setup::feature::remote_wake || feature != setup::feature::test_mode) {
+                // call the device clear feature
+                Usb::device::template clear_feature<Usb>(feature, packet);
+            }
+            else {
+                // unsupported feature. Stall
+                Usb::stall(0);
+            }
         }
 
         /**
@@ -185,8 +255,19 @@ namespace klib::usb {
                 return;
             }
 
-            // call the device clear feature
-            Usb::device::template set_feature<Usb>(feature, packet);         
+            // check if we need to stall a endpoint
+            if (feature == setup::feature::endpoint_halt && packet.wIndex > 0) {
+                // unstall the endpoint
+                Usb::stall(packet.wIndex & 0x0f);
+            }
+            else if (feature == setup::feature::remote_wake || feature != setup::feature::test_mode) {
+                // call the device set feature
+                Usb::device::template set_feature<Usb>(feature, packet);    
+            }
+            else {
+                // unsupported feature. Stall
+                Usb::stall(0);
+            }
         }
 
         /**
@@ -234,7 +315,7 @@ namespace klib::usb {
             const uint8_t index = packet.wValue & 0xff;
 
             // request the descriptor from the device code
-            const descriptor_desc& descriptor = Usb::device::template get_descriptor<Usb>(packet, type, index);
+            const description& descriptor = Usb::device::template get_descriptor<Usb>(packet, type, index);
 
             // check what parameters we should check
             switch (type) {
@@ -292,7 +373,7 @@ namespace klib::usb {
             const uint32_t size = klib::min(descriptor.size, static_cast<uint32_t>(packet.wLength));
 
             // write the data to the endpoint buffer and check if we directly fail
-            if (Usb::write_endpoint(0, reinterpret_cast<const uint8_t*>(descriptor.desc), descriptor.size)) {
+            if (Usb::write(status_callback<Usb>, 0, descriptor.desc, size)) {
                 // no errors do a early return
                 return;
             }
@@ -445,14 +526,14 @@ namespace klib::usb {
 
             // the request should be stalled/acked before we enter.
             // only exception is when there is a data stage in the
-            // usb transfer. then it will be acked/stalled later in
-            // the interrupt
+            // usb transfer. Then it should be acked/stalled later 
+            // in the interrupt
         }
 
         template <typename Usb>
-        static void status_callback(const uint8_t error_code) {
+        static void status_callback(const callback_data& data) {
             // check if we have a error
-            if (!error_code) {
+            if (data.error_code == error::no_error) {
                 // no error send a ack
                 Usb::ack(0);
             }
