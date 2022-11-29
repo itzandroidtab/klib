@@ -62,7 +62,7 @@ namespace klib {
                 }
 
                 // clear the bit from the masked register
-                masked_register &= ~(1 << (31 - bit));
+                masked_register &= ~(1 << bit);
             }
         }
 
