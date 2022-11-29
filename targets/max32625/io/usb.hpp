@@ -422,7 +422,7 @@ namespace klib::max32625::io {
                     // must have sent the ZLP, mark done
                     if (callback) {
                         // call the callback
-                        (void) callback(data);
+                        callback(data);
                     }
 
                     // skip the remainder
@@ -477,7 +477,7 @@ namespace klib::max32625::io {
                             // send we are done. Do not care about the return value
                             // as we are always clearing the endpoint after the 
                             // transaction is done
-                            (void) callback(data);
+                            callback(data);
                         }
                     }
                 }
@@ -757,7 +757,7 @@ namespace klib::max32625::io {
 
             if (callback) {
                 // send a error to the callback
-                (void) callback(data);
+                callback(data);
             }
         }
 
