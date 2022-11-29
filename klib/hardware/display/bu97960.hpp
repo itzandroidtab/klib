@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include <klib/vector2.hpp>
+
 namespace klib::hardware::display {
     template <typename Bus, uint8_t Address = 0x3e, uint32_t Width = 18, uint32_t Height = 4, uint32_t XOffset = 0, uint32_t YOffset = 0>
     class bu97960 {
