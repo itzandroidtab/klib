@@ -202,7 +202,7 @@ namespace klib::usb::device {
          * @param data 
          */
         template <typename Usb>
-        static void hid_callback(const usb::callback_data& data) {
+        static void hid_callback(const uint8_t endpoint, const usb::error error_code) {
             // check if we are configured
             if (!configuration_value) {
                 return;

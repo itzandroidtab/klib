@@ -72,9 +72,6 @@ namespace klib::max32625::io::detail::usb {
         // transmitted/received amount of data.
         volatile uint32_t transferred_size; 
 
-        // pointer to the data
-        const uint8_t* data;
-
         // callback function
         klib::usb::usb::usb_callback callback;
     };
@@ -249,7 +246,6 @@ namespace klib::max32625::io {
             state[endpoint].is_busy = false;
             state[endpoint].requested_size = 0;
             state[endpoint].transferred_size = 0;
-            state[endpoint].data = nullptr;
             state[endpoint].callback = nullptr;
         }
 
@@ -403,15 +399,6 @@ namespace klib::max32625::io {
                 );
 
                 if (buffer.buf0_desc == 0) {
-                    // get the data for the callback
-                    const klib::usb::usb::callback_data data {
-                        .endpoint = ep,
-                        .data = state[ep].data,
-                        .requested_size = state[ep].requested_size,
-                        .transferred_size = state[ep].transferred_size,
-                        .error_code = klib::usb::usb::error::no_error,
-                    };
-
                     // get the callback
                     const auto callback = state[ep].callback;
 
@@ -422,7 +409,7 @@ namespace klib::max32625::io {
                     // must have sent the ZLP, mark done
                     if (callback) {
                         // call the callback
-                        callback(data);
+                        callback(ep, klib::usb::usb::error::no_error);
                     }
 
                     // skip the remainder
@@ -457,15 +444,6 @@ namespace klib::max32625::io {
                         port->IN_OWNER = (0x1 << ep);
                     }
                     else {
-                        // get the data for the callback
-                        const klib::usb::usb::callback_data data {
-                            .endpoint = ep,
-                            .data = state[ep].data,
-                            .requested_size = state[ep].requested_size,
-                            .transferred_size = state[ep].transferred_size,
-                            .error_code = klib::usb::usb::error::no_error,
-                        };
-
                         // get the callback
                         const auto callback = state[ep].callback;
 
@@ -477,7 +455,7 @@ namespace klib::max32625::io {
                             // send we are done. Do not care about the return value
                             // as we are always clearing the endpoint after the 
                             // transaction is done
-                            callback(data);
+                            callback(ep, klib::usb::usb::error::no_error);
                         }
                     }
                 }
@@ -537,15 +515,6 @@ namespace klib::max32625::io {
                 // data than the endpoint size or if we receive a zero length
                 // packet we know the transmission is finished
                 if ((rx_size < state[ep].max_size) || (rx_size == 0)) {
-                    // get the data for the callback
-                    const klib::usb::usb::callback_data data {
-                        .endpoint = ep,
-                        .data = state[ep].data,
-                        .requested_size = state[ep].requested_size,
-                        .transferred_size = state[ep].transferred_size,
-                        .error_code = klib::usb::usb::error::no_error,
-                    };
-
                     // get the callback
                     const auto callback = state[ep].callback;
 
@@ -556,7 +525,7 @@ namespace klib::max32625::io {
                         // send we are done. Do not care about the return value
                         // as we are always clearing the endpoint after the 
                         // transaction is done
-                        callback(data);
+                        callback(ep, klib::usb::usb::error::no_error);
                     }
                 }
                 else {
@@ -645,7 +614,6 @@ namespace klib::max32625::io {
                     .max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0),
                     .requested_size = 0,
                     .transferred_size = 0, 
-                    .data = nullptr,
                     .callback = nullptr
                 };
             }
@@ -740,15 +708,6 @@ namespace klib::max32625::io {
             // set the stall flag 
             (*ep) |= (0x1 << 8);
 
-            // get the data for the callback
-            const klib::usb::usb::callback_data data {
-                .endpoint = endpoint,
-                .data = state[endpoint].data,
-                .requested_size = state[endpoint].requested_size,
-                .transferred_size = state[endpoint].transferred_size,
-                .error_code = klib::usb::usb::error::stall,
-            };
-
             // get the callback
             const auto callback = state[endpoint].callback;
 
@@ -757,7 +716,7 @@ namespace klib::max32625::io {
 
             if (callback) {
                 // send a error to the callback
-                callback(data);
+                callback(endpoint, klib::usb::usb::error::stall);
             }
         }
 
@@ -786,15 +745,6 @@ namespace klib::max32625::io {
             // clear the stall flag
             (*ep) &= (0x1 << 8);
 
-            // get the data for the callback
-            const klib::usb::usb::callback_data data {
-                .endpoint = endpoint,
-                .data = state[endpoint].data,
-                .requested_size = state[endpoint].requested_size,
-                .transferred_size = state[endpoint].transferred_size,
-                .error_code = klib::usb::usb::error::un_stall,
-            };
-
             // get the callback
             const auto callback = state[endpoint].callback;
 
@@ -803,7 +753,7 @@ namespace klib::max32625::io {
 
             if (callback) {
                 // send a error to the callback
-                callback(data);
+                callback(endpoint, klib::usb::usb::error::un_stall);
             }
 
             // ack the endpoint
@@ -840,15 +790,6 @@ namespace klib::max32625::io {
             // clear the data toggle
             (*ep) |= (0x1 << 6);
 
-            // get the data for the callback
-            const klib::usb::usb::callback_data data {
-                .endpoint = endpoint,
-                .data = state[endpoint].data,
-                .requested_size = state[endpoint].requested_size,
-                .transferred_size = state[endpoint].transferred_size,
-                .error_code = klib::usb::usb::error::reset,
-            };
-
             // get the callback
             const auto callback = state[endpoint].callback;
 
@@ -859,7 +800,7 @@ namespace klib::max32625::io {
                 // send a error to the callback. Do not care about the 
                 // return value as we are always clearing the endpoint
                 // in a reset event
-                callback(data);
+                callback(endpoint, klib::usb::usb::error::reset);
             }
         }
 
@@ -922,7 +863,6 @@ namespace klib::max32625::io {
             
             // set the endpoint data (we prefill the transferred size. When we get a 
             // interrupt for it is already transmitted)
-            state[endpoint].data = data;
             state[endpoint].requested_size = size;
             state[endpoint].transferred_size = s;
 
@@ -980,7 +920,6 @@ namespace klib::max32625::io {
             state[endpoint].callback = callback;
             
             // set the endpoint data
-            state[endpoint].data = data;
             state[endpoint].requested_size = size;
             state[endpoint].transferred_size = 0;
 

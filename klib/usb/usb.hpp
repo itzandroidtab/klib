@@ -34,27 +34,6 @@ namespace klib::usb {
         };
 
         /**
-         * @brief Struct with information used in the usb callback
-         * 
-         */
-        struct callback_data {
-            // current endpoint
-            uint8_t endpoint;
-
-            // pointer to the data we are transmitting
-            const uint8_t* data;
-
-            // requested amount to transmit 
-            uint32_t requested_size;
-
-            // amount of data that is transmitted
-            uint32_t transferred_size;
-
-            // error code
-            error error_code;
-        };
-
-        /**
          * @brief Different endpoint modes
          * 
          */
@@ -68,9 +47,8 @@ namespace klib::usb {
         /**
          * @brief Callback function. Called after a read/write is completed
          * 
-         * @return true if the request is complete
          */
-        using usb_callback = void (*)(const callback_data& data);
+        using usb_callback = void (*)(const uint8_t endpoint, const error error_code);
 
         /**
          * @brief Helper function to get the direction of a packet
@@ -531,9 +509,9 @@ namespace klib::usb {
         }
 
         template <typename Usb>
-        static void status_callback(const callback_data& data) {
+        static void status_callback(const uint8_t endpoint, const error error_code) {
             // check if we have a error
-            if (data.error_code == error::no_error) {
+            if (error_code == error::no_error) {
                 // no error send a ack
                 Usb::ack(0);
             }
