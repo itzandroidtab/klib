@@ -108,8 +108,7 @@ namespace klib::usb::device {
         };
 
         // configuration descriptor
-        __attribute__((aligned(4)))
-        const static inline config_descriptor config = {
+        const __attribute__((aligned(4))) static inline config_descriptor config = {
             {
                 .wTotalLength = sizeof(config_descriptor),
                 .bNumInterfaces = 0x01,
@@ -209,13 +208,8 @@ namespace klib::usb::device {
                 return;
             }
 
-            if (!irq_size && irq_data == nullptr) {
-                // we are done. return and do nothing
-                return;
-            }
-
-            // check if we have more data to send
-            if (!irq_size) {
+            // check if we still have a valid pointer and no data left to send
+            if ((!irq_size) && (irq_data != nullptr)) {
                 // we have nothing more to send. Send a empty report 
                 // with no keypresses
                 std::fill_n(report_data, sizeof(report_data), 0x00);
@@ -230,9 +224,17 @@ namespace klib::usb::device {
                 return;
             }
 
+            // do not continue if we do not have any valid data or 
+            // if we do not have any size left to send
+            if ((irq_data == nullptr) || (!irq_size)) {
+                // exit as we do not have anything left to send
+                return;
+            }
+
             // check if the next character is the same as the last send character
             if (irq_size > 0 && irq_data[0] == irq_data[1] && repeated_key == false) {
-                // we have detected a double character. Send a no keys pressed in between
+                // we have detected a double character. Send a no keys 
+                // pressed in between
                 std::fill_n(report_data, sizeof(report_data), 0x00);
 
                 // send the report to the host
@@ -245,7 +247,8 @@ namespace klib::usb::device {
                 return;
             }
 
-            // we still have data to send. Decrease the size and move the pointer
+            // we still have data to send. Decrease the size and move 
+            // the pointer
             irq_size--;
             irq_data++;
 
