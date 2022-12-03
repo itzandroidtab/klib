@@ -414,8 +414,8 @@ namespace klib::usb {
             }
 
             // check if the device has the vendor handler
-            constexpr bool has_get_interface = requires() {
-                Usb::device::template get_interface<Usb>();
+            constexpr bool has_get_interface = requires(const setup_packet &packet) {
+                Usb::device::template get_interface<Usb>(packet);
             };
 
             // check if the device has a get interface
@@ -445,8 +445,8 @@ namespace klib::usb {
             }
 
             // check if the device has the vendor handler
-            constexpr bool has_set_interface = requires() {
-                Usb::device::template set_interface<Usb>();
+            constexpr bool has_set_interface = requires(const setup_packet &packet) {
+                Usb::device::template set_interface<Usb>(packet);
             };
 
             // check if the device has a set interface
@@ -503,13 +503,13 @@ namespace klib::usb {
             const auto type = static_cast<setup::request_type>((packet.bmRequestType >> 5) & 0x3);
 
             // check if the device has the class handler
-            constexpr bool has_class_handler = requires() {
-                Usb::device::template handle_class_packet<Usb>();
+            constexpr bool has_class_handler = requires(const setup_packet &packet) {
+                Usb::device::template handle_class_packet<Usb>(packet);
             };
 
             // check if the device has the vendor handler
-            constexpr bool has_vendor_handler = requires() {
-                Usb::device::template handle_vendor_packet<Usb>();
+            constexpr bool has_vendor_handler = requires(const setup_packet &packet) {
+                Usb::device::template handle_vendor_packet<Usb>(packet);
             };
 
             // check what to do with our current packet
