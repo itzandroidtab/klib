@@ -413,8 +413,20 @@ namespace klib::usb {
                 return;
             }
 
-            // call the device get interface functionality
-            Usb::device::template get_interface<Usb>(packet);
+            // check if the device has the vendor handler
+            constexpr bool has_get_interface = requires() {
+                Usb::device::template get_interface<Usb>();
+            };
+
+            // check if the device has a get interface
+            if constexpr (has_get_interface) {
+                // call the device get interface functionality
+                Usb::device::template get_interface<Usb>(packet);
+            }
+            else {
+                // device does not support set interface
+                Usb::stall(0);
+            }
         }
 
         template <typename Usb>
@@ -432,8 +444,20 @@ namespace klib::usb {
                 return;
             }
 
-            // send the packet to the device
-            Usb::device::template set_interface<Usb>(packet);
+            // check if the device has the vendor handler
+            constexpr bool has_set_interface = requires() {
+                Usb::device::template set_interface<Usb>();
+            };
+
+            // check if the device has a set interface
+            if constexpr (has_set_interface) {
+                // send the packet to the device
+                Usb::device::template set_interface<Usb>(packet);
+            }
+            else {
+                // device does not support set interface
+                Usb::stall(0);
+            }
         }
 
     public:
@@ -483,7 +507,7 @@ namespace klib::usb {
                 Usb::device::template handle_class_packet<Usb>();
             };
 
-            // check if the device has the class handler
+            // check if the device has the vendor handler
             constexpr bool has_vendor_handler = requires() {
                 Usb::device::template handle_vendor_packet<Usb>();
             };

@@ -712,34 +712,6 @@ namespace klib::usb::device {
         }
 
         /**
-         * @brief Get the interface object
-         * 
-         * @warning needs to stall when not supported
-         * 
-         * @tparam Usb 
-         * @param packet 
-         */
-        template <typename Usb>
-        static void get_interface(const klib::usb::setup_packet &packet) {
-            // get interface is not supported. Stall
-            Usb::stall(0);
-        }
-
-        /**
-         * @brief Set the interface object
-         * 
-         * @warning needs to stall when not supported
-         * 
-         * @tparam Usb 
-         * @param packet 
-         */
-        template <typename Usb>
-        static void set_interface(const klib::usb::setup_packet &packet) {
-            // set interface is not supported. Stall
-            Usb::stall(0);
-        }
-
-        /**
          * @brief Get the device status. Called when the status is requested
          * 
          * @tparam Usb 
