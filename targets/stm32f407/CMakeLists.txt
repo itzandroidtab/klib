@@ -63,7 +63,8 @@ add_library(${PROJECT_NAME}::target_cpu ALIAS target_cpu)
 target_compile_features(target_cpu PUBLIC cxx_std_20)
 
 # set the target_cpu for klib
-target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=stm32f407")
+get_filename_component(TARGET_CPU_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=${TARGET_CPU_FOLDER}")
 
 # other compile options
 target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile>)
