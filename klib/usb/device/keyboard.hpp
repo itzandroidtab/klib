@@ -843,20 +843,6 @@ namespace klib::usb::device {
                     break;
             }
         }
-
-        /**
-         * @brief Handle a vendor packet.
-         * 
-         * @warning needs to stall when not supported
-         * 
-         * @tparam Usb 
-         * @param packet 
-         */
-        template <typename Usb>
-        static void handle_vendor_packet(const klib::usb::setup_packet &packet) {
-            // not supported
-            Usb::stall(0);
-        }
     };
 }
 

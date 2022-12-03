@@ -478,6 +478,16 @@ namespace klib::usb {
             // ge the request type from the packet
             const auto type = static_cast<setup::request_type>((packet.bmRequestType >> 5) & 0x3);
 
+            // check if the device has the class handler
+            constexpr bool has_class_handler = requires() {
+                Usb::device::template handle_class_packet<Usb>();
+            };
+
+            // check if the device has the class handler
+            constexpr bool has_vendor_handler = requires() {
+                Usb::device::template handle_vendor_packet<Usb>();
+            };
+
             // check what to do with our current packet
             switch (type) {
                 case setup::request_type::standard:
@@ -488,18 +498,31 @@ namespace klib::usb {
                     // the device needs to stall this request 
                     // if not supported using the Usb::stall()
                     // function
-                    return Usb::device::template handle_class_packet<Usb>(packet);
+                    if constexpr (has_class_handler) {
+                        // let the device handler handle the class packet
+                        return Usb::device::template handle_class_packet<Usb>(packet);
+                    }
+                    else {
+                        // stall if we do not have this handler
+                        return Usb::stall(0);
+                    }
                 case setup::request_type::vendor:
                     // the device needs to stall this request 
                     // if not supported using the Usb::stall()
                     // function
-                    return Usb::device::template handle_vendor_packet<Usb>(packet);
+                    if constexpr (has_vendor_handler) {
+                        // let the device handler handle the vendor packet
+                        return Usb::device::template handle_vendor_packet<Usb>(packet);
+                    }
+                    else {
+                        // stall if we do not have this handler
+                        return Usb::stall(0);
+                    }
                 case setup::request_type::reserved:
                 default:
                     // send a stall as we have no clue what to do
                     // with our current packet
-                    Usb::stall(0);
-                    break;
+                    return Usb::stall(0);
             }
 
             // the request should be stalled/acked before we enter.
