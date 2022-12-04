@@ -3,7 +3,6 @@
 
 #include <cstdint>
 
-// #include <klib/klib.hpp>
 #include <klib/math.hpp>
 
 namespace klib {
