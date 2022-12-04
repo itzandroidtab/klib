@@ -4,25 +4,47 @@
 #include <tuple>
 #include <klib/masked_irq.hpp>
 
-#include "periph.hpp"
-#include "pins.hpp"
+namespace klib::max32660::io::detail::alternate {
+    // alternate functions for all the gpio
+    // default function (view reference manual for 
+    // default functions for every pin)
+    struct none {};
 
-namespace klib::max32660::io::detail::port {
-    template <uint32_t Port>
-    const GPIO0_Type *port = nullptr;
+    // alternate function 1
+    struct func_1 {};
 
-    // port when using the gpio0
-    template <>
-    GPIO0_Type *const port<0> = GPIO0;
+    // alternate function 2
+    struct func_2 {};
+
+    // alternate function 3
+    struct func_3 {};
+}
+
+namespace klib::max32660::io::periph {
+    struct gpio0 {
+        // peripheral id (e.g gpio0, gpio1)
+        constexpr static uint32_t id = 0;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 40;
+
+        // port to the gpio hardware
+        static inline GPIO0_Type *const port = GPIO0;
+    };
+
+    struct gpio0_wakeup {
+        // peripheral id (e.g gpio0, gpio1)
+        constexpr static uint32_t id = 0;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 70;
+
+        // port to the gpio hardware
+        static inline GPIO0_Type *const port = GPIO0;
+    };
 }
 
 namespace klib::max32660::io::detail::pins {
-    template <typename Port>
-    const GPIO0_Type *port = nullptr;
-
-    template <>
-    GPIO0_Type *const port<io::detail::gpio0> = GPIO0;
-
     // get the pin mask of a pin number
     template <typename Pin>
     constexpr uint32_t mask = 1U << Pin::number;
@@ -36,29 +58,29 @@ namespace klib::max32660::io::detail::pins {
     template <typename Pin, typename Periph>    
     static void set_peripheral() {
         // set the 3 function registers
-        if constexpr (std::is_same_v<Periph, detail::alternate::func_1>) {
-            // setup alternate function 1
-            detail::pins::port<typename Pin::port>->EN2_CLR = mask<Pin>;
-            detail::pins::port<typename Pin::port>->EN1_CLR = mask<Pin>;
-            detail::pins::port<typename Pin::port>->EN_CLR = mask<Pin>;
+        if constexpr (std::is_same_v<Periph, io::detail::alternate::func_1>) {
+            // setup alternate function 1"
+            Pin::port::port->EN2_CLR = mask<Pin>;
+            Pin::port::port->EN1_CLR = mask<Pin>;
+            Pin::port::port->EN_CLR = mask<Pin>;
         }
-        else if (std::is_same_v<Periph, detail::alternate::func_2>) {
+        else if (std::is_same_v<Periph, io::detail::alternate::func_2>) {
             // setup alternate function 2
-            detail::pins::port<typename Pin::port>->EN2_CLR = mask<Pin>;
-            detail::pins::port<typename Pin::port>->EN1_SET = mask<Pin>;
-            detail::pins::port<typename Pin::port>->EN_CLR = mask<Pin>;
+            Pin::port::port->EN2_CLR = mask<Pin>;
+            Pin::port::port->EN1_SET = mask<Pin>;
+            Pin::port::port->EN_CLR = mask<Pin>;
         }
-        else if (std::is_same_v<Periph, detail::alternate::func_3>) {
+        else if (std::is_same_v<Periph, io::detail::alternate::func_3>) {
             // setup alternate function 3
-            detail::pins::port<typename Pin::port>->EN2_CLR = mask<Pin>;
-            detail::pins::port<typename Pin::port>->EN1_SET = mask<Pin>;
-            detail::pins::port<typename Pin::port>->EN_SET = mask<Pin>;
+            Pin::port::port->EN2_CLR = mask<Pin>;
+            Pin::port::port->EN1_SET = mask<Pin>;
+            Pin::port::port->EN_SET = mask<Pin>;
         }
         else {
             // setup normal gpio function
-            detail::pins::port<typename Pin::port>->EN2_CLR = mask<Pin>;
-            detail::pins::port<typename Pin::port>->EN1_CLR = mask<Pin>;
-            detail::pins::port<typename Pin::port>->EN_SET = mask<Pin>;
+            Pin::port::port->EN2_CLR = mask<Pin>;
+            Pin::port::port->EN1_CLR = mask<Pin>;
+            Pin::port::port->EN_SET = mask<Pin>;
         }
     }
 }
@@ -124,18 +146,18 @@ namespace klib::max32660::io {
 
         constexpr static bool get() {
             // get the status of the pin
-            return detail::pins::port<typename Pin::port>->IN & detail::pins::mask<Pin>;
+            return Pin::port::port->IN & detail::pins::mask<Pin>;
         }
 
         template <bool Val>
         constexpr static void pullup_enable() {
             // enable/disable the pullups
             if constexpr (Val) {
-                detail::pins::port<typename Pin::port>->PS |= detail::pins::mask<Pin>;
-                detail::pins::port<typename Pin::port>->PAD_CFG1 |= detail::pins::mask<Pin>;
+                Pin::port::port->PS |= detail::pins::mask<Pin>;
+                Pin::port::port->PAD_CFG1 |= detail::pins::mask<Pin>;
             }
             else {
-                detail::pins::port<typename Pin::port>->PAD_CFG1 &= ~detail::pins::mask<Pin>;
+                Pin::port::port->PAD_CFG1 &= ~detail::pins::mask<Pin>;
             }
         }
 
@@ -143,11 +165,11 @@ namespace klib::max32660::io {
         constexpr static void pulldown_enable() {
             // enable/disable the pulldowns
             if constexpr (Val) {
-                detail::pins::port<typename Pin::port>->PS &= ~detail::pins::mask<Pin>;
-                detail::pins::port<typename Pin::port>->PAD_CFG1 |= detail::pins::mask<Pin>;
+                Pin::port::port->PS &= ~detail::pins::mask<Pin>;
+                Pin::port::port->PAD_CFG1 |= detail::pins::mask<Pin>;
             }
             else {
-                detail::pins::port<typename Pin::port>->PAD_CFG1 &= ~detail::pins::mask<Pin>;
+                Pin::port::port->PAD_CFG1 &= ~detail::pins::mask<Pin>;
             }            
         }
     };
@@ -160,25 +182,25 @@ namespace klib::max32660::io {
             detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
 
             // enable the gpio output
-            detail::pins::port<typename Pin::port>->OUT_EN_SET = detail::pins::mask<Pin>;
+            Pin::port::port->OUT_EN_SET = detail::pins::mask<Pin>;
         }
 
         template <bool Val>
         constexpr static void set() {
             if constexpr (Val) {
-                detail::pins::port<typename Pin::port>->OUT_SET = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_SET = detail::pins::mask<Pin>;
             }
             else {
-                detail::pins::port<typename Pin::port>->OUT_CLR = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_CLR = detail::pins::mask<Pin>;
             }
         }
 
         constexpr static void set(const bool val) {
             if (val) {
-                detail::pins::port<typename Pin::port>->OUT_SET = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_SET = detail::pins::mask<Pin>;
             }
             else {
-                detail::pins::port<typename Pin::port>->OUT_CLR = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_CLR = detail::pins::mask<Pin>;
             }
         }
     };
@@ -195,28 +217,28 @@ namespace klib::max32660::io {
         constexpr static void set() {
             if constexpr (Val) {
                 // setup the gpio as a output
-                detail::pins::port<typename Pin::port>->OUT_EN_SET = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_EN_SET = detail::pins::mask<Pin>;
 
                 // enable the gpio output
                 pin_out<Pin>::template set<true>();
             }
             else {
                 // clear the gpio output flag
-                detail::pins::port<typename Pin::port>->OUT_EN_CLR = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_EN_CLR = detail::pins::mask<Pin>;
             }
         }
 
         constexpr static void set(const bool val) {
             if (val) {
                 // setup the gpio as a output
-                detail::pins::port<typename Pin::port>->OUT_EN_SET = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_EN_SET = detail::pins::mask<Pin>;
 
                 // enable the gpio output
                 pin_out<Pin>::template set<true>();
             }
             else {
                 // clear the gpio output flag
-                detail::pins::port<typename Pin::port>->OUT_EN_CLR = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_EN_CLR = detail::pins::mask<Pin>;
             }
         }
     };
@@ -233,11 +255,11 @@ namespace klib::max32660::io {
         constexpr static void set() {
             if constexpr (Val) {
                 // disable the gpio output
-                detail::pins::port<typename Pin::port>->OUT_EN_CLR = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_EN_CLR = detail::pins::mask<Pin>;
             }
             else {
                 // enable the gpio output
-                detail::pins::port<typename Pin::port>->OUT_EN_SET = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_EN_SET = detail::pins::mask<Pin>;
 
                 pin_out<Pin>::template set<false>();
             }
@@ -246,11 +268,11 @@ namespace klib::max32660::io {
         constexpr static void set(const bool val) {
             if (val) {
                 // disable the gpio output
-                detail::pins::port<typename Pin::port>->OUT_EN_CLR = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_EN_CLR = detail::pins::mask<Pin>;
             }
             else {
                 // enable the gpio output
-                detail::pins::port<typename Pin::port>->OUT_EN_SET = detail::pins::mask<Pin>;
+                Pin::port::port->OUT_EN_SET = detail::pins::mask<Pin>;
 
                 pin_out<Pin>::template set<false>();
             }
@@ -453,14 +475,14 @@ namespace klib::max32660::io {
                 constexpr uint32_t mask = create_pin_mask();
 
                 // read the whole pio and clear pins not in use
-                return detail::pins::port<typename pin<0>::port>->IN & mask;
+                return pin<0>::port->IN & mask;
             }
             else {
                 // create a mask of all the pins
                 constexpr uint32_t mask = create_pin_mask();
 
                 // read the whole pio and clear pins not in use
-                return map_to_pin_order(detail::pins::port<typename pin<0>::port>->IN & mask);
+                return map_to_pin_order(pin<0>::port->IN & mask);
             }
         }
 
@@ -561,9 +583,9 @@ namespace klib::max32660::io {
          */
         constexpr static void set_pio(const uint32_t positive_mask, const uint32_t negative_mask) {
             // set the pins
-            detail::pins::port<typename pin<0>::port>->OUT_SET = positive_mask;                
+            pin<0>::port->OUT_SET = positive_mask;                
             // clear the pins
-            detail::pins::port<typename pin<0>::port>->OUT_CLR = negative_mask;
+            pin<0>::port->OUT_CLR = negative_mask;
         }
         
         /**
@@ -577,12 +599,12 @@ namespace klib::max32660::io {
             // check if we need to call set
             if constexpr (PosMask) {
                 // set the pins;
-                detail::pins::port<typename pin<0>::port>->OUT_SET = PosMask;
+                pin<0>::port->OUT_SET = PosMask;
             }
 
             if constexpr (NegMask) {                   
                 // clear the pins
-                detail::pins::port<typename pin<0>::port>->OUT_CLR = NegMask;
+                pin<0>::port->OUT_CLR = NegMask;
             }
         }
 

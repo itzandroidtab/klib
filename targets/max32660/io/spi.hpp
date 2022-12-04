@@ -13,25 +13,131 @@
 
 #include "clocks.hpp"
 #include "port.hpp"
+#include "pins.hpp"
 
-namespace klib::max32660::io::detail::spi {
-    // default type when using the port
-    template <uint32_t Spi>
-    SPI17Y_Type *const port = nullptr;
+namespace klib::max32660::io::periph::detail::spi {
+    enum class mode {
+        miso,
+        mosi,
+        sck,
+        cs0
+    };
 
-    // port when using the spi0
-    template <>
-    SPI17Y_Type *const port<0> = SPI17Y;
+    template <typename Pin, mode Type, typename Periph>
+    struct spi {
+        // pin of the peripheral
+        using pin = Pin;
+
+        // type of the pin
+        constexpr static mode type = Type;
+
+        // alternate function
+        using periph = Periph;
+    };
 }
 
-namespace klib::max32660::io::detail::spi_i2s {
-    // default type when using the port
-    template <uint32_t Spi>
-    SPIMSS_Type *const port = nullptr;
+namespace klib::max32660::io::periph::wlp {
+    struct spi0 {
+        // peripheral id (e.g spi0, spi1)
+        constexpr static uint32_t id = 0;
 
-    // port when using the spi0
-    template <>
-    SPIMSS_Type *const port<1> = SPIMSS;
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 6;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 32;
+
+        // port to the spi peripheral
+        static inline SPI17Y_Type *const port = SPI17Y;
+
+        // configuration of the pins 
+        using mosi = detail::spi::spi<pins::package::wlp::pd4, detail::spi::mode::mosi, io::detail::alternate::func_1>;
+        using miso = detail::spi::spi<pins::package::wlp::pd3, detail::spi::mode::miso, io::detail::alternate::func_1>;
+        using sck = detail::spi::spi<pins::package::wlp::pc3, detail::spi::mode::sck, io::detail::alternate::func_1>;
+        using cs0 = detail::spi::spi<pins::package::wlp::pc4, detail::spi::mode::cs0, io::detail::alternate::func_1>;
+    };
+
+    struct spi1 {
+        // peripheral id (e.g spi0, spi1)
+        constexpr static uint32_t id = 1;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 7;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 33;
+
+        // port to the spi peripheral
+        static inline SPIMSS_Type *const port = SPIMSS;
+
+        // configuration of the pins 
+        using mosi = detail::spi::spi<pins::package::wlp::pc2, detail::spi::mode::mosi, io::detail::alternate::func_2>;
+        using miso = detail::spi::spi<pins::package::wlp::pc1, detail::spi::mode::miso, io::detail::alternate::func_2>;
+        using sck = detail::spi::spi<pins::package::wlp::pd1, detail::spi::mode::sck, io::detail::alternate::func_2>;
+        using cs0 = detail::spi::spi<pins::package::wlp::pd2, detail::spi::mode::cs0, io::detail::alternate::func_2>;
+    };
+}
+
+namespace klib::max32660::io::periph::tqfn_24 {
+    struct spi0 {
+        // peripheral id (e.g spi0, spi1)
+        constexpr static uint32_t id = 0;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 6;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 32;
+
+        // port to the spi peripheral
+        static inline SPI17Y_Type *const port = SPI17Y;
+
+        // configuration of the pins 
+        using mosi = detail::spi::spi<pins::package::tqfn_24::p20, detail::spi::mode::mosi, io::detail::alternate::func_1>;
+        using miso = detail::spi::spi<pins::package::tqfn_24::p21, detail::spi::mode::miso, io::detail::alternate::func_1>;
+        using sck = detail::spi::spi<pins::package::tqfn_24::p19, detail::spi::mode::sck, io::detail::alternate::func_1>;
+        using cs0 = detail::spi::spi<pins::package::tqfn_24::p18, detail::spi::mode::cs0, io::detail::alternate::func_1>;
+    };
+
+    struct spi1_0 {
+        // peripheral id (e.g spi0, spi1)
+        constexpr static uint32_t id = 1;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 7;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 33;
+
+        // port to the spi peripheral
+        static inline SPIMSS_Type *const port = SPIMSS;
+
+        // configuration of the pins 
+        using mosi = detail::spi::spi<pins::package::tqfn_24::p16, detail::spi::mode::mosi, io::detail::alternate::func_1>;
+        using miso = detail::spi::spi<pins::package::tqfn_24::p17, detail::spi::mode::miso, io::detail::alternate::func_1>;
+        using sck = detail::spi::spi<pins::package::tqfn_24::p5, detail::spi::mode::sck, io::detail::alternate::func_1>;
+        using cs0 = detail::spi::spi<pins::package::tqfn_24::p4, detail::spi::mode::cs0, io::detail::alternate::func_1>;
+    };
+
+    struct spi1_1 {
+        // peripheral id (e.g spi0, spi1)
+        constexpr static uint32_t id = 1;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 7;
+
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 33;
+
+        // port to the spi peripheral
+        static inline SPIMSS_Type *const port = SPIMSS;
+
+        // configuration of the pins 
+        using mosi = detail::spi::spi<pins::package::tqfn_24::p1, detail::spi::mode::mosi, io::detail::alternate::func_2>;
+        using miso = detail::spi::spi<pins::package::tqfn_24::p2, detail::spi::mode::miso, io::detail::alternate::func_2>;
+        using sck = detail::spi::spi<pins::package::tqfn_24::p24, detail::spi::mode::sck, io::detail::alternate::func_2>;
+        using cs0 = detail::spi::spi<pins::package::tqfn_24::p23, detail::spi::mode::cs0, io::detail::alternate::func_2>;
+    };
 }
 
 namespace klib::max32660::io {
@@ -44,9 +150,10 @@ namespace klib::max32660::io {
         // fifo size
         constexpr static uint8_t fifo_size = 32;
 
-        // port to the spi peripheral
-        static inline SPI17Y_Type *const port = io::detail::spi::port<Spi::id>;
-
+        /**
+         * @brief Struct used for passing clock calculations
+         * 
+         */
         struct clock_info {
             // high and low clock periods
             uint8_t high_clk;
@@ -106,17 +213,17 @@ namespace klib::max32660::io {
         template <bool TxEnabled, bool RxEnabled>
         static void setup_fifo() {
             if constexpr(TxEnabled) {
-                port->DMA |= (0x1 << 6);
+                Spi::port->DMA |= (0x1 << 6);
             }
             else {
-                port->DMA &= ~(0x1 << 6);
+                Spi::port->DMA &= ~(0x1 << 6);
             }
 
             if constexpr(RxEnabled) {
-                port->DMA |= (0x1 << 22);
+                Spi::port->DMA |= (0x1 << 22);
             }
             else {
-                port->DMA &= ~(0x1 << 22);
+                Spi::port->DMA &= ~(0x1 << 22);
             }
         }
 
@@ -130,7 +237,7 @@ namespace klib::max32660::io {
          */
         static uint16_t write_fifo(const uint8_t *const data, const uint16_t size, const uint16_t transmitted) {
             // get the amount of space available in the fifo
-            const uint8_t available_bytes = (fifo_size - (port->DMA >> 8) & 0x7f);
+            const uint8_t available_bytes = (fifo_size - (Spi::port->DMA >> 8) & 0x7f);
 
             // skip if we cannot write anything
             if (!available_bytes) {
@@ -148,7 +255,7 @@ namespace klib::max32660::io {
             // write all the data to the fifo
             for (uint32_t i = 0; i < t; i++) {
                 // write 1 byte at the time
-                port->DATA8[0] = data[transmitted + i];
+                Spi::port->DATA8[0] = data[transmitted + i];
             }
 
             return t;
@@ -164,7 +271,7 @@ namespace klib::max32660::io {
          */
         static uint16_t read_fifo(uint8_t *const data, const uint16_t size, const uint16_t received) {
             // get the amount of space available in the fifo
-            const uint8_t available_bytes = ((port->DMA >> 24) & 0x7f);
+            const uint8_t available_bytes = ((Spi::port->DMA >> 24) & 0x7f);
 
             // skip if we cannot write anything
             if (!available_bytes) {
@@ -182,7 +289,7 @@ namespace klib::max32660::io {
             // read from the fifo buffer
             for (uint32_t i = 0; i < t; i++) {
                 // read 1 byte at the time
-                data[received + i] = port->DATA8[0];
+                data[received + i] = Spi::port->DATA8[0];
             }
 
             return t;
@@ -195,7 +302,7 @@ namespace klib::max32660::io {
          * @return false 
          */
         static bool is_done() {
-            return (port->INT_FL & (0x1 << 11));
+            return (Spi::port->INT_FL & (0x1 << 11));
         } 
 
     public:
@@ -221,7 +328,7 @@ namespace klib::max32660::io {
 
             // set if we are using the cs pin, enable that the slave select stays asserted at 
             // the end of a transmission, enable master mode and enable the peripheral
-            port->CTRL0 = (
+            Spi::port->CTRL0 = (
                 ((!ExternalCs) << 15) | 
                 (0x1 << 8) |
                 (0x1 << 1) | 
@@ -229,7 +336,7 @@ namespace klib::max32660::io {
             );
 
             // set the amount of bits per character and set the spi mode
-            port->CTRL2 = (
+            Spi::port->CTRL2 = (
                 (convert_bits<Bits>() << 8) |
                 (!klib::io::spi::get_cpol<Mode>() << 1) |
                 !klib::io::spi::get_cpha<Mode>()
@@ -238,14 +345,14 @@ namespace klib::max32660::io {
             // set the clock
             clock_info clk = calculate_clock<Frequency>();
 
-            port->CLK_CFG = (
+            Spi::port->CLK_CFG = (
                 (clk.scale << 16) |
                 (clk.high_clk << 8) | 
                 clk.low_clk
             );
 
             // setup the chip select wait times
-            port->SS_TIME = (0x1 << 16) | (0x1);
+            Spi::port->SS_TIME = (0x1 << 16) | (0x1);
         }
 
         /**
@@ -257,16 +364,16 @@ namespace klib::max32660::io {
          */
         static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
             // clear the fifo buffers
-            port->DMA |= (0x1 << 23) | (0x1 << 7);
+            Spi::port->DMA |= (0x1 << 23) | (0x1 << 7);
 
             // clear the master data transmission done flag
-            port->INT_FL = (0x1 << 11);
+            Spi::port->INT_FL = (0x1 << 11);
 
             // enable the transmit fifo port
             setup_fifo<true, true>();
 
             // set the amount of character we want to receive/write
-            port->CTRL1 = size;
+            Spi::port->CTRL1 = size;
 
             // amount of data received/transmitted
             uint32_t transmitted = 0;
@@ -289,7 +396,7 @@ namespace klib::max32660::io {
                 // check if the transmission is already started
                 if (!started) {
                     // start the transmission
-                    port->CTRL0 |= (0x1 << 5);
+                    Spi::port->CTRL0 |= (0x1 << 5);
 
                     started = true;
                 }
@@ -313,16 +420,16 @@ namespace klib::max32660::io {
          */
         static void write(const uint8_t *const data, const uint16_t size) {
             // clear the fifo buffers
-            port->DMA |= (0x1 << 23) | (0x1 << 7);
+            Spi::port->DMA |= (0x1 << 23) | (0x1 << 7);
 
             // clear the master data transmission done flag
-            port->INT_FL = (0x1 << 11);
+            Spi::port->INT_FL = (0x1 << 11);
 
             // enable the transmit fifo port
             setup_fifo<true, false>();
 
             // set the amount of character we want to receive/write
-            port->CTRL1 = size;
+            Spi::port->CTRL1 = size;
 
             uint32_t transmitted = 0;
             bool started = false;
@@ -339,7 +446,7 @@ namespace klib::max32660::io {
                 // check if the transmission is already started
                 if (!started) {
                     // start the transmission
-                    port->CTRL0 |= (0x1 << 5);
+                    Spi::port->CTRL0 |= (0x1 << 5);
 
                     started = true;
                 }
@@ -359,7 +466,7 @@ namespace klib::max32660::io {
     class spi<Spi, typename std::enable_if<Spi::id == 1>::type> {
     protected:
         // port to the spi peripheral
-        static inline SPIMSS_Type *const port = io::detail::spi_i2s::port<Spi::id>;
+        // static inline SPIMSS_Type *const port = io::periph::detail::_i2s::port<Spi::id>;
 
     public:
         static void init() {
