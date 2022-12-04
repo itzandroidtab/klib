@@ -42,8 +42,8 @@ namespace klib::max32660::io::periph::wlp {
         // port to the i2c hardware
         static inline I2C0_Type *const port = I2C0;
 
-        using sda = detail::i2c::i2c<io::pins::package::wlp::pb3, detail::i2c::mode::sda, io::detail::alternate::func_1>;
-        using scl = detail::i2c::i2c<io::pins::package::wlp::pb4, detail::i2c::mode::scl, io::detail::alternate::func_1>;
+        using sda = detail::i2c::i2c<pins::package::wlp::pb3, detail::i2c::mode::sda, io::detail::alternate::func_1>;
+        using scl = detail::i2c::i2c<pins::package::wlp::pb4, detail::i2c::mode::scl, io::detail::alternate::func_1>;
     };
 
     struct i2c1 {
@@ -59,8 +59,8 @@ namespace klib::max32660::io::periph::wlp {
         // port to the i2c hardware
         static inline I2C0_Type *const port = I2C1;
 
-        using sda = detail::i2c::i2c<io::pins::package::wlp::pd2, detail::i2c::mode::sda, io::detail::alternate::func_1>;
-        using scl = detail::i2c::i2c<io::pins::package::wlp::pd1, detail::i2c::mode::scl, io::detail::alternate::func_1>;
+        using sda = detail::i2c::i2c<pins::package::wlp::pd2, detail::i2c::mode::sda, io::detail::alternate::func_1>;
+        using scl = detail::i2c::i2c<pins::package::wlp::pd1, detail::i2c::mode::scl, io::detail::alternate::func_1>;
     };
 }
 
@@ -78,8 +78,8 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // port to the i2c hardware
         static inline I2C0_Type *const port = I2C0;
 
-        using sda = detail::i2c::i2c<io::pins::package::tqfn_24::p13, detail::i2c::mode::sda, io::detail::alternate::func_1>;
-        using scl = detail::i2c::i2c<io::pins::package::tqfn_24::p14, detail::i2c::mode::scl, io::detail::alternate::func_1>;
+        using sda = detail::i2c::i2c<pins::package::tqfn_24::p13, detail::i2c::mode::sda, io::detail::alternate::func_1>;
+        using scl = detail::i2c::i2c<pins::package::tqfn_24::p14, detail::i2c::mode::scl, io::detail::alternate::func_1>;
     };
 
     struct i2c1 {
@@ -95,8 +95,8 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // port to the i2c hardware
         static inline I2C0_Type *const port = I2C1;
 
-        using sda = detail::i2c::i2c<io::pins::package::tqfn_24::p23, detail::i2c::mode::sda, io::detail::alternate::func_1>;
-        using scl = detail::i2c::i2c<io::pins::package::tqfn_24::p24, detail::i2c::mode::scl, io::detail::alternate::func_1>;
+        using sda = detail::i2c::i2c<pins::package::tqfn_24::p23, detail::i2c::mode::sda, io::detail::alternate::func_1>;
+        using scl = detail::i2c::i2c<pins::package::tqfn_24::p24, detail::i2c::mode::scl, io::detail::alternate::func_1>;
     };
 }
 

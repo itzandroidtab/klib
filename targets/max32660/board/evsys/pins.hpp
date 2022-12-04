@@ -3,7 +3,7 @@
 
 #include <io/pins.hpp>
 
-namespace klib::max32660::io::pins::board::evsys {
+namespace klib::max32660::pins::board::evsys {
     // using the tqfn_24 pins
     using d0 = package::tqfn_24::p5;
     using d1 = package::tqfn_24::p4;

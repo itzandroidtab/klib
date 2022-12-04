@@ -6,7 +6,7 @@ namespace klib {
     namespace TARGET_CPU {
         // check if we are using a board definition
         #ifdef TARGET_BOARD
-        namespace io::pins {
+        namespace pins {
             namespace board::TARGET_BOARD {};
 
             // add board to pin namespace

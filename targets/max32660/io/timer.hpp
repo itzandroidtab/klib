@@ -73,7 +73,7 @@ namespace klib::max32660::io::periph::wlp {
         // port to the timer
         static inline TMR0_Type *const port = TMR0;
 
-        using tmr = detail::tc::tc<io::pins::package::wlp::pd2, detail::tc::mode::tmr, io::detail::alternate::func_3>;
+        using tmr = detail::tc::tc<pins::package::wlp::pd2, detail::tc::mode::tmr, io::detail::alternate::func_3>;
     };
 }
 
@@ -91,7 +91,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // port to the timer
         static inline TMR0_Type *const port = TMR0;
 
-        using tmr = detail::tc::tc<io::pins::package::tqfn_24::p23, detail::tc::mode::tmr, io::detail::alternate::func_3>;
+        using tmr = detail::tc::tc<pins::package::tqfn_24::p23, detail::tc::mode::tmr, io::detail::alternate::func_3>;
     };
 }
 
