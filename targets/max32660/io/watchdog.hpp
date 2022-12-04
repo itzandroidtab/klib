@@ -5,23 +5,23 @@
 
 #include <max32660.hpp>
 
-namespace klib::max32660::io::detail::watchdog {
-    // default type when using the port
-    template <uint32_t Wdt>
-    WDT0_Type *const port = nullptr;
+// peripheral namespace for perihperals not affected by chip packages
+namespace klib::max32660::io::periph {
+    struct wdt0 {
+        // peripheral id (e.g wdt0, wdt1)
+        constexpr static uint32_t id = 0;
 
-    // port when using the Wdt0
-    template <>
-    WDT0_Type *const port<0> = WDT0;
+        // peripheral interrupt position
+        constexpr static uint32_t irq_id = 17;
+
+        // port to the watchdog hardware
+        static inline WDT0_Type *const port = WDT0;
+    };
 }
 
 namespace klib::max32660::io {
     template <typename Wdt>
     class watchdog {
-    protected:
-        // port to the Flc peripheral
-        static inline WDT0_Type *const port = detail::watchdog::port<Wdt::id>;
-
     public:
         /**
          * @brief Disable the watchdog timer
@@ -29,7 +29,7 @@ namespace klib::max32660::io {
          */
         static void disable() {
             // clear the enable bit
-            port->CTRL = 0;
+            Wdt::port->CTRL = 0;
         }
 
         /**
@@ -38,8 +38,8 @@ namespace klib::max32660::io {
          */
         static void feed() {
             // reset the counter by writing the reset sequence twice
-            port->RST = 0xa5;
-            port->RST = 0x5a;
+            Wdt::port->RST = 0xa5;
+            Wdt::port->RST = 0x5a;
         }
 
         /**
@@ -55,13 +55,13 @@ namespace klib::max32660::io {
         template <bool Irq = true, uint8_t IrqPeriod = 0, bool Rst = false, uint8_t RstPeriod = 0>
         static void init() {
             // setup the parameters of the watchdog
-            port->CTRL = (Irq << 10) | (IrqPeriod & 0xF) | (Rst << 11) | ((RstPeriod & 0xF) << 4);
+            Wdt::port->CTRL = (Irq << 10) | (IrqPeriod & 0xF) | (Rst << 11) | ((RstPeriod & 0xF) << 4);
 
             // feed the watchdog before enabling the watchdog timer
             feed();
 
             // enable the watchdog
-            port->CTRL |= (1 << 8);
+            Wdt::port->CTRL |= (1 << 8);
         }
     };
 }

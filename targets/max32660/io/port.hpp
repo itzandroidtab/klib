@@ -23,6 +23,7 @@ namespace klib::max32660::io::detail::alternate {
     struct func_3 {};
 }
 
+// peripheral namespace for perihperals not affected by chip packages
 namespace klib::max32660::io::periph {
     struct gpio0 {
         // peripheral id (e.g gpio0, gpio1)

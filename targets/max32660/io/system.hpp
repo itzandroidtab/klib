@@ -3,8 +3,70 @@
 
 #include <cstdint>
 
-#include <max32660.hpp>
 #include <klib/core_clock.hpp>
+
+#include <max32660.hpp>
+#include "pins.hpp"
+
+namespace klib::max32660::io::periph::detail::swd {
+    enum class mode {
+        dio,
+        clk
+    };
+
+    template <typename Pin, mode Type, typename Periph>
+    struct swd {
+        // pin of the peripheral
+        using pin = Pin;
+
+        // type of the pin
+        constexpr static mode type = Type;
+
+        // alternate function
+        using periph = Periph;
+    };
+}
+
+// peripheral pin mapping to alternate functions.
+namespace klib::max32660::io::periph::wlp {
+    struct swd0_0 {
+        // peripheral id (e.g swd0, swd1)
+        constexpr static uint32_t id = 0;
+
+        // configuration of the pins
+        using dio = detail::swd::swd<pins::package::wlp::pc1, detail::swd::mode::dio, io::detail::alternate::func_1>;
+        using clk = detail::swd::swd<pins::package::wlp::pc2, detail::swd::mode::clk, io::detail::alternate::func_1>;
+    };
+
+    struct swd0_1 {
+        // peripheral id (e.g swd0, swd1)
+        constexpr static uint32_t id = 0;
+
+        // configuration of the pins
+        using dio = detail::swd::swd<pins::package::wlp::pb4, detail::swd::mode::dio, io::detail::alternate::func_2>;
+        using clk = detail::swd::swd<pins::package::wlp::pb3, detail::swd::mode::clk, io::detail::alternate::func_2>;
+    };
+}
+
+namespace klib::max32660::io::periph::tqfn_24 {
+    struct swd0_0 {
+        // peripheral id (e.g swd0, swd1)
+        constexpr static uint32_t id = 0;
+
+        // configuration of the pins
+        using dio = detail::swd::swd<pins::package::tqfn_24::p2, detail::swd::mode::dio, io::detail::alternate::func_1>;
+        using clk = detail::swd::swd<pins::package::tqfn_24::p1, detail::swd::mode::clk, io::detail::alternate::func_1>;
+    };
+
+    struct swd0_1 {
+        // peripheral id (e.g swd0, swd1)
+        constexpr static uint32_t id = 0;
+
+        // configuration of the pins
+        using dio = detail::swd::swd<pins::package::tqfn_24::p14, detail::swd::mode::dio, io::detail::alternate::func_2>;
+        using clk = detail::swd::swd<pins::package::tqfn_24::p13, detail::swd::mode::clk, io::detail::alternate::func_2>;
+    };
+}
 
 namespace klib::max32660::io::system {
     /**
