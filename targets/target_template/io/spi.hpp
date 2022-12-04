@@ -3,6 +3,22 @@
 
 #include "pins.hpp"
 
+/**
+ * @brief The peripheral namespaces are as follows:
+ * 
+ * // helper namespace where the details about the hardware can be stored
+ * namespace klib::target_template::io::periph::detail::spi {
+ * }
+ * 
+ * // global peripherals, not affected by chip package
+ * namespace klib::target_template::io::periph {
+ * }
+ * 
+ * // peripheral mapping affected by chip package
+ * namespace klib::target_template::io::periph::lqfp_100 {
+ * }
+ */
+
 namespace klib::target_template::io::periph::detail::spi {
     enum class mode {
         miso,
