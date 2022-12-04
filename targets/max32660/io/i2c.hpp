@@ -237,8 +237,8 @@ namespace klib::max32660::io {
             clocks::enable<I2c>();
 
             // configure the gpio pins
-            io::detail::pins::set_peripheral<typename I2c::sda::pin, typename I2c::sda::periph>();
-            io::detail::pins::set_peripheral<typename I2c::scl::pin, typename I2c::scl::periph>();
+            detail::pins::set_peripheral<typename I2c::sda::pin, typename I2c::sda::periph>();
+            detail::pins::set_peripheral<typename I2c::scl::pin, typename I2c::scl::periph>();
 
             // enable the peripheral
             I2c::port->CTRL = 0x1;
