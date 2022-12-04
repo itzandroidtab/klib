@@ -142,7 +142,7 @@ namespace klib::max32660::io {
         constexpr static clock_info calculate_clock() {
             // check if we need to use high speed
             if constexpr (Speed == speed::high) {
-                // TODO: requires to know timing of the systemclock
+                // calculate the amount of ticks a clock pulse takes
                 uint32_t ticks = (klib::clock::get() / 2) / static_cast<uint32_t>(speed::fast);
 
                 // calculate timing based on 30% dutycycle
@@ -156,7 +156,7 @@ namespace klib::max32660::io {
                 return {t.high_clk, t.low_clk, hs_low_clk, hs_high_clk, true};
             }
             else {
-                // TODO: requires to know timing of the systemclock
+                // calculate the amount of ticks a clock pulse takes
                 uint32_t ticks = (klib::clock::get() / 2) / static_cast<uint32_t>(Speed);
 
                 // calculate timing based on 50% dutycycle
