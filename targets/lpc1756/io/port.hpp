@@ -31,7 +31,7 @@ namespace klib::lpc1756::io::periph {
         // constexpr static uint32_t irq_id = 40;
 
         // port to the gpio hardware
-        static inline LPC_GPIO0_Type *const port = LPC_GPIO0;
+        static inline GPIO0_Type *const port = GPIO0;
     };
 
     struct gpio1 {
@@ -42,7 +42,7 @@ namespace klib::lpc1756::io::periph {
         // constexpr static uint32_t irq_id = 40;
 
         // port to the gpio hardware
-        static inline LPC_GPIO0_Type *const port = LPC_GPIO1;
+        static inline GPIO0_Type *const port = GPIO1;
     };
     
     struct gpio2 {
@@ -53,7 +53,7 @@ namespace klib::lpc1756::io::periph {
         // constexpr static uint32_t irq_id = 40;
 
         // port to the gpio hardware
-        static inline LPC_GPIO0_Type *const port = LPC_GPIO2;
+        static inline GPIO0_Type *const port = GPIO2;
     };
 
     struct gpio3 {
@@ -64,7 +64,7 @@ namespace klib::lpc1756::io::periph {
         // constexpr static uint32_t irq_id = 40;
 
         // port to the gpio hardware
-        static inline LPC_GPIO0_Type *const port = LPC_GPIO3;
+        static inline GPIO0_Type *const port = GPIO3;
     };
 
     struct gpio4 {
@@ -75,7 +75,7 @@ namespace klib::lpc1756::io::periph {
         // constexpr static uint32_t irq_id = 40;
 
         // port to the gpio hardware
-        static inline LPC_GPIO0_Type *const port = LPC_GPIO4;
+        static inline GPIO0_Type *const port = GPIO4;
     };
 }
 
