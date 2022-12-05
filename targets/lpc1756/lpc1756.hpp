@@ -6,8 +6,8 @@
 // #include "lpc176x5x.h"
 
 namespace klib::lpc1756 {
-    // // irq for the lpc1756
-    // using irq = klib::irq<32>;
+    // irq for the lpc1756
+    using irq = klib::irq<50>;
 
     // /**
     //  * @brief Enable a interrupt
