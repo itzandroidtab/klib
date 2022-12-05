@@ -5,7 +5,7 @@
 
 #include "port.hpp"
 
-namespace klib::lpc1756::io::pins::package::lqfp_80 {
+namespace klib::lpc1756::pins::package::lqfp_80 {
     struct p1 {
         // TDO
     };
