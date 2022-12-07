@@ -17,7 +17,7 @@ namespace klib {
      * @tparam IrqCount 
      * @tparam Alignment 
      */
-    template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * 4)), (32 * 4))>
+    template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
     class irq {
     public:
         // using for the array of callbacks
