@@ -182,6 +182,7 @@ namespace klib::lpc1756::io {
  
     template <typename Pin>
     class pin_out {
+    public:
         constexpr static void init() {
             // clear all the alternate functions
             detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
