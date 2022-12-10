@@ -3,6 +3,7 @@
 
 #include <klib/units.hpp>
 #include <klib/core_clock.hpp>
+#include <klib/systick.hpp>
 
 namespace klib::detail {
     /**
@@ -53,6 +54,24 @@ namespace klib::detail {
         // disable the timer afterwards
         Timer::disable();
     }
+
+    /**
+     * @brief Delay using the systick timer. Timing 
+     * 
+     * @tparam Timer 
+     * @tparam T 
+     * @param time 
+     */
+    template <typename Timer, typename T>
+    static void systick_delay_impl(const T time) {
+        // get the milliseconds runtime
+        const time::ms ms = Timer::get_runtime() + time;
+
+        // calculate the amount of time to wait
+        while (Timer::get_runtime() != ms) {
+            // wait and do nothing
+        }
+    }
 }
 
 namespace klib {
@@ -89,7 +108,9 @@ namespace klib {
     }
 
     /**
-     * @brief Delay using a hardware timer
+     * @brief Delay using a hardware timer. When using the 
+     * systick timer the accuracy drops to the millisecond 
+     * level.
      * 
      * @tparam Timer 
      * @tparam T 
@@ -97,22 +118,31 @@ namespace klib {
      */
     template <typename Timer, typename T>
     static void delay(const T time) {
-        // get the amount of seconds in the time
-        const auto sec = static_cast<time::s>(time);
-
-        // delay in 1 second intervals as some timers 
-        // do not support frequencies below 1hz
-        for (uint32_t i = 0; i < sec.value; i++) {
-            detail::delay_impl<Timer>(time::s(1));
+        // check if we are using a timer peripheral 
+        // or using the systick timer
+        if constexpr (std::is_same_v<Timer, klib::systick>) {
+            // the systick timer is a free running timer. 
+            // handle it differently than the normal timers
+            detail::systick_delay_impl<Timer>(time);
         }
+        else {
+            // get the amount of seconds in the time
+            const auto sec = static_cast<time::s>(time);
 
-        // get the remainder of the time
-        const auto usec = static_cast<time::us>(
-            static_cast<time::us>(time) - static_cast<time::us>(sec)
-        );
+            // delay in 1 second intervals as some timers 
+            // do not support frequencies below 1hz
+            for (uint32_t i = 0; i < sec.value; i++) {
+                detail::delay_impl<Timer>(time::s(1));
+            }
 
-        // wait for the remainder
-        detail::delay_impl<Timer>(usec);
+            // get the remainder of the time
+            const auto usec = static_cast<time::us>(
+                static_cast<time::us>(time) - static_cast<time::us>(sec)
+            );
+
+            // wait for the remainder
+            detail::delay_impl<Timer>(usec);
+        }
     }
 }
 
