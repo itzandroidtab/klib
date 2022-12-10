@@ -108,6 +108,14 @@ namespace klib::time {
         return lhs.value + rhs.value;
     }
 
+    constexpr ms operator+(const ms lhs, const s rhs) {
+        return lhs.value + rhs.value;
+    }
+
+    constexpr ms operator+(const ms lhs, const us rhs) {
+        return lhs.value + rhs.value;
+    }
+
     constexpr s operator+(const s lhs, const s rhs) {
         return lhs.value + rhs.value;
     }
