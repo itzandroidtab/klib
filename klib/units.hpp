@@ -99,6 +99,42 @@ namespace klib::time {
     constexpr s operator-(const s lhs, const s rhs) {
         return lhs.value - rhs.value;
     }
+
+    constexpr us operator+(const us lhs, const us rhs) {
+        return lhs.value + rhs.value;
+    }
+
+    constexpr ms operator+(const ms lhs, const ms rhs) {
+        return lhs.value + rhs.value;
+    }
+
+    constexpr s operator+(const s lhs, const s rhs) {
+        return lhs.value + rhs.value;
+    }
+
+    constexpr bool operator==(const us lhs, const us rhs) {
+        return lhs.value == rhs.value;
+    }
+
+    constexpr bool operator==(const ms lhs, const ms rhs) {
+        return lhs.value == rhs.value;
+    }
+
+    constexpr bool operator==(const s lhs, const s rhs) {
+        return lhs.value == rhs.value;
+    }
+
+    constexpr bool operator!=(const us lhs, const us rhs) {
+        return !operator==(lhs, rhs);
+    }
+
+    constexpr bool operator!=(const ms lhs, const ms rhs) {
+        return !operator==(lhs, rhs);
+    }
+
+    constexpr bool operator!=(const s lhs, const s rhs) {
+        return !operator==(lhs, rhs);
+    }
 }
 
 #endif
