@@ -56,7 +56,8 @@ namespace klib::detail {
     }
 
     /**
-     * @brief Delay using the systick timer. Timing 
+     * @brief Delay using the systick timer. Timing uses the 
+     * remainder of the systick counter to increase accuracy.
      * 
      * @tparam Timer 
      * @tparam T 
@@ -64,11 +65,20 @@ namespace klib::detail {
      */
     template <typename Timer, typename T>
     static void systick_delay_impl(const T time) {
-        // get the milliseconds runtime
-        const time::ms ms = Timer::get_runtime() + time;
+        // get the counter value
+        const uint32_t count = Timer::get_counter();
 
         // calculate the amount of time to wait
-        while (Timer::get_runtime() != ms) {
+        const time::ms target = Timer::get_runtime() + static_cast<time::ms>(time);
+
+        // wait until we have reached the target runtime
+        while (Timer::get_runtime() != target) {
+            // wait and do nothing
+        }
+
+        // wait until the counter goes over the count we 
+        // had before 
+        while (Timer::get_counter() < count) {
             // wait and do nothing
         }
     }
