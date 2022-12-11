@@ -44,6 +44,7 @@ namespace klib::lpc802::io::system {
                 case clock_source::mhz_15:
                     // read the calibrated value from the flash
                     port[0] = ((volatile uint32_t*)(0x3fd4))[0];
+                    break;
                 case clock_source::mhz_12:
                     // read the calibrated value from the flash
                     port[0] = ((volatile uint32_t*)(0x3fd0))[0];
@@ -60,7 +61,7 @@ namespace klib::lpc802::io::system {
         static void set() {
             // check if the trim value will lock up the cpu
             static_assert(
-                Trim > (klib::exp2(18) - 1),
+                Trim <= (klib::exp2(18) - 1),
                 "Trim value sets bit that will lock up the cpu"
             );
 
