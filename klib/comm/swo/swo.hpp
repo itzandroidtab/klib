@@ -6,28 +6,41 @@
 
 namespace klib::swo {
     namespace detail {
-        // ITM stimulus port
-        struct stim_type {
-            union {
-                uint8_t u8;
-                uint16_t u16;
-                uint32_t u32;
-            };   
+        // amount of stimulus ports in the itm hardware
+        constexpr static uint8_t stim_size = 32;
+
+        /**
+         * @brief Struct with fields to the itm hardware
+         * 
+         */
+        struct itm_type {
+            struct stim_type {
+                union {
+                    uint8_t u8;
+                    uint16_t u16;
+                    uint32_t u32;
+                };   
+            };
+
+            // stimulus port
+            volatile stim_type port[stim_size];
+            
+            const uint32_t RESERVED0[864U];
+
+            // trace enable register 
+            volatile uint32_t ter;
+
+            const uint32_t RESERVED1[15U];
+
+            // trace privilege register
+            volatile uint32_t tcr;
         };
     }
 
     class swo {
     private:
-        constexpr static uint8_t stim_size = 32;
-
-        // pointer to the stimulus ports
-        static volatile inline detail::stim_type *const stim = ((volatile detail::stim_type*)0xE0000000);
-
-        // pointer to the itm tcr register
-        static volatile inline uint32_t *const tcr = ((volatile uint32_t*)0xE0000E80);
-
-        // pointer to the itm ter register
-        static volatile inline uint32_t *const ter = ((volatile uint32_t*)0xE0000E80);
+        // pointer to the itm hardware
+        static inline detail::itm_type *const port = ((detail::itm_type*)0xE0000000);
 
         // pointer to the debug exception and monitor control register
         static volatile inline uint32_t *const demcr = ((volatile uint32_t*)0xE000EDFC);
@@ -47,7 +60,7 @@ namespace klib::swo {
             typename = std::enable_if_t<sizeof(T) <= 4>
         >
         static void write(const T data) {
-            static_assert(Channel < stim_size, "Stimulus port only supports up to stim_size of channels");
+            static_assert(Channel < detail::stim_size, "Stimulus port only supports up to stim_size of channels");
 
             // check if ITM is enabled. This class expects the debugger
             // to enable ITM. When it is not enabled it will skip.
@@ -58,13 +71,13 @@ namespace klib::swo {
             // check if we need to block or not
     	    if constexpr (Blocking) {
                 // check if the previous transfer has finished
-                while (!stim[Channel].u32) {
+                while (!port->port[Channel].u32) {
                     // wait until it is done
                 }              
             }
             else {
                 // check if we can write data
-                if (!stim[Channel].u32) {
+                if (!port->port[Channel].u32) {
                     // we cannot as we are not blocking return
                     return;
                 }
@@ -72,13 +85,13 @@ namespace klib::swo {
 
             // write the data based on the correct size
             if constexpr (sizeof(T) == 1) {
-                stim[Channel].u8 = *(reinterpret_cast<const uint8_t*>(&data));
+                port->port[Channel].u8 = *(reinterpret_cast<const uint8_t*>(&data));
             }
             else if constexpr (sizeof(T) == 2) {
-                stim[Channel].u16 = *(reinterpret_cast<const uint16_t*>(&data));
+                port->port[Channel].u16 = *(reinterpret_cast<const uint16_t*>(&data));
             }
             else if constexpr (sizeof(T) > 2) {
-                stim[Channel].u32 = *(reinterpret_cast<const uint32_t*>(&data));
+                port->port[Channel].u32 = *(reinterpret_cast<const uint32_t*>(&data));
             }
         }
 
@@ -90,7 +103,7 @@ namespace klib::swo {
          * @return false 
          */
         static bool enabled() {
-            return ((*tcr & 0x1) && (*demcr & (1 << 24)) && (*ter & 0x1));
+            return ((port->tcr & 0x1) && (*demcr & (1 << 24)) && (port->ter & 0x1));
         }
     };
 }
