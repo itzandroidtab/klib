@@ -48,7 +48,7 @@ When a specific board is not found within a target cpu this include will give a 
 
 Minimal main file:
 ```cpp
-#include <klib.hpp>
+#include <klib/klib.hpp>
 
 int main() {
     return 0;
