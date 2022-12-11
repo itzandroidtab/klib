@@ -17,6 +17,10 @@ set_target_properties(kproject PROPERTIES OUTPUT_NAME "klib" SUFFIX ".elf")
 target_compile_definitions(klib PUBLIC "KLIB_DEFAULT_COUT=rtt")
 target_compile_definitions(klib PUBLIC "KLIB_DEFAULT_CIN=rtt")
 
+# override the rtt buffer size
+target_compile_definitions(klib PUBLIC "BUFFER_SIZE_UP=128")
+target_compile_definitions(klib PUBLIC "BUFFER_SIZE_DOWN=16")
+
 # link the kproject to klib and the cpu target
 target_link_libraries(kproject PUBLIC klib)
 target_link_libraries(kproject PUBLIC target_cpu)
