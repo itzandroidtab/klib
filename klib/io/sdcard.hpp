@@ -1,6 +1,7 @@
 #ifndef KLIB_SDCARD_HPP
 #define KLIB_SDCARD_HPP
 
+#include <cstdint>
 #include <optional>
 #include <type_traits>
 
