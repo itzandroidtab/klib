@@ -22,7 +22,10 @@ namespace klib::lpc802::io::system {
 
         // get a pointer to the clock trimming register. This is a 
         // undocumented register that is used in the bootrom
-        static volatile inline uint32_t *const port = reinterpret_cast<volatile uint32_t*>(0x40048000 + 0x28);
+        static volatile inline uint32_t *const trim = reinterpret_cast<volatile uint32_t*>(0x40048000 + 0x28);
+
+        // get a pointer to the syscon
+        static inline SYSCON_Type *const port = SYSCON;
 
     public:
         template <clock_source Clock>
@@ -39,19 +42,22 @@ namespace klib::lpc802::io::system {
             switch (Clock) {
                 case clock_source::mhz_9:
                     // read the calibrated value from the flash
-                    port[0] = ((volatile uint32_t*)(0x3fcc))[0];
+                    (*trim) = ((volatile uint32_t*)(0x3fcc))[0];
                     break;
                 case clock_source::mhz_15:
                     // read the calibrated value from the flash
-                    port[0] = ((volatile uint32_t*)(0x3fd4))[0];
+                    (*trim) = ((volatile uint32_t*)(0x3fd4))[0];
                     break;
                 case clock_source::mhz_12:
                     // read the calibrated value from the flash
-                    port[0] = ((volatile uint32_t*)(0x3fd0))[0];
+                    (*trim) = ((volatile uint32_t*)(0x3fd0))[0];
                     break;
                 default:
                     break;
             }
+
+            // set the clock divider to 1
+            port->SYSAHBCLKDIV = 0x1;
 
             // set the clock speed
             klib::clock::set(static_cast<uint32_t>(Clock));
@@ -66,7 +72,10 @@ namespace klib::lpc802::io::system {
             );
 
             // set the trim value in the register
-            port[0] = Trim;
+            (*trim) = Trim;
+
+            // set the clock divider to 1
+            port->SYSAHBCLKDIV = 0x1;
 
             // set the frequency the user provides
             klib::clock::set(ClockFreq);
