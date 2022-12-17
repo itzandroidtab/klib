@@ -49,22 +49,22 @@ namespace klib::lpc1756::io::detail::pins {
         // check what pointer to return
         switch (offset) {
             case 1:
-                return offsetof(PINCONNECT_Type, PINSEL1);
+                return offsetof(PINCONNECT_Type, PINSEL1) / 4;
             case 2:
-                return offsetof(PINCONNECT_Type, PINSEL2);
+                return offsetof(PINCONNECT_Type, PINSEL2) / 4;
             case 3:
-                return offsetof(PINCONNECT_Type, PINSEL3);
+                return offsetof(PINCONNECT_Type, PINSEL3) / 4;
             case 4:
-                return offsetof(PINCONNECT_Type, PINSEL4);
+                return offsetof(PINCONNECT_Type, PINSEL4) / 4;
             case 7:
-                return offsetof(PINCONNECT_Type, PINSEL7);
+                return offsetof(PINCONNECT_Type, PINSEL7) / 4;
             case 9:
-                return offsetof(PINCONNECT_Type, PINSEL9);
+                return offsetof(PINCONNECT_Type, PINSEL9) / 4;
             case 10:
-                return offsetof(PINCONNECT_Type, PINSEL10);
+                return offsetof(PINCONNECT_Type, PINSEL10) / 4;
             default:
             case 0:
-                return offsetof(PINCONNECT_Type, PINSEL0);
+                return offsetof(PINCONNECT_Type, PINSEL0) / 4;
         }
     }
 
