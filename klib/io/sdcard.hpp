@@ -5,6 +5,8 @@
 #include <optional>
 #include <type_traits>
 
+#include <klib/math.hpp>
+
 namespace klib::io {
     /**
      * @brief Sd card interface using spi. Needs to have 

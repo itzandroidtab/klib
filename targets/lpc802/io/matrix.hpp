@@ -281,7 +281,7 @@ namespace klib::lpc802::io {
         static void clear() {
             // get a pointer to the matrix
             volatile uint8_t *const matrix_array = (
-                reinterpret_cast<volatile uint32_t *const>(Matrix::port)
+                reinterpret_cast<volatile uint8_t *const>(Matrix::port)
             );
 
             // search in the array for the pin
