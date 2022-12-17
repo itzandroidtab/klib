@@ -271,6 +271,28 @@ namespace klib::lpc802::io {
             // disable the matrix perihperal clock
             clocks::disable<Matrix>();
         }
+
+        /**
+         * @brief Clear all the alternate functions for the provided pin
+         * 
+         * @tparam Pin 
+         */
+        template <typename Pin>
+        static void clear() {
+            // get a pointer to the matrix
+            volatile uint8_t *const matrix_array = (
+                reinterpret_cast<volatile uint32_t *const>(Matrix::port)
+            );
+
+            // search in the array for the pin
+            for (uint32_t i = 0; i < (8 * sizeof(uint32_t)); i++) {
+                // check if the current item matches the array value
+                if (Pin::number == matrix_array[i]) {
+                    // clear the pin from the matrix
+                    matrix_array[i] = 0xff;
+                }
+            }
+        }
     };
 }
 

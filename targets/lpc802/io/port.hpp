@@ -6,6 +6,7 @@
 
 #include <lpc802.hpp>
 #include "clocks.hpp"
+#include "matrix.hpp"
 
 namespace klib::lpc802::io::detail::pins {
     // get the pin mask of a pin number
@@ -35,6 +36,9 @@ namespace klib::lpc802::io {
             // enable the gpio clock
             clocks::enable<typename Pin::port>();
 
+            // clear all the alternate functions
+            matrix<periph::matrix0>::clear<Pin>();
+
             // set the pin as a input (clear the pin int the direction mask)
             Pin::port::port->DIRCLR0 |= detail::pins::mask<Pin>;
         }
@@ -51,6 +55,9 @@ namespace klib::lpc802::io {
         constexpr static void init() {
             // enable the gpio clock
             clocks::enable<typename Pin::port>();
+
+            // clear all the alternate functions
+            matrix<periph::matrix0>::clear<Pin>();
 
             // enable the gpio output
             Pin::port::port->DIRSET0 |= detail::pins::mask<Pin>;
