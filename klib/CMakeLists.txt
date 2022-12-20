@@ -48,6 +48,7 @@ target_link_libraries(klib PUBLIC target_cpu_options)
 
 # set the common flags
 target_compile_options(klib PRIVATE "-Wall")
+target_compile_options(klib PRIVATE "-Wextra")
 target_compile_options(klib PRIVATE "-Werror")
 
 target_compile_options(klib PRIVATE "-Wno-maybe-uninitialized")
