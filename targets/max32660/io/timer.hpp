@@ -251,7 +251,7 @@ namespace klib::max32660::io {
      * @tparam Timer 
      */
     template <typename Timer>
-    using oneshot_timer = detail::timer::base_timer<Timer, detail::timer::mode::continuous>;
+    using oneshot_timer = detail::timer::base_timer<Timer, detail::timer::mode::one_shot>;
 
     /**
      * @brief Pin that uses a timer to toggle the output.
