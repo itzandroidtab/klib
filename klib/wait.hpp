@@ -47,7 +47,7 @@ namespace klib::detail {
             // if we dont have low power sleep enabled we will just busy loop
             if constexpr (TARGET_LOW_POWER_SLEEP == true) {
                 // let the cpu sleep until we have a interrupt
-                asm("WFI");
+                asm("WFE");
             }
         }
 
