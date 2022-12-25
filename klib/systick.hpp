@@ -33,10 +33,11 @@ namespace klib {
         // using for the array of callbacks
         using interrupt_callback = void (*)();
 
-        // callback
+        // additional callback when the systick is triggered.
         static inline interrupt_callback callback = nullptr;
 
-        // current runtime value in ms. Can store up to 
+        // current runtime value in ms. Can store up to 49.71 
+        // days of runtime in ms
         static volatile inline time::ms runtime = 0;
 
         /**
