@@ -3,7 +3,7 @@
 
 #include <tuple>
 
-#include <klib/masked_irq.hpp>
+#include <klib/irq_helper.hpp>
 
 #include <max32660.hpp>
 
@@ -91,15 +91,17 @@ namespace klib::max32660::io::detail::pins {
 
 namespace klib::max32660::io {
     /**
-     * @brief Interrupt handler for a port. Uses masked register to handle the interrupts
+     * @brief Interrupt handler for a port. Uses irq helper to handle the interrupts
      * 
      * @tparam Port 
      */
     template <typename Port>
     class port_interrupt {
     protected:
-        // masked interrupt register to handle all interrups
-        static inline klib::masked_register_irq masked;
+        using irq_helper = klib::irq_helper<32>;
+
+        // irq helper to handle all interrups
+        static inline irq_helper helper;
 
         /**
          * @brief Interrupt handler
@@ -116,7 +118,7 @@ namespace klib::max32660::io {
             Port::port->INT_CLR = status & mask;
 
             // handle the interrupts that are registered
-            masked.handle_irq(status, mask);
+            helper.handle_irq(status, mask);
         }
 
     public:
@@ -135,12 +137,12 @@ namespace klib::max32660::io {
          * @param callback 
          */
         template <typename Pin>
-        static void register_irq(masked_register_irq::interrupt_callback callback) {
+        static void register_irq(irq_helper::interrupt_callback callback) {
             // check if the port is correct
             static_assert(std::is_same_v<typename Pin::port, Port>, "Pin is not for this port");
 
             // register the interrupt with a specific pin
-            masked.register_irq<Pin::number>(callback);
+            helper.register_irq<Pin::number>(callback);
         }
 
         template <typename Pin>
@@ -148,8 +150,8 @@ namespace klib::max32660::io {
             // check if the port is correct
             static_assert(std::is_same_v<typename Pin::port, Port>, "Pin is not for this port");
 
-            // clear the interrupt from the masked irq
-            masked.unregister_irq<Pin::number>();
+            // clear the interrupt from the helper irq
+            helper.unregister_irq<Pin::number>();
         }
     };
 }
@@ -399,6 +401,13 @@ namespace klib::max32660::io {
 
     template <typename Pin>
     class pin_interrupt {
+    public:
+        /**
+         * @brief Using for the interrupt callback used in the pin irq
+         * 
+         */
+        using interrupt_callback = port_interrupt<typename Pin::port>::irq_helper::interrupt_callback::interrupt_callback;
+        
     protected:
         /**
          * @brief Trigger modes
@@ -410,7 +419,7 @@ namespace klib::max32660::io {
         };
 
         template <trigger Trigger, bool Value, bool DualEdge>
-        constexpr static void init(masked_register_irq::interrupt_callback callback) {
+        constexpr static void init(interrupt_callback callback) {
             // init the port
             port_interrupt<typename Pin::port>::init();
 
@@ -451,13 +460,13 @@ namespace klib::max32660::io {
         };
 
         template <level Level>
-        constexpr static void init(masked_register_irq::interrupt_callback callback) {
+        constexpr static void init(interrupt_callback callback) {
             // init the level trigger
             init<trigger::level, static_cast<bool>(Level), false>(callback);
         }
 
         template <edge Edge>
-        constexpr static void init(masked_register_irq::interrupt_callback callback) {
+        constexpr static void init(interrupt_callback callback) {
             // init the edge trigger
             init<trigger::edge, static_cast<bool>(Edge), Edge == edge::dual_edge>(callback);
         }
