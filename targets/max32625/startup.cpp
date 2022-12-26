@@ -12,7 +12,7 @@
 #endif
 
 void __attribute__((__constructor__(101))) __target_startup() {
-    using target = klib::max32625;
+    namespace target = klib::max32625;
 
     // change the core clock to the correct frequency
     klib::clock::set(96'000'000);
