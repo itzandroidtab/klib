@@ -36,6 +36,7 @@ namespace klib::detail {
 
         // init the timer
         Timer::init([]() {
+            // set the flag we are done
             done<Timer> = true;
         }, 1'000'000 / time.value);
 
