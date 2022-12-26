@@ -10,6 +10,16 @@
 
 #include <klib/stream.hpp>
 
+namespace klib::max32625::io::periph {
+    struct usb0 {
+        // peripheral id (e.g usb0, usb1)
+        constexpr static uint32_t id = 0;
+
+        // interrupt id (including the arm vector table)
+        constexpr static uint32_t interrupt_id = 24;
+    };
+}
+
 namespace klib::max32625::io::detail::usb {
     // default type when using the port
     template<uint32_t Usb>
