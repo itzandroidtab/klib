@@ -1,7 +1,7 @@
 #ifndef KLIB_MAX32625_USB_HPP
 #define KLIB_MAX32625_USB_HPP
 
-#include <klib/masked_irq.hpp>
+#include <klib/irq_helper.hpp>
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
 
@@ -100,9 +100,11 @@ namespace klib::max32625::io {
         // port to the usb peripheral
         static inline USB_Type *const port = io::detail::usb::port<Usb::id>;
 
+        using irq_helper = klib::irq_helper<32>;
+
         // create a helper to call all the specific functions when 
         // certain bits are set in the status register
-        static inline auto irq_helper = masked_register_irq();
+        static inline auto helper = irq_helper();
 
         /**
          * @brief Different events supported by the hardware
@@ -143,9 +145,9 @@ namespace klib::max32625::io {
         }
 
         template <event Num>
-        static void setup_event_irq(const masked_register_irq::interrupt_callback &irq) {
+        static void setup_event_irq(const irq_helper::interrupt_callback &irq) {
             // register the interrupt is the helper
-            irq_helper.register_irq<static_cast<uint8_t>(Num)>(irq);
+            helper.register_irq<static_cast<uint8_t>(Num)>(irq);
 
             // enable the interrupt in the enable register
             enable_irq<Num>();
@@ -249,7 +251,7 @@ namespace klib::max32625::io {
             state[endpoint].callback = nullptr;
         }
 
-        static void setup_packet_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+        static void setup_packet_irq() {
             // create a copy of the setup packet
             const uint32_t buffer[2] = {
                 port->SETUP0,
@@ -263,7 +265,7 @@ namespace klib::max32625::io {
             klib::usb::usb::handle_setup_packet<usb_type>(packet);
         }
 
-        static void novbus_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+        static void novbus_irq() {
             // disable interrupts that make only sense when we are connected
             disable_irq<event::bus_reset>();
             disable_irq<event::suspend>();
@@ -279,7 +281,7 @@ namespace klib::max32625::io {
             sleep();
         }
 
-        static void vbus_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+        static void vbus_irq() {
             // clear any bus reset interrupt that has not been processed yet
             clear_irq<event::bus_reset>();
             // setup and enable the busreset interrupt
@@ -301,12 +303,12 @@ namespace klib::max32625::io {
             sleep();
         }
 
-        static void suspend_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+        static void suspend_irq() {
             // put the usb controller in low power mode
             sleep();
         }
 
-        static void activity_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+        static void activity_irq() {
             // wakeup the usb transceiver 
             wakeup();
 
@@ -314,7 +316,7 @@ namespace klib::max32625::io {
             Device::template activity<usb_type>();
         }
 
-        static void bus_reset_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+        static void bus_reset_irq() {
             // wakeup the usb hardware
             wakeup();
 
@@ -368,7 +370,7 @@ namespace klib::max32625::io {
          * @param status_register 
          * @param interrupt_mask 
          */
-        static void data_in_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+        static void data_in_irq() {
             // get the in interrupts
             const uint32_t in_irq = port->IN_INT;
 
@@ -469,7 +471,7 @@ namespace klib::max32625::io {
          * @param status_register 
          * @param interrupt_mask 
          */
-        static void data_out_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
+        static void data_out_irq() {
             // get the out interrupts
             const uint32_t out_irq = port->OUT_INT;
 
@@ -565,24 +567,24 @@ namespace klib::max32625::io {
                 }
 
                 // call the bus reset
-                bus_reset_irq(status, mask);
+                bus_reset_irq();
             }
             else {
                 // do not process any in/out request after the bus reset
 
                 // check for data in requests
                 if (masked_status & event_mask<event::endpoint_in>()) {
-                    data_in_irq(status, mask);
+                    data_in_irq();
                 }
 
                 // check for data out requests
                 if (masked_status & event_mask<event::endpoint_out>()) {
-                    data_out_irq(status, mask);
+                    data_out_irq();
                 }
             }
 
             // use the interrupt helper to handle the other individual bits
-            irq_helper.handle_irq(status, mask);
+            helper.handle_irq(status, mask);
         }
 
     public:
