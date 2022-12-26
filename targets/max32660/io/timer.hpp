@@ -152,7 +152,7 @@ namespace klib::max32660::io::detail::timer {
             clocks::enable<Timer>();
 
             // disable the timer
-            Timer::port->CN &= ~(0x1 << 7);
+            disable();
 
             // setup the timer (provided mode and prescaler of 1)
             Timer::port->CN = (static_cast<uint8_t>(Mode));
