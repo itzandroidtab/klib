@@ -125,6 +125,23 @@ namespace klib {
         }
 
         /**
+         * @brief Init the systick using the default 100hz calibration value 
+         * in the systick register. Should only be used when calibration value
+         * is valid for the current clock frequency
+         * 
+         * @tparam Irq 
+         * @tparam ExternalClockSource 
+         */
+        template <typename Irq, bool ExternalClockSource = false>
+        static void init_with_default_calibration(const interrupt_callback& irq = nullptr) {
+            // divide the 100hz by 10 to get the interval for 1khz
+            port->load = (port->calibration / 10);
+
+            // init the systick
+            init_impl<Irq, ExternalClockSource>(irq);
+        }
+
+        /**
          * @brief Disable the timer
          * 
          */
