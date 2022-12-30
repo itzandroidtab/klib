@@ -119,10 +119,11 @@ namespace klib::max32660::io::detail::timer {
      */
     template <typename Timer, mode Mode = mode::continuous>
     class base_timer {
-    protected:
+    public:
         // using for the array of callbacks
         using interrupt_callback = void (*)();
 
+    protected:
         // callback
         static inline interrupt_callback callback = nullptr;
 
