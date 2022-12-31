@@ -2,6 +2,7 @@
 #define KLIB_UNITS_HPP
 
 #include <cstdint>
+#include <type_traits>
 
 namespace klib {
     enum class base {
@@ -18,10 +19,18 @@ namespace klib {
 }
 
 namespace klib::time {
+    /**
+     * @brief Declarations for all the time units
+     * 
+     */
     struct us;
     struct ms;
     struct s;
 
+    /**
+     * @brief Definitions for all the time units
+     * 
+     */
     struct us {
         uint32_t value;
 
@@ -49,19 +58,21 @@ namespace klib::time {
         constexpr operator ms() const;
     };
 
+    /**
+     * @brief Concept to check if we have a time unit
+     * 
+     * @tparam T 
+     */
+    template <typename T>
+    concept is_time_unit = std::is_same_v<T, us> || std::is_same_v<T, ms> || std::is_same_v<T, s>;
+
+    /**
+     * @brief Operators for all the time units
+     * 
+     */
     constexpr us operator"" _us(const uint64_t value) {
         // get rid of the uint64_t straight away
         return us(static_cast<uint32_t>(value));
-    }
-
-    constexpr ms operator"" _ms(const uint64_t value) {
-        // get rid of the uint64_t straight away
-        return ms(static_cast<uint32_t>(value));
-    }
-
-    constexpr s operator"" _s(const uint64_t value) {
-        // get rid of the uint64_t straight away
-        return s(static_cast<uint32_t>(value));
     }
 
     constexpr us::operator ms() const {
@@ -70,7 +81,12 @@ namespace klib::time {
 
     constexpr us::operator s() const {
         return (value / 1000 / 1000);
-    } 
+    }
+
+    constexpr ms operator"" _ms(const uint64_t value) {
+        // get rid of the uint64_t straight away
+        return ms(static_cast<uint32_t>(value));
+    }
 
     constexpr ms::operator us() const {
         return (value * 1000);
@@ -78,6 +94,11 @@ namespace klib::time {
 
     constexpr ms::operator s() const {
         return (value / 1000);   
+    }
+
+    constexpr s operator"" _s(const uint64_t value) {
+        // get rid of the uint64_t straight away
+        return s(static_cast<uint32_t>(value));
     }
 
     constexpr s::operator us() const {
@@ -88,60 +109,52 @@ namespace klib::time {
         return (value * 1000);
     }
 
-    constexpr us operator-(const us lhs, const us rhs) {
-        return lhs.value - rhs.value;
+    /**
+     * @brief Operators for the time units
+     * 
+     */
+    template <typename T, typename G>
+    constexpr T operator-(const T lhs, const G rhs) requires is_time_unit<T> && is_time_unit<G> {
+        // cast the rhs to the type on the left and substract
+        return lhs.value - static_cast<T>(rhs).value;
     }
 
-    constexpr ms operator-(const ms lhs, const ms rhs) {
-        return lhs.value - rhs.value;
+    template <typename T, typename G>
+    constexpr T operator+(const T lhs, const G rhs) requires is_time_unit<T> && is_time_unit<G> {
+        // cast the rhs to the type on the left and substract
+        return lhs.value + static_cast<T>(rhs).value;
     }
 
-    constexpr s operator-(const s lhs, const s rhs) {
-        return lhs.value - rhs.value;
-    }
-
-    constexpr us operator+(const us lhs, const us rhs) {
-        return lhs.value + rhs.value;
-    }
-
-    constexpr ms operator+(const ms lhs, const ms rhs) {
-        return lhs.value + rhs.value;
-    }
-
-    constexpr ms operator+(const ms lhs, const s rhs) {
-        return lhs.value + rhs.value;
-    }
-
-    constexpr ms operator+(const ms lhs, const us rhs) {
-        return lhs.value + rhs.value;
-    }
-
-    constexpr s operator+(const s lhs, const s rhs) {
-        return lhs.value + rhs.value;
-    }
-
-    constexpr bool operator==(const us lhs, const us rhs) {
+    template <typename T>
+    constexpr bool operator==(const T lhs, const T rhs) requires is_time_unit<T> {
+        // compare both values
         return lhs.value == rhs.value;
     }
 
-    constexpr bool operator==(const ms lhs, const ms rhs) {
-        return lhs.value == rhs.value;
-    }
-
-    constexpr bool operator==(const s lhs, const s rhs) {
-        return lhs.value == rhs.value;
-    }
-
-    constexpr bool operator!=(const us lhs, const us rhs) {
+    template <typename T>
+    constexpr bool operator!=(const T lhs, const T rhs) requires is_time_unit<T> {
+        // use the == operator and invert it
         return !operator==(lhs, rhs);
     }
 
-    constexpr bool operator!=(const ms lhs, const ms rhs) {
-        return !operator==(lhs, rhs);
+    template <typename T>
+    constexpr bool operator>(const T lhs, const T rhs) requires is_time_unit<T> {
+        return lhs.value > rhs.value;
     }
 
-    constexpr bool operator!=(const s lhs, const s rhs) {
-        return !operator==(lhs, rhs);
+    template <typename T>
+    constexpr bool operator>=(const T lhs, const T rhs) requires is_time_unit<T> {
+        return lhs.value >= rhs.value;
+    }
+
+    template <typename T>
+    constexpr bool operator<(const T lhs, const T rhs) requires is_time_unit<T> {
+        return lhs.value < rhs.value;
+    }
+
+    template <typename T>
+    constexpr bool operator<=(const T lhs, const T rhs) requires is_time_unit<T> {
+        return lhs.value <= rhs.value;
     }
 }
 
