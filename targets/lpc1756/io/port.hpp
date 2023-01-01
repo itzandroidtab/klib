@@ -42,7 +42,7 @@ namespace klib::lpc1756::io::detail::pins {
         static_assert(
             offset == 0 || offset == 1 || offset == 2 || 
             offset == 3 || offset == 4 || offset == 7 || 
-            offset == 9 || offset == 10,
+            offset == 9,
             "Pin offset is not correct" 
         );
 
@@ -60,8 +60,6 @@ namespace klib::lpc1756::io::detail::pins {
                 return offsetof(PINCONNECT_Type, PINSEL7) / 4;
             case 9:
                 return offsetof(PINCONNECT_Type, PINSEL9) / 4;
-            case 10:
-                return offsetof(PINCONNECT_Type, PINSEL10) / 4;
             default:
             case 0:
                 return offsetof(PINCONNECT_Type, PINSEL0) / 4;
