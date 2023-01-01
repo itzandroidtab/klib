@@ -1,7 +1,6 @@
 #ifndef KLIB_STREAM_BASE_HPP
 #define KLIB_STREAM_BASE_HPP
 
-#include <klib/vector2.hpp>
 #include <klib/units.hpp>
 
 namespace klib {
@@ -17,8 +16,6 @@ namespace klib {
         // Defined by child implementation
         // Note: no pure abstract or virtual!
         void putc(const char c) const;
-
-        void setpos(const vector2u &pos) {}
     };
 
     class istream {

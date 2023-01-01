@@ -26,11 +26,6 @@ namespace klib {
             s1.putc(c);
             s2.putc(c);
         }
-
-        void setpos(const vector2u &pos) {
-            s1.setpos(pos);
-            s2.setpos(pos);
-        }
     };
 
     /**
