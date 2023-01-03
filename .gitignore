@@ -5,8 +5,17 @@ build/
 # all documentation
 *.pdf
 *.jdebug*
+*.pex
 *.JLinkScript
+*.jflash
 *.svd
+*.exe
+*.py
+*.txt
+*.bin
+
+# exclude cmakelist files from the gitignore
+!CMakelists.txt
 
 # mac os x stuff
 .DS_Store
