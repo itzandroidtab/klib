@@ -30,6 +30,7 @@ target_link_libraries(kproject PUBLIC m)
 
 # link to the linkerscript of the target cpu
 target_link_options(kproject PUBLIC "-T${TARGET_LINKERSCRIPT}")
+set_target_properties(kproject PROPERTIES LINK_DEPENDS ${TARGET_LINKERSCRIPT})
 
 # add the project directory to the include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}) 
