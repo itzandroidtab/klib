@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        cpu: [max32660, max32625, atsam3x8e, stm32f407, stm32h723, lpc1756, lpc802 ]
+        cpu: [max32660, max32625, atsam3x8e, stm32f407, stm32h723, lpc1788, lpc1756, lpc802 ]
 
     steps:
       - uses: actions/checkout@v3
