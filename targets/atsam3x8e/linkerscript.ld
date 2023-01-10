@@ -118,7 +118,9 @@ SECTIONS
         PROVIDE(__data_start = .);
 
         . = ALIGN(4);
-        *(.data .data.* .gnu.linkonce.d.*)
+        *(SORT_BY_ALIGNMENT(.data))
+        *(SORT_BY_ALIGNMENT(.data.*))
+        *(SORT_BY_ALIGNMENT(.gnu.linkonce.d.*))
         . = ALIGN(4);
         
         PROVIDE(__data_end = .);
@@ -131,7 +133,9 @@ SECTIONS
         . = ALIGN(4);
         PROVIDE(__bss_start = .);
 
-        *(.bss .bss.* .gnu.linkonce.b.*)
+        *(SORT_BY_ALIGNMENT(.bss))
+        *(SORT_BY_ALIGNMENT(.bss.*))
+        *(SORT_BY_ALIGNMENT(.gnu.linkonce.b.*))
         *(COMMON);
         . = ALIGN(4);
 
