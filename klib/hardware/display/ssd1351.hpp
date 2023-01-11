@@ -270,19 +270,19 @@ namespace klib::hardware::display {
                 PinRst::template set<true>();
 
                 // wait 10ms to make sure the screen is on
-                klib::delay_busy(10_ms);
+                klib::delay<klib::busy_wait>(10_ms);
                 
                 // reset the display
                 PinRst::template set<false>();
 
                 // wait 10ms for the screen to completely reset
-                klib::delay_busy(10_ms);
+                klib::delay<klib::busy_wait>(10_ms);
 
                 // enable the screen again
                 PinRst::template set<true>();
                 
                 // wait 10ms for the screen to startup
-                klib::delay_busy(10_ms);
+                klib::delay<klib::busy_wait>(10_ms);
 
                 // disable command lock
                 set_command_lock(0); 

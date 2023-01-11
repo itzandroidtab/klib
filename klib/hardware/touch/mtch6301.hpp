@@ -456,7 +456,7 @@ namespace klib::hardware::touch {
             RstPin::template set<false>();
 
             // wait more than 5 microseconds
-            klib::delay_busy(klib::time::ms{1});
+            klib::delay<klib::busy_wait>(klib::time::ms{1});
 
             // pull the resset high again to stop the reset
             RstPin::template set<true>();
@@ -470,7 +470,7 @@ namespace klib::hardware::touch {
             enable_touch(true);
 
             // wait more than 350 microseconds
-            klib::delay_busy(klib::time::ms{1});
+            klib::delay<klib::busy_wait>(klib::time::ms{1});
 
             // stop the touch input
             enable_touch(false);

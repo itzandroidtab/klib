@@ -126,21 +126,21 @@ namespace klib::hardware::display {
 
                 // reset the display
                 PinRst::template set<true>();
-                klib::delay_busy(5_ms);
+                klib::delay<klib::busy_wait>(5_ms);
                 PinRst::template set<false>();
-                klib::delay_busy(5_ms);
+                klib::delay<klib::busy_wait>(5_ms);
                 PinRst::template set<true>();
-                klib::delay_busy(5_ms);
+                klib::delay<klib::busy_wait>(5_ms);
 
                 // do a software reset and stop sleep mode, voltage booster on
                 write_cmd(cmd::swreset);
-                klib::delay_busy(150_ms);
+                klib::delay<klib::busy_wait>(150_ms);
 
                 write_cmd(cmd::dispoff);
-                klib::delay_busy(10_ms);
+                klib::delay<klib::busy_wait>(10_ms);
 
                 write_cmd(cmd::slpout);
-                klib::delay_busy(100_ms);
+                klib::delay<klib::busy_wait>(100_ms);
 
                 // frame rate control normal mode
                 write_cmd(cmd::frmctr1, 0x01, 0x2C, 0x2D);
@@ -151,7 +151,7 @@ namespace klib::hardware::display {
                 // frame rate control partial mode
                 write_cmd(cmd::frmctr3, 0x01, 0x2C, 0x2D, 0x01, 0x2C, 0x2D);
 
-                klib::delay_busy(20_ms);
+                klib::delay<klib::busy_wait>(20_ms);
 
                 // display invertion
                 write_cmd(cmd::invctr, 0x07);
@@ -170,11 +170,11 @@ namespace klib::hardware::display {
                 write_cmd(cmd::invon);
                 write_cmd(cmd::madctl, 0b1 << 3);
 
-                klib::delay_busy(20_ms);
+                klib::delay<klib::busy_wait>(20_ms);
 
                 // set screen in 8 bit bus mode with 16 bit color
                 write_cmd(cmd::colmod, 0x05);
-                klib::delay_busy(10_ms);
+                klib::delay<klib::busy_wait>(10_ms);
 
                 // set gamma adjustment + polarity
                 write_cmd(
@@ -195,11 +195,11 @@ namespace klib::hardware::display {
 
                 // normal display on
                 write_cmd(cmd::noron);
-                klib::delay_busy(10_ms);
+                klib::delay<klib::busy_wait>(10_ms);
 
                 // screen on
                 write_cmd(cmd::dispon);
-                klib::delay_busy(100_ms);
+                klib::delay<klib::busy_wait>(100_ms);
             }
 
            /**
