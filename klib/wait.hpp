@@ -3,7 +3,6 @@
 
 #include <klib/units.hpp>
 #include <klib/core_clock.hpp>
-#include <klib/systick.hpp>
 
 namespace klib::detail {
     /**
@@ -24,7 +23,7 @@ namespace klib::detail {
      * @param time 
      */
     template <typename Timer>
-    static void delay_impl(const time::us time) {
+    static void timer_delay_impl(const time::us time) {
         // do nothing when the value is 0
         if (time.value == 0) {
             // do a early return
@@ -64,8 +63,8 @@ namespace klib::detail {
      * @tparam T 
      * @param time 
      */
-    template <typename Timer, typename T>
-    static void systick_delay_impl(const T time) {
+    template <typename Timer>
+    static void systick_delay_impl(const time::us time) {
         // get the counter value
         const uint32_t count = Timer::get_counter();
 
@@ -83,40 +82,50 @@ namespace klib::detail {
             // wait and do nothing
         }
     }
-}
 
-namespace klib {
     /**
-     * @brief Do a busy wait for msec amount of milliseconds
+     * @brief Do a busy wait for time amount of microseconds
      * 
      * @warning is a rough estimation based on the cpu clock and the 
      * amount of instructions used in a loop with optimization -Os
      * 
-     * @param msec 
+     * @param time 
      */
-    static void __attribute__((__optimize__("-Os"))) delay_busy(const time::ms msec) {
+    static void __attribute__((__optimize__("-Os"))) busy_delay_impl(const time::us time) {
         // get the cpu speed
         const uint32_t interate_cycles = klib::clock::get() / 1'000;
 
+        // calculate the amount of time to wait
+        const time::ms msec = static_cast<time::ms>(time);
+
         // buys wait until the time has ran out
         for (uint32_t i = 0; i < msec.value; i++) {
-            for (volatile int j = 0; j < interate_cycles; j += 36) {
+            for (volatile uint32_t j = 0; j < interate_cycles; j += 36) {
                 asm("NOP");
             }
         }
     }
-    
+}
+
+namespace klib {
     /**
-     * @brief Do a busy wait for sec amount of seconds
+     * @brief Type that should be used for a loop that does 
+     * a busy wait.
      * 
-     * @param sec 
+     * @warning this a aproximation. for accurate timing a 
+     * timer should be used
+     * 
      */
-    static void delay_busy(const time::s sec) {
-        // buys wait until the time has ran out
-        for (uint32_t i = 0; i < sec.value; i++) {
-            delay_busy(time::ms(1000));
-        }
-    }
+    struct busy_wait {};
+
+    /**
+     * @brief Systick type that should be used for when the
+     * systemtick should be used as a timer
+     * 
+     * @warning resolution is limited to ms
+     * 
+     */
+    class systick;
 
     /**
      * @brief Delay using a hardware timer. When using the 
@@ -129,30 +138,43 @@ namespace klib {
      */
     template <typename Timer, typename T>
     static void delay(const T time) {
-        // check if we are using a timer peripheral 
-        // or using the systick timer
-        if constexpr (std::is_same_v<Timer, klib::systick>) {
-            // the systick timer is a free running timer. 
-            // handle it differently than the normal timers
-            detail::systick_delay_impl<Timer>(time);
+        // get the amount of seconds in the time
+        const auto sec = static_cast<time::s>(time);
+
+        // delay in 1 second intervals as some timers 
+        // do not support frequencies below 1hz
+        for (uint32_t i = 0; i < sec.value; i++) {
+            if constexpr (std::is_same_v<Timer, klib::busy_wait>) {
+                // busy wait just waits based on a aproximation
+                detail::busy_delay_impl(time::s(1));
+            }
+            else if (std::is_same_v<Timer, klib::systick>) {
+                // use the freerunning system timer
+                detail::systick_delay_impl<Timer>(time::s(1));
+            }
+            else {
+                // otherwise use the provided timer
+                detail::timer_delay_impl<Timer>(time::s(1));
+            }
+        }
+
+        // get the remainder of the time
+        const auto usec = static_cast<time::us>(
+            static_cast<time::us>(time) - static_cast<time::us>(sec)
+        );
+
+        // wait for the remainder
+        if constexpr (std::is_same_v<Timer, klib::busy_wait>) {
+            // busy wait just waits based on a aproximation
+            detail::busy_delay_impl(usec);
+        }
+        else if (std::is_same_v<Timer, klib::systick>) {
+            // use the freerunning system timer
+            detail::systick_delay_impl<Timer>(usec);
         }
         else {
-            // get the amount of seconds in the time
-            const auto sec = static_cast<time::s>(time);
-
-            // delay in 1 second intervals as some timers 
-            // do not support frequencies below 1hz
-            for (uint32_t i = 0; i < sec.value; i++) {
-                detail::delay_impl<Timer>(time::s(1));
-            }
-
-            // get the remainder of the time
-            const auto usec = static_cast<time::us>(
-                static_cast<time::us>(time) - static_cast<time::us>(sec)
-            );
-
-            // wait for the remainder
-            detail::delay_impl<Timer>(usec);
+            // otherwise use the provided timer
+            detail::timer_delay_impl<Timer>(usec);
         }
     }
 }
