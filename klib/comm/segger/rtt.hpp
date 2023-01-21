@@ -25,7 +25,7 @@ namespace klib::rtt {
          * @param size 
          */
         template <uint8_t Channel = 0, typename T>
-        static void write(const T data, const size_t size) {
+        static void write(const T data, const uint32_t size) {
             // write the character to the rtt buffer
             SEGGER_RTT_Write(Channel, reinterpret_cast<const uint8_t*>(&data), size);
         }

@@ -8,11 +8,11 @@
 #include "math.hpp"
 
 namespace klib {
-    template <typename T, size_t Size>
+    template <typename T, uint32_t Size>
     class dynamic_array {
     protected:
         T store[Size] = {};
-        size_t index = 0;
+        uint32_t index = 0;
 
         /**
          * Helper function that frees a spot at
@@ -23,8 +23,8 @@ namespace klib {
          *
          * @param pos
          */
-        constexpr void free_position(const size_t pos) {
-            for (size_t i = this->index; i != pos - 1; --i) {
+        constexpr void free_position(const uint32_t pos) {
+            for (uint32_t i = this->index; i != pos - 1; --i) {
                 store[i + 1] = store[i];
             }
         }
@@ -63,7 +63,7 @@ namespace klib {
          * @param x
          */
         constexpr dynamic_array(const dynamic_array &x) {
-            for (size_t i = 0; i < x.size(); i++) {
+            for (uint32_t i = 0; i < x.size(); i++) {
                 push_back(x[i]);
             }
         }
@@ -113,7 +113,7 @@ namespace klib {
         class random_access_iterator {
         protected:
             dynamic_array<T, Size> *subject;
-            size_t at;
+            uint32_t at;
 
             // Allow access to the 'at' member
             friend dynamic_array;
@@ -129,7 +129,7 @@ namespace klib {
             constexpr random_access_iterator(dynamic_array<T, Size> &subject)
                     : subject(&subject), at(0) {}
 
-            constexpr random_access_iterator(dynamic_array<T, Size> &subject, size_t start)
+            constexpr random_access_iterator(dynamic_array<T, Size> &subject, uint32_t start)
                     : subject(&subject), at(start) { }
 
             constexpr random_access_iterator(const random_access_iterator &rhs)
@@ -220,7 +220,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr random_access_iterator operator+(const size_t n) const {
+            constexpr random_access_iterator operator+(const uint32_t n) const {
                 return random_access_iterator(subject, at + n);
             }
 
@@ -231,7 +231,7 @@ namespace klib {
              * @param it
              * @return
              */
-            constexpr friend random_access_iterator operator+(const size_t n, const random_access_iterator &it) {
+            constexpr friend random_access_iterator operator+(const uint32_t n, const random_access_iterator &it) {
                 return it + n;
             }
 
@@ -241,7 +241,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr random_access_iterator operator-(const size_t n) const {
+            constexpr random_access_iterator operator-(const uint32_t n) const {
                 return random_access_iterator(subject, at - n);
             }
 
@@ -301,7 +301,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr random_access_iterator operator+=(const size_t n) {
+            constexpr random_access_iterator operator+=(const uint32_t n) {
                 at += n;
                 return *this;
             }
@@ -312,7 +312,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr random_access_iterator operator-=(const size_t n) {
+            constexpr random_access_iterator operator-=(const uint32_t n) {
                 at -= n;
                 return *this;
             }
@@ -323,7 +323,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr reference operator[](const size_t n) {
+            constexpr reference operator[](const uint32_t n) {
                 return subject[n];
             }
         };
@@ -331,7 +331,7 @@ namespace klib {
         class const_random_access_iterator {
         protected:
             const dynamic_array<T, Size> *subject;
-            size_t at;
+            uint32_t at;
 
             // Allow access to the 'at' member
             friend dynamic_array;
@@ -347,7 +347,7 @@ namespace klib {
             constexpr const_random_access_iterator(const dynamic_array<T, Size> &subject)
                 : subject(&subject), at(0) {}
 
-            constexpr const_random_access_iterator(const dynamic_array<T, Size> &subject, size_t start)
+            constexpr const_random_access_iterator(const dynamic_array<T, Size> &subject, uint32_t start)
                 : subject(&subject), at(start) {}
 
             constexpr const_random_access_iterator(const const_random_access_iterator &rhs)
@@ -423,7 +423,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr const_random_access_iterator operator+(const size_t n) const {
+            constexpr const_random_access_iterator operator+(const uint32_t n) const {
                 return const_random_access_iterator(subject, at + n);
             }
 
@@ -434,7 +434,7 @@ namespace klib {
              * @param it
              * @return
              */
-            constexpr friend const_random_access_iterator operator+(const size_t n, const const_random_access_iterator &it) {
+            constexpr friend const_random_access_iterator operator+(const uint32_t n, const const_random_access_iterator &it) {
                 return it + n;
             }
 
@@ -444,7 +444,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr const_random_access_iterator operator-(const size_t n) const {
+            constexpr const_random_access_iterator operator-(const uint32_t n) const {
                 return const_random_access_iterator(subject, at - n);
             }
 
@@ -504,7 +504,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr const_random_access_iterator operator+=(const size_t n) {
+            constexpr const_random_access_iterator operator+=(const uint32_t n) {
                 at += n;
                 return *this;
             }
@@ -515,7 +515,7 @@ namespace klib {
              * @param n
              * @return
              */
-            constexpr const_random_access_iterator operator-=(const size_t n) {
+            constexpr const_random_access_iterator operator-=(const uint32_t n) {
                 at -= n;
                 return *this;
             }
@@ -528,7 +528,7 @@ namespace klib {
          * @param n
          * @return
          */
-        T &at(size_t n) {
+        T &at(uint32_t n) {
            return store[n];
         }
 
@@ -539,7 +539,7 @@ namespace klib {
          * @param n
          * @return
          */
-        T const &at(size_t n) const {
+        T const &at(uint32_t n) const {
             return store[n];
         }
 
@@ -623,7 +623,7 @@ namespace klib {
          *
          * @return
          */
-        constexpr size_t size() const {
+        constexpr uint32_t size() const {
             return index;
         }
 
@@ -633,7 +633,7 @@ namespace klib {
          *
          * @return
          */
-        constexpr size_t max_size() const {
+        constexpr uint32_t max_size() const {
             return Size;
         }
 
@@ -645,7 +645,7 @@ namespace klib {
          * @param n
          * @return
          */
-        constexpr void resize(const size_t n) {
+        constexpr void resize(const uint32_t n) {
             index = n;
         }
 
@@ -655,7 +655,7 @@ namespace klib {
          */
         constexpr void clear() {
             // Destruct elements.
-            for (size_t i = 0; i < index; i++) {
+            for (uint32_t i = 0; i < index; i++) {
                 store[i].~T();
             }
 
@@ -690,8 +690,8 @@ namespace klib {
          * @param value
          * @return
          */
-        constexpr iterator insert(const_iterator &it, size_t n, const T &value) {
-            for (size_t i = 0; i < n; i++) {
+        constexpr iterator insert(const_iterator &it, uint32_t n, const T &value) {
+            for (uint32_t i = 0; i < n; i++) {
                 insert(it + i, value);
             }
 
@@ -710,7 +710,7 @@ namespace klib {
          */
         template <typename InputIterator>
         constexpr iterator insert(const_iterator &it, InputIterator first, InputIterator last) {
-            size_t i = 0;
+            uint32_t i = 0;
 
             for (auto iit = first; iit != last; ++i, ++iit) {
                 insert(it + i, iit);
@@ -755,7 +755,7 @@ namespace klib {
          * @param args
          */
         template <typename ...Args>
-        constexpr void emplace(const size_t pos, Args &&... args) {
+        constexpr void emplace(const uint32_t pos, Args &&... args) {
             free_position(pos);
             store[pos] = T(std::forward<Args>(args)...);
             index++;
@@ -788,7 +788,7 @@ namespace klib {
             // index on will be shifted one left in the array, overwriting the index to
             // remove. This makes removals expensive in the front of the array but prevents
             // fragmentation.
-            for (size_t i = it.at; i < this->index - 1; ++i) {
+            for (uint32_t i = it.at; i < this->index - 1; ++i) {
                 store[i] = store[i + 1];
             }
 
@@ -833,10 +833,10 @@ namespace klib {
          * @param n
          * @param val
          */
-        constexpr void assign(size_t n, const T &val) {
+        constexpr void assign(uint32_t n, const T &val) {
             clear();
 
-            for (size_t i = 0; i < n; i++) {
+            for (uint32_t i = 0; i < n; i++) {
                 push_back(val);
             }
         }
@@ -923,7 +923,7 @@ namespace klib {
          * @param index
          * @return
          */
-        constexpr T &operator[](const size_t index) {
+        constexpr T &operator[](const uint32_t index) {
             return store[index];
         }
 
@@ -935,7 +935,7 @@ namespace klib {
          * @param val
          * @return
          */
-        constexpr void set(const size_t index, const T &val) {
+        constexpr void set(const uint32_t index, const T &val) {
             store[index] = val;
         }
 
@@ -947,7 +947,7 @@ namespace klib {
          * @param val
          * @return
          */
-        constexpr void set(const size_t index, T &&val) {
+        constexpr void set(const uint32_t index, T &&val) {
             store[index] = std::move(val);
         }
 
@@ -958,7 +958,7 @@ namespace klib {
          * @param index
          * @return
          */
-        constexpr T operator[](const size_t index) const {
+        constexpr T operator[](const uint32_t index) const {
             return store[index];
         }
 

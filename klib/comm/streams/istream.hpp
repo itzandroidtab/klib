@@ -3,6 +3,8 @@
 
 #include <type_traits>
 
+#include <klib/math.hpp>
+
 #include "stream_base.hpp"
 
 namespace klib {
@@ -35,7 +37,7 @@ namespace klib {
         char buf[11] = {};
         int end = 0;
 
-        for (size_t i = 0; i < 10; i++) {
+        for (uint32_t i = 0; i < 10; i++) {
             char c;
 
             if (str >> c) {

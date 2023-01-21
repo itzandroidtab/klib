@@ -27,7 +27,7 @@ namespace klib::hardware::display {
                 Bus::write(&command, sizeof(command));
             }
 
-            static void write_data(const uint8_t *const data, const size_t size){
+            static void write_data(const uint8_t *const data, const uint32_t size){
                 // change the data command pin
                 PinDC::template set<true>();
 

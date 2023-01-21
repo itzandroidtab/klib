@@ -315,7 +315,7 @@ namespace klib {
     template <typename T>
     struct array_values {
         const T *arr;
-        size_t size;
+        uint32_t size;
 
         /**
          * Construct the values helper from a C-style
@@ -324,7 +324,7 @@ namespace klib {
          * @param arr
          * @param size
          */
-        constexpr array_values(const T *arr, size_t size)
+        constexpr array_values(const T *arr, uint32_t size)
             : arr(arr), size(size) {}
 
         /**
@@ -333,7 +333,7 @@ namespace klib {
          * @tparam Size
          * @param arr
          */
-        template <size_t Size>
+        template <uint32_t Size>
         constexpr array_values(const std::array<T, Size> &arr)
             : arr(arr.data()), size(Size) {}
 
@@ -343,7 +343,7 @@ namespace klib {
          * @tparam Size
          * @param arr
          */
-        template <size_t Size>
+        template <uint32_t Size>
         constexpr array_values(const klib::dynamic_array<T, Size> &arr)
             : arr(arr.data()), size(arr.size()) {}
     };
@@ -364,7 +364,7 @@ namespace klib {
     >
     const OutputStream<B, Boolalpha> &operator<<(const OutputStream<B, Boolalpha> &str, const array_values<T> &values) {
         str << "{ ";
-        for (size_t i = 0; i < values.size; ++i) {
+        for (uint32_t i = 0; i < values.size; ++i) {
             str << values.arr[i];
 
             if (i + 1 != values.size) {
