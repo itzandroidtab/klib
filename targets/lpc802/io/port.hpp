@@ -71,7 +71,7 @@ namespace klib::lpc802::io {
 
         constexpr static void set(const bool val) {
             // set the value into the register
-            Pin::port::port->W[Pin::number] = val;
+            Pin::port::port->B[Pin::number] = val;
         }
     };
 }
