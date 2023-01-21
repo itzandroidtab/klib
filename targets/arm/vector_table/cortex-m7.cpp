@@ -4,7 +4,7 @@
 // array with the initial vector table. Interrupt handlers should all point 
 // to the default handler as the irq class should be used to register the 
 // the handlers for interrupts. 
-void (*const volatile __vectors[])(void) [[gnu::section(".vectors")]] = {
+void (*const volatile __vectors[])(void) __attribute__ ((section(".vectors"))) = {
     (void (*)(void)) &__stack_end,
     __reset_handler,    // The reset handler
     __default_handler,  // The NMI handler
