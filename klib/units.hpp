@@ -47,8 +47,8 @@ namespace klib::time {
     struct us {
         uint32_t value;
 
-        constexpr us() : value(0) {}
-        constexpr us(uint32_t us) : value(us) {}
+        constexpr us(): value(0) {}
+        constexpr us(uint32_t us): value(us) {}
         constexpr operator ms() const;
         constexpr operator s() const;
     };
@@ -56,8 +56,8 @@ namespace klib::time {
     struct ms {
         uint32_t value;
 
-        constexpr ms() : value(0) {}
-        constexpr ms(uint32_t ms) : value(ms) {}
+        constexpr ms(): value(0) {}
+        constexpr ms(uint32_t ms): value(ms) {}
         constexpr operator us() const;
         constexpr operator s() const;
     };
@@ -65,8 +65,8 @@ namespace klib::time {
     struct s {
         uint32_t value;
 
-        constexpr s() : value(0) {}
-        constexpr s(uint32_t s) : value(s) {}
+        constexpr s(): value(0) {}
+        constexpr s(uint32_t s): value(s) {}
         constexpr operator us() const;
         constexpr operator ms() const;
     };

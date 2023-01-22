@@ -11,7 +11,8 @@ namespace klib::io {
     class servo {
     protected:
         /**
-         * @brief Calculate the duty cycle needed for a specific position in the servo.
+         * @brief Calculate the duty cycle needed for a specific position 
+         * in the servo.
          * 
          * Range is from 0 - 180 degrees
          * 
@@ -19,27 +20,33 @@ namespace klib::io {
          * @return constexpr uint16_t 
          */
         constexpr static uint16_t to_dutycyle(const uint32_t pos) {
-            // Returns an duty cycle corresponding to the position, frequency and timer bits
-            return ((pos * (MaxPulse.value - MinPulse.value) / 180) + MinPulse.value) / ((1'000'000 / Pin::frequency) / (klib::exp2(Pin::bits) - 1));
+            // Returns an duty cycle corresponding to the position, frequency 
+            // and timer bits
+            return (
+                ((pos * (MaxPulse.value - MinPulse.value) / 180) + MinPulse.value) / 
+                ((1'000'000 / Pin::frequency) / (klib::exp2(Pin::bits) - 1))
+            );
         }
 
     public:
         /**
-         * @brief Calculate and set the duty cycle for the position. Range is from 0 - 180 degrees
+         * @brief Calculate and set the duty cycle for the position. Range 
+         * is from 0 - 180 degrees
          * 
          * @tparam Pos 
          */
-        template<klib::degree Pos>
+        template<klib::angle::degree Pos>
         constexpr static void set() {
             Pin::template dutycycle<to_dutycyle(Pos.value)>();
         }
 
         /**
-         * @brief Calculate and set the duty cycle for the position. Range is from 0 - 180 degrees
+         * @brief Calculate and set the duty cycle for the position. Range 
+         * is from 0 - 180 degrees
          * 
          * @param Pos 
          */
-        constexpr static void set(klib::degree pos) {
+        constexpr static void set(klib::angle::degree pos) {
             Pin::dutycycle(to_dutycyle(pos.value));
         }
     };
