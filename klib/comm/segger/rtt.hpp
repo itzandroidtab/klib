@@ -54,6 +54,19 @@ namespace klib::rtt {
 
             return ret;
         }
+
+        /**
+         * @brief Check if a character is available in the RTT buffer
+         * 
+         * @tparam Channel 
+         * @return true 
+         * @return false 
+         */
+        template <uint8_t Channel = 0>
+        static bool hasc() {
+            // return if we have data available
+            return SEGGER_RTT_HasData(Channel);
+        }
     };
 }
 

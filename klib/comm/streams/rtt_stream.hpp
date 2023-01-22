@@ -24,8 +24,11 @@ namespace klib {
             using instance = cin;
 
             char getc() const {
-                char c = rtt::getc<0, true>();
-                return c;
+                return rtt::getc<0, true>();
+            }
+
+            bool hasc() const {
+                return rtt::hasc<0>();
             }
         };
     }
