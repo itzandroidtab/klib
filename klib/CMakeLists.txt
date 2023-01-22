@@ -56,6 +56,7 @@ target_compile_options(klib PRIVATE "-Wno-unused-local-typedefs")
 target_compile_options(klib PRIVATE "-Wno-unused-but-set-variable")
 target_compile_options(klib PRIVATE "-Wno-unused-function")
 target_compile_options(klib PRIVATE "-fomit-frame-pointer")
+target_compile_options(klib PUBLIC "-fno-math-errno")
 
 # set the c++ only options
 target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-threadsafe-statics>)
@@ -72,6 +73,7 @@ target_link_options(klib PUBLIC "-Wl,--gc-sections")
 target_link_options(klib PUBLIC "-Wl,-fatal-warnings")
 target_link_options(klib PUBLIC "-Wl,-cref,-Map=klib.map")
 target_link_options(klib PUBLIC "-Wl,--print-memory-usage")
+target_link_options(klib PUBLIC "-fno-math-errno")
 
 # enabled segger support in the defines to prevent a 
 # include of the segger files
