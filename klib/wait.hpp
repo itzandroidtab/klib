@@ -3,6 +3,7 @@
 
 #include <klib/units.hpp>
 #include <klib/core_clock.hpp>
+#include <klib/systick.hpp>
 
 namespace klib::detail {
     /**
@@ -119,15 +120,6 @@ namespace klib {
     struct busy_wait {};
 
     /**
-     * @brief Systick type that should be used for when the
-     * systemtick should be used as a timer
-     * 
-     * @warning resolution is limited to ms
-     * 
-     */
-    class systick;
-
-    /**
      * @brief Delay using a hardware timer. When using the 
      * systick timer the accuracy drops to the millisecond 
      * level.
@@ -148,7 +140,7 @@ namespace klib {
                 // busy wait just waits based on a aproximation
                 detail::busy_delay_impl(time::s(1));
             }
-            else if (std::is_same_v<Timer, klib::systick>) {
+            else if constexpr (std::is_same_v<Timer, klib::systick>) {
                 // use the freerunning system timer
                 detail::systick_delay_impl<Timer>(time::s(1));
             }
@@ -168,7 +160,7 @@ namespace klib {
             // busy wait just waits based on a aproximation
             detail::busy_delay_impl(usec);
         }
-        else if (std::is_same_v<Timer, klib::systick>) {
+        else if constexpr (std::is_same_v<Timer, klib::systick>) {
             // use the freerunning system timer
             detail::systick_delay_impl<Timer>(usec);
         }
