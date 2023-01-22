@@ -30,10 +30,10 @@ namespace klib::max32625::io::pins::detail {
         if constexpr (std::is_same_v<Periph, io::detail::periph_func_1>) {
             return 1;
         }
-        else if (std::is_same_v<Periph, io::detail::periph_func_2>) {
+        else if constexpr (std::is_same_v<Periph, io::detail::periph_func_2>) {
             return 2;
         }
-        else if (std::is_same_v<Periph, io::detail::periph_func_3>) {
+        else if constexpr (std::is_same_v<Periph, io::detail::periph_func_3>) {
             return 3;
         }
         else {
@@ -70,49 +70,49 @@ namespace klib::max32625::io::detail {
             // set the new value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P0 |= (value << offset);
         }
-        else if (index == 1) {
+        else if constexpr (index == 1) {
             // clear the previous value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P1 &= ((~0xf) << offset);;
             // set the new value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P1 |= (value << offset);
         }
-        else if (index == 2) {
+        else if constexpr (index == 2) {
             // clear the previous value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P2 &= ((~0xf) << offset);;
             // set the new value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P2 |= (value << offset);
         }
-        else if (index == 3) {
+        else if constexpr (index == 3) {
             // clear the previous value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P3 &= ((~0xf) << offset);;
             // set the new value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P3 |= (value << offset);
         }
-        else if (index == 4) {
+        else if constexpr (index == 4) {
             // clear the previous value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P4 &= ((~0xf) << offset);;
             // set the new value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P4 |= (value << offset);
         }
-        else if (index == 5) {
+        else if constexpr (index == 5) {
             // clear the previous value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P5 &= ((~0xf) << offset);;
             // set the new value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P5 |= (value << offset);
         }
-        else if (index == 6) {
+        else if constexpr (index == 6) {
             // clear the previous value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P6 &= ((~0xf) << offset);;
             // set the new value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P6 |= (value << offset);
         }
-        else if (index == 7) {
+        else if constexpr (index == 7) {
             // clear the previous value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P7 &= ((~0xf) << offset);;
             // set the new value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P7 |= (value << offset);
         }
-        else if (index == 1) {
+        else if constexpr (index == 1) {
             // clear the previous value
             pins::detail::port<typename Pin::port>->FUNC_SEL_P8 &= ((~0xf) << offset);;
             // set the new value

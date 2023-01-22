@@ -87,15 +87,15 @@ namespace klib::lpc1756::io::detail::pins {
             // setup alternate function 1
             (*pin_select) = ((*pin_select) & ~(0b11 << (Pin::number / 2))) | (0b01 << (Pin::number / 2));;
         }
-        else if (std::is_same_v<Periph, io::detail::alternate::func_2>) {
+        else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_2>) {
             // setup alternate function 2
             (*pin_select) = ((*pin_select) & ~(0b11 << (Pin::number / 2))) | (0b10 << (Pin::number / 2));
         }
-        else if (std::is_same_v<Periph, io::detail::alternate::func_3>) {
+        else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_3>) {
             // setup alternate function 3
             (*pin_select) |= (0b11 << (Pin::number / 2));
         }
-        else {
+        else constexpr {
             // setup normal gpio function
             (*pin_select) &= ~(0b11 << (Pin::number / 2));
         }

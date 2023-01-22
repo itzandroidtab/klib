@@ -244,12 +244,12 @@ namespace klib::string::detail {
 
             return 2;
         }
-        else if (B == base::OCT) {
+        else if constexpr (B == base::OCT) {
             strcpy(str, "0o");
 
             return 2;
         }
-        else if (B == base::HEX) {
+        else if constexpr (B == base::HEX) {
             strcpy(str, "0x");
 
             return 2;
@@ -277,10 +277,10 @@ namespace klib::string::detail {
             if constexpr (B == base::BIN) {
                 value >>= 1;
             }
-            else if (B == base::OCT) {
+            else if constexpr (B == base::OCT) {
                 value >>= 3;
             }
-            else if (B == base::DEC) {
+            else if constexpr (B == base::DEC) {
                 value /= 10;
             }
             else {
@@ -306,19 +306,19 @@ namespace klib::string::detail {
                     value = (value << 1) + ((*s) - '0');
                 }
             }
-            else if (B == base::OCT) {
+            else if constexpr (B == base::OCT) {
                 // check if the input is valid
                 if (is_octal(*s)) {
                     value = (value << 3) + ((*s) - '0');
                 }
             }
-            else if (B == base::DEC) {
+            else if constexpr (B == base::DEC) {
                 // check if the input is valid
                 if (is_digit(*s)) {
                     value = ((*s) - '0') + (value * 10);
                 }
             }
-            else if (B == base::HEX) {
+            else if constexpr (B == base::HEX) {
                 // check if the input is valid
                 if (is_digit(*s)) {
                     value = ((*s) - '0') + (value << 4);
@@ -340,10 +340,10 @@ namespace klib::string::detail {
         if constexpr (B == base::BIN) {
             return 2;
         }
-        else if (B == base::OCT) {
+        else if constexpr (B == base::OCT) {
             return 7;            
         }
-        else if (B == base::DEC) {
+        else if constexpr (B == base::DEC) {
             return 10;
         }
         else {

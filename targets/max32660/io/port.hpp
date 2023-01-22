@@ -68,13 +68,13 @@ namespace klib::max32660::io::detail::pins {
             Pin::port::port->EN1_CLR = mask<Pin>;
             Pin::port::port->EN_CLR = mask<Pin>;
         }
-        else if (std::is_same_v<Periph, io::detail::alternate::func_2>) {
+        else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_2>) {
             // setup alternate function 2
             Pin::port::port->EN2_CLR = mask<Pin>;
             Pin::port::port->EN1_SET = mask<Pin>;
             Pin::port::port->EN_CLR = mask<Pin>;
         }
-        else if (std::is_same_v<Periph, io::detail::alternate::func_3>) {
+        else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_3>) {
             // setup alternate function 3
             Pin::port::port->EN2_CLR = mask<Pin>;
             Pin::port::port->EN1_SET = mask<Pin>;

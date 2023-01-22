@@ -170,14 +170,14 @@ namespace klib {
 
                 fb.set_pixel(pos, raw);
             }
-            else if (XMirror) {
+            else if constexpr (XMirror) {
                 const klib::vector2u pos = (klib::vector2u(
                     (display::width - 1) - position.x, position.y)
                 );
 
                 fb.set_pixel(pos, raw);
             }
-            else if (YMirror) {
+            else if constexpr (YMirror) {
                 const klib::vector2u pos = (klib::vector2u(
                     position.x, (display::height - 1) - position.y)
                 );
