@@ -25,6 +25,10 @@ namespace klib {
         // Defined by child implementation
         // Note: no pure abstract or virtual!
         char getc() const;
+
+        // Defined by child implementation
+        // Note: no pure abstract or virtual!
+        bool hasc() const;
     };
 }
 
