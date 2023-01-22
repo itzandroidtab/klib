@@ -18,6 +18,19 @@ namespace klib {
     }
 }
 
+namespace klib::angle {
+    /**
+     * @brief Degree unit. Range 0 - 360 
+     * 
+     */
+    struct degree {
+        uint16_t value;
+
+        constexpr degree(): value(0) {}
+        constexpr degree(uint16_t deg): value(deg) {}
+    };
+}
+
 namespace klib::time {
     /**
      * @brief Declarations for all the time units
