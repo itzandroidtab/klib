@@ -33,8 +33,8 @@ namespace klib {
         typename = std::enable_if<std::is_base_of<klib::istream, InputStream>::value>::type    
     >
     InputStream &operator>>(InputStream &str, int &val) {
-        // Currently, decimal base 10 32 bit is assumed
-        char buf[(sizeof(uint32_t) * 2) + 1] = {};
+        // Currently, decimal base 10 32 bit is assumed + \r\n + null terminator
+        char buf[(sizeof(uint32_t) * 2) + (2 + 1)] = {};
 
         // wait on the first character
         str >> buf[0];
