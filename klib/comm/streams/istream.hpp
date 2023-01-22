@@ -3,7 +3,7 @@
 
 #include <type_traits>
 
-#include <klib/math.hpp>
+#include <klib/string.hpp>
 
 #include "stream_base.hpp"
 
@@ -34,29 +34,24 @@ namespace klib {
     >
     InputStream &operator>>(InputStream &str, int &val) {
         // Currently, decimal base 10 32 bit is assumed
-        char buf[11] = {};
-        int end = 0;
+        char buf[(sizeof(uint32_t) * 2) + 1] = {};
 
-        for (uint32_t i = 0; i < 10; i++) {
-            char c;
+        // wait on the first character
+        str >> buf[0];
 
-            if (str >> c) {
-                buf[i] = c;
-            } else {
-                end = i - 1;
-                buf[i] = '\0';
-                break;
-            }
-        }
-
-        for (int i = end; i >= 0; i--) {
-            if (buf[i] == '-') {
-                val *= -1;
+        for (uint32_t i = 1; i < (sizeof(buf)); i++) {
+            // check if more characters are available in the buffer
+            if (!str.hasc()) {
+                // stop the loop
                 break;
             }
 
-            val += klib::pow(10, end - i) * (buf[i] - '0');
+            // get the character
+            str >> buf[i];
         }
+
+        // set the value
+        val = string::stoi(buf);
 
         return str;
     }
