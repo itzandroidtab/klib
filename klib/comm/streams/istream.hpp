@@ -35,9 +35,22 @@ namespace klib {
     InputStream &operator>>(InputStream &str, int &val) {
         // Currently, decimal base 10 32 bit is assumed + \r\n + null terminator
         char buf[(sizeof(uint32_t) * 2) + (2 + 1)] = {};
+        char c;
 
         // wait on the first character
-        str >> buf[0];
+        while (true) {
+            // get the character
+            str >> c;
+
+            // check if we have a valid digit
+            if (string::is_digit(c)) {
+                // we have a digit
+                buf[0] = c;
+
+                // stop searching for valid digits
+                break;
+            }
+        }
 
         for (uint32_t i = 1; i < (sizeof(buf)); i++) {
             // check if more characters are available in the buffer
@@ -47,7 +60,16 @@ namespace klib {
             }
 
             // get the character
-            str >> buf[i];
+            str >> c;
+
+            // check if we have a digit
+            if (!string::is_digit(c)) {
+                // stop the loop
+                break;
+            }
+
+            // set the character in the array
+            buf[i] = c;
         }
 
         // set the value
