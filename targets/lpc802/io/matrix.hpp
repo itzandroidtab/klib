@@ -279,6 +279,9 @@ namespace klib::lpc802::io {
          */
         template <typename Pin>
         static void clear() {
+            // enable the matrix perihperal clock
+            clocks::enable<Matrix>();
+
             // get a pointer to the matrix
             volatile uint8_t *const matrix_array = (
                 reinterpret_cast<volatile uint8_t *const>(Matrix::port)
@@ -292,6 +295,9 @@ namespace klib::lpc802::io {
                     matrix_array[i] = 0xff;
                 }
             }
+
+            // disable the matrix perihperal clock
+            clocks::disable<Matrix>();
         }
     };
 }
