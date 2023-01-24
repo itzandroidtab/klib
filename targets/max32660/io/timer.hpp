@@ -193,11 +193,8 @@ namespace klib::max32660::io::detail::timer {
             // get the peripheral clock
             const auto periph_clock = klib::clock::get() / 2;
 
-            // calculate cmp value for the timer
-            const uint32_t cmp = (periph_clock / frequency) + 1;
-
             // set the compare value
-            Timer::port->CMP = cmp;
+            Timer::port->CMP = (periph_clock / frequency) + 1;
         }
 
         /**
@@ -317,17 +314,8 @@ namespace klib::max32660::io {
             // init the gpio pin as a output from the timer
             detail::pins::set_peripheral<typename Timer::tmr::pin, typename Timer::tmr::periph>();
 
-            // clear the prescaler
-            Timer::port->CN &= ~((0x7 << 3) | (0x1 << 8));
-
-            // set the new prescaler
-            Timer::port->CN |= ((0x00 << 3) | (0x0 << 8));
-
-            // get the peripheral clock
-            const uint32_t periph_clock = klib::clock::get() / 2;
-
-            // calculate the maximum compare value (minimum of 1)
-            Timer::port->CMP = (periph_clock / Frequency) + 1;
+            // set the frequency
+            timer<Timer>::set_frequency(Frequency);
         }
 
         /**
@@ -354,7 +342,7 @@ namespace klib::max32660::io {
          * @tparam Dutycycle 
          */
         template <uint16_t Dutycycle>
-        static void set() {
+        static void dutycycle() {
             // set the dutycycle
             Timer::port->PWM = calculate_stepsize() * (Dutycycle & multiplier);
         }
@@ -364,7 +352,7 @@ namespace klib::max32660::io {
          * 
          * @param dutycycle
          */
-        static void set(uint16_t dutycycle) {
+        static void dutycycle(uint16_t dutycycle) {
             // set the dutycycle
             Timer::port->PWM = calculate_stepsize() * (dutycycle & multiplier);
         }
