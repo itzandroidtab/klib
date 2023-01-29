@@ -95,7 +95,7 @@ namespace klib::lpc1756::io::detail::pins {
             // setup alternate function 3
             (*pin_select) |= (0b11 << (Pin::number / 2));
         }
-        else constexpr {
+        else {
             // setup normal gpio function
             (*pin_select) &= ~(0b11 << (Pin::number / 2));
         }
