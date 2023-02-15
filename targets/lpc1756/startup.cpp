@@ -5,6 +5,7 @@
 #include <coprocessor/coprocessor.hpp>
 
 #include "lpc1756.hpp"
+#include "io/system.hpp"
 
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__
@@ -14,9 +15,12 @@
 void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::lpc1756;
 
-    // TODO: setup main clocks and update to correct frequency
-    // change the core clock to the correct frequency
-    klib::clock::set(15'000'000);
+    // setup the flash wait state to 4 + 1 CPU clocks
+    target::io::system::flash::setup<4>();
+
+    // setup the clock to 96Mhz
+    // (((15 + 1) * 2 * 12Mhz) / (0 + 1) = 384Mhz) / (3 + 1) = 96Mhz
+    target::io::system::clock::set<96'000'000, 15, 0, 3>();
 
     // setup the irq handler before main is called. This 
     // moves the vector table to ram so it can be changed
@@ -24,15 +28,6 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // function call can be removed. By default interrupts
     // are mapped to a function that halts the whole cpu.
     target::irq::init();
-
-    if constexpr (TARGET_FPU_ENABLED) {
-        // using to make the access easier to the coprocessor
-        using coprocessor = klib::arm::coprocessor;
-
-        // enable the floating point coprocessors
-        coprocessor::set<10>(coprocessor::access::full, &SCB->CPACR);
-        coprocessor::set<11>(coprocessor::access::full, &SCB->CPACR);
-    }
 
     // init the systick timer
     klib::systick::init<target::irq, true>();
