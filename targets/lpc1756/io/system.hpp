@@ -112,6 +112,7 @@ namespace klib::lpc1756::io::system {
                 }
             }
 
+            // write the settings using the feed
             feed<Pll>();
         }
 
@@ -159,6 +160,7 @@ namespace klib::lpc1756::io::system {
                 }
             }
 
+            // write the settings using the feed
             feed<Pll>();
         }
 
@@ -169,7 +171,7 @@ namespace klib::lpc1756::io::system {
          */
         template <pll Pll>
         static void feed() {
-            // check what pll to feed
+            // check what pll to feed with the feed sequence
             if constexpr (Pll == pll::main) {
                 SYSCON->PLL0FEED = 0xaa;
                 SYSCON->PLL0FEED = 0x55;
@@ -212,6 +214,7 @@ namespace klib::lpc1756::io::system {
                 SYSCON->PLL1CFG = (multiplier | (static_cast<uint32_t>(pre_divider) << 5));
             }
 
+            // write the settings using the feed
             feed<Pll>();
         }
 
