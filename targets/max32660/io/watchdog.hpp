@@ -48,14 +48,15 @@ namespace klib::max32660::io {
          * @warning this clears the watchdog reset flag and watchdog interrupt flag
          * 
          * @tparam Irq enable/disable the watchdog timer interrupt
-         * @tparam IrqPeriod interrupt period (refer to the datasheet for the timing)
-         * @tparam Rst enable/disable if the cpu resets when the watchdog timer overflows 
-         * @tparam RstPeriod reset period (refer to the datasheet for the timing)
+         * @tparam IrqPeriod interrupt period
+         * 
+         * @tparam Reset enable/disable if the cpu resets when the watchdog timer overflows 
+         * @tparam ResetPeriod reset period
          */
-        template <bool Irq = true, uint8_t IrqPeriod = 0, bool Rst = false, uint8_t RstPeriod = 0>
+        template <bool Irq = true, uint8_t IrqPeriod = 0, bool Reset = false, uint8_t ResetPeriod = 0>
         static void init() {
             // setup the parameters of the watchdog
-            Wdt::port->CTRL = (Irq << 10) | (IrqPeriod & 0xF) | (Rst << 11) | ((RstPeriod & 0xF) << 4);
+            Wdt::port->CTRL = (Irq << 10) | (IrqPeriod & 0xF) | (Reset << 11) | ((ResetPeriod & 0xF) << 4);
 
             // feed the watchdog before enabling the watchdog timer
             feed();
