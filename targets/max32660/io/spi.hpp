@@ -252,10 +252,20 @@ namespace klib::max32660::io {
                 return 0;
             }
 
-            // write all the data to the fifo
-            for (uint32_t i = 0; i < t; i++) {
-                // write 1 byte at the time
-                Spi::port->DATA8[0] = data[transmitted + i];
+            // check if we have a valid pointer to write
+            if (data == nullptr) {
+                // write all the data to the fifo
+                for (uint32_t i = 0; i < t; i++) {
+                    // write 1 byte at the time
+                    Spi::port->DATA8[0] = 0x00;
+                }
+            }
+            else {
+                // write all the data to the fifo
+                for (uint32_t i = 0; i < t; i++) {
+                    // write 1 byte at the time
+                    Spi::port->DATA8[0] = data[transmitted + i];
+                }
             }
 
             return t;
