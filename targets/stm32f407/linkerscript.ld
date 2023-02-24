@@ -146,10 +146,12 @@ SECTIONS
     /* Stack segment */
     .stack (NOLOAD) :
     {
-        . = ALIGN(8);
+        . = ALIGN(4);
         PROVIDE(__stack_start = .);
 
-        . = . + STACK_SIZE;        
+        . = . + STACK_SIZE;
+        . = ALIGN(4);
+        
         PROVIDE(__stack_end = .);
     } > ram
 
