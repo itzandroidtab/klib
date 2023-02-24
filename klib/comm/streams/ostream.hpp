@@ -19,7 +19,7 @@ namespace klib {
     struct _noboolalpha {};
 
     [[maybe_unused]]
-    constexpr _boolalpha noboolalpha;
+    constexpr _noboolalpha noboolalpha;
 
     struct _hex {};
 
@@ -217,6 +217,16 @@ namespace klib {
         }
     }
 
+    /**
+     * @brief Write a character to the output stream
+     * 
+     * @tparam OutputStream 
+     * @tparam B 
+     * @tparam Boolalpha 
+     * @param str 
+     * @param c 
+     * @return const OutputStream<B, Boolalpha>& 
+     */
     template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
@@ -227,20 +237,16 @@ namespace klib {
         return str;
     }
 
-    template <
-        template<klib::base, bool> class OutputStream, 
-        klib::base B, bool Boolalpha
-    >
-    const OutputStream<B, Boolalpha> &operator<<(const OutputStream<B, Boolalpha> &str, bool v) {
-        if constexpr (OutputStream<B, Boolalpha>::boolalpha) {
-            str << (v ? "true" : "false");
-        } else {
-            str << char('0' + v);
-        }
-
-        return str;
-    }
-
+    /**
+     * @brief Write a character array to the output stream
+     * 
+     * @tparam OutputStream 
+     * @tparam B 
+     * @tparam Boolalpha 
+     * @param str 
+     * @param s 
+     * @return const OutputStream<B, Boolalpha>& 
+     */
     template <
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha
@@ -253,6 +259,18 @@ namespace klib {
         return str;
     }
 
+    /**
+     * @brief Write a number to the output stream. Converts a number using the base
+     * 
+     * @tparam T 
+     * @tparam OutputStream 
+     * @tparam B 
+     * @tparam Boolalpha 
+     * @tparam Boolalpha,
+     * @param str 
+     * @param v 
+     * @return const OutputStream<B, Boolalpha>& 
+     */
     template <
         typename T,
         template<klib::base, bool> class OutputStream, 
@@ -260,7 +278,11 @@ namespace klib {
         typename = std::enable_if_t<std::is_integral_v<T>>
     >
     const OutputStream<B, Boolalpha> &operator<<(const OutputStream<B, Boolalpha> &str, T v) {
-        if constexpr(OutputStream<B, Boolalpha>::base == base::HEX) {
+        if constexpr(std::is_same_v<T, bool> && OutputStream<B, Boolalpha>::boolalpha) {
+            // show the bool as a text value
+            str << (v ? "true" : "false");
+        }
+        else if constexpr(OutputStream<B, Boolalpha>::base == base::HEX) {
             /*
              * A single hex char describes a nibble, so
              * sizeof(T) * 2 will hold the hex representation and
