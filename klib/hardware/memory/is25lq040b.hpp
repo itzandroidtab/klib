@@ -211,7 +211,6 @@ namespace klib::hardware::memory {
             // create a array for the command to erase 
             // the whole chip
             const uint8_t command[] = {
-                static_cast<uint8_t>(cmd::write_enable),
                 static_cast<uint8_t>(cmd::chip_erase)
             };
 
