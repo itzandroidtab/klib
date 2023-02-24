@@ -14,7 +14,7 @@ namespace klib::atsam3x8e {
             WDT->WDT_MR = WDT_MR_WDDIS_Msk;
         }
 
-        static void restart() {
+        static void feed() {
             // Restart the watchdog timer
             WDT->WDT_CR = WDT_CR_WDRSTT_Msk | WDT_CR_KEY_PASSWD;
         }
