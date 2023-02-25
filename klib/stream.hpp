@@ -18,7 +18,7 @@ namespace klib {
         // create a cout to print data to the host machine	
         constexpr klib::KLIB_DEFAULT_COUT::cout cout;
     #endif
-    #if defined(KLIB_DEFAULT_CIN) && !(KLIB_DEFAULT_COUT == rtt && KLIB_SEGGER_SUPPORT == false)
+    #if defined(KLIB_DEFAULT_CIN) && !(KLIB_DEFAULT_CIN == rtt && KLIB_SEGGER_SUPPORT == false)
         // create a cin to print data to the host machine
         constexpr klib::KLIB_DEFAULT_CIN::cin cin;
     #endif
