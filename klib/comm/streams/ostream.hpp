@@ -3,10 +3,10 @@
 
 #include <type_traits>
 #include <array>
-#include <stdio.h>
 
 #include <klib/dynamic_array.hpp>
 #include <klib/math.hpp>
+#include <klib/string.hpp>
 
 #include "stream_base.hpp"
 
@@ -43,179 +43,6 @@ namespace klib {
 
     [[maybe_unused]]
     constexpr char endl = '\n';
-
-    namespace {
-        /**
-         * Copy the given string into the buffer.
-         *
-         * @internal
-         * @param buffer
-         * @param str
-         * @return
-         */
-        constexpr void _strcopy(char *buffer, const char *str) {
-            int i = 0;
-            while (str[i] != '\0') {
-                buffer[i] = str[i];
-                i += 1;
-            }
-
-            buffer[i] = '\0';
-        }
-
-        /**
-         * Reverse a char buffer.
-         *
-         * @internal
-         * @param str
-         * @param length
-         * @return
-         */
-        constexpr void _reverse(char *str, const int length) {
-            int start = 0;
-            int end = length - 1;
-
-            while (start < end) {
-                char temp = *(str + start);
-                *(str + start++) = *(str + end);
-                *(str + end--) = temp;
-            }
-        }
-
-        /**
-         * Add the prefix to the output stream.
-         *
-         * @internal
-         * @param str
-         * @param base
-         * @return
-         */
-        constexpr int _add_prefix(char *str, int base) {
-            char *p = str;
-
-            if (base == 8) {
-                *p++ = 'b';
-                *p = '0';
-
-                return 2;
-            }
-
-            if (base == 16) {
-                *p++ = 'x';
-                *p = '0';
-
-                return 2;
-            }
-
-            return 0;
-        }
-
-        /**
-         * Internal itoa for stream output.
-         *
-         * @internal
-         * @param num
-         * @param str
-         * @param base
-         * @return
-         */
-        constexpr char *_itoa(int num, char *str, int base) {
-            // Handle 0 explicitly, otherwise empty string is printed for 0
-            if (num == 0) {
-                str[0] = '0';
-                int added = _add_prefix(&str[1], base);
-
-                str[added + 1] = '\0';
-
-                return str;
-            }
-
-            int i = 0;
-            bool negative = false;
-
-            // In standard itoa(), negative numbers are handled only with
-            // base 10. Otherwise numbers are considered unsigned.
-            if (num < 0 && base == 10) {
-                negative = true;
-                num = -num;
-            }
-
-            // Process individual digits
-            while (num > 0) {
-                int rem = num % base;
-
-                if (rem > 9) {
-                    str[i++] = 'A' + (rem - 10);
-                } else {
-                    str[i++] = '0' + rem;
-                }
-
-                num /= base;
-            }
-
-            // If number is negative, append '-'
-            if (negative) {
-                str[i++] = '-';
-            }
-
-            // For hex, append 0x
-            int added = _add_prefix(&str[i], base);
-            str[i += added] = '\0'; // Append string terminator
-
-            // Reverse the string
-            _reverse(str, i);
-
-            return str;
-        }
-
-        /**
-         * Helper function that counts the amount of characters in the
-         * positive representation of the given number.
-         *
-         * @internal
-         * @tparam T
-         * @param v
-         * @return
-         */
-        template <typename T>
-        constexpr int _count_chars(T v, const int base) {
-            if (v < 0) {
-                v *= -1;
-            }
-
-            int chars = 0;
-            while (v) {
-                chars += 1;
-                v /= base;
-            }
-
-            return chars;
-        }
-
-        /**
-         * Convert a integral numeric value to a binary
-         * representation with leading zero's.
-         *
-         * @internal
-         * @tparam T
-         * @param v
-         * @param buffer
-         */
-        template <typename T>
-        void _integral_to_bin_buffer(T v, char *buffer) {
-            char *p = buffer;
-
-            // TODO: showbase
-            *p++ = '0';
-            *p++ = 'b';
-
-            for (int i = sizeof(T) * 8; i != 0; i--) {
-                *p++ = ((v >> i) & 0x1) ? '1' : '0';
-            }
-
-            *p = '\0';
-        }
-    }
 
     /**
      * @brief Write a character to the output stream
@@ -275,48 +102,22 @@ namespace klib {
         typename T,
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha,
-        typename = std::enable_if_t<std::is_integral_v<T>>
+        typename = std::enable_if_t<std::is_integral_v<T>>,
+        typename = std::enable_if_t<sizeof(T) <= 8>
     >
     const OutputStream<B, Boolalpha> &operator<<(const OutputStream<B, Boolalpha> &str, T v) {
-        if constexpr(std::is_same_v<T, bool> && OutputStream<B, Boolalpha>::boolalpha) {
-            // show the bool as a text value
-            str << (v ? "true" : "false");
-        }
-        else if constexpr(OutputStream<B, Boolalpha>::base == base::HEX) {
-            /*
-             * A single hex char describes a nibble, so
-             * sizeof(T) * 2 will hold the hex representation and
-             * the +3 is for the leading 0x and trailing \0.
-             */
-            char buf[sizeof(T) * 2 + 3];
-            _itoa(v, buf, 16);
-            str << buf;
-        } else if constexpr (OutputStream<B, Boolalpha>::base == base::DEC) {
-            /*
-             * The buffer wil be the maximum amount of digits in the type
-             * + a optional leading '-' or '+' + a \0.
-             */
-            char buf[_count_chars(v, 10) + 2] = {};
-            _itoa(v, buf, 10);
-            str << buf;
-        } else if constexpr (OutputStream<B, Boolalpha>::base == base::OCT) {
-            /*
-             * A char is needed for each 3 bits + 3 for the leading
-             * 0o and the trailing \0.
-             */
-            char buf[sizeof(T) * 3 + 3];
-            _itoa(v, buf, 8);
-            str << buf;
-        } else {
-            // binary
-            /*
-             * A char is needed for each bit + 3 for the leading
-             * 0b and trailing \0.
-             */
-            char buf[sizeof(T) * 8 + 3];
-            _integral_to_bin_buffer(v, buf);
-            str << buf;
-        }
+        // buffer to store the conversion (max of 8 characters per byte + 3 for 
+        // the prefix and null-termintator)
+        char buf[(sizeof(T) * 8) + sizeof("  ")] = {};
+        
+        // convert the value to a string
+        string::itoa<
+            OutputStream<B, Boolalpha>::base, 
+            OutputStream<B, Boolalpha>::boolalpha
+        >(v, buf);
+
+        // write the buffer to the stream
+        str << buf;
 
         return str;
     }
