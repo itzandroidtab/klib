@@ -267,7 +267,11 @@ namespace klib::string::detail {
         if constexpr (std::is_signed<T>::value) {
             // check if the value is negative
             if (value < 0) {
+                // change the negative value to positive
                 value *= -1;
+
+                // add 1 for the '-' sign
+                chars += 1;
             }
         }
 
