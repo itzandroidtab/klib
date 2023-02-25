@@ -341,7 +341,7 @@ namespace klib::string::detail {
             return 2;
         }
         else if constexpr (B == base::OCT) {
-            return 7;            
+            return 8;            
         }
         else if constexpr (B == base::DEC) {
             return 10;
