@@ -102,8 +102,9 @@ namespace klib {
         typename T,
         template<klib::base, bool> class OutputStream, 
         klib::base B, bool Boolalpha,
-        typename = std::enable_if_t<std::is_integral_v<T>>,
-        typename = std::enable_if_t<sizeof(T) <= 8>
+        typename = std::enable_if_t<
+            std::is_integral_v<T> && (sizeof(T) <= 8)
+        >
     >
     const OutputStream<B, Boolalpha> &operator<<(const OutputStream<B, Boolalpha> &str, T v) {
         // buffer to store the conversion (max of 8 characters per byte + 3 for 
