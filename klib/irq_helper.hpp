@@ -106,6 +106,7 @@ namespace klib {
      */
     template <uint32_t Size = 32>
     class irq_helper_status {
+    public:
         // using for the array of callbacks
         using interrupt_callback = void(*)(const uint32_t, const uint32_t);
 
