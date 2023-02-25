@@ -74,13 +74,18 @@ namespace klib::detail {
 
         // wait until we have reached the target runtime
         while (Timer::get_runtime() != target) {
-            // wait and do nothing
+            // if we dont have low power sleep enabled we will just busy loop
+            if constexpr (TARGET_LOW_POWER_SLEEP == true) {
+                // let the cpu sleep until we have a interrupt
+                asm("WFE");
+            }
         }
 
         // wait until the counter goes over the count we 
         // had before 
         while (Timer::get_counter() < count) {
-            // wait and do nothing
+            // wait and do nothing. We cannot use the low power sleep here as 
+            // no interrupt will trigger
         }
     }
 
