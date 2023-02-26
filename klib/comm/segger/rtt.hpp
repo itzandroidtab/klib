@@ -2,9 +2,19 @@
 #define KLIB_RTT_HPP
 
 #include <cstdint>
-#include "src/RTT/SEGGER_RTT.h"
+
+// prevent the segger header from being included
+// if we do not have segger support enabled
+#if (KLIB_SEGGER_SUPPORT == true)
+    #include "src/RTT/SEGGER_RTT.h"
+#endif
 
 namespace klib::rtt {
+#if (KLIB_SEGGER_SUPPORT == true)
+    /**
+     * @brief Rtt class that can communicate with a host
+     * 
+     */
     class rtt {
     public:
         /**
@@ -68,6 +78,37 @@ namespace klib::rtt {
             return SEGGER_RTT_HasData(Channel);
         }
     };
+
+#else
+    /**
+     * @brief Class to prevent compile errors while we 
+     * do not have segger rtt support enabled
+     * 
+     */
+    class rtt {
+    public:
+        static void init() {
+            // do nothing
+        }
+
+        template <uint8_t Channel = 0, typename T>
+        static void write(const T data, const uint32_t size) {
+            // do nothing
+        }
+
+        template <uint8_t Channel = 0, bool Blocking = true>
+        static char getc() {
+            // return a null character
+            return 0;
+        }
+
+        template <uint8_t Channel = 0>
+        static bool hasc() {
+            // return we do not have data
+            return false;
+        }
+    };
+#endif
 }
 
 #endif

@@ -3,12 +3,7 @@
 
 // include the stream specific implementations
 #include <klib/comm/streams/swo_stream.hpp>
-
-// prevent the segger stream from being included
-// if we do not have segger support enabled
-#if (KLIB_SEGGER_SUPPORT == true)
-    #include <klib/comm/streams/rtt_stream.hpp>
-#endif
+#include <klib/comm/streams/rtt_stream.hpp>
 
 namespace klib {
     // check if we have a default stream we need to add.
