@@ -15,7 +15,7 @@ namespace klib {
             using instance = cout<IB, IBoolalpha>;
 
             void putc(const char c) const {
-                rtt::write<0>(c, sizeof(c));
+                rtt::write<0>(&c, sizeof(c));
             }
         };
 

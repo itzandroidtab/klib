@@ -17,14 +17,46 @@ namespace klib::rtt {
      */
     class rtt {
     public:
+        enum class mode {
+            // Skip. Do not block, output nothing. (Default)
+            no_block = 0,
+
+            // Trim: Do not block, output as much as fits.
+            no_block_trim = 1,
+
+            // Block: Wait until there is space in the buffer.
+            block = 2,
+        };
+
         /**
-         * @brief Only needed to make the write and getc consistent timing on every call
-         * as init is called in write and getc if not initialized
+         * @brief Channel 0 is configured automatically. All other 
+         * channels should be initalized before use. Using the segger
+         * functions
          * 
          */
         static void init() {
             // init the segger library
             SEGGER_RTT_Init();
+        }
+
+        /**
+         * @brief Configure a channel with alternate settings
+         * 
+         * @tparam Mode 
+         * @tparam Channel 
+         * @tparam UpBuffer Up or down buffer (up from device to host, down from host to device)
+         */
+        template <mode Mode, uint8_t Channel = 0, bool UpBuffer = true>
+        static void configure() {
+            // configure the mode in the channel
+            if constexpr (UpBuffer) {
+                // configure the channel from the device to the host
+                SEGGER_RTT_SetFlagsUpBuffer(Channel, static_cast<uint32_t>(Mode));
+            }
+            else {
+                // configure the channel from the host to the device
+                SEGGER_RTT_SetFlagsDownBuffer(Channel, static_cast<uint32_t>(Mode));
+            }
         }
 
         /**
@@ -35,9 +67,9 @@ namespace klib::rtt {
          * @param size 
          */
         template <uint8_t Channel = 0, typename T>
-        static void write(const T data, const uint32_t size) {
+        static void write(const T *const data, const uint32_t size) {
             // write the character to the rtt buffer
-            SEGGER_RTT_Write(Channel, reinterpret_cast<const uint8_t*>(&data), size);
+            SEGGER_RTT_Write(Channel, reinterpret_cast<const uint8_t*>(data), size);
         }
 
         /**
@@ -88,6 +120,11 @@ namespace klib::rtt {
     class rtt {
     public:
         static void init() {
+            // do nothing
+        }
+
+        template <mode Mode, uint8_t Channel = 0, bool UpBuffer = true>
+        static void configure() {
             // do nothing
         }
 
