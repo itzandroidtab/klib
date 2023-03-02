@@ -220,19 +220,38 @@ namespace klib {
      * 
      * @tparam Display 
      * @tparam AutoIncrement
+     * @tparam StartX 
+     * @tparam StartY 
+     * @tparam EndX 
+     * @tparam EndY 
      */
-    template <typename Display, bool AutoIncrement = true>
+
+    template <
+        typename Display, bool AutoIncrement = true, 
+        uint32_t StartX = 0, uint32_t StartY = 0, 
+        uint32_t EndX = Display::width, 
+        uint32_t EndY = Display::height
+    >
     class direct_framebuffer {
+    public:
+        constexpr static uint32_t width = EndX - StartX;
+        constexpr static uint32_t height = EndY - StartY;
+
+        // using to export the display conversion functions
+        using display = Display;
+
     protected:
         // cache for the where the cursor is located
         klib::vector2u cursor;
     
-    public:
-        using display = Display;
+        // make sure the input is valid
+        static_assert(EndX <= Display::width, "Framebuffer EndX cannot be bigger than the display width");
+        static_assert(EndY <= Display::height, "Framebuffer EndY cannot be bigger than the display height");
 
+    public:
         constexpr void init() {
             // update the position of the cursor in the display
-            display::set_cursor({0, 0}, {display::width - 1, display::height - 1});
+            display::set_cursor({StartX, StartY}, {EndX - 1, EndY - 1});
 
             // clear the cursor
             cursor = {0, 0};
@@ -245,7 +264,8 @@ namespace klib {
         constexpr void set_pixel(const klib::vector2u position, const display::pixel_type raw) {
             // limit the input to the display size
             const auto pos = klib::vector2u(
-                klib::min(position.x, display::width - 1), klib::min(position.y, display::height - 1)
+                StartX + klib::min(position.x, width - 1), 
+                StartY + klib::min(position.y, height - 1)
             );
 
             // check if we can optimize the set cursor command
@@ -253,12 +273,12 @@ namespace klib {
                 // update the cursor on the display if it doesnt match
                 if (cursor != pos) {
                     // update the cursor on the display
-                    display::set_cursor(pos, {display::width - 1, display::height - 1});
+                    display::set_cursor(pos, {width - 1, height - 1});
                 }
             }
             else {
                 // set the position every time we send raw pixel data
-                display::set_cursor(pos, {display::width - 1, display::height - 1});
+                display::set_cursor(pos, {width - 1, height - 1});
             }
 
             // write the raw data to the screen
@@ -266,7 +286,20 @@ namespace klib {
 
             if constexpr (AutoIncrement) {
                 // update the cursor on the screen
-                cursor = pos + klib::vector2u(1, 0);
+                if ((pos.x + 1) >= EndX) {
+                    // move the y cursor
+                    if ((pos.y + 1) >= EndY) {
+                        // move the cursor back to the start
+                        cursor = {StartX, StartY};
+                    }
+                    else {
+                        // move the cursor back to the StartX'
+                        cursor = {StartX, pos.y + 1};
+                    }
+                }
+                else {
+                    cursor = pos + klib::vector2u(1, 0);
+                }
             }
         }
 
@@ -285,8 +318,8 @@ namespace klib {
 
         constexpr void clear(const display::pixel_type raw) {
             // write the raw value to every pixel
-            for (uint32_t y = 0; y < display::height; y++) {
-                for (uint32_t x = 0; x < display::width; x++) {
+            for (uint32_t y = 0; y < height; y++) {
+                for (uint32_t x = 0; x < width; x++) {
                     // set the raw value on position
                     set_pixel({x, y}, raw);
                 }
@@ -294,6 +327,11 @@ namespace klib {
         }
 
         constexpr void clear(const klib::color &col) {
+            // check if the pixel is transparant. Skip if it is
+            if (col.transparant) {
+                return;
+            }
+
             // conver the color to raw data
             const auto raw = display::color_to_raw(col);
 
@@ -308,42 +346,80 @@ namespace klib {
      * display after pixel data is written. This allows the spi bus to only
      * transmit pixel data without other data in between
      * 
-     * @tparam display 
+     * @tparam Display 
+     * @tparam StartX 
+     * @tparam StartY 
+     * @tparam EndX 
+     * @tparam EndY 
      */
-    template <typename Display>
+    template <
+        typename Display, uint32_t StartX = 0, uint32_t StartY = 0, 
+        uint32_t EndX = Display::width, uint32_t EndY = Display::height
+    >
     class framebuffer {
-    protected:
-        // framebuffer to store the image
-        Display::pixel_type buffer[Display::width * Display::height];
-
     public:
+        constexpr static uint32_t width = EndX - StartX;
+        constexpr static uint32_t height = EndY - StartY;
+
+        // using to export the display conversion functions
         using display = Display;
 
+    protected:
+        // framebuffer to store the image
+        Display::pixel_type buffer[width * height];
+
+        // make sure the input is valid
+        static_assert(EndX <= Display::width, "Framebuffer EndX cannot be bigger than the display width");
+        static_assert(EndY <= Display::height, "Framebuffer EndY cannot be bigger than the display height");
+
+    public:
+        /**
+         * @brief Init the framebuffer. Not used in 
+         * the buffered framebuffer
+         * 
+         */
         constexpr void init() {
             // do nothing
         }
 
+        /**
+         * @brief Flush the buffer to the display
+         * 
+         */
         constexpr void flush() {
             // set the cursor to the start of the display
             display::set_cursor(
-                klib::vector2u{0, 0}, 
-                klib::vector2u{display::width - 1, display::height - 1}
+                klib::vector2u{StartX, StartY}, 
+                klib::vector2u{EndX - 1, EndY - 1}
             );
 
             // write the buffer to the screen
-            display::raw_write_screen(buffer, display::width * display::height);
+            display::raw_write_screen(buffer, width * height);
         }
 
-        constexpr void set_pixel(const klib::vector2u position, const display::pixel_type raw) {
+        /**
+         * @brief Set a pixel in the framebuffer (raw pixel data). 
+         * 
+         * @param position 
+         * @param raw 
+         */
+        constexpr void set_pixel(const klib::vector2u position, const Display::pixel_type raw) {
             // limit the input to the display size
             const auto pos = klib::vector2u(
-                klib::min(position.x, display::width - 1), klib::min(position.y, display::height - 1)
+                klib::min(position.x, width - 1), 
+                klib::min(position.y, height - 1)
             );
 
             // set the data in the buffer based on the display position function
-            buffer[display::position_to_buffer(pos)] = raw;
+            buffer[Display::position_to_buffer(pos)] = raw;
         }
 
+        /**
+         * @brief Set a pixel in the framebuffer (klib color)
+         * 
+         * @param position 
+         * @param col 
+         */
         constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
@@ -351,15 +427,20 @@ namespace klib {
             }
             
             // convert using the display conversion function
-            const auto raw = display::color_to_raw(col);
+            const auto raw = Display::color_to_raw(col);
 
             // set the pixel using the raw value
             set_pixel(position, raw);
         }
 
-        constexpr void clear(const display::pixel_type raw) {
+        /**
+         * @brief Clear the framebuffer with the specified color (raw pixel data)
+         * 
+         * @param raw 
+         */
+        constexpr void clear(const Display::pixel_type raw) {
             // get the amount of pixels we need to clear
-            constexpr uint32_t c = display::width * display::height;
+            constexpr uint32_t c = width * height;
 
             // iterate on all the pixels
             for (uint32_t i = 0; i < c; i++) {
@@ -368,9 +449,19 @@ namespace klib {
             }
         }
 
+        /**
+         * @brief Clear the framebuffer with the specified color (klib color)
+         * 
+         * @param raw 
+         */
         constexpr void clear(const klib::color &col) {
+            // check if the pixel is transparant. Skip if it is
+            if (col.transparant) {
+                return;
+            }
+
             // conver the color to raw data
-            const auto raw = display::color_to_raw(col);
+            const auto raw = Display::color_to_raw(col);
 
             // clear using the raw value
             clear(raw);
