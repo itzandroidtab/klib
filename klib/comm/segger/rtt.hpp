@@ -119,6 +119,17 @@ namespace klib::rtt {
      */
     class rtt {
     public:
+        enum class mode {
+            // Skip. Do not block, output nothing. (Default)
+            no_block = 0,
+
+            // Trim: Do not block, output as much as fits.
+            no_block_trim = 1,
+
+            // Block: Wait until there is space in the buffer.
+            block = 2,
+        };
+
         static void init() {
             // do nothing
         }
