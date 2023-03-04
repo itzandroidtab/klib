@@ -18,7 +18,7 @@ namespace klib {
      * @tparam Alignment 
      */
     template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
-    class irq {
+    class irq_ram {
     public:
         // using for the array of callbacks
         using interrupt_callback = void (*)();
@@ -138,6 +138,100 @@ namespace klib {
 
             // clear the callback
             callbacks[Irq] = default_handler;
+        }
+    };
+
+    /**
+     * @brief IRQ handler that relocates the vector table to a table in flash. This frees 
+     * the memory otherwise allocated for the vector table.
+     * 
+     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
+     * default arm interrupts). For more interrupts the amount should be aligned to the next
+     * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
+     * 
+     * @tparam IrqCount 
+     * @tparam Alignment 
+     */
+    template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
+    class irq_flash {
+    public:
+        // using for the array of callbacks
+        using interrupt_callback = void (*)();
+
+        /**
+         * @brief Available arm vector entries
+         * 
+         */
+        enum class arm_vector: uint8_t {
+            stack_ptr = 0,
+            reset = 1,
+            nmi = 2,
+            hard_fault = 3,
+            memory_managagement_fault = 4,
+            bus_fault = 5,
+            usage_fault = 6,
+            svcall = 11,
+            pendsv = 14,
+            systick = 15,
+            // end of the arm vector table. vector count should not 
+            // be used as a valid vector entry.
+            count
+        };
+
+        // export the alignment so the user can use it to 
+        // align the vector table
+        constexpr static uint32_t allignment = Alignment;
+
+        // make sure we have at least enough entries to fit the arm vector table
+        static_assert(IrqCount >= static_cast<const uint8_t>(arm_vector::count), 
+            "Invalid IRQ count, cannot fit the arm vector table"
+        );
+
+    protected:
+        // pointer to the vector table offset register
+        static volatile inline uint32_t *const vtor = ((volatile uint32_t*)0xE000ED08);
+
+    public:
+        /**
+         * @brief Set the vector table to the array provided by the user
+         * 
+         * @param vectors 
+         */
+        static void init(const interrupt_callback *const vectors) {
+            // move the vector table to the callback address
+            (*vtor) = reinterpret_cast<volatile uint32_t>(vectors);
+        }
+
+        /**
+         * @brief Dummy function to keep the klib library happy
+         * 
+         * @tparam Irq 
+         * @param callback 
+         */
+        template <uint32_t Irq>
+        static void register_irq(const interrupt_callback &callback) {
+            static_assert(Irq < IrqCount, "Invalid IRQ given to register");
+        }
+
+        /**
+         * @brief Dummy function to keep the klib library happy
+         * 
+         * @tparam Irq 
+         * @param callback 
+         */
+        template <arm_vector Irq>
+        static void register_irq(const interrupt_callback &callback) {
+            static_assert(Irq < arm_vector::count, "Count can not not be used as a arm vector entry");
+        }
+
+        /**
+         * @brief Dummy function to keep the klib library happy
+         * 
+         * @tparam Irq 
+         */
+        template <uint32_t Irq>
+        static void unregister_irq() {
+            static_assert(Irq < IrqCount, "Invalid IRQ given to unregister");
         }
     };
 }

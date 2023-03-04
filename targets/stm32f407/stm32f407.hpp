@@ -7,7 +7,7 @@
 
 namespace klib::stm32f407 {
     // irq for the stm32f407
-    using irq = klib::irq<16 + 72>;
+    using irq = klib::KLIB_IRQ<16 + 72>;
 
     /**
      * @brief Enable a interrupt

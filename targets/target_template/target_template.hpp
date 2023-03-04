@@ -5,7 +5,7 @@
 
 namespace klib::template {
     // irq for the target cpu
-    using irq = klib::irq<32>;
+    using irq = klib::KLIB_IRQ<16 + 16>;
 
     /**
      * @brief Enable a interrupt

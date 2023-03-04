@@ -7,7 +7,7 @@
 
 namespace klib::lpc1756 {
     // irq for the lpc1756
-    using irq = klib::irq<16 + 34>;
+    using irq = klib::KLIB_IRQ<16 + 34>;
 
     /**
      * @brief Enable a interrupt

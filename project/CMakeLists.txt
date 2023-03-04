@@ -13,6 +13,10 @@ add_executable(kproject
 # set the output filename
 set_target_properties(kproject PROPERTIES OUTPUT_NAME "klib" SUFFIX ".elf")
 
+# set the interrupt implementation
+target_compile_definitions(klib PUBLIC "KLIB_IRQ=irq_ram")
+# target_compile_definitions(klib PUBLIC "KLIB_IRQ=irq_flash")
+
 # set the default cout/cin
 target_compile_definitions(klib PUBLIC "KLIB_DEFAULT_COUT=rtt")
 target_compile_definitions(klib PUBLIC "KLIB_DEFAULT_CIN=rtt")

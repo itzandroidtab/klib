@@ -7,7 +7,7 @@
 
 namespace klib::stm32h723 {
     // irq for the stm32h723
-    using irq = klib::irq<178>;
+    using irq = klib::KLIB_IRQ<16 + 162>;
 
     /**
      * @brief Enable a interrupt

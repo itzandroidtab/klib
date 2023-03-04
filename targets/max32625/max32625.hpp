@@ -7,7 +7,7 @@
 
 namespace klib::max32625 {
     // irq for the max32625
-    using irq = klib::irq<16 + 49>;
+    using irq = klib::KLIB_IRQ<16 + 49>;
 
     /**
      * @brief Enable a interrupt

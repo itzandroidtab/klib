@@ -7,7 +7,7 @@
 
 namespace klib::lpc802 {
     // irq for the lpc802
-    using irq = klib::irq<16 + 28>;
+    using irq = klib::KLIB_IRQ<16 + 28>;
 
     /**
      * @brief Enable a interrupt
