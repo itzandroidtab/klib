@@ -52,8 +52,6 @@ target_compile_options(klib PRIVATE "-Wextra")
 target_compile_options(klib PRIVATE "-Werror")
 
 target_compile_options(klib PRIVATE "-Wno-maybe-uninitialized")
-target_compile_options(klib PRIVATE "-Wno-unused-local-typedefs")
-target_compile_options(klib PRIVATE "-Wno-unused-but-set-variable")
 target_compile_options(klib PRIVATE "-Wno-unused-function")
 target_compile_options(klib PRIVATE "-fomit-frame-pointer")
 target_compile_options(klib PUBLIC "-fno-math-errno")
