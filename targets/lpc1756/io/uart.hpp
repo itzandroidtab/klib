@@ -14,7 +14,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 21;
 
         // port to the UART hardware
-        UART0_Type *const port = UART0;
+        static inline UART0_Type *const port = UART0;
     };
 
     struct uart1 {
@@ -25,7 +25,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 22;
 
         // port to the UART hardware
-        UART1_Type *const port = UART1;
+        static inline UART1_Type *const port = UART1;
     };
 
     struct uart2 {
@@ -36,7 +36,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 23;
 
         // port to the UART hardware
-        UART0_Type *const port = UART2;
+        static inline UART0_Type *const port = UART2;
     };
 
     struct uart3 {
@@ -47,7 +47,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 24;
 
         // port to the UART hardware
-        UART0_Type *const port = UART3;
+        static inline UART0_Type *const port = UART3;
     };
 }
 

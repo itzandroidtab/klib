@@ -14,7 +14,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 29;
 
         // port to the SPI hardware
-        SPI_Type *const port = SPI;
+        static inline SPI_Type *const port = SPI;
     };
 }
 

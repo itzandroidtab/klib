@@ -14,7 +14,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 26;
 
         // port to the I2C hardware
-        I2C0_Type *const port = I2C0;
+        static inline I2C0_Type *const port = I2C0;
     };
 
     struct i2c1 {
@@ -25,7 +25,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 27;
 
         // port to the I2C hardware
-        I2C0_Type *const port = I2C1;
+        static inline I2C0_Type *const port = I2C1;
     };
 
     struct i2c2 {
@@ -36,7 +36,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 28;
 
         // port to the I2C hardware
-        I2C0_Type *const port = I2C2;
+        static inline I2C0_Type *const port = I2C2;
     };
 }
 

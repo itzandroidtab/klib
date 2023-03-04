@@ -14,7 +14,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 25;
 
         // port to the PWM hardware
-        PWM_Type *const port = PWM;
+        static inline PWM_Type *const port = PWM;
     };
 }
 

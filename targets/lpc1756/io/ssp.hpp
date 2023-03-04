@@ -14,7 +14,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 30;
 
         // port to the SSP hardware
-        SSP0_Type *const port = SSP0;
+        static inline SSP0_Type *const port = SSP0;
     };
 
     struct ssp1 {
@@ -25,7 +25,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t interrupt_id = 31;
 
         // port to the SSP hardware
-        SSP0_Type *const port = SSP1;
+        static inline SSP0_Type *const port = SSP1;
     };
 }
 
