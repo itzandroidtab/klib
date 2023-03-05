@@ -6,7 +6,8 @@
 
 #include <lpc1756.hpp>
 
-// #include "clocks.hpp"
+#include "clocks.hpp"
+#include "power.hpp"
 
 namespace klib::lpc1756::io::periph {
     struct tc0 {
@@ -164,11 +165,11 @@ namespace klib::lpc1756::io {
          * @param frequency 
          */
         static void init(const interrupt_callback& irq, const uint32_t frequency) {
-            // enable the clock on the timer peripheral
-            // clocks::enable<Timer>();
-            SYSCON->PCLKSEL0 |= (0x1 << (0x1 * 2));
+            // enable power to the timer peripheral
+            power_control::enable<Timer>();
 
-            SYSCON->PCONP |= 0x1 << 1;
+            // enable the clock on the timer peripheral
+            clocks::enable<Timer>();
 
             // disable the timer
             disable();
