@@ -72,14 +72,6 @@ target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile
 target_link_libraries(target_cpu PUBLIC target_cpu_options)
 target_link_libraries(target_cpu PUBLIC klib)
 
-# Add definitions for targets
-# Values:
-#   - Debug  : -DTARGET_DEBUG=1
-#   - Release: -DTARGET_DEBUG=0
-#   - others : -DTARGET_DEBUG=0
-target_compile_definitions(target_cpu PUBLIC
-"${PROJECT_NAME_UPPERCASE}_DEBUG=$<CONFIG:Debug>")
-
 # Global includes. Used by all targets
 # Note:
 #   - header can be included by C++ code `#include <target/target.hpp>`
