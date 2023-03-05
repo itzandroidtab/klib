@@ -9,10 +9,10 @@
 
 namespace klib {
     namespace swo {
-        template <base B = _default_base, bool Boolalpha = _default_boolalpha>
+        template <base B = _default_base, bool Boolalpha = _default_boolalpha, uint32_t Digits = 5>
         struct cout: public ostream<B, Boolalpha> {
-            template <klib::base IB, bool IBoolalpha>
-            using instance = cout<IB, IBoolalpha>;
+            template <klib::base IB, bool IBoolalpha, uint32_t IDigits>
+            using instance = cout<IB, IBoolalpha, IDigits>;
 
             void putc(const char c) const {
                 swo::write<0, true>(c);

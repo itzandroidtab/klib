@@ -275,7 +275,7 @@ namespace klib::string::detail {
             }
         }
 
-        while (value) {
+        while (static_cast<int>(value) > 0) {
             chars += 1;
 
             if constexpr (B == base::BIN) {
@@ -411,7 +411,7 @@ namespace klib::string::detail {
         // loop until we dont have any more characters left
         for (uint32_t i = 0; i < count; i++) {
             // get the remainder
-            const T remainder = value % b;
+            const T remainder = static_cast<uint32_t>(value) % b;
 
             // add the letter to the string
             if (remainder > 9) {
@@ -427,6 +427,49 @@ namespace klib::string::detail {
 
         // add a null terminator
         str[index + count] = '\0';
+    }
+
+    template <uint32_t Digits, typename T = int>
+    constexpr void stoa_impl(T value, char *const str) {
+        if (klib::isnan(value)) {
+            strcpy(str, "NaN");
+        }
+        else if (klib::isinf(value)) {
+            strcpy(str, "Inf");
+        } 
+        else if (value == static_cast<T>(0.f)) {
+            strcpy(str, "0");
+        } 
+        else {
+            int i = 0, k = 0;
+
+            while (static_cast<int>(value) > 0) {
+                value /= 10;
+                i++;
+            }
+
+            *(str + i) = '.';
+
+            value *= 10;
+            auto n = static_cast<int>(value);
+            value -= n;
+
+            while ((k - i) <= static_cast<int>(Digits)) {
+                if (k == i) {
+                    k++;
+                }
+
+                *(str + k) = '0' + n;
+                
+                value *= 10;
+                n = static_cast<int>(value);
+                value -= n;
+                k++;
+            }
+
+            // Null-terminate the string
+            *(str + k) = '\0';
+        }
     }
 }
 
@@ -445,20 +488,41 @@ namespace klib::string {
     }
 
     /**
-     * @brief Convert a value to a string
+     * @brief Convert a integer to a string
      * 
      * @tparam B 
      * @tparam Boolalpha 
      * @tparam T 
+     * @tparam typename 
      * @param value 
-     * @param dest 
-     * @param max_size 
-     * @param base 
+     * @param str 
      */
-    template <base B = _default_base, bool Boolalpha = _default_boolalpha, typename T = int>
+    template <
+        base B = _default_base, bool Boolalpha = _default_boolalpha, 
+        typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>
+    >
     constexpr void itoa(const T value, char *const str) {
         // return the implementation
         return detail::itoa_impl<B, Boolalpha, T>(value, str);
+    }
+
+    /**
+     * @brief Convert a float to a string
+     * 
+     * @tparam Digits 
+     * @tparam T 
+     * @tparam T,
+     * typename 
+     * @param value 
+     * @param str 
+     */
+    template <
+        uint32_t Digits = 5, typename T = float, 
+        typename = std::enable_if_t<std::is_floating_point_v<T>>
+    >
+    constexpr void stoa(const T value, char *const str) {
+        // return the implementation
+        return detail::stoa_impl<Digits, T>(value, str);
     }
 }
 
