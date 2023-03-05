@@ -219,7 +219,8 @@ namespace klib {
         klib::base B, bool Boolalpha, uint32_t Digits
     >
     const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, const array_values<T> &values) {
-        str << "{ ";
+        str << "{";
+
         for (uint32_t i = 0; i < values.size; ++i) {
             str << values.arr[i];
 
@@ -227,7 +228,8 @@ namespace klib {
                 str << ", ";
             }
         }
-        str << " }";
+        
+        str << "}";
 
         return str;
     }
