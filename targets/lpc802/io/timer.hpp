@@ -101,11 +101,18 @@ namespace klib::lpc802::io {
             // setup to trigger a interrupt when matching the TC value
             Timer::port->MCR = (Timer::port->MCR & ~(0b111 << Channel::id)) | (0b011 << Channel::id);
 
-            // register our handler
-            lpc802::irq::template register_irq<Timer::irq_id>(isr_handler);
+            // make sure the irq is valid
+            if (irq) {
+                // register our handler
+                lpc802::irq::template register_irq<Timer::irq_id>(isr_handler);
 
-            // enable the interrupt
-            lpc802::template enable_irq<Timer::irq_id>();
+                // enable the interrupt
+                lpc802::template enable_irq<Timer::irq_id>();
+            }
+            else {
+                // disable the interrupt
+                lpc802::template disable_irq<Timer::irq_id>();
+            }
         }
 
         static void set_frequency(const uint32_t frequency) {
@@ -306,5 +313,264 @@ namespace klib::lpc802::io {
         }
     };
 }
+
+// namespace klib::lpc802::io::detail::timer {
+//     template <typename Timer>
+//     class ctimer {
+//     protected:
+//         // amount of channels
+//         constexpr static uint32_t channel_count = 4;
+
+//         // helper for 7 interrupt bits
+//         using irq_helper = klib::irq_helper<7>;
+
+//     public:
+//         // export the interrupt callback type
+//         using interrupt_callback = irq_helper::interrupt_callback;
+
+//     protected:
+//         // create a instance of the helper
+//         static inline auto helper = irq_helper();
+
+//         // increment count for every channel. Used to calculate the next
+//         // value when more than 1 channel is used
+//         static inline auto increment_count[channel_count] = {};
+
+//         /**
+//          * @brief Interrupt handler
+//          * 
+//          */
+//         static void isr_handler() {
+//             // read the register
+//             const uint32_t status = Timer::port->IR;
+
+//             // clear the whole interrupt register
+//             Timer::port->IR = status;
+
+//             // call the interrupt helper
+//             helper.handle_irq(status, 0xffffffff);
+
+//             // update the shadow registers
+//             update_channel_shadow();
+//         }
+
+//         static uint32_t find_highest_channel() {
+//             uint32_t ret = 0;
+
+//             // search for the highest value in any of the MR registers
+//             for (uint32_t i = 1; i < channel_count; i++) {
+//                 // check if the port is higher
+//                 if (increment_count[ret] < increment_count[i]) {
+//                     ret = i;
+//                 }
+//             }
+
+//             return ret;
+//         }
+
+//         static bool has_mutiple_active_channels() {
+//             uint32_t active = 0;
+
+//             for (uint32_t i = 0; i < channel_count; i++) {
+//                 if (increment_count[i] != 0) {
+//                     active++;
+
+//                     if (active > 1) {
+//                         return true;
+//                     }
+//                 }
+//             }
+
+//             return false;
+//         }
+
+//         static void update_channel_shadow() {
+//             // check if we have multiple channels active
+//             if (!has_mutiple_active_channels()) {
+//                 return;
+//             }
+
+//             // we only have 1 counter. To handle multiple channels we need to 
+//             // use the highest counter value and have the other values match 
+//             // with that timing
+//             const uint32_t channel = find_highest_channel();
+
+//             // 
+//             if ()
+//         }
+
+//         static void update_channel_parameters() {
+
+//         }
+
+//     public:
+//         template <typename Channel>
+//         static void init(const uint32_t frequency) {
+//             // enable the clock on the timer peripheral
+//             clocks::enable<Timer>();
+
+//             // disable the timer
+//             disable();
+
+//             // clear the prescale register to have the counter increment 
+//             // every clock cycle
+//             Timer::port->PR = 0;
+
+//             // set the frequency of the timer
+//             set_frequency(frequency);
+
+//             // clear the counter when it is stuck on 0
+//             if (!get_counter()) {
+//                 // clear the counter
+//                 clear_counter();
+//             }
+
+//             // update all the bits for every channel
+//             update_channel_parameters();
+
+//             // setup to trigger a interrupt when matching the TC value
+//             Timer::port->MCR = (Timer::port->MCR & ~(0b111 << Channel::id)) | (0b011 << Channel::id);
+
+//             // register our handler
+//             lpc802::irq::template register_irq<Timer::irq_id>(isr_handler);
+
+//             // enable the interrupt
+//             lpc802::template enable_irq<Timer::irq_id>();
+//         }
+
+//         template <typename Channel>
+//         static void set_frequency() {
+//             // set the desired counter value in the increment array
+//             increment_count[Channel::id] = (klib::clock::get() / frequency) + 1;
+
+//             // set the match register for the desired frequency
+//             Timer::port->MR[Channel::id] = increment_count[Channel::id];
+
+//             // update the channel shadow registers
+//             update_channel_shadow();
+//         }
+
+//         /**
+//          * @brief Register a callback for a specific event
+//          * 
+//          */
+//         template <uint32_t Event>
+//         static void register_irq(const irq_handler::interrupt_callback callback) {
+//             helper.register_irq<Event>(callback);
+//         }
+
+//         /**
+//          * @brief Clear a interrupt
+//          * 
+//          * @tparam Event 
+//          */
+//         template <uint32_t Event>
+//         static void unregister_irq() {
+//             helper.unregister_irq<Event>();
+//         }
+
+//         /**
+//          * @brief Disable the timer
+//          * 
+//          */
+//         static void disable() {
+//             // disable the timer
+//             Timer::port->TCR &= ~0x1;
+//         }
+
+//         /**
+//          * @brief Enable the timer
+//          * 
+//          */
+//         static void enable() {
+//             // enable the timer
+//             Timer::port->TCR |= 0x1;
+//         }
+
+//         /**
+//          * @brief Returns the current value of a counter
+//          * 
+//          * @return uint32_t 
+//          */
+//         static uint32_t get_counter() {
+//             return Timer::port->TC;
+//         }
+
+//         /**
+//          * @brief Clear the counter in the timer
+//          * 
+//          */
+//         static void clear_counter() {
+//             Timer::port->TC = 1;
+//         }
+//     };
+// }
+
+// namespace klib::lpc802::io {
+//     template <typename Timer, typename Channel>
+//     class timer {
+//     public:
+//         // using for the array of callbacks
+//         using interrupt_callback = detail::timer::ctimer<Timer>::interrupt_callback;
+
+//     public:
+//         /**
+//          * @brief Init the provided timer
+//          * 
+//          * @param irq 
+//          * @param frequency 
+//          */
+//         static void init(const interrupt_callback& irq, const uint32_t frequency) {
+//             // register our callback
+//             detail::timer::ctimer<Timer>::template register_irq<Channel::id>(irq);
+
+//             // init the ctimer
+//             detail::timer::ctimer<Timer>::template init<Channel>();
+//         }
+
+//         /**
+//          * @brief Set the frequency of the timer
+//          * 
+//          * @param Frequency 
+//          */
+//         static void set_frequency(const uint32_t frequency) {
+//             // set the frequency using the ctimer
+//             return detail::timer::ctimer<Timer>::template set_frequency<Channel>();
+//         }
+
+//         /**
+//          * @brief Disable the timer
+//          * 
+//          */
+//         static void disable() {
+//             return detail::timer::ctimer<Timer>::disable();
+//         }
+
+//         /**
+//          * @brief Enable the timer
+//          * 
+//          */
+//         static void enable() {
+//             return detail::timer::ctimer<Timer>::enable();
+//         }
+
+//         /**
+//          * @brief Returns the current value of a counter
+//          * 
+//          * @return uint32_t 
+//          */
+//         static uint32_t get_counter() {
+//             return detail::timer::ctimer<Timer>::get_counter();
+//         }
+
+//         /**
+//          * @brief Clear the counter in the timer
+//          * 
+//          */
+//         static void clear_counter() {
+//             return detail::timer::ctimer<Timer>::clear_counter();
+//         }
+//     };
+// }
 
 #endif

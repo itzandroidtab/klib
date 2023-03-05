@@ -191,11 +191,17 @@ namespace klib::lpc1756::io {
             // set the callback
             callback = irq;
 
-            // register our handler
-            lpc1756::irq::template register_irq<Timer::irq_id>(isr_handler);
+            if (irq) {
+                // register our handler
+                lpc1756::irq::template register_irq<Timer::irq_id>(isr_handler);
 
-            // enable the interrupt
-            lpc1756::template enable_irq<Timer::irq_id>();
+                // enable the interrupt
+                lpc1756::template enable_irq<Timer::irq_id>();
+            }
+            else {
+                // disable the interrupt
+                lpc1756::template disable_irq<Timer::irq_id>();
+            }
         }
 
         /**
