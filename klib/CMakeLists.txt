@@ -81,14 +81,6 @@ else()
     target_compile_definitions(klib PUBLIC "KLIB_SEGGER_SUPPORT=0")
 endif()
 
-# Add definitions for targets
-# Values:
-#   - Debug  : -DKLIB_DEBUG=1
-#   - Release: -DKLIB_DEBUG=0
-#   - others : -DKLIB_DEBUG=0
-target_compile_definitions(klib PUBLIC
-"${PROJECT_NAME_UPPERCASE}_DEBUG=$<CONFIG:Debug>")
-
 # Global includes. Used by all targets
 # Note:
 #   - header can be included by C++ code `#include <klib/klib.hpp>`
