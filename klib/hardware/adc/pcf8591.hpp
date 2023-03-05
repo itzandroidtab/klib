@@ -1,6 +1,8 @@
 #ifndef KLIB_PCF8591_HPP
 #define KLIB_PCF8591_HPP
 
+#include <cstdint>
+
 namespace klib::hardware::adc {
     template <typename Bus>
     class pcf8591 {
