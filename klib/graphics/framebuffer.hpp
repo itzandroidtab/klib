@@ -4,8 +4,7 @@
 #include <cstdint>
 
 #include <klib/vector2.hpp>
-
-#include "color.hpp"
+#include <klib/graphics/color.hpp>
 
 namespace klib::graphics {
     /**
