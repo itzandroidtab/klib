@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace klib {
+namespace klib::graphics {
     /**
      * @brief 3 channel color struct
      * 

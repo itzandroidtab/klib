@@ -162,7 +162,7 @@ namespace klib::hardware::display {
             Bus::write(Address, &framebuffer[(offset / 8) - 1], tx_size);
         }
 
-        constexpr static pixel_type color_to_raw(const klib::color &col) {
+        constexpr static pixel_type color_to_raw(const klib::graphics::color &col) {
             // if we have any color we turn on the pixel
             return col.red || col.green || col.blue; 
         }

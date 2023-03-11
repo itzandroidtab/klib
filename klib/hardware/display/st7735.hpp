@@ -240,7 +240,7 @@ namespace klib::hardware::display {
                 write_cmd(cmd::ramwr, reinterpret_cast<const uint8_t *const>(data), (size * sizeof(pixel_type)));
             }
 
-            constexpr static pixel_type color_to_raw(const klib::color &col) {
+            constexpr static pixel_type color_to_raw(const klib::graphics::color &col) {
                 // conver the color to raw data 
                 const pixel_type data = ((static_cast<pixel_type>(col.red) >> 3) << 11) | 
                                         ((static_cast<pixel_type>(col.green) >> 2) << 5) |

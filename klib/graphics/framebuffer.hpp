@@ -7,7 +7,7 @@
 
 #include "color.hpp"
 
-namespace klib {
+namespace klib::graphics {
     /**
      * @brief Framebuffer with a different start position in a another framebuffer
      * 
@@ -46,7 +46,7 @@ namespace klib {
             fb.set_pixel(sub_position, raw);
         }
 
-        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
             // convert the color to raw
             const auto raw = display::color_to_raw(col);
 
@@ -59,7 +59,7 @@ namespace klib {
             fb.clear(raw);
         }
 
-        constexpr void clear(const klib::color &col) {
+        constexpr void clear(const klib::graphics::color &col) {
             // clear using color
             fb.clear(col);
         }
@@ -112,7 +112,7 @@ namespace klib {
             }
         }
 
-        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
             // convert the color to raw
             const auto raw = display::color_to_raw(col);
 
@@ -125,7 +125,7 @@ namespace klib {
             fb.clear(raw);
         }
 
-        constexpr void clear(const klib::color &col) {
+        constexpr void clear(const klib::graphics::color &col) {
             // clear using color
             fb.clear(col);
         }
@@ -190,7 +190,7 @@ namespace klib {
             }
         }
 
-        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
             // convert the color to raw
             const auto raw = display::color_to_raw(col);
 
@@ -203,7 +203,7 @@ namespace klib {
             fb.clear(raw);
         }
 
-        constexpr void clear(const klib::color &col) {
+        constexpr void clear(const klib::graphics::color &col) {
             // clear using color
             fb.clear(col);
         }
@@ -304,7 +304,7 @@ namespace klib {
             }
         }
 
-        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
                 return;
@@ -327,7 +327,7 @@ namespace klib {
             }
         }
 
-        constexpr void clear(const klib::color &col) {
+        constexpr void clear(const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
                 return;
@@ -421,7 +421,7 @@ namespace klib {
          * @param position 
          * @param col 
          */
-        constexpr void set_pixel(const klib::vector2u position, const klib::color &col) {
+        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
                 return;
@@ -455,7 +455,7 @@ namespace klib {
          * 
          * @param raw 
          */
-        constexpr void clear(const klib::color &col) {
+        constexpr void clear(const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
                 return;
