@@ -3,7 +3,7 @@
 
 #include <klib/wait.hpp>
 #include <klib/vector2.hpp>
-#include <klib/color.hpp>
+#include <klib/graphics/color.hpp>
 
 namespace klib::hardware::display {
     template <typename Bus, typename PinDC, typename PinRst>

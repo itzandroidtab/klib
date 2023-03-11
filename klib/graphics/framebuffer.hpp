@@ -3,8 +3,9 @@
 
 #include <cstdint>
 
-#include <klib/color.hpp>
 #include <klib/vector2.hpp>
+
+#include "color.hpp"
 
 namespace klib {
     /**
