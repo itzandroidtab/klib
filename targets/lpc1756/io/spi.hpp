@@ -114,7 +114,8 @@ namespace klib::lpc1756::io {
 
             // set the frequency (minimum should be 8. After testing it 
             // looks like 2 is also working. Value below 8 might not
-            // work as the datasheet implies)
+            // work as the datasheet implies). The last bit does not stick.
+            // (e.g 5 -> 4)
             Spi::port->CCR = static_cast<uint8_t>(
                 klib::clock::get() / static_cast<uint32_t>(Frequency)
             );
