@@ -99,14 +99,18 @@ namespace klib::hardware::memory {
         }
 
         /**
-         * @brief Check if the device is still busy writing
+         * @brief Check if the device is still busy writing/erasing
          * 
          * @return true 
          * @return false 
          */
         static bool is_busy() {
-            // return if the write busy bit is set
-            return !(get_status() & 0x1);
+            // get the status register
+            const uint8_t status = get_status();
+
+            // return if the write busy bit is set or if the 
+            // write enable latch is still latched
+            return (status & 0x3);
         }
 
         /**
