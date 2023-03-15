@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <klib/units.hpp>
+#include <klib/math.hpp>
 
 namespace klib::string {
     /**
