@@ -44,7 +44,7 @@ namespace klib::io::spi {
      */
     template <mode Mode>
     constexpr bool get_cpha() {
-        return Mode == mode::mode0 || Mode == mode::mode2;
+        return Mode == mode::mode1 || Mode == mode::mode3;
     }
 
     /**
@@ -55,7 +55,7 @@ namespace klib::io::spi {
      */
     template <mode Mode>
     constexpr bool get_cpol() {
-        return Mode == mode::mode0 || Mode == mode::mode1;
+        return Mode == mode::mode2 || Mode == mode::mode3;
     }
 }
 
