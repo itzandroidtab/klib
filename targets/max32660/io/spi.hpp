@@ -306,7 +306,7 @@ namespace klib::max32660::io {
         }
 
         /**
-         * @brief Wait until the transaction is done
+         * @brief Returns if the transaction is done
          * 
          * @return true 
          * @return false 
@@ -348,8 +348,8 @@ namespace klib::max32660::io {
             // set the amount of bits per character and set the spi mode
             Spi::port->CTRL2 = (
                 (convert_bits<Bits>() << 8) |
-                (!klib::io::spi::get_cpol<Mode>() << 1) |
-                !klib::io::spi::get_cpha<Mode>()
+                (klib::io::spi::get_cpol<Mode>() << 1) |
+                klib::io::spi::get_cpha<Mode>()
             );
 
             // set the clock
