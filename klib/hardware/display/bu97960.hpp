@@ -10,14 +10,14 @@ namespace klib::hardware::display {
     template <typename Bus, uint8_t Address = 0x3e, uint32_t Width = 18, uint32_t Height = 4, uint32_t XOffset = 0, uint32_t YOffset = 0>
     class bu97960 {
     public:
-        // type for framebuffers
-        using pixel_type = bool;
-
         // width of the display
         constexpr static uint32_t width = Width;
 
         // height of the display
         constexpr static uint32_t height = Height;
+
+        // mode used in the display
+        constexpr static graphics::mode mode = graphics::mode::mono;
 
     protected:
         // check if we have valid width and height
@@ -160,11 +160,6 @@ namespace klib::hardware::display {
 
             // only write the pixels we have in this dislay
             Bus::write(Address, &framebuffer[(offset / 8) - 1], tx_size);
-        }
-
-        constexpr static pixel_type color_to_raw(const klib::graphics::color &col) {
-            // if we have any color we turn on the pixel
-            return col.red || col.green || col.blue; 
         }
 
         constexpr static uint32_t position_to_buffer(const klib::vector2u &pos) {

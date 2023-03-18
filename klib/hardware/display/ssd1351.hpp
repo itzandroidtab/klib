@@ -9,14 +9,14 @@ namespace klib::hardware::display {
     template <typename Bus, typename PinDC, typename PinRst>
     class ssd1351 {
         public:
-            // type for framebuffers
-            using pixel_type = uint16_t;
-
             // width of the display
             constexpr static uint32_t width = 128;
 
             // height of the display
             constexpr static uint32_t height = 128;
+
+            // mode used in the display
+            constexpr static graphics::mode mode = graphics::mode::mono;
 
         protected:
             static void write_command(const uint8_t command){
@@ -367,16 +367,6 @@ namespace klib::hardware::display {
 
                 // write the data
                 write_data(reinterpret_cast<const uint8_t *const>(data), (size * sizeof(pixel_type)));
-            }
-
-            constexpr static pixel_type color_to_raw(const klib::graphics::color &col) {
-                // conver the color to raw data 
-                const pixel_type data = (((static_cast<pixel_type>(col.red) * 0x1F) / 0xFF) << 11) | 
-                                        (((static_cast<pixel_type>(col.green) * 0x3F) / 0xFF) << 5) |
-                                        ((static_cast<pixel_type>(col.blue) * 0x1F) / 0xFF);
-
-                // reverse the byte order of the data
-                return klib::bswap(data); 
             }
 
             constexpr static uint32_t position_to_buffer(const klib::vector2u &pos) {
