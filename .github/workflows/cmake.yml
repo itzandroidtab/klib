@@ -50,3 +50,9 @@ jobs:
       - name: Build
         # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+      - uses: actions/upload-artifact@v3
+        # upload the elf file as a artifact
+        with:
+          name: build
+          path: ${{github.workspace}}/build/**/*.elf
