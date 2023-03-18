@@ -32,23 +32,13 @@ jobs:
       - name: arm-none-eabi-gcc version
         run: arm-none-eabi-gcc --version
 
-      - name: getting svd 
-        uses: wei/wget@v1
-        with:
-          args: -O ${{github.workspace}}/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd https://raw.githubusercontent.com/itzandroidtab/klib-svd/master/${{matrix.cpu}}.svd
-      
-      - name: getting svdconv
-        uses: wei/wget@v1
-        with:
-          args: -O ${{github.workspace}}/svdconv.tbz2 https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.44/svdconv-3.3.44-linux64-amd64.tbz2
-
-      - name: unpacking svdconv
+      - name: generating header
         run: |
+          mkdir -p ${{github.workspace}}/${{matrix.cpu}}/docs
+          wget -q -O ${{github.workspace}}/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd https://raw.githubusercontent.com/itzandroidtab/klib-svd/master/${{matrix.cpu}}.svd
+          wget -q -O ${{github.workspace}}/svdconv.tbz2 https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.44/svdconv-3.3.44-linux64-amd64.tbz2
           tar -xf ${{github.workspace}}/svdconv.tbz2 
           chmod +x ${{github.workspace}}/svdconv
-
-      - name: Generating header
-        run: |
           ${{github.workspace}}/svdconv ${{github.workspace}}/targets/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd --generate=header -o ${{github.workspace}}/targets/${{matrix.cpu}}/
 
       - name: Create main
