@@ -39,7 +39,7 @@ jobs:
           wget -q -O ${{github.workspace}}/svdconv.tbz2 https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.44/svdconv-3.3.44-linux64-amd64.tbz2
           tar -xf ${{github.workspace}}/svdconv.tbz2 
           chmod +x ${{github.workspace}}/svdconv
-          ${{github.workspace}}/svdconv ${{github.workspace}}/targets/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd --generate=header -o ${{github.workspace}}/targets/${{matrix.cpu}}/ || true
+          ${{github.workspace}}/svdconv ${{github.workspace}}/targets/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd --generate=header -o ${{github.workspace}}/targets/${{matrix.cpu}}/ > /dev/null || true
 
       - name: Create main
         # create a main file that includes all the header files for the current target
