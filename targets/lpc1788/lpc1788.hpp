@@ -3,7 +3,7 @@
 
 #include <klib/irq.hpp>
 
-#include "lpc178x7x.h"
+#include "lpc1788.h"
 
 namespace klib::lpc1788 {
     // irq for the lpc1788

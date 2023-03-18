@@ -3,7 +3,7 @@
 
 #include <klib/irq.hpp>
 
-// #include <atsam3x8e.h>
+#include "atsam3x8e.h"
 
 namespace klib::atsam3x8e {
     // irq for the atsam3x8e
@@ -16,10 +16,10 @@ namespace klib::atsam3x8e {
      */
     template <uint32_t Irq>
     static void enable_irq() {
-        // static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to enable");
+        static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to enable");
 
-        // // enable the irq
-        // NVIC_EnableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
+        // enable the irq
+        NVIC_EnableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
     }
 
     /**
@@ -29,10 +29,10 @@ namespace klib::atsam3x8e {
      */
     template <uint32_t Irq>
     static void disable_irq() {
-        // static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to disable");
+        static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to disable");
 
-        // // disable the irq
-        // NVIC_DisableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
+        // disable the irq
+        NVIC_DisableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
     }
 }
 
