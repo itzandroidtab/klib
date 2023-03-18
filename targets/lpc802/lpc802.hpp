@@ -3,7 +3,7 @@
 
 #include <klib/irq.hpp>
 
-// #include "lpc802.h"
+#include "lpc802.h"
 
 namespace klib::lpc802 {
     // irq for the lpc802
@@ -16,10 +16,10 @@ namespace klib::lpc802 {
      */
     template <uint32_t Irq>
     static void enable_irq() {
-        // static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to enable");
+        static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to enable");
 
-        // // enable the irq
-        // NVIC_EnableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
+        // enable the irq
+        NVIC_EnableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
     }
 
     /**
@@ -29,10 +29,10 @@ namespace klib::lpc802 {
      */
     template <uint32_t Irq>
     static void disable_irq() {
-        // static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to disable");
+        static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to disable");
 
-        // // disable the irq
-        // NVIC_DisableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
+        // disable the irq
+        NVIC_DisableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
     }
 }
 
