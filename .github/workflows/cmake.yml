@@ -34,8 +34,8 @@ jobs:
 
       - name: generating header
         run: |
-          mkdir -p ${{github.workspace}}/${{matrix.cpu}}/docs
-          wget -q -O ${{github.workspace}}/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd https://raw.githubusercontent.com/itzandroidtab/klib-svd/master/${{matrix.cpu}}.svd
+          mkdir -p ${{github.workspace}}/targets/${{matrix.cpu}}/docs
+          wget -q -O ${{github.workspace}}/targets/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd https://raw.githubusercontent.com/itzandroidtab/klib-svd/master/${{matrix.cpu}}.svd
           wget -q -O ${{github.workspace}}/svdconv.tbz2 https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.44/svdconv-3.3.44-linux64-amd64.tbz2
           tar -xf ${{github.workspace}}/svdconv.tbz2 
           chmod +x ${{github.workspace}}/svdconv
