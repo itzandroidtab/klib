@@ -1,7 +1,6 @@
 #ifndef KLIB_MTCH6301_HPP
 #define KLIB_MTCH6301_HPP
 
-#include <klib/klib.hpp>
 #include <klib/math.hpp>
 #include <klib/wait.hpp>
 
