@@ -3,7 +3,6 @@
 
 #include <lpc1756.hpp>
 
-
 namespace klib::lpc1756::io::system {
     class flash {
     public:
@@ -275,6 +274,20 @@ namespace klib::lpc1756::io::system {
             // notify klib what freqency we are running
             klib::clock::set(Freq);
         }
+    };
+
+    class trace {
+    public:
+        template <bool Enable>
+        static void enable() {
+            if constexpr (Enable) {
+                PINCONNECT->PINSEL10 = 0x1 << 3;
+            }
+            else {
+                PINCONNECT->PINSEL10 = 0;
+            }
+        }
+
     };
 }
 
