@@ -39,7 +39,7 @@ jobs:
           wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armclang.h -P ${{github.workspace}}/targets/arm/
           wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armclang_ltm.h -P ${{github.workspace}}/targets/arm/
           wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_compiler.h -P ${{github.workspace}}/targets/arm/
-          wget -q https://raw.githubusercontent.com/ARM-software/CMSIS_5/develop/CMSIS/Core/Include/cmsis_gcc.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_gcc.h -P ${{github.workspace}}/targets/arm/
           wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_iccarm.h -P ${{github.workspace}}/targets/arm/
           wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_version.h -P ${{github.workspace}}/targets/arm/
           wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv81mml.h -P ${{github.workspace}}/targets/arm/
