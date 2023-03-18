@@ -6,19 +6,31 @@
 #include <klib/graphics/color.hpp>
 
 namespace klib::hardware::display {
-    template <typename Bus, typename PinDC, typename PinRst, uint32_t Width = 80, uint32_t Height = 160, uint32_t XOffset = 26, uint32_t YOffset = 1>
+    template <
+        typename Bus, typename PinDC, typename PinRst, 
+        graphics::mode Mode = graphics::mode::rgb565,
+        uint32_t Width = 80, uint32_t Height = 160, 
+        uint32_t XOffset = 26, uint32_t YOffset = 1
+    >
     class st7735 {
         public:
-            // type for framebuffers
-            using pixel_type = uint16_t;
-
             // width of the display
             constexpr static uint32_t width = Width;
 
             // height of the display
             constexpr static uint32_t height = Height;
 
+            // mode used in the display
+            constexpr static graphics::mode mode = Mode;
+
         protected:
+            static_assert(
+                (mode == graphics::mode::rgb444) ||
+                (mode == graphics::mode::rgb565) ||
+                (mode == graphics::mode::rgb666),
+                "Display only supports rgb444, rgb565 or rgb666"
+            );
+
             // check if we have valid width and height
             static_assert((width != 0) || (height != 0), "Screen needs to have a valid size");
 
@@ -172,8 +184,19 @@ namespace klib::hardware::display {
 
                 klib::delay<klib::busy_wait>(20_ms);
 
-                // set screen in 8 bit bus mode with 16 bit color
-                write_cmd(cmd::colmod, 0x05);
+                // set screen based on the input mode
+                switch (Mode) {
+                    case graphics::mode::rgb444:
+                        write_cmd(cmd::colmod, 0x03);
+                        break;
+                    case graphics::mode::rgb666:
+                        write_cmd(cmd::colmod, 0x06);
+                        break;
+                    default:
+                    case graphics::mode::rgb565:
+                        write_cmd(cmd::colmod, 0x05);
+                        break;
+                }
                 klib::delay<klib::busy_wait>(10_ms);
 
                 // set gamma adjustment + polarity
@@ -263,8 +286,11 @@ namespace klib::hardware::display {
      * @tparam PinDC 
      * @tparam PinRst 
      */
-    template <typename Bus, typename PinDC, typename PinRst>
-    using st7735_160x80 = st7735<Bus, PinDC, PinRst, 80, 160, 26, 1>;
+    template <
+        typename Bus, typename PinDC, typename PinRst, 
+        graphics::mode Mode = graphics::mode::rgb565
+    >
+    using st7735_160x80 = st7735<Bus, PinDC, PinRst, Mode, 80, 160, 26, 1>;
 }
 
 #endif
