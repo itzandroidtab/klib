@@ -6,7 +6,7 @@
 #include <klib/math.hpp>
 
 #include <max32625.hpp>
-#include <clocks.hpp>
+#include "clocks.hpp"
 
 #include <klib/stream.hpp>
 
