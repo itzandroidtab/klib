@@ -54,5 +54,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         # upload the elf file as a artifact
         with:
-          name: build
-          path: ${{github.workspace}}/build/**/*.elf
+          name: ${{matrix.cpu}}.elf
+          path: ${{github.workspace}}/build/project/klib.elf
