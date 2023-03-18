@@ -34,34 +34,34 @@ jobs:
 
       - name: getting arm headers
         run: |
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cachel1_armv7.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armcc.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armclang.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armclang_ltm.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_compiler.h -P ${{github.workspace}}/targets/arm/
-          wget https://raw.githubusercontent.com/ARM-software/CMSIS_5/develop/CMSIS/Core/Include/cmsis_gcc.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_iccarm.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_version.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv81mml.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv8mbl.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv8mml.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm0.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm0plus.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm1.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm23.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm3.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm33.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm35p.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm4.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm55.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm7.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_sc000.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_sc300.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_starmc1.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/mpu_armv7.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/mpu_armv8.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/pmu_armv8.h -P ${{github.workspace}}/targets/arm/
-          wget https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/tz_context.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cachel1_armv7.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armcc.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armclang.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_armclang_ltm.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_compiler.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://raw.githubusercontent.com/ARM-software/CMSIS_5/develop/CMSIS/Core/Include/cmsis_gcc.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_iccarm.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/cmsis_version.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv81mml.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv8mbl.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_armv8mml.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm0.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm0plus.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm1.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm23.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm3.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm33.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm35p.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm4.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm55.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_cm7.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_sc000.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_sc300.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/core_starmc1.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/mpu_armv7.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/mpu_armv8.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/pmu_armv8.h -P ${{github.workspace}}/targets/arm/
+          wget -q https://github.com/ARM-software/CMSIS_5/raw/develop/CMSIS/Core/Include/tz_context.h -P ${{github.workspace}}/targets/arm/
 
       - name: generating header
         run: |
