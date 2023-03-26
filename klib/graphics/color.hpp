@@ -166,7 +166,7 @@ namespace klib::graphics::detail {
      * 
      * @tparam Mode 
      * @param col 
-     * @return pixel_type
+     * @return pixel_conversion<Mode>::type
      */
     template <mode Mode>
     constexpr pixel_conversion<Mode>::type color_to_raw(const klib::graphics::color &col) {
