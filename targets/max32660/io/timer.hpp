@@ -373,7 +373,7 @@ namespace klib::max32660::io {
                 pin_out<typename Timer::tmr::pin>::init();
 
                 // set the pin to output a low
-                pin_out<typename Timer::tmr::pin>::set<false>();
+                pin_out<typename Timer::tmr::pin>::template set<false>();
             }
         }
 
@@ -392,7 +392,7 @@ namespace klib::max32660::io {
                 pin_out<typename Timer::tmr::pin>::init();
 
                 // set the pin to output a low
-                pin_out<typename Timer::tmr::pin>::set<false>();
+                pin_out<typename Timer::tmr::pin>::template set<false>();
             }
         }
 
