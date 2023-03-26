@@ -125,6 +125,7 @@ namespace klib::hardware::display {
 
         static void start_write() {
             // do nothing
+            cursor = start_pos;
         }
 
         static void raw_write(const uint8_t *const data, const uint32_t size) {
