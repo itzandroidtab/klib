@@ -258,19 +258,21 @@ namespace klib::hardware::display {
                 set_cursor(start_pos.x, start_pos.y, end_pos.x, end_pos.y);
             }
 
-            static void raw_write_screen(const pixel_type* data, const uint32_t size) {
+            static void start_write() {
                 // write raw screendata to the display
-                write_cmd(cmd::ramwr, reinterpret_cast<const uint8_t *const>(data), (size * sizeof(pixel_type)));
+                write_cmd(cmd::ramwr);
+
+                // set display in data mode
+                PinDC::template set<true>();
             }
 
-            constexpr static pixel_type color_to_raw(const klib::graphics::color &col) {
-                // conver the color to raw data 
-                const pixel_type data = ((static_cast<pixel_type>(col.red) >> 3) << 11) | 
-                                        ((static_cast<pixel_type>(col.green) >> 2) << 5) |
-                                        (static_cast<pixel_type>(col.blue) >> 3);
+            static void raw_write(const uint8_t *const data, const uint32_t size) {
+                // write the data of the command
+                Bus::write(data, size);
+            }
 
-                // reverse the byte order of the data
-                return klib::bswap(data); 
+            static void end_write() {
+                // do nothing
             }
 
             constexpr static uint32_t position_to_buffer(const klib::vector2u &pos) {
