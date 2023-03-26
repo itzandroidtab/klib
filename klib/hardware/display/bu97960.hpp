@@ -25,8 +25,9 @@ namespace klib::hardware::display {
         static_assert(((width <= 15) && (height <= 8)) || (((width <= 18) && (height <= 4))), "Screen needs to have a valid size");
 
         // internal cursor for writing to the display buffer. Used in the framebuffer implementation
-        static inline klib::vector2u start_position = {};
-        static inline klib::vector2u end_position = {};
+        static inline klib::vector2u start_pos = {};
+        static inline klib::vector2u end_pos = {};
+        static inline klib::vector2u cursor = {};
 
         /**
          * @brief All commands for the display. Command bit is already set for the 
@@ -72,7 +73,7 @@ namespace klib::hardware::display {
 
         // internal buffer to store all the pixels + the write display command. Display
         // has a internal 120 bit ddr ram
-        static inline uint8_t framebuffer[(120 / 8) + 1] = {static_cast<uint8_t>(cmd::adset)};
+        static inline uint8_t framebuffer[(120 / 8) + 1] = {};
 
     public:
         template <hz Freq = hz::hz_233, duty_bias DutyBias = duty_bias::duty_1_4_bias_1_3>
@@ -111,15 +112,22 @@ namespace klib::hardware::display {
             };
 
             Bus::write(Address, enable, sizeof(enable));
+
+            // clear the cursor
+            cursor = {0, 0};
         }
 
         static void set_cursor(const klib::vector2u &start_pos, const klib::vector2u &end_pos) {
             // update the internal positions
-            start_position = start_pos;
-            end_position = end_pos;
+            start_pos = start_pos;
+            end_pos = end_pos;
         }
 
-        static void raw_write_screen(const pixel_type* data, const uint32_t size) {
+        static void start_write() {
+            // do nothing
+        }
+
+        static void raw_write(const uint8_t *const data, const uint32_t size) {
             // raw write still uses buffer. Write the data to the buffer first. Update the 
             // display afterwards as we only have a max of 15 bytes. (+ 8 as the first byte 
             // is the adset command)
@@ -130,36 +138,48 @@ namespace klib::hardware::display {
             uint32_t count = 0;
 
             // write data to local framebuffer
-            for (uint32_t y = start_position.y; y < (end_position.y + 1); y++) {
-                for (uint32_t x = start_position.x; (x < (end_position.x + 1)) && (count < size); x++, count++) {
-                    // pixel position
-                    const uint32_t xy_pos = (y * width) + x;
-                    const uint32_t pos = offset + xy_pos;
+            for (uint32_t i = 0; i < (size * 8); i++) {
+                // get the current pixel
+                const bool bit = (data[i / 8] >> (i % 8)) & 0x1;
 
-                    // get what byte to write to
-                    const uint8_t byte_index = (pos / 8);
+                // get the framebuffer index
+                uint32_t index = (cursor.y * width) + cursor.x;
 
-                    // get the bit we need to write to
-                    const uint8_t bit_index = (pos % 8);
+                // set the data into the framebuffer
+                if (bit) {
+                    framebuffer[index] |= 0x1 << (index % 8);
+                }
+                else {
+                    framebuffer[index] &= ~(0x1 << (index % 8));
+                }
 
-                    // set or clear the value based on the data
-                    if (data[xy_pos]) {
-                        framebuffer[byte_index] |= 0x1 << bit_index;
-                    }
-                    else {
-                        framebuffer[byte_index] &= ~(0x1 << bit_index);
+                // increment the cursor
+                cursor.x++;
+
+                if (cursor.x > end_pos.x) {
+                    cursor.x = start_pos.x;
+                    cursor.y++;
+
+                    if (cursor.y > end_pos.y) {
+                        cursor.y = start_pos.y;
                     }
                 }
             }
 
+            const uint32_t index = ((((start_pos.y * width) + start_pos.x) + 7) / 8);
+
             // move the adset command before the first data byte (- 1 to move before the first written index)
-            framebuffer[(offset / 8) - 1] = static_cast<uint8_t>(cmd::adset);
+            framebuffer[index - 1] = static_cast<uint8_t>(cmd::adset);
 
             // amount of data we need to send over the bus (+ 1 for the command)
-            const uint32_t tx_size = 1 + klib::min((sizeof(framebuffer) - (offset / 8)), ((offset % 8) + height * width + 7) / 8);
+            const uint32_t tx_size = 1 + ((index * 8) + height * width + 7) / 8;
 
             // only write the pixels we have in this dislay
-            Bus::write(Address, &framebuffer[(offset / 8) - 1], tx_size);
+            Bus::write(Address, &framebuffer[index - 1], tx_size);
+        }
+
+        static void end_write() {
+            // do nothing
         }
 
         constexpr static uint32_t position_to_buffer(const klib::vector2u &pos) {
