@@ -358,6 +358,45 @@ namespace klib::max32660::io {
         }
 
         /**
+         * @brief Enable or disable output.
+         * 
+         * @tparam Value 
+         */
+        template <bool Value>
+        static void set() {
+            // clear or set the pin to the peripheral
+            if constexpr (Value) {
+                detail::pins::set_peripheral<typename Timer::tmr::pin, typename Timer::tmr::periph>();
+            }
+            else {
+                // change the mode to a output pin
+                pin_out<typename Timer::tmr::pin>::init();
+
+                // set the pin to output a low
+                pin_out<typename Timer::tmr::pin>::set<false>();
+            }
+        }
+
+        /**
+         * @brief Enable or disable output.
+         * 
+         * @param value 
+         */
+        static void set(bool value) {
+            // clear or set the pin to the peripheral
+            if (value) {
+                detail::pins::set_peripheral<typename Timer::tmr::pin, typename Timer::tmr::periph>();
+            }
+            else {
+                // change the mode to a output pin
+                pin_out<typename Timer::tmr::pin>::init();
+
+                // set the pin to output a low
+                pin_out<typename Timer::tmr::pin>::set<false>();
+            }
+        }
+
+        /**
          * @brief Returns the current value of a counter
          * 
          * @return uint32_t 
