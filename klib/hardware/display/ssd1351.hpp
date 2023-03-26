@@ -361,12 +361,18 @@ namespace klib::hardware::display {
                 set_cursor(start_pos.x, start_pos.y, end_pos.x, end_pos.y);
             }
 
-            static void raw_write_screen(const pixel_type* data, const uint32_t size) {
+            static void start_write() {
                 // start a display ram write
                 start_memory_write();
+            }
 
+            static void raw_write(const uint8_t *const data, const uint32_t size) {
                 // write the data
-                write_data(reinterpret_cast<const uint8_t *const>(data), (size * sizeof(pixel_type)));
+                write_data(data, size);
+            }
+
+            static void end_write() {
+                // do nothing
             }
 
             constexpr static uint32_t position_to_buffer(const klib::vector2u &pos) {
