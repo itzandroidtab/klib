@@ -444,11 +444,13 @@ namespace klib::string::detail {
         else {
             int i = 0, k = 0;
 
-            while (static_cast<int>(value) > 0) {
+            do {
                 value /= 10;
                 i++;
             }
+            while (static_cast<int>(value) > 0);
 
+            // add the decimal seperator
             *(str + i) = '.';
 
             value *= 10;
