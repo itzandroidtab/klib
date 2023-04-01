@@ -249,7 +249,6 @@ namespace klib::graphics {
      * @tparam EndX 
      * @tparam EndY 
      */
-
     template <
         typename Display, bool AutoIncrement = true, 
         uint32_t StartX = 0, uint32_t StartY = 0, 
@@ -284,7 +283,7 @@ namespace klib::graphics {
             Display::set_cursor({StartX, StartY}, {EndX - 1, EndY - 1});
 
             // clear the cursor
-            cursor = {0, 0};
+            cursor = {StartX, StartY};
         }
 
         constexpr void flush() {
