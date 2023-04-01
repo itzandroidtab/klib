@@ -202,7 +202,7 @@ namespace klib::usb::device {
          * @param data 
          */
         template <typename Usb>
-        static void hid_callback(const uint8_t endpoint, const usb::error error_code) {
+        static void hid_callback(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, const usb::error error_code) {
             // check if we are configured
             if (!configuration_value) {
                 return;
@@ -215,7 +215,7 @@ namespace klib::usb::device {
                 std::fill_n(report_data, sizeof(report_data), 0x00);
 
                 // send the no key pressed to the host
-                Usb::write(hid_callback<Usb>, used_endpoint, report_data, sizeof(report_data));
+                Usb::write(hid_callback<Usb>, used_endpoint, mode, report_data, sizeof(report_data));
 
                 // clear the data to notify we are done with the string
                 irq_data = nullptr;
@@ -238,7 +238,7 @@ namespace klib::usb::device {
                 std::fill_n(report_data, sizeof(report_data), 0x00);
 
                 // send the report to the host
-                Usb::write(hid_callback<Usb>, used_endpoint, report_data, sizeof(report_data));
+                Usb::write(hid_callback<Usb>, used_endpoint, mode, report_data, sizeof(report_data));
 
                 // mark we have send a no keys between two repeated keys              
                 repeated_key = true;
@@ -259,7 +259,7 @@ namespace klib::usb::device {
             repeated_key = false;
 
             // send the report to the host
-            Usb::write(hid_callback<Usb>, used_endpoint, report_data, sizeof(report_data));
+            Usb::write(hid_callback<Usb>, used_endpoint, mode, report_data, sizeof(report_data));
 
             // return we are done
             return;
@@ -386,7 +386,7 @@ namespace klib::usb::device {
             irq_data = data;
 
             // write the first report to the endpoint
-            if (!Usb::write(hid_callback<Usb>, used_endpoint, report_data, sizeof(report_data))) {
+            if (!Usb::write(hid_callback<Usb>, used_endpoint, klib::usb::usb::endpoint_mode::in, report_data, sizeof(report_data))) {
                 return false;
             }
 
@@ -538,7 +538,7 @@ namespace klib::usb::device {
             // check if we support the feature
             if (feature != klib::usb::setup::feature::remote_wake) {
                 // we only support remote wakeup
-                Usb::stall(0);
+                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
 
                 // do a early return
                 return;
@@ -548,7 +548,7 @@ namespace klib::usb::device {
             remote_wakeup = false;
 
             // ack the packet
-            Usb::ack(0);
+            Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
         }
 
         /**
@@ -565,7 +565,7 @@ namespace klib::usb::device {
             // check if we support the feature
             if (feature != klib::usb::setup::feature::remote_wake) {
                 // we only support remote wakeup
-                Usb::stall(0);
+                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
 
                 // do a early return
                 return;
@@ -575,7 +575,7 @@ namespace klib::usb::device {
             remote_wakeup = true;
 
             // ack the packet
-            Usb::ack(0);
+            Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
         }
 
         /**
@@ -644,12 +644,16 @@ namespace klib::usb::device {
         template <typename Usb>
         static void get_config(const klib::usb::setup_packet &packet) {
             // send the configuration back to the host
-            const auto r = Usb::write(usb::status_callback<Usb>, 0, &configuration_value, sizeof(configuration_value));
+            const auto r = Usb::write(
+                usb::status_callback<Usb>, klib::usb::usb::control_endpoint, 
+                klib::usb::usb::endpoint_mode::control, &configuration_value, 
+                sizeof(configuration_value)
+            );
 
             // check if something went wrong already
             if (!r) {
                 // something went wrong stall
-                Usb::stall(0);
+                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
             }
 
             // we do not ack here as the status callback 
@@ -680,13 +684,13 @@ namespace klib::usb::device {
                 std::fill_n(report_data, sizeof(report_data), 0x00);
 
                 // write the inital report
-                if (Usb::write(hid_callback<Usb>, used_endpoint, report_data, sizeof(report_data))) {
+                if (Usb::write(hid_callback<Usb>, used_endpoint, usb::endpoint_mode::in, report_data, sizeof(report_data))) {
                     // no issue for now ack
-                    Usb::ack(0);
+                    Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                 }
                 else {
                     // something went wrong stall for now
-                    Usb::stall(0);
+                    Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                 }
             }
             else if (packet.wValue == 0) {
@@ -696,18 +700,18 @@ namespace klib::usb::device {
                 // reset the used endpoint if we have one
                 if (used_endpoint != 0) {
                     // reset the endpoint
-                    Usb::reset(used_endpoint);
+                    Usb::reset(used_endpoint, usb::endpoint_mode::in);
 
                     // clear the used endpoint
                     used_endpoint = 0;
                 } 
 
                 // ack the packet
-                Usb::ack(0);
+                Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
             }
             else {
                 // not sure what to do, stall
-                Usb::stall(0);
+                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
             }
         }
 
@@ -736,7 +740,7 @@ namespace klib::usb::device {
             // check if we have a valid class packet
             if (usb::get_recipient(packet) != setup::recipient_code::interface || (packet.wIndex != 0)) {
                 // packet is invalid. stall the packet
-                Usb::stall(0);
+                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
 
                 // do a early return
                 return;
@@ -753,13 +757,17 @@ namespace klib::usb::device {
                     std::fill_n(report_data, sizeof(report_data), 0x00);
 
                     // write the data to the control endpoint
-                    if (Usb::write(nullptr, 0, report_data, sizeof(report_data))) {
+                    if (Usb::write(
+                            nullptr, klib::usb::usb::control_endpoint, 
+                            klib::usb::usb::endpoint_mode::control, report_data, 
+                            sizeof(report_data))) 
+                    {
                         // no issue for now ack
-                        Usb::ack(0);
+                        Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                     }
                     else {
-                        // something went wrong stall for now
-                        Usb::stall(0);
+                        // somethinklib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::controlg went wrong stall for now
+                        Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                     }
                     break;
                 case class_request::get_idle:
@@ -767,20 +775,24 @@ namespace klib::usb::device {
                     // for now we only support report id == 0
                     if ((packet.wValue & 0xff) != 0x00) {
                         // not supported for now
-                        Usb::stall(0);
+                        Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                     }
                     else {
                         // send 0 to the host
                         const uint8_t idle = 0;
 
                         // write the data to the control endpoint
-                        if (Usb::write(nullptr, 0, report_data, sizeof(report_data))) {
+                        if (Usb::write(
+                            nullptr, klib::usb::usb::control_endpoint, 
+                            klib::usb::usb::endpoint_mode::control, report_data, 
+                            sizeof(report_data))) 
+                        {
                             // no issue for now ack
-                            Usb::ack(0);
+                            Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                         }
                         else {
                             // something went wrong stall for now
-                            Usb::stall(0);
+                            Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                         }
                     }   
                     break;
@@ -788,11 +800,11 @@ namespace klib::usb::device {
                     // check if the packet length is not above the max endpoint size
                     if (packet.wLength > Usb::max_endpoint_size) {
                         // invalid length
-                        Usb::stall(0);
+                        Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                     }
                     else {
                         // accept and ignore the report
-                        Usb::ack(0);
+                        Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                     }
                     break;
                 case class_request::set_idle:
@@ -800,18 +812,18 @@ namespace klib::usb::device {
                     // for now we only support report id == 0 and we do not 
                     // support changing the idle
                     if ((packet.wValue & 0xff) != 0 || (packet.wValue >> 8) != 0) {
-                        Usb::stall(0);
+                        Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                     }
                     else {
                         // ack and ignore
-                        Usb::ack(0);
+                        Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                     }
                     break;
                 case class_request::get_protocol:
                 case class_request::set_protocol:
                 default:
                     // not supported. stall
-                    Usb::stall(0);
+                    Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
                     break;
             }
         }

@@ -9,6 +9,10 @@
 namespace klib::usb {
     class usb {
     public:
+        // used control endpoint. Exported so devices can 
+        // use this 
+        constexpr static uint32_t control_endpoint = 0;
+
         /**
          * @brief Struct to store information about a descriptor that 
          * should be transmitted.
@@ -48,7 +52,7 @@ namespace klib::usb {
          * @brief Callback function. Called after a read/write is completed
          * 
          */
-        using usb_callback = void (*)(const uint8_t endpoint, const error error_code);
+        using usb_callback = void (*)(const uint8_t endpoint, const endpoint_mode mode, const error error_code);
 
         /**
          * @brief Helper function to get the direction of a packet
@@ -80,6 +84,24 @@ namespace klib::usb {
             return static_cast<setup::feature>(packet.wValue);
         }
 
+        /**
+         * @brief Get the endpoint mode from a raw field
+         * 
+         * @param raw 
+         * @return constexpr endpoint_mode 
+         */
+        constexpr static endpoint_mode get_endpoint_mode(const uint8_t raw) {
+            // return if the direction bit is set or not.
+            // control endpoints ignore this field
+            switch ((raw >> 7) & 0x1) {
+                case 1:
+                    return endpoint_mode::in;
+                case 0:
+                default:
+                    return endpoint_mode::out;
+            }
+        }
+
     protected:
         /**
          * @brief Send the status of the usb device
@@ -101,7 +123,7 @@ namespace klib::usb {
                 (packet.wIndex != 0 && recipient == setup::recipient_code::device)) 
             {
                 // stall the usb
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
                 return;
             }
 
@@ -114,7 +136,7 @@ namespace klib::usb {
             switch (recipient) {
                 case setup::recipient_code::endpoint:
                     // check if the usb is stalled
-                    response[0] = Usb::is_stalled(packet.wIndex & 0xf);
+                    response[0] = Usb::is_stalled(packet.wIndex & 0xf, get_endpoint_mode(packet.wIndex));
                     response[1] = 0x00;
                     break;
                 
@@ -130,18 +152,18 @@ namespace klib::usb {
                 default:
                     // this should not happen, only with reserved. 
                     // send a stall when that happens
-                    Usb::stall(0);
+                    Usb::stall(control_endpoint, endpoint_mode::control);
                     return;
             }
 
             // write and check if we got any errors straight away
-            if (Usb::write(status_callback<Usb>, 0, response, sizeof(response))) {
+            if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::control, response, sizeof(response))) {
                 // no errors return
                 return;
             }
 
             // we have a error stall
-            Usb::stall(0);
+            Usb::stall(control_endpoint, endpoint_mode::control);
         }
 
         /**
@@ -164,7 +186,7 @@ namespace klib::usb {
                 (packet.wLength != 0)) 
             {
                 // stall the usb
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
                 return;
             }
 
@@ -177,14 +199,14 @@ namespace klib::usb {
                 ((feature == setup::feature::test_mode) && recipient != setup::recipient_code::device))
             {
                 // stall the usb
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
                 return;
             }
 
             // check if we need to unstall a endpoint
             if (feature == setup::feature::endpoint_halt && packet.wIndex > 0) {
                 // unstall the endpoint
-                Usb::un_stall(packet.wIndex & 0x0f);
+                Usb::un_stall(packet.wIndex & 0x0f, get_endpoint_mode(packet.wIndex));
             }
             else if (feature == setup::feature::remote_wake || feature != setup::feature::test_mode) {
                 // call the device clear feature
@@ -192,7 +214,7 @@ namespace klib::usb {
             }
             else {
                 // unsupported feature. Stall
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
             }
         }
 
@@ -216,7 +238,7 @@ namespace klib::usb {
                 (packet.wLength != 0)) 
             {
                 // stall the usb
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
                 return;
             }
 
@@ -229,14 +251,14 @@ namespace klib::usb {
                 ((feature == setup::feature::test_mode) && recipient != setup::recipient_code::device))
             {
                 // stall the usb
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
                 return;
             }
 
             // check if we need to stall a endpoint
             if (feature == setup::feature::endpoint_halt && packet.wIndex > 0) {
                 // unstall the endpoint
-                Usb::stall(packet.wIndex & 0x0f);
+                Usb::stall(packet.wIndex & 0x0f, get_endpoint_mode(packet.wIndex));
             }
             else if (feature == setup::feature::remote_wake || feature != setup::feature::test_mode) {
                 // call the device set feature
@@ -244,7 +266,7 @@ namespace klib::usb {
             }
             else {
                 // unsupported feature. Stall
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
             }
         }
 
@@ -264,7 +286,7 @@ namespace klib::usb {
             // check if the values are out of spec
             if (packet.wIndex != 0 || packet.wLength != 0) {
                 // stall the usb
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
 
                 return;
             }
@@ -304,7 +326,7 @@ namespace klib::usb {
                     // check the direction and if the wIndex is not 0 (only string descriptor should have non zero)
                     if ((get_recipient(packet) != setup::recipient_code::device) || (packet.wIndex != 0)) {
                         // stall when something is wrong with the input
-                        Usb::stall(0);
+                        Usb::stall(control_endpoint, endpoint_mode::control);
 
                         return;
                     }
@@ -312,7 +334,7 @@ namespace klib::usb {
                     // check if the descriptor is set
                     if (!descriptor.size) {
                         // stall when we dont have any descriptors
-                        Usb::stall(0);
+                        Usb::stall(control_endpoint, endpoint_mode::control);
 
                         return;
                     }
@@ -322,14 +344,14 @@ namespace klib::usb {
                     // only check the direction of the packet
                     if ((get_recipient(packet) != setup::recipient_code::device)) {
                         // stall when something is wrong with the input
-                        Usb::stall(0);
+                        Usb::stall(control_endpoint, endpoint_mode::control);
 
                         return;
                     }
 
                     if (!descriptor.size) {
                         // descriptor out of range. Stall
-                        Usb::stall(0);
+                        Usb::stall(control_endpoint, endpoint_mode::control);
 
                         return;
                     }
@@ -339,7 +361,7 @@ namespace klib::usb {
                     // is not 0. otherwise stall
                     if (!descriptor.size) {
                         // descriptor out of range. Stall
-                        Usb::stall(0);
+                        Usb::stall(control_endpoint, endpoint_mode::control);
 
                         return;
                     }
@@ -351,13 +373,13 @@ namespace klib::usb {
             const uint32_t size = klib::min(descriptor.size, static_cast<uint32_t>(packet.wLength));
 
             // write the data to the endpoint buffer and check if we directly fail
-            if (Usb::write(status_callback<Usb>, 0, descriptor.desc, size)) {
+            if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::control, descriptor.desc, size)) {
                 // no errors do a early return
                 return;
             }
 
             // we failed so stall the endpoint
-            Usb::stall(0);
+            Usb::stall(control_endpoint, endpoint_mode::control);
         }
 
         template <typename Usb>
@@ -370,7 +392,7 @@ namespace klib::usb {
             // check if the packet is follign the usb spec
             if (packet.wValue != 0 || packet.wIndex != 0 || packet.wLength != 1) {
                 // packet is not correct
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
 
                 return;
             }
@@ -389,7 +411,7 @@ namespace klib::usb {
             // check if the packet is correct
             if (packet.wIndex != 0 || packet.wLength != 0) {
                 // packet not following the usb spec
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
 
                 return;
             }
@@ -408,7 +430,7 @@ namespace klib::usb {
             // check if the request is following the usb spec
             if (packet.wValue != 0 || packet.wLength != 1) {
                 // stall we have a invalid packet
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
 
                 return;
             }
@@ -425,7 +447,7 @@ namespace klib::usb {
             }
             else {
                 // device does not support set interface
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
             }
         }
 
@@ -439,7 +461,7 @@ namespace klib::usb {
             // check if the packet is following the spec
             if (packet.wLength != 0) {
                 // error wit hthe packet stall
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
 
                 return;
             }
@@ -456,7 +478,7 @@ namespace klib::usb {
             }
             else {
                 // device does not support set interface
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
             }
         }
 
@@ -492,7 +514,7 @@ namespace klib::usb {
                 default:
                     // other requests are not implemented. Send a 
                     // stall.
-                    Usb::stall(0);
+                    Usb::stall(control_endpoint, endpoint_mode::control);
                     break;
             }
         }
@@ -528,7 +550,7 @@ namespace klib::usb {
                     }
                     else {
                         // stall if we do not have this handler
-                        return Usb::stall(0);
+                        return Usb::stall(control_endpoint, endpoint_mode::control);
                     }
                 case setup::request_type::vendor:
                     // the device needs to stall this request 
@@ -540,13 +562,13 @@ namespace klib::usb {
                     }
                     else {
                         // stall if we do not have this handler
-                        return Usb::stall(0);
+                        return Usb::stall(control_endpoint, endpoint_mode::control);
                     }
                 case setup::request_type::reserved:
                 default:
                     // send a stall as we have no clue what to do
                     // with our current packet
-                    return Usb::stall(0);
+                    return Usb::stall(control_endpoint, endpoint_mode::control);
             }
 
             // the request should be stalled/acked before we enter.
@@ -556,15 +578,15 @@ namespace klib::usb {
         }
 
         template <typename Usb>
-        static void status_callback(const uint8_t endpoint, const error error_code) {
+        static void status_callback(const uint8_t endpoint, const endpoint_mode mode, const error error_code) {
             // check if we have a error
             if (error_code == error::no_error) {
                 // no error send a ack
-                Usb::ack(0);
+                Usb::ack(control_endpoint, endpoint_mode::control);
             }
             else {
                 // we have a error send a stall
-                Usb::stall(0);
+                Usb::stall(control_endpoint, endpoint_mode::control);
             }
         }
     };
