@@ -1,6 +1,6 @@
 #include <cstdint>
 
-#include <klib/systick.hpp>
+#include <klib/io/systick.hpp>
 #include <klib/core_clock.hpp>
 #include <coprocessor/coprocessor.hpp>
 

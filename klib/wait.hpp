@@ -3,7 +3,7 @@
 
 #include <klib/units.hpp>
 #include <klib/core_clock.hpp>
-#include <klib/systick.hpp>
+#include <klib/io/systick.hpp>
 
 namespace klib::detail {
     /**

@@ -1,6 +1,6 @@
 #include <cstdint>
 
-#include <klib/systick.hpp>
+#include <klib/io/systick.hpp>
 #include <coprocessor/coprocessor.hpp>
 
 #include "max32660.hpp"

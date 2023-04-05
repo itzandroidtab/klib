@@ -1,6 +1,6 @@
 #include <cstdint>
 
-#include <klib/systick.hpp>
+#include <klib/io/systick.hpp>
 
 #include "lpc802.hpp"
 #include "io/system.hpp"

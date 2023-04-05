@@ -1,6 +1,6 @@
 #include <cstdint>
 
-#include <klib/systick.hpp>
+#include <klib/io/systick.hpp>
 #include <klib/core_clock.hpp>
 #include <coprocessor/coprocessor.hpp>
 
@@ -25,6 +25,13 @@ void __attribute__((__constructor__(101))) __target_startup() {
         coprocessor::set<10>(coprocessor::access::full, &SCB->CPACR);
         coprocessor::set<11>(coprocessor::access::full, &SCB->CPACR);
     }
+
+    // setup the irq handler before main is called. This 
+    // moves the vector table to ram so it can be changed
+    // at runtime. When no interrupts are used this 
+    // function call can be removed. By default interrupts
+    // are mapped to a function that halts the whole cpu.
+    target::irq::init();
 
     // init the systick timer
     klib::systick::init<target::irq>();
