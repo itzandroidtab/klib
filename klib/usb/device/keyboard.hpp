@@ -44,6 +44,10 @@ namespace klib::usb::device {
             set_protocol = 0x0b,
         };
 
+        // Push the current pack to the stack and set the pack to 1
+        // as all these structs have specific sizes
+        #pragma pack(push, 1)
+
         /**
          * @brief Config descriptor for the hid keyboard
          * 
@@ -51,7 +55,7 @@ namespace klib::usb::device {
          * to the usb hardware in one go.
          * 
          */
-        struct __attribute__((packed)) config_descriptor {
+        struct config_descriptor {
             // configuration descriptor
             descriptor::configuration configuration;
 
@@ -64,6 +68,10 @@ namespace klib::usb::device {
             // endpoint descriptor
             descriptor::endpoint endpoint;
         };
+
+        // release the old pack so the rest of the structs are not 
+        // affected by the pack(1)
+        #pragma pack(pop)
 
         // device descriptor for the hid keyboard
         const __attribute__((aligned(4))) static inline descriptor::device device = {
