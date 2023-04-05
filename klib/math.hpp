@@ -59,6 +59,16 @@ namespace klib {
     }
 
     /**
+     * @brief 64 bit byteswap (converts 0xaabb to 0xbbaa)
+     * 
+     * @param data 
+     * @return constexpr uint64_t 
+     */
+    constexpr uint64_t bswap(const uint64_t data) {
+        return __builtin_bswap64(data);
+    }
+
+    /**
      * @brief 16 bit byteswap (converts 0xaabb to 0xbbaa). Explicit 16 bit
      * 
      * @tparam T 
@@ -81,6 +91,19 @@ namespace klib {
     constexpr uint32_t bswap32(const T data) {
         return bswap(static_cast<uint32_t>(data));
     }
+
+    /**
+     * @brief 32 bit byteswap (converts 0xaabb to 0xbbaa). Explicit 32 bit
+     * 
+     * @tparam T 
+     * @param data 
+     * @return constexpr uint64_t 
+     */
+    template <typename T>
+    constexpr uint64_t bswap64(const T data) {
+        return bswap(static_cast<uint64_t>(data));
+    }
+
 
     /**
      * @brief Count leading zero's
