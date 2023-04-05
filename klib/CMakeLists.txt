@@ -1,3 +1,5 @@
+include(CheckCCompilerFlag)
+
 # set the sources
 set(SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/entry/entry.c
@@ -72,6 +74,19 @@ target_link_options(klib PUBLIC "-Wl,-fatal-warnings")
 target_link_options(klib PUBLIC "-Wl,-cref,-Map=klib.map")
 target_link_options(klib PUBLIC "-Wl,--print-memory-usage")
 target_link_options(klib PUBLIC "-fno-math-errno")
+
+# Ignore warnings about rwx segments introduced in binutils 2.39
+execute_process(COMMAND ${CMAKE_C_COMPILER} -print-prog-name=ld RESULT_VARIABLE RUN_C_RESULT OUTPUT_VARIABLE FULL_LD_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+if (${RUN_C_RESULT} EQUAL 0)
+    execute_process(COMMAND ${FULL_LD_PATH} --help RESULT_VARIABLE RUN_LD_RESULT OUTPUT_VARIABLE LD_HELP_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (${RUN_LD_RESULT} EQUAL 0)
+            set(RWX_WARNING "no-warn-rwx-segments")
+            string(FIND "${LD_HELP_OUTPUT}" "${RWX_WARNING}" LD_RWX_WARNING_SUPPORTED)
+            if (${LD_RWX_WARNING_SUPPORTED} GREATER -1)
+                target_link_options(klib INTERFACE "LINKER:--${RWX_WARNING}")
+            endif()
+    endif()
+endif()
 
 # enabled segger support in the defines to prevent a 
 # include of the segger files
