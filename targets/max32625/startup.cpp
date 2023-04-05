@@ -1,7 +1,7 @@
 #include <cstdint>
 
 #include <klib/io/systick.hpp>
-#include <klib/core_clock.hpp>
+#include <klib/io/core_clock.hpp>
 #include <coprocessor/coprocessor.hpp>
 
 #include <max32625.hpp>

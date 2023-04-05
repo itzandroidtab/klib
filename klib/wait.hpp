@@ -2,7 +2,7 @@
 #define KLIB_WAIT_HPP
 
 #include <klib/units.hpp>
-#include <klib/core_clock.hpp>
+#include <klib/io/core_clock.hpp>
 #include <klib/io/systick.hpp>
 
 namespace klib::detail {

@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <klib/core_clock.hpp>
+#include <klib/io/core_clock.hpp>
 #include <max32660.hpp>
 
 #include "clocks.hpp"

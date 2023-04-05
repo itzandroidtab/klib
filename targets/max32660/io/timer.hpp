@@ -1,7 +1,7 @@
 #ifndef KLIB_MAX32660_TIMER_HPP
 #define KLIB_MAX32660_TIMER_HPP
 
-#include <klib/core_clock.hpp>
+#include <klib/io/core_clock.hpp>
 #include <klib/math.hpp>
 
 #include <max32660.hpp>

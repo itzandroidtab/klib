@@ -2,7 +2,7 @@
 #define KLIB_LPC1756_TIMER_HPP
 
 #include <cstdint>
-#include <klib/core_clock.hpp>
+#include <klib/io/core_clock.hpp>
 
 #include <lpc1756.hpp>
 

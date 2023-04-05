@@ -5,7 +5,7 @@
 
 #include <lpc1756.hpp>
 
-#include <klib/core_clock.hpp>
+#include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
 
 #include "clocks.hpp"
