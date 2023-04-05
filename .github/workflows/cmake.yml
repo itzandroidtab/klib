@@ -25,9 +25,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: arm-none-eabi-gcc install
-        uses: carlosperate/arm-none-eabi-gcc-action@v1.5.2
+        uses: carlosperate/arm-none-eabi-gcc-action@v1.6.0
         with:
-          release: '10.3-2021.10'
+          release: '12.2.Rel1'
 
       - name: arm-none-eabi-gcc version
         run: arm-none-eabi-gcc --version

@@ -1,5 +1,3 @@
-include(CheckCCompilerFlag)
-
 # set the sources
 set(SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/entry/entry.c
