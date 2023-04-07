@@ -1,7 +1,7 @@
 #ifndef KLIB_SSD1351_HPP
 #define KLIB_SSD1351_HPP
 
-#include <klib/wait.hpp>
+#include <klib/delay.hpp>
 #include <klib/vector2.hpp>
 #include <klib/graphics/color.hpp>
 

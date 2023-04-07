@@ -2,7 +2,7 @@
 #define KLIB_MTCH6301_HPP
 
 #include <klib/math.hpp>
-#include <klib/wait.hpp>
+#include <klib/delay.hpp>
 
 namespace klib::hardware::touch {   
     template <typename Bus, typename IrqPin, typename RstPin>
