@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace klib {
+namespace klib::io {
     class clock {
     protected:
         // clock frequency of the cpu
