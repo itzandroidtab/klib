@@ -23,7 +23,7 @@ namespace klib::max32660::io {
     protected:
         static void init_clock() {
             // get the core clock
-            const auto clock = klib::clock::get();
+            const auto clock = klib::io::clock::get();
 
             // change the clock divider to have a 1Mhz FLC clock
             Flc::port->FLSH_CLKDIV = clock / 1'000'000;

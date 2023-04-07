@@ -60,7 +60,7 @@ namespace klib::lpc802::io::system {
             port->SYSAHBCLKDIV = 0x1;
 
             // set the clock speed
-            klib::clock::set(static_cast<uint32_t>(Clock));
+            klib::io::clock::set(static_cast<uint32_t>(Clock));
         }
 
         template <uint32_t Trim, uint32_t ClockFreq>
@@ -78,7 +78,7 @@ namespace klib::lpc802::io::system {
             port->SYSAHBCLKDIV = 0x1;
 
             // set the frequency the user provides
-            klib::clock::set(ClockFreq);
+            klib::io::clock::set(ClockFreq);
         }
     };
 }

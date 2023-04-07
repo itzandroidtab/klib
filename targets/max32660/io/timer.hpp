@@ -191,7 +191,7 @@ namespace klib::max32660::io::detail::timer {
             Timer::port->CN |= ((0x00 << 3) | (0x0 << 8));
 
             // get the peripheral clock
-            const auto periph_clock = klib::clock::get() / 2;
+            const auto periph_clock = klib::io::clock::get() / 2;
 
             // set the compare value
             Timer::port->CMP = (periph_clock / frequency) + 1;
@@ -279,7 +279,7 @@ namespace klib::max32660::io {
          */
         static float calculate_stepsize() {
             // get the peripheral clock
-            const uint32_t periph_clock = klib::clock::get() / 2;
+            const uint32_t periph_clock = klib::io::clock::get() / 2;
 
             // calculate the maximum compare value
             const uint32_t cmp = (periph_clock / Frequency) + 1;

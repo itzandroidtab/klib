@@ -117,7 +117,7 @@ namespace klib::lpc1756::io {
             // work as the datasheet implies). The last bit does not stick.
             // (e.g 5 -> 4)
             Spi::port->CCR = static_cast<uint8_t>(
-                klib::clock::get() / static_cast<uint32_t>(Frequency)
+                klib::io::clock::get() / static_cast<uint32_t>(Frequency)
             );
 
             // set the control register. Set the amount of bits per transfer, set 

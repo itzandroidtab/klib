@@ -212,7 +212,7 @@ namespace klib::lpc1756::io {
          */
         static void set_frequency(const uint32_t frequency) {
             // set the match register for the desired frequency
-            Timer::port->MR[Channel::id] = (klib::clock::get() / frequency) + 1;
+            Timer::port->MR[Channel::id] = (klib::io::clock::get() / frequency) + 1;
         }
 
         /**

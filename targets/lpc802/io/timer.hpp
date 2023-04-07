@@ -117,7 +117,7 @@ namespace klib::lpc802::io {
 
         static void set_frequency(const uint32_t frequency) {
             // set the match register for the desired frequency
-            Timer::port->MR[Channel::id] = (klib::clock::get() / frequency) + 1;
+            Timer::port->MR[Channel::id] = (klib::io::clock::get() / frequency) + 1;
         }
 
         /**
@@ -180,7 +180,7 @@ namespace klib::lpc802::io {
          */
         static uint32_t calculate_stepsize() {
             // calculate the maximum compare value
-            const auto cmp = (klib::clock::get() / Frequency) + 1;
+            const auto cmp = (klib::io::clock::get() / Frequency) + 1;
 
             // calculate the step size
             return klib::max(cmp / multiplier, 1);
@@ -441,7 +441,7 @@ namespace klib::lpc802::io {
 //         template <typename Channel>
 //         static void set_frequency() {
 //             // set the desired counter value in the increment array
-//             increment_count[Channel::id] = (klib::clock::get() / frequency) + 1;
+//             increment_count[Channel::id] = (klib::io::clock::get() / frequency) + 1;
 
 //             // set the match register for the desired frequency
 //             Timer::port->MR[Channel::id] = increment_count[Channel::id];

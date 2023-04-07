@@ -184,7 +184,7 @@ namespace klib::max32660::io {
         static clock_info calculate_clock() {
             // get the amount of ticks for the spi frequency
             uint32_t ticks = klib::max(
-                (klib::clock::get() / 2) / static_cast<uint32_t>(Frequency), 
+                (klib::io::clock::get() / 2) / static_cast<uint32_t>(Frequency), 
                 static_cast<uint32_t>(1)
             );
 

@@ -169,7 +169,7 @@ namespace klib::max32660::io::system {
                     }
 
                     // change the core clock to the correct frequency
-                    klib::clock::set(96'000'000);
+                    klib::io::clock::set(96'000'000);
 
                     break;
                 case clock_source::nano:
@@ -188,7 +188,7 @@ namespace klib::max32660::io::system {
                     }
 
                     // change the core clock to the correct frequency
-                    klib::clock::set(80'000);
+                    klib::io::clock::set(80'000);
 
                     break;
                 case clock_source::x32k:
@@ -207,7 +207,7 @@ namespace klib::max32660::io::system {
                     }
 
                     // change the core clock to the correct frequency
-                    klib::clock::set(32'768);
+                    klib::io::clock::set(32'768);
                     break;
             }
         }

@@ -272,7 +272,7 @@ namespace klib::lpc1756::io::system {
             connect<pll::main, true>();
             
             // notify klib what freqency we are running
-            klib::clock::set(Freq);
+            klib::io::clock::set(Freq);
         }
     };
 

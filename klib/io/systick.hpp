@@ -104,7 +104,7 @@ namespace klib::io {
         template <typename Irq, bool ExternalClockSource = false>
         static void init(const interrupt_callback& irq = nullptr) {
             // init the systick
-            init<Irq, ExternalClockSource>(klib::clock::get(), irq);
+            init<Irq, ExternalClockSource>(klib::io::clock::get(), irq);
         }
 
         /**

@@ -99,7 +99,7 @@ namespace klib::detail {
      */
     static void __attribute__((__optimize__("-Os"))) busy_delay_impl(const time::us time) {
         // get the cpu speed
-        const uint32_t interate_cycles = klib::clock::get() / 1'000;
+        const uint32_t interate_cycles = klib::io::clock::get() / 1'000;
 
         // calculate the amount of time to wait
         const time::ms msec = static_cast<time::ms>(time);

@@ -15,7 +15,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::max32625;
 
     // change the core clock to the correct frequency
-    klib::clock::set(96'000'000);
+    klib::io::clock::set(96'000'000);
 
     if constexpr (TARGET_FPU_ENABLED) {
         // using to make the access easier to the coprocessor
