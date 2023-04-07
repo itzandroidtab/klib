@@ -145,7 +145,7 @@ namespace klib {
                 // busy wait just waits based on a aproximation
                 detail::busy_delay_impl(time::s(1));
             }
-            else if constexpr (std::is_same_v<Timer, klib::systick>) {
+            else if constexpr (std::is_same_v<Timer, klib::io::systick>) {
                 // use the freerunning system timer
                 detail::systick_delay_impl<Timer>(time::s(1));
             }
@@ -165,7 +165,7 @@ namespace klib {
             // busy wait just waits based on a aproximation
             detail::busy_delay_impl(usec);
         }
-        else if constexpr (std::is_same_v<Timer, klib::systick>) {
+        else if constexpr (std::is_same_v<Timer, klib::io::systick>) {
             // use the freerunning system timer
             detail::systick_delay_impl<Timer>(usec);
         }

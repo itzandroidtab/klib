@@ -6,7 +6,7 @@
 #include <klib/io/core_clock.hpp>
 #include <klib/units.hpp>
 
-namespace klib {
+namespace klib::io {
     class systick {
     protected:
         /**

@@ -24,10 +24,10 @@ void __attribute__((__constructor__(101))) __target_startup() {
     target::irq::init();
 
     // init the systick timer
-    klib::systick::init<target::irq>(klib::clock::get() / 2);
+    klib::io::systick::init<target::irq>(klib::clock::get() / 2);
 
     // enable the systick timer
-    klib::systick::enable();
+    klib::io::systick::enable();
 
     // enable MPU, bus and usage faults in seperate interrupts
     // SCB->SHCSR = 0b1011;
