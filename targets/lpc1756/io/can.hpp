@@ -170,9 +170,7 @@ namespace klib::lpc1756::io {
             }
 
             // start the write for the selected buffer
-            // TODO: disable SRR readback
-            // Can::port->CMR = 0x1 | (0x1 << (static_cast<uint8_t>(Buffer) + 5));
-            Can::port->CMR = (0x1 << (static_cast<uint8_t>(index) + 5)) | (0x1 << 4);
+            Can::port->CMR = 0x1 | (0x1 << (static_cast<uint8_t>(Buffer) + 5));
 
             // check if not async
             if constexpr (Async) {
@@ -245,8 +243,7 @@ namespace klib::lpc1756::io {
             // Can::port->EWL;
 
             // enable the can controller
-            // TODO: disable self test mode
-            Can::port->MOD = 0x00 | (0x1 << 2);
+            Can::port->MOD = 0x00;
         }
 
         /**
@@ -313,7 +310,7 @@ namespace klib::lpc1756::io {
             (*reinterpret_cast<uint32_t *const>(&(frame.data[4]))) = Can::port->RDB;
 
             // release the receive buffer
-            periph::lqfp_80::can0_0::port->CMR = (0x1 << 2);
+            Can::port->CMR = (0x1 << 2);
 
             return frame;
         }
