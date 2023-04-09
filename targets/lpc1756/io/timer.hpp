@@ -17,6 +17,9 @@ namespace klib::lpc1756::io::periph {
         // peripheral interrupt position
         constexpr static uint32_t irq_id = 17;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 1;
+
         // port to the timer hardware
         static inline TIMER0_Type *const port = TIMER0;
 
@@ -44,6 +47,9 @@ namespace klib::lpc1756::io::periph {
 
         // peripheral interrupt position
         constexpr static uint32_t irq_id = 18;
+
+        // power bit position
+        constexpr static uint32_t clock_id = 2;
 
         // port to the timer hardware
         static inline TIMER0_Type *const port = TIMER1;
@@ -73,6 +79,9 @@ namespace klib::lpc1756::io::periph {
         // peripheral interrupt position
         constexpr static uint32_t irq_id = 19;
 
+        // power bit position
+        constexpr static uint32_t clock_id = 22;
+
         // port to the timer hardware
         static inline TIMER0_Type *const port = TIMER2;
 
@@ -100,6 +109,9 @@ namespace klib::lpc1756::io::periph {
 
         // peripheral interrupt position
         constexpr static uint32_t irq_id = 20;
+
+        // power bit position
+        constexpr static uint32_t clock_id = 23;
 
         // port to the timer hardware
         static inline TIMER0_Type *const port = TIMER3;
