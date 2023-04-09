@@ -170,7 +170,7 @@ namespace klib::lpc1756::io {
             }
 
             // start the write for the selected buffer
-            Can::port->CMR = 0x1 | (0x1 << (static_cast<uint8_t>(Buffer) + 5));
+            Can::port->CMR = 0x1 | (0x1 << (static_cast<uint8_t>(index) + 5));
 
             // check if not async
             if constexpr (Async) {
