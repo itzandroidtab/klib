@@ -61,16 +61,6 @@ namespace klib::lpc1756::io::system {
         };
 
         /**
-         * @brief Available clock sources
-         * 
-         */
-        enum class source {
-            internal = 0,
-            main = 1,
-            rtc = 2,
-        };
-
-        /**
          * @brief Check if a pll is connected
          * 
          * @tparam Pll 
@@ -228,7 +218,17 @@ namespace klib::lpc1756::io::system {
         }
 
     public:
-        template <uint32_t Freq, uint16_t Multiplier, uint8_t PreDivider, uint32_t Div>
+        /**
+         * @brief Available clock sources
+         * 
+         */
+        enum class source {
+            internal = 0,
+            main = 1,
+            rtc = 2,
+        };
+
+        template <source Source, uint32_t Freq, uint16_t Multiplier, uint8_t PreDivider, uint32_t Div>
         static void set() {
             // disconnect the main pll if it is connected.
             if (is_connected<pll::main>()) {
@@ -252,7 +252,7 @@ namespace klib::lpc1756::io::system {
             SYSCON->CCLKCFG = 0;
 
             // set the clock source for PLL0 to the main oscillator
-            SYSCON->CLKSRCSEL = static_cast<uint32_t>(source::main);
+            SYSCON->CLKSRCSEL = static_cast<uint32_t>(Source);
 
             // setup the pll
             setup<pll::main>(Multiplier, PreDivider);
