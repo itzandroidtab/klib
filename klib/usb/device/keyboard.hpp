@@ -373,51 +373,8 @@ namespace klib::usb::device {
             irq_size = 0;
         }
 
-        template <typename Usb>
+        template <typename Usb, bool Async = false>
         static bool write(const char *const data, const uint32_t size) {
-            // check if we are configured
-            if (!configuration_value) {
-                return false;
-            }
-
-            // check if a request is already pending
-            if (is_busy<Usb>()) {
-                // a other request is already pending exit
-                return false;
-            }
-
-            // encode the first report
-            encode_report(data[0], report_data);
-
-            // set the data in the interrupt
-            irq_size = size - 1;
-            irq_data = data;
-
-            // write the first report to the endpoint
-            if (!Usb::write(hid_callback<Usb>, used_endpoint, klib::usb::usb::endpoint_mode::in, report_data, sizeof(report_data))) {
-                return false;
-            }
-
-            // wait until we are done transmitting all characters
-            while (is_busy<Usb>()) {
-                // do nothing
-            }
-
-            return true;
-        }
-
-        /**
-         * @brief Write to the host. Buffer data is allocted in needs to stay valid 
-         * until the hid keyboard is not busy anymore
-         * 
-         * @tparam Usb 
-         * @param data 
-         * @param size 
-         * @return true 
-         * @return false 
-         */
-        template <typename Usb>
-        static bool write_async(const char *const data, const uint32_t size) {
             // check if we are configured
             if (!configuration_value) {
                 return false;
@@ -443,7 +400,21 @@ namespace klib::usb::device {
             irq_data = data;
 
             // write the first report to the endpoint
-            return Usb::write(hid_callback<Usb>, used_endpoint, report_data, sizeof(report_data));
+            if (!Usb::write(hid_callback<Usb>, used_endpoint, klib::usb::usb::endpoint_mode::in, report_data, sizeof(report_data))) {
+                return false;
+            }
+
+            // check if we should exit
+            if constexpr (Async) {
+                return true;
+            }
+
+            // wait until we are done transmitting all characters
+            while (is_busy<Usb>()) {
+                // do nothing
+            }
+
+            return true;
         }
 
         /**
