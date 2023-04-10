@@ -40,6 +40,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 13;
 
+        // interrupt id (including the arm vector table)
+        constexpr static uint32_t interrupt_id = 41;
+
         // port to the CAN hardware
         static inline CAN1_Type *const port = CAN1;
 
@@ -54,6 +57,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 13;
+
+        // interrupt id (including the arm vector table)
+        constexpr static uint32_t interrupt_id = 41;
 
         // port to the CAN hardware
         static inline CAN1_Type *const port = CAN1;
@@ -70,6 +76,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 14;
 
+        // interrupt id (including the arm vector table)
+        constexpr static uint32_t interrupt_id = 41;
+
         // port to the CAN hardware
         static inline CAN1_Type *const port = CAN2;
 
@@ -82,10 +91,86 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
     };
 }
 
+namespace klib::lpc1756::io::detail {
+    class can_interrupt {
+    public:
+        // using for the array of callbacks
+        using interrupt_callback = void(*)();
+
+    protected:
+        // amount of can devices that can be serviced in the single interrupt
+        constexpr static uint32_t can_count = 2;
+
+        // interrupt callbacks
+        static inline interrupt_callback callbacks[can_count] = {nullptr, nullptr};
+
+    public:
+        template <typename Can>
+        static void init() {
+            // register the interrupt handler
+            irq::register_irq<Can::interrupt_id>(irq_handler);
+
+            // enable the interrupt
+            enable_irq<Can::interrupt_id>();            
+        }
+
+        /**
+         * @brief Register a callback
+         * 
+         * @tparam Irq 
+         * @param callback 
+         */
+        template <uint32_t CanId>
+        static void register_irq(const interrupt_callback& callback) {
+            static_assert(CanId < can_count, "Invalid Can Id provided to register");
+
+            // register the callback
+            callbacks[CanId] = callback;
+        }
+
+        /**
+         * @brief Clear a callback
+         * 
+         * @tparam Irq 
+         */
+        template <uint32_t CanId>
+        static void unregister_irq() {
+            static_assert(CanId < can_count, "Invalid Can Id provided to unregister");
+
+            // clear the callback
+            callbacks[CanId] = nullptr;
+        }
+
+        /**
+         * @brief Interrupt handler for the can hardware. This should only be 
+         * called from NVIC
+         * 
+         */
+        static void irq_handler() {
+            // call every callback we have
+            for (uint32_t i = 0; i < can_count; i++) {
+                // check if we have a valid callback
+                if (callbacks[i]) {
+                    // call the callback
+                    callbacks[i]();
+                }
+            }
+        }
+    };
+}
+
 namespace klib::lpc1756::io {
     template <typename Can>
     class can {
+    public:
+        // using for the array of callbacks
+        using interrupt_callback = void(*)();
+
     protected:
+        // callbacks
+        static inline interrupt_callback transmit_callback = nullptr;
+        static inline interrupt_callback receive_callback = nullptr;
+
         // baud rate parameters
         constexpr static uint8_t prop = 0;
         constexpr static uint8_t seg1 = 0b1100;
@@ -172,6 +257,23 @@ namespace klib::lpc1756::io {
             // start the write for the selected buffer
             Can::port->CMR = 0x1 | (0x1 << (static_cast<uint8_t>(index) + 5));
 
+            // check if we should enable the transmit done interrupt
+            if (transmit_callback) {
+                // enable the corresponding interrupt
+                switch (index) {
+                    case 1:
+                        Can::port->IER |= (0x1 << 1);
+                        break;
+                    case 2:
+                        Can::port->IER |= (0x1 << 9);
+                        break;
+                    case 0:
+                    default:
+                        Can::port->IER |= (0x1 << 10);
+                        break;
+                }
+            }
+
             // check if not async
             if constexpr (Async) {
                 return;
@@ -206,9 +308,63 @@ namespace klib::lpc1756::io {
             }
         }
 
+        static void irq_handler() {
+            // get the status register
+            const uint32_t status = Can::port->ICR;
+            const uint32_t mask = Can::port->IER;
+
+            // get the masked status
+            const uint32_t masked_status = status & mask;
+
+            // check what kind of interrupt we have
+            if (masked_status & ((0x1 << 1) | (0x1 << 9) | (0x1 << 10))) {
+                // disable the interrupt bit for the received buffer
+                Can::port->IER &= ~((0x1 << 1) | (0x1 << 9) | (0x1 << 10));
+
+                // we have a transmit done interrupt. Notify the callback we have space
+                if (transmit_callback) {
+                    // call the callback
+                    transmit_callback();
+                }
+            }
+            
+            if (masked_status & (0x1 << 0)) {
+                // clear the read interrupt bit until the current data is read
+                Can::port->IER &= ~(0x1);
+
+                // notify we have received data. Call the callback if we have one
+                if (receive_callback) {
+                    // call the callback
+                    receive_callback();
+                }
+            }
+
+            // check if we have passed the error thresholds (protocol defined at 127)
+            if (masked_status & (0x1 << 5)) { 
+                // get the current error counters
+                const uint32_t reg = Can::port->GSR;
+
+                // check if we should enable or disable the bus error interrupt
+                if ((((reg >> 16) & 0xff) > 127) || (((reg >> 24) & 0xff) > 127)) {
+                    Can::port->IER |= (0x1 << 7);
+                }
+                else {
+                    Can::port->IER &= ~(0x1 << 7);
+                }
+            }
+
+            // check if we have a bus error (only enabled when the thresholds 
+            // are reached)
+            if (masked_status & (0x1 << 7)) {
+                // stop all the current transmissions when the bus error 
+                // interrupt is enabled and we have one
+                Can::port->CMR |= (0x1 << 1);
+            }
+        }
+
     public:
         template <uint32_t Frequency = 500'000>
-        static void init() {
+        static void init(const interrupt_callback& transmit = nullptr, const interrupt_callback& receive = nullptr) {
             // init using the pconp register
             power_control::enable<Can>();
 
@@ -234,16 +390,42 @@ namespace klib::lpc1756::io {
             // set the bus timing
             Can::port->BTR = (
                 ((Frequency > 100'000) ? 0x0 : 0x1 << 23) |
-                (0b1100 << 16) | (0b001 << 20) | (sjw << 14) |
+                (seg1 << 16) | (seg2 << 20) | (sjw << 14) |
                 (baud_rate & 0x1ff)
             );
 
-            // set the can error warning limits
-            // TODO: set the error warning limits
-            // Can::port->EWL;
+            // set the callbacks
+            transmit_callback = transmit;
+            receive_callback = receive;
+
+            // enable the interrupt bits (all error and wakeup bits 
+            // and the receive interrupt if we are using interrupts)
+            Can::port->IER = (
+                0b00000110000 | ((receive != nullptr) ? 0x1 : 0x0) 
+                // | (0x1 << 3) // data overrun interrupt bit
+            );
+
+            // clear any pending interrupts
+            (void)Can::port->ICR;
+
+            // register the interrupt
+            detail::can_interrupt::template register_irq<Can::id>(irq_handler);
+
+            // init the can interrupt
+            detail::can_interrupt::template init<Can>();
 
             // enable the can controller
             Can::port->MOD = 0x00;
+        }
+
+        /**
+         * @brief Returns if we have a RX or a TX error
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool has_error() {
+            return Can::port->GSR & (0x1 << 6);
         }
 
         /**
@@ -311,6 +493,12 @@ namespace klib::lpc1756::io {
 
             // release the receive buffer
             Can::port->CMR = (0x1 << 2);
+
+            // check if we should reenable the interrupt
+            if (receive_callback) {
+                // enable the receive interrupt
+                Can::port->IER |= 0x1;
+            }
 
             return frame;
         }
