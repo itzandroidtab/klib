@@ -197,6 +197,12 @@ namespace klib::lpc1756::io {
             constexpr static uint32_t clock_id = 15;
         };
 
+        enum class buffer_index {
+            buffer_0 = 0,
+            buffer_1,
+            buffer_2,
+        };
+
         template <bool Async>
         static void write_impl(const klib::io::can::frame& frame, const uint8_t prio = 0) {
             // get the status register
@@ -206,7 +212,7 @@ namespace klib::lpc1756::io {
             hw_buffer* buffer;
 
             // index of the used buffer
-            uint8_t index;
+            buffer_index index;
 
             // check what buffer to write to
             if (status & (0x1 << 2)) {
@@ -215,21 +221,21 @@ namespace klib::lpc1756::io {
                     const_cast<uint32_t*>(&(Can::port->TFI1))
                 );
 
-                index = 0;
+                index = buffer_index::buffer_0;
             }
             else if (status & (0x1 << 10)) {
                 buffer = reinterpret_cast<hw_buffer *const>(
                     const_cast<uint32_t*>(&(Can::port->TFI2))
                 );
 
-                index = 1;
+                index = buffer_index::buffer_1;
             }
             else if (status & (0x1 << 18)) {
                 buffer = reinterpret_cast<hw_buffer *const>(
                     const_cast<uint32_t*>(&(Can::port->TFI3))
                 );
 
-                index = 2;
+                index = buffer_index::buffer_2;
             }
             else {
                 // if no buffer is available return
@@ -261,15 +267,15 @@ namespace klib::lpc1756::io {
             if (transmit_callback) {
                 // enable the corresponding interrupt
                 switch (index) {
-                    case 1:
-                        Can::port->IER |= (0x1 << 1);
-                        break;
-                    case 2:
+                    case buffer_index::buffer_1:
                         Can::port->IER |= (0x1 << 9);
                         break;
-                    case 0:
-                    default:
+                    case buffer_index::buffer_2:
                         Can::port->IER |= (0x1 << 10);
+                        break;
+                    case buffer_index::buffer_0:
+                    default:
+                        Can::port->IER |= (0x1 << 1);
                         break;
                 }
             }
@@ -284,14 +290,14 @@ namespace klib::lpc1756::io {
 
             // get the 
             switch (index) {
-                case 1:
+                case buffer_index::buffer_1:
                     bitfield = 0x1 << 11;
                     break;
-                case 2:
+                case buffer_index::buffer_2:
                     bitfield = 0x1 << 19;
                     break;
                 default:
-                case 0:
+                case buffer_index::buffer_0:
                     bitfield = 0x1 << 3;
                     break;
             }
