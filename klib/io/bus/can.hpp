@@ -125,6 +125,9 @@ namespace klib::io::can {
         /**
          * @brief Read a frame from the queue
          * 
+         * @warning the can interrupt should be suppressed while
+         * this function called.
+         * 
          * @return klib::io::can::frame 
          */
         static can::frame read() {
@@ -151,7 +154,10 @@ namespace klib::io::can {
 
         /**
          * @brief Write a frame to the queue. Might send the 
-         * data immediately
+         * data immediately. 
+         * 
+         * @warning the can interrupt should be suppressed while
+         * this function called.
          * 
          * @param frame 
          */

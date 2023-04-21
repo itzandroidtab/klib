@@ -282,13 +282,14 @@ namespace klib::lpc1756::io {
 
             // check if not async
             if constexpr (Async) {
+                // do a early return if we are in async mode
                 return;
             }
 
             // bitfield to check
             uint32_t bitfield = 0;
 
-            // get the 
+            // get the bit we should wait on
             switch (index) {
                 case buffer_index::buffer_1:
                     bitfield = 0x1 << 11;
@@ -324,13 +325,26 @@ namespace klib::lpc1756::io {
 
             // check what kind of interrupt we have
             if (masked_status & ((0x1 << 1) | (0x1 << 9) | (0x1 << 10))) {
-                // disable the interrupt bit for the received buffer
-                Can::port->IER &= ~((0x1 << 1) | (0x1 << 9) | (0x1 << 10));
+                // get the channels that have a interrupt pending
+                uint32_t pending = masked_status & ((0x1 << 1) | (0x1 << 9) | (0x1 << 10));
 
-                // we have a transmit done interrupt. Notify the callback we have space
+                // disable the interrupt bits for every enabled 
+                // transmit buffer
+                Can::port->IER &= ~(pending);
+
+                // check if we have a interrupt callback
                 if (transmit_callback) {
-                    // call the callback
-                    transmit_callback();
+                    // amount of trailing zeros in the status register
+                    uint8_t trailing_zeros = 0;
+
+                    // notify the interrupt for every transmit (32 == zero's)
+                    while ((trailing_zeros = klib::ctz(pending)) < 32) {
+                        // call the callback
+                        transmit_callback();
+
+                        // clear the bit from the pending interrupts
+                        pending &= ~(1 << static_cast<uint8_t>(trailing_zeros));
+                    }
                 }
             }
             
