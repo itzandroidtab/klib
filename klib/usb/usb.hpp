@@ -49,6 +49,17 @@ namespace klib::usb {
         };
 
         /**
+         * @brief Internal handshake values
+         * 
+         */
+        enum class handshake {
+            ack,
+            nak, 
+            stall,
+            wait
+        };
+
+        /**
          * @brief Callback function. Called after a read/write is completed
          * 
          */
@@ -110,7 +121,7 @@ namespace klib::usb {
          * @param packet 
          */
         template <typename Usb>
-        static void get_status(const setup_packet &packet) {
+        static handshake get_status(const setup_packet &packet) {
             // wValue = zero
             // wIndex = zero
             // wLength = 2
@@ -123,8 +134,7 @@ namespace klib::usb {
                 (packet.wIndex != 0 && recipient == setup::recipient_code::device)) 
             {
                 // stall the usb
-                Usb::stall(control_endpoint, endpoint_mode::control);
-                return;
+                return handshake::stall;
             }
 
             // get status response (2 bytes). Data needs to be 4 
@@ -152,18 +162,17 @@ namespace klib::usb {
                 default:
                     // this should not happen, only with reserved. 
                     // send a stall when that happens
-                    Usb::stall(control_endpoint, endpoint_mode::control);
-                    return;
+                    return handshake::stall;
             }
 
             // write and check if we got any errors straight away
             if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::control, response, sizeof(response))) {
-                // no errors return
-                return;
+                // no errors return we need to wait on the callback
+                return handshake::wait;
             }
 
             // we have a error stall
-            Usb::stall(control_endpoint, endpoint_mode::control);
+            return handshake::stall;
         }
 
         /**
@@ -173,7 +182,7 @@ namespace klib::usb {
          * @param packet 
          */
         template <typename Usb>
-        static void clear_feature(const setup_packet &packet) {
+        static handshake clear_feature(const setup_packet &packet) {
             // wValue = feature selector
             // wIndex = zero
             // wLength = zero
@@ -186,8 +195,7 @@ namespace klib::usb {
                 (packet.wLength != 0)) 
             {
                 // stall the usb
-                Usb::stall(control_endpoint, endpoint_mode::control);
-                return;
+                return handshake::stall;
             }
 
             const auto feature = get_feature(packet);
@@ -199,22 +207,24 @@ namespace klib::usb {
                 ((feature == setup::feature::test_mode) && recipient != setup::recipient_code::device))
             {
                 // stall the usb
-                Usb::stall(control_endpoint, endpoint_mode::control);
-                return;
+                return handshake::stall;
             }
 
             // check if we need to unstall a endpoint
             if (feature == setup::feature::endpoint_halt && packet.wIndex > 0) {
                 // unstall the endpoint
                 Usb::un_stall(packet.wIndex & 0x0f, get_endpoint_mode(packet.wIndex));
+
+                // return a ack
+                return handshake::ack;
             }
             else if (feature == setup::feature::remote_wake || feature != setup::feature::test_mode) {
                 // call the device clear feature
-                Usb::device::template clear_feature<Usb>(feature, packet);
+                return Usb::device::template clear_feature<Usb>(feature, packet);
             }
             else {
                 // unsupported feature. Stall
-                Usb::stall(control_endpoint, endpoint_mode::control);
+                return handshake::stall;
             }
         }
 
@@ -225,7 +235,7 @@ namespace klib::usb {
          * @param packet 
          */
         template <typename Usb>
-        static void set_feature(const setup_packet &packet) {
+        static handshake set_feature(const setup_packet &packet) {
             // wValue = feature selector
             // wIndex = zero
             // wLength = zero
@@ -238,8 +248,7 @@ namespace klib::usb {
                 (packet.wLength != 0)) 
             {
                 // stall the usb
-                Usb::stall(control_endpoint, endpoint_mode::control);
-                return;
+                return handshake::stall;
             }
 
             const auto feature = get_feature(packet);
@@ -251,22 +260,24 @@ namespace klib::usb {
                 ((feature == setup::feature::test_mode) && recipient != setup::recipient_code::device))
             {
                 // stall the usb
-                Usb::stall(control_endpoint, endpoint_mode::control);
-                return;
+                return handshake::stall;
             }
 
             // check if we need to stall a endpoint
             if (feature == setup::feature::endpoint_halt && packet.wIndex > 0) {
                 // unstall the endpoint
                 Usb::stall(packet.wIndex & 0x0f, get_endpoint_mode(packet.wIndex));
+
+                // return a ack
+                return handshake::ack;
             }
             else if (feature == setup::feature::remote_wake || feature != setup::feature::test_mode) {
                 // call the device set feature
-                Usb::device::template set_feature<Usb>(feature, packet);    
+                return Usb::device::template set_feature<Usb>(feature, packet);
             }
             else {
                 // unsupported feature. Stall
-                Usb::stall(control_endpoint, endpoint_mode::control);
+                return handshake::stall;
             }
         }
 
@@ -277,7 +288,7 @@ namespace klib::usb {
          * @param packet 
          */
         template <typename Usb>
-        static void set_device_address(const setup_packet &packet) {
+        static handshake set_device_address(const setup_packet &packet) {
             // wValue = device address
             // wIndex = zero
             // wLength = zero
@@ -286,13 +297,11 @@ namespace klib::usb {
             // check if the values are out of spec
             if (packet.wIndex != 0 || packet.wLength != 0) {
                 // stall the usb
-                Usb::stall(control_endpoint, endpoint_mode::control);
-
-                return;
+                return handshake::stall;
             }
 
             // set the device address in the usb hardware
-            Usb::set_device_address(packet.wValue & 0x7f);
+            return Usb::set_device_address(packet.wValue & 0x7f);
         }
 
         /**
@@ -302,7 +311,7 @@ namespace klib::usb {
          * @param packet 
          */
         template <typename Usb>
-        static void get_descriptor(const setup_packet &packet) {
+        static handshake get_descriptor(const setup_packet &packet) {
             // wValue = descriptor type & index
             // wIndex = zero or language id
             // wLength = descriptor length
@@ -326,17 +335,13 @@ namespace klib::usb {
                     // check the direction and if the wIndex is not 0 (only string descriptor should have non zero)
                     if ((get_recipient(packet) != setup::recipient_code::device) || (packet.wIndex != 0)) {
                         // stall when something is wrong with the input
-                        Usb::stall(control_endpoint, endpoint_mode::control);
-
-                        return;
+                        return handshake::stall;
                     }
 
                     // check if the descriptor is set
                     if (!descriptor.size) {
                         // stall when we dont have any descriptors
-                        Usb::stall(control_endpoint, endpoint_mode::control);
-
-                        return;
+                        return handshake::stall;
                     }
                     break;
 
@@ -344,28 +349,22 @@ namespace klib::usb {
                     // only check the direction of the packet
                     if ((get_recipient(packet) != setup::recipient_code::device)) {
                         // stall when something is wrong with the input
-                        Usb::stall(control_endpoint, endpoint_mode::control);
-
-                        return;
+                        return handshake::stall;
                     }
 
                     if (!descriptor.size) {
                         // descriptor out of range. Stall
-                        Usb::stall(control_endpoint, endpoint_mode::control);
-
-                        return;
+                        return handshake::stall;
                     }
+                    break;
 
                 default:
                     // when another descriptor is requested only check if the descriptor size
                     // is not 0. otherwise stall
                     if (!descriptor.size) {
                         // descriptor out of range. Stall
-                        Usb::stall(control_endpoint, endpoint_mode::control);
-
-                        return;
+                        return handshake::stall;
                     }
-
                     break;
             }
 
@@ -374,16 +373,16 @@ namespace klib::usb {
 
             // write the data to the endpoint buffer and check if we directly fail
             if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::control, descriptor.desc, size)) {
-                // no errors do a early return
-                return;
+                // no errors return we need to wait on the callback
+                return handshake::wait;
             }
 
             // we failed so stall the endpoint
-            Usb::stall(control_endpoint, endpoint_mode::control);
+            return handshake::stall;
         }
 
         template <typename Usb>
-        static void get_config(const setup_packet &packet) {
+        static handshake get_config(const setup_packet &packet) {
             // wValue = zero
             // wIndex = zero
             // wLength = 1
@@ -392,17 +391,15 @@ namespace klib::usb {
             // check if the packet is follign the usb spec
             if (packet.wValue != 0 || packet.wIndex != 0 || packet.wLength != 1) {
                 // packet is not correct
-                Usb::stall(control_endpoint, endpoint_mode::control);
-
-                return;
+                return handshake::stall;
             }
 
             // call the device function
-            Usb::device::template get_config<Usb>(packet);
+            return Usb::device::template get_config<Usb>(packet);
         }
 
         template <typename Usb>
-        static void set_config(const setup_packet &packet) {
+        static handshake set_config(const setup_packet &packet) {
             // wValue = configuration value
             // wIndex = zero
             // wLength = zero
@@ -411,17 +408,15 @@ namespace klib::usb {
             // check if the packet is correct
             if (packet.wIndex != 0 || packet.wLength != 0) {
                 // packet not following the usb spec
-                Usb::stall(control_endpoint, endpoint_mode::control);
-
-                return;
+                return handshake::stall;
             }
 
             // send the packet to the device
-            Usb::device::template set_config<Usb>(packet);
+            return Usb::device::template set_config<Usb>(packet);
         }
 
         template <typename Usb>
-        static void get_interface(const setup_packet &packet) {
+        static handshake get_interface(const setup_packet &packet) {
             // wValue = zero
             // wIndex = interface
             // wlength = one
@@ -430,9 +425,7 @@ namespace klib::usb {
             // check if the request is following the usb spec
             if (packet.wValue != 0 || packet.wLength != 1) {
                 // stall we have a invalid packet
-                Usb::stall(control_endpoint, endpoint_mode::control);
-
-                return;
+                return handshake::stall;
             }
 
             // check if the device has the vendor handler
@@ -443,16 +436,16 @@ namespace klib::usb {
             // check if the device has a get interface
             if constexpr (has_get_interface) {
                 // call the device get interface functionality
-                Usb::device::template get_interface<Usb>(packet);
+                return Usb::device::template get_interface<Usb>(packet);
             }
             else {
                 // device does not support set interface
-                Usb::stall(control_endpoint, endpoint_mode::control);
+                return handshake::stall;
             }
         }
 
         template <typename Usb>
-        static void set_interface(const setup_packet &packet) {
+        static handshake set_interface(const setup_packet &packet) {
             // wValue = alternate setting
             // wIndex = interface
             // wlength = zero
@@ -461,9 +454,7 @@ namespace klib::usb {
             // check if the packet is following the spec
             if (packet.wLength != 0) {
                 // error wit hthe packet stall
-                Usb::stall(control_endpoint, endpoint_mode::control);
-
-                return;
+                return handshake::stall;
             }
 
             // check if the device has the vendor handler
@@ -474,17 +465,17 @@ namespace klib::usb {
             // check if the device has a set interface
             if constexpr (has_set_interface) {
                 // send the packet to the device
-                Usb::device::template set_interface<Usb>(packet);
+                return Usb::device::template set_interface<Usb>(packet);
             }
             else {
                 // device does not support set interface
-                Usb::stall(control_endpoint, endpoint_mode::control);
+                return handshake::stall;
             }
         }
 
     public:
         template <typename Usb>
-        static void handle_standard_packet(const setup_packet &packet) {
+        static handshake handle_standard_packet(const setup_packet &packet) {
             // get the current request
             const auto& request = static_cast<setup::device_request>(packet.bRequest);
 
@@ -514,8 +505,7 @@ namespace klib::usb {
                 default:
                     // other requests are not implemented. Send a 
                     // stall.
-                    Usb::stall(control_endpoint, endpoint_mode::control);
-                    break;
+                    return handshake::stall;
             }
         }
 
@@ -534,47 +524,61 @@ namespace klib::usb {
                 Usb::device::template handle_vendor_packet<Usb>(packet);
             };
 
+            // by default we do not ack/stall
+            handshake response = handshake::wait;
+
             // check what to do with our current packet
             switch (type) {
                 case setup::request_type::standard:
                     // the usb stack will stall/ack the request
                     // when required
-                    return handle_standard_packet<Usb>(packet);
+                    response = handle_standard_packet<Usb>(packet);
+                    break;
                 case setup::request_type::uclass:
                     // the device needs to stall this request 
-                    // if not supported using the Usb::stall()
-                    // function
+                    // if not supported
                     if constexpr (has_class_handler) {
                         // let the device handler handle the class packet
-                        return Usb::device::template handle_class_packet<Usb>(packet);
+                        response = Usb::device::template handle_class_packet<Usb>(packet);
                     }
                     else {
                         // stall if we do not have this handler
-                        return Usb::stall(control_endpoint, endpoint_mode::control);
+                        response = handshake::stall;
                     }
+                    break;
                 case setup::request_type::vendor:
                     // the device needs to stall this request 
-                    // if not supported using the Usb::stall()
-                    // function
+                    // if not supported
                     if constexpr (has_vendor_handler) {
                         // let the device handler handle the vendor packet
-                        return Usb::device::template handle_vendor_packet<Usb>(packet);
+                        response = Usb::device::template handle_vendor_packet<Usb>(packet);
                     }
                     else {
                         // stall if we do not have this handler
-                        return Usb::stall(control_endpoint, endpoint_mode::control);
+                        response = handshake::stall;
                     }
+                    break;
                 case setup::request_type::reserved:
                 default:
                     // send a stall as we have no clue what to do
                     // with our current packet
-                    return Usb::stall(control_endpoint, endpoint_mode::control);
+                    response = handshake::stall;
+                    break;
             }
 
-            // the request should be stalled/acked before we enter.
+            // the request should be stalled/acked before we exit.
             // only exception is when there is a data stage in the
             // usb transfer. Then it should be acked/stalled later 
             // in the interrupt
+            switch (response) {
+                case handshake::ack:
+                    return Usb::ack(control_endpoint, endpoint_mode::control);
+                case handshake::stall:
+                    return Usb::stall(control_endpoint, endpoint_mode::control);
+                default:
+                    // do nothing when the response is nothing
+                    break;
+            }
         }
 
         template <typename Usb>

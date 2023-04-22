@@ -843,9 +843,9 @@ namespace klib::max32625::io {
          * 
          * @param address 
          */
-        static void set_device_address(const uint8_t address) {
+        static klib::usb::usb::handshake set_device_address(const uint8_t address) {
             // ack the response. The hardware handles this
-            ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+            return klib::usb::usb::handshake::ack;
         }
 
         /**

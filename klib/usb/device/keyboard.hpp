@@ -210,7 +210,7 @@ namespace klib::usb::device {
          * @param data 
          */
         template <typename Usb>
-        static void hid_callback(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, const usb::error error_code) {
+        static void hid_callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code) {
             // check if we are configured
             if (!configuration_value) {
                 return;
@@ -400,7 +400,7 @@ namespace klib::usb::device {
             irq_data = data;
 
             // write the first report to the endpoint
-            if (!Usb::write(hid_callback<Usb>, used_endpoint, klib::usb::usb::endpoint_mode::in, report_data, sizeof(report_data))) {
+            if (!Usb::write(hid_callback<Usb>, used_endpoint, usb::endpoint_mode::in, report_data, sizeof(report_data))) {
                 return false;
             }
 
@@ -513,21 +513,18 @@ namespace klib::usb::device {
          * @param packet 
          */
         template <typename Usb>
-        static void clear_feature(const klib::usb::setup::feature feature, const klib::usb::setup_packet &packet) {
+        static usb::handshake clear_feature(const klib::usb::setup::feature feature, const klib::usb::setup_packet &packet) {
             // check if we support the feature
             if (feature != klib::usb::setup::feature::remote_wake) {
                 // we only support remote wakeup
-                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
-
-                // do a early return
-                return;
+                return usb::handshake::stall;
             }
 
             // disable remote wakeup
             remote_wakeup = false;
 
             // ack the packet
-            Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+            return usb::handshake::ack;
         }
 
         /**
@@ -540,21 +537,18 @@ namespace klib::usb::device {
          * @param packet 
          */
         template <typename Usb>
-        static void set_feature(const klib::usb::setup::feature feature, const klib::usb::setup_packet &packet) {
+        static usb::handshake set_feature(const klib::usb::setup::feature feature, const klib::usb::setup_packet &packet) {
             // check if we support the feature
             if (feature != klib::usb::setup::feature::remote_wake) {
                 // we only support remote wakeup
-                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
-
-                // do a early return
-                return;
+                return usb::handshake::stall;
             }
 
             // enable remote wakeup
             remote_wakeup = true;
 
             // ack the packet
-            Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+            return usb::handshake::ack;
         }
 
         /**
@@ -621,22 +615,23 @@ namespace klib::usb::device {
          * @param packet 
          */
         template <typename Usb>
-        static void get_config(const klib::usb::setup_packet &packet) {
+        static usb::handshake get_config(const klib::usb::setup_packet &packet) {
             // send the configuration back to the host
-            const auto r = Usb::write(
-                usb::status_callback<Usb>, klib::usb::usb::control_endpoint, 
-                klib::usb::usb::endpoint_mode::control, &configuration_value, 
+            const auto result = Usb::write(
+                usb::status_callback<Usb>, usb::control_endpoint, 
+                usb::endpoint_mode::control, &configuration_value, 
                 sizeof(configuration_value)
             );
 
             // check if something went wrong already
-            if (!r) {
+            if (!result) {
                 // something went wrong stall
-                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                return usb::handshake::stall;
             }
 
             // we do not ack here as the status callback 
             // will handle this for us
+            return usb::handshake::wait;
         }
 
         /**
@@ -646,7 +641,7 @@ namespace klib::usb::device {
          * @param packet 
          */
         template <typename Usb>
-        static void set_config(const klib::usb::setup_packet &packet) {
+        static usb::handshake set_config(const klib::usb::setup_packet &packet) {
             // check if the set is the same as the configuration we have stored
             if (packet.wValue == config.configuration.bConfigurationValue) {
                 // get the endpoint we should configure
@@ -665,11 +660,11 @@ namespace klib::usb::device {
                 // write the inital report
                 if (Usb::write(hid_callback<Usb>, used_endpoint, usb::endpoint_mode::in, report_data, sizeof(report_data))) {
                     // no issue for now ack
-                    Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                    return usb::handshake::ack;
                 }
                 else {
                     // something went wrong stall for now
-                    Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                    return usb::handshake::stall;
                 }
             }
             else if (packet.wValue == 0) {
@@ -686,11 +681,11 @@ namespace klib::usb::device {
                 } 
 
                 // ack the packet
-                Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                return usb::handshake::ack;
             }
             else {
                 // not sure what to do, stall
-                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                return usb::handshake::stall;
             }
         }
 
@@ -715,14 +710,11 @@ namespace klib::usb::device {
          * @param packet 
          */
         template <typename Usb>
-        static void handle_class_packet(const klib::usb::setup_packet &packet) {
+        static usb::handshake handle_class_packet(const klib::usb::setup_packet &packet) {
             // check if we have a valid class packet
             if (usb::get_recipient(packet) != setup::recipient_code::interface || (packet.wIndex != 0)) {
                 // packet is invalid. stall the packet
-                Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
-
-                // do a early return
-                return;
+                return usb::handshake::stall;
             }
 
             // convert the request to a class request
@@ -737,16 +729,16 @@ namespace klib::usb::device {
 
                     // write the data to the control endpoint
                     if (Usb::write(
-                            nullptr, klib::usb::usb::control_endpoint, 
-                            klib::usb::usb::endpoint_mode::control, report_data, 
+                            nullptr, usb::control_endpoint, 
+                            usb::endpoint_mode::control, report_data, 
                             sizeof(report_data))) 
                     {
                         // no issue for now ack
-                        Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                        return usb::handshake::ack;
                     }
                     else {
-                        // somethinklib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::controlg went wrong stall for now
-                        Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                        // something went wrong stall for now
+                        return usb::handshake::stall;
                     }
                     break;
                 case class_request::get_idle:
@@ -754,7 +746,7 @@ namespace klib::usb::device {
                     // for now we only support report id == 0
                     if ((packet.wValue & 0xff) != 0x00) {
                         // not supported for now
-                        Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                        return usb::handshake::stall;
                     }
                     else {
                         // send 0 to the host
@@ -762,16 +754,16 @@ namespace klib::usb::device {
 
                         // write the data to the control endpoint
                         if (Usb::write(
-                            nullptr, klib::usb::usb::control_endpoint, 
-                            klib::usb::usb::endpoint_mode::control, report_data, 
+                            nullptr, usb::control_endpoint, 
+                            usb::endpoint_mode::control, report_data, 
                             sizeof(report_data))) 
                         {
                             // no issue for now ack
-                            Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                            return usb::handshake::ack;
                         }
                         else {
                             // something went wrong stall for now
-                            Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                            return usb::handshake::stall;
                         }
                     }   
                     break;
@@ -779,11 +771,11 @@ namespace klib::usb::device {
                     // check if the packet length is not above the max endpoint size
                     if (packet.wLength > Usb::max_endpoint_size) {
                         // invalid length
-                        Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                        return usb::handshake::stall;
                     }
                     else {
                         // accept and ignore the report
-                        Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                        return usb::handshake::ack;
                     }
                     break;
                 case class_request::set_idle:
@@ -791,19 +783,18 @@ namespace klib::usb::device {
                     // for now we only support report id == 0 and we do not 
                     // support changing the idle
                     if ((packet.wValue & 0xff) != 0 || (packet.wValue >> 8) != 0) {
-                        Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                        return usb::handshake::stall;
                     }
                     else {
                         // ack and ignore
-                        Usb::ack(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
+                        return usb::handshake::ack;
                     }
                     break;
                 case class_request::get_protocol:
                 case class_request::set_protocol:
                 default:
                     // not supported. stall
-                    Usb::stall(klib::usb::usb::control_endpoint, klib::usb::usb::endpoint_mode::control);
-                    break;
+                    return usb::handshake::stall;
             }
         }
     };
