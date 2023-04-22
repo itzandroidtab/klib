@@ -197,12 +197,23 @@ namespace klib::lpc1756::io {
             constexpr static uint32_t clock_id = 15;
         };
 
+        /**
+         * @brief Available transmit buffers
+         * 
+         */
         enum class buffer_index {
             buffer_0 = 0,
             buffer_1,
             buffer_2,
         };
 
+        /**
+         * @brief Write implementation. Will fill up any of the buffers that is available
+         * 
+         * @tparam Async 
+         * @param frame 
+         * @param prio 
+         */
         template <bool Async>
         static void write_impl(const klib::io::can::frame& frame, const uint8_t prio = 0) {
             // get the status register
