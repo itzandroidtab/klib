@@ -343,7 +343,7 @@ namespace klib::lpc1756::io {
                         transmit_callback();
 
                         // clear the bit from the pending interrupts
-                        pending &= ~(1 << static_cast<uint8_t>(trailing_zeros));
+                        pending &= ~(0x1 << trailing_zeros);
                     }
                 }
             }

@@ -145,7 +145,7 @@ namespace klib {
             // loop until we dont have any bits set anymore (32 == zero's)
             while ((trailing_zeros = klib::ctz(masked_register)) < 32) {
                 // get the current bit to handle in the callback list
-                const auto bit = static_cast<uint8_t>(trailing_zeros);
+                const uint8_t bit = trailing_zeros;
 
                 // check if the callback is used
                 if (callbacks[bit] != nullptr) {
@@ -154,7 +154,7 @@ namespace klib {
                 }
 
                 // clear the bit from the masked register
-                masked_register &= ~(1 << bit);
+                masked_register &= ~(0x1 << bit);
             }
         }
 
