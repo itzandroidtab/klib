@@ -1,6 +1,7 @@
 #ifndef KLIB_LPC1756_SYSTEM_HPP
 #define KLIB_LPC1756_SYSTEM_HPP
 
+#include <klib/io/core_clock.hpp>
 #include <lpc1756.hpp>
 
 namespace klib::lpc1756::io::system {
@@ -50,7 +51,7 @@ namespace klib::lpc1756::io::system {
     };
 
     class clock {
-    protected:
+    public:
         /**
          * @brief Available plls on the chip
          * 
@@ -58,6 +59,16 @@ namespace klib::lpc1756::io::system {
         enum class pll {
             main = 0,
             usb = 1
+        };
+
+        /**
+         * @brief Available clock sources
+         * 
+         */
+        enum class source {
+            internal = 0,
+            main = 1,
+            rtc = 2,
         };
 
         /**
@@ -217,17 +228,6 @@ namespace klib::lpc1756::io::system {
             }
         }
 
-    public:
-        /**
-         * @brief Available clock sources
-         * 
-         */
-        enum class source {
-            internal = 0,
-            main = 1,
-            rtc = 2,
-        };
-
         template <source Source, uint32_t Freq, uint16_t Multiplier, uint8_t PreDivider, uint32_t Div>
         static void set() {
             // disconnect the main pll if it is connected.
@@ -251,13 +251,13 @@ namespace klib::lpc1756::io::system {
             // set the clock divider to 0
             SYSCON->CCLKCFG = 0;
 
-            // set the clock source for PLL0 to the main oscillator
+            // set the clock source for PLL0 to the oscillator
             SYSCON->CLKSRCSEL = static_cast<uint32_t>(Source);
 
             // setup the pll
             setup<pll::main>(Multiplier, PreDivider);
 
-            // enable the pll after
+            // enable the pll after configuring it
             enable<pll::main, true>();
 
             // setup the divider to get the correct cpu frequency
