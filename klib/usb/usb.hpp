@@ -158,7 +158,8 @@ namespace klib::usb {
                 case setup::recipient_code::device:
                     response[0] = Usb::device::template get_device_status<Usb>();
                     response[1] = 0x00;
-                
+                    break;
+                    
                 default:
                     // this should not happen, only with reserved. 
                     // send a stall when that happens
@@ -166,7 +167,7 @@ namespace klib::usb {
             }
 
             // write and check if we got any errors straight away
-            if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::control, response, sizeof(response))) {
+            if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::in, response, sizeof(response))) {
                 // no errors return we need to wait on the callback
                 return handshake::wait;
             }
@@ -372,7 +373,7 @@ namespace klib::usb {
             const uint32_t size = klib::min(descriptor.size, static_cast<uint32_t>(packet.wLength));
 
             // write the data to the endpoint buffer and check if we directly fail
-            if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::control, descriptor.desc, size)) {
+            if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::in, descriptor.desc, size)) {
                 // no errors return we need to wait on the callback
                 return handshake::wait;
             }
@@ -572,9 +573,9 @@ namespace klib::usb {
             // in the interrupt
             switch (response) {
                 case handshake::ack:
-                    return Usb::ack(control_endpoint, endpoint_mode::control);
+                    return Usb::ack(control_endpoint, endpoint_mode::in);
                 case handshake::stall:
-                    return Usb::stall(control_endpoint, endpoint_mode::control);
+                    return Usb::stall(control_endpoint, endpoint_mode::in);
                 default:
                     // do nothing when the response is nothing
                     break;
@@ -586,11 +587,11 @@ namespace klib::usb {
             // check if we have a error
             if (error_code == error::no_error) {
                 // no error send a ack
-                Usb::ack(control_endpoint, endpoint_mode::control);
+                Usb::ack(control_endpoint, endpoint_mode::in);
             }
             else {
                 // we have a error send a stall
-                Usb::stall(control_endpoint, endpoint_mode::control);
+                Usb::stall(control_endpoint, endpoint_mode::in);
             }
         }
     };
