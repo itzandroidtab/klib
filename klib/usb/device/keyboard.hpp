@@ -143,7 +143,7 @@ namespace klib::usb::device {
                 .wDescriptorLength = sizeof(report)
             },
             {
-                .bEndpointAddress = 0x83,
+                .bEndpointAddress = 0x84,
                 .bmAttributes = 0x03,
                 .wMaxPacketSize = 0x0040,
                 .bInterval = 0x01
@@ -211,6 +211,12 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static void hid_callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code) {
+            // only continue if we do not have any errors
+            if (error_code != usb::error::no_error) {
+                // we have a error
+                return;
+            }
+            
             // check if we are configured
             if (!configuration_value) {
                 return;
@@ -619,7 +625,7 @@ namespace klib::usb::device {
             // send the configuration back to the host
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::control, &configuration_value, 
+                usb::endpoint_mode::in, &configuration_value, 
                 sizeof(configuration_value)
             );
 
@@ -654,6 +660,9 @@ namespace klib::usb::device {
                 configuration_value = packet.wValue;
                 configured = true;
 
+                // notify the usb driver we are configured
+                Usb::configured(true);
+
                 // prepare a inital report with no keys pressed
                 std::fill_n(report_data, sizeof(report_data), 0x00);
 
@@ -670,6 +679,9 @@ namespace klib::usb::device {
             else if (packet.wValue == 0) {
                 // clear the configuration value
                 configuration_value = 0x00;
+
+                // notify the usb driver we are not configured anymore
+                Usb::configured(false);
 
                 // reset the used endpoint if we have one
                 if (used_endpoint != 0) {
@@ -730,7 +742,7 @@ namespace klib::usb::device {
                     // write the data to the control endpoint
                     if (Usb::write(
                             nullptr, usb::control_endpoint, 
-                            usb::endpoint_mode::control, report_data, 
+                            usb::endpoint_mode::in, report_data, 
                             sizeof(report_data))) 
                     {
                         // no issue for now ack
@@ -755,7 +767,7 @@ namespace klib::usb::device {
                         // write the data to the control endpoint
                         if (Usb::write(
                             nullptr, usb::control_endpoint, 
-                            usb::endpoint_mode::control, report_data, 
+                            usb::endpoint_mode::in, report_data, 
                             sizeof(report_data))) 
                         {
                             // no issue for now ack
