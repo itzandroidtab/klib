@@ -158,25 +158,21 @@ namespace klib::usb::device {
         // manufacturer string descriptor
         const __attribute__((aligned(4))) static inline descriptor::string<4> manufacturer = {
             .bString = {
-                klib::bswap16('k'), klib::bswap16('l'), klib::bswap16('i'), klib::bswap16('b')
+                'k', 'l', 'i', 'b'
             }
         };
 
         // product string descriptor
         const __attribute__((aligned(4))) static inline descriptor::string<13> product = {
             .bString = {
-                klib::bswap16('k'), klib::bswap16('l'), klib::bswap16('i'), klib::bswap16('b'), 
-                klib::bswap16(' '), klib::bswap16('k'), klib::bswap16('e'), klib::bswap16('y'), 
-                klib::bswap16('b'), klib::bswap16('o'), klib::bswap16('a'), klib::bswap16('r'), 
-                klib::bswap16('d')
+                'k', 'l', 'i', 'b', ' ', 'k', 'e', 'y', 'b', 'o', 'a', 'r', 'd'
             }
         };
 
         // serial number string descriptor
         const __attribute__((aligned(4))) static inline descriptor::string<8> serial = {
             .bString = {
-                klib::bswap16('0'), klib::bswap16('0'), klib::bswap16('0'), klib::bswap16('0'), 
-                klib::bswap16('1'), klib::bswap16('3'), klib::bswap16('3'), klib::bswap16('7')
+                '0', '0', '0', '0', '1', '3', '3', '7'
             }
         };
 
