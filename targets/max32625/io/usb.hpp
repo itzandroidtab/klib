@@ -922,7 +922,7 @@ namespace klib::max32625::io {
          * @return false 
          */
         static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
-                         const klib::usb::usb::endpoint_mode mode, const uint8_t* data, 
+                         const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
                          const uint32_t size) 
         {
             // check if the endpoint is configured
@@ -989,6 +989,16 @@ namespace klib::max32625::io {
          */
         static bool is_pending(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             return state[endpoint].is_busy;
+        }
+
+        /**
+         * @brief Function that gets called to notify the driver 
+         * the devices is configured
+         * 
+         * @param cfg 
+         */
+        static void configured(const bool cfg) {
+            // do nothing
         }
     };
 }
