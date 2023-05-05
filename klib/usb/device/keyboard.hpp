@@ -572,22 +572,22 @@ namespace klib::usb::device {
             switch (type) {
                 case descriptor::descriptor_type::device:
                     // return the device descriptor
-                    return descriptor_to_desc(device, device.bLength);
+                    return to_description(device, device.bLength);
                 case descriptor::descriptor_type::configuration:
                     // return the whole configuration descriptor (total size is in 
                     // wTotalLength of the configuration)
-                    return descriptor_to_desc(config, config.configuration.wTotalLength);
+                    return to_description(config, config.configuration.wTotalLength);
                 case descriptor::descriptor_type::string:
                     // check what string descriptor to send
                     switch (static_cast<string_index>(index)) {
                         case string_index::language:
-                            return descriptor_to_desc(language, language.bLength);
+                            return to_description(language, language.bLength);
                         case string_index::manufacturer:
-                            return descriptor_to_desc(manufacturer, manufacturer.bLength);
+                            return to_description(manufacturer, manufacturer.bLength);
                         case string_index::product:
-                            return descriptor_to_desc(product, product.bLength);
+                            return to_description(product, product.bLength);
                         case string_index::serial:
-                            return descriptor_to_desc(serial, serial.bLength);
+                            return to_description(serial, serial.bLength);
                         default:
                             // unknown string descriptor
                             break;
@@ -601,10 +601,10 @@ namespace klib::usb::device {
             switch (static_cast<class_type>(type)) {
                 case class_type::hid:
                     // return the hid descriptor only
-                    return descriptor_to_desc(config.hid, config.hid.bLength);
+                    return to_description(config.hid, config.hid.bLength);
                 case class_type::report:
                     // return the raw report.
-                    return descriptor_to_desc(report, sizeof(report));
+                    return to_description(report, sizeof(report));
                 default:
                     // unkown class descriptor
                     break;

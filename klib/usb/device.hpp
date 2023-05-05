@@ -13,7 +13,7 @@ namespace klib::usb::device {
      * @return constexpr description 
      */
     template <typename T>
-    constexpr usb::description descriptor_to_desc(const T& desc, const uint32_t size) {
+    constexpr usb::description to_description(const T& desc, const uint32_t size) {
         return {reinterpret_cast<const uint8_t *const>(&desc), size};
     }
 
@@ -24,7 +24,7 @@ namespace klib::usb::device {
      * @param size 
      * @return constexpr usb::description 
      */
-    constexpr usb::description descriptor_to_desc(const uint8_t *const desc, const uint32_t size) {
+    constexpr usb::description to_description(const uint8_t *const desc, const uint32_t size) {
         return {desc, size};
     }
 }
