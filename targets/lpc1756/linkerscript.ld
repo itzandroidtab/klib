@@ -42,6 +42,21 @@ SECTIONS
         . = ALIGN(4);
     } > rom
 
+    .crp 0x000002fc :
+    {
+        /* keep this even if it is not used. This prevents the CRP 
+           from being enabled 
+           
+           Warning: setting this value to any of the following will
+           disable parts/everything of the debug interface
+
+           CRP1 = 0x12345678
+           CRP2 = 0x87654321
+           CRP3 = 0x43218765
+         */
+        LONG(0x00)
+    } > rom
+
     /* Text segment, stores all user code */
     .text :
     {
@@ -172,5 +187,5 @@ SECTIONS
         *(.note.GNU-stack)
     }
 
-    .ARM.attributes 0 : { KEEP(*(.ARM.attributes)) }    
+    .ARM.attributes 0 : { KEEP(*(.ARM.attributes)) } 
 }
