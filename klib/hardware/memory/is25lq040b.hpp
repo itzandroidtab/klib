@@ -149,7 +149,7 @@ namespace klib::hardware::memory {
          * @param data 
          * @param size 
          */
-        static void write(const uint32_t address, const uint8_t *const data, const uint8_t size) {
+        static void write(const uint32_t address, const uint8_t *const data, const uint16_t size) {
             // enable the write bit
             write_enable();
 
