@@ -12,7 +12,6 @@
 #undef DMA
 
 #include "clocks.hpp"
-#include "port.hpp"
 #include "pins.hpp"
 
 namespace klib::max32660::io::periph::detail::spi {
