@@ -100,7 +100,7 @@ namespace klib::lpc1756::io {
             power_control::enable<Spi>();
 
             // enable the clocks on the spi peripheral
-            clocks::enable<Spi>();
+            clocks::set<Spi>();
 
             // configure the gpio pins
             io::detail::pins::set_peripheral<typename Spi::sck::pin, typename Spi::sck::periph>();

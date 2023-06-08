@@ -400,10 +400,10 @@ namespace klib::lpc1756::io {
             power_control::enable<Can>();
 
             // enable the clock to the peripheral
-            clocks::enable<Can>();
+            clocks::set<Can, clocks::divider::div_1>();
 
             // enable the clock for the acceptance filter
-            clocks::enable<can_filter>();
+            clocks::set<can_filter, clocks::divider::div_1>();
 
             // disable the filter by setting the bypass mode
             CANAF->AFMR = (0x1 << 1);

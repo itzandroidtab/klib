@@ -181,7 +181,7 @@ namespace klib::lpc1756::io {
             power_control::enable<Timer>();
 
             // enable the clock on the timer peripheral
-            clocks::enable<Timer>();
+            clocks::set<Timer>();
 
             // disable the timer
             disable();
