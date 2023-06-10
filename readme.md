@@ -2,7 +2,7 @@
 
 ![klib library](https://github.com/itzandroidtab/klib/actions/workflows/cmake.yml/badge.svg)
 
-Klib uses `cmake` and `arm-none-eabi-gcc` to build excecutables for cortex targets. Currently supported targets can be found at [target folder](./targets/).
+Klib uses `cmake` and `arm-none-eabi-gcc` to build excecutables for cortex targets. Currently supported targets can be found in the [target folder](./targets/).
 
 Support for devices varies. Currently some targets have a startup file that can be enabled by adding `startup.cpp` to the target `CMakeLists.txt`. This means by default the coprocessors are not enabled and the cpu clock may not be initialized to the full clock speed.
 
