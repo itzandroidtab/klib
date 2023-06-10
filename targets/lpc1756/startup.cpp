@@ -14,16 +14,16 @@
 
 void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::lpc1756;
+    using clock = target::io::system::clock;
 
     // setup the flash wait state to 4 + 1 CPU clocks
     target::io::system::flash::setup<4>();
 
-    // setup the clock to 96Mhz (this is using a 12Mhz oscillator)
+    // setup the clock to 96Mhz (in this example we are using a 12Mhz 
+    // oscillator)
     // (((15 + 1) * 2 * 12Mhz) / (0 + 1) = 384Mhz) / (3 + 1) = 96Mhz
-    target::io::system::clock::set<
-        target::io::system::clock::source::main,
-        96'000'000, 15, 0, 3
-    >();
+    clock::set_main<clock::source::main, 96'000'000, 15, 0, 3>();
+    // clock::set<clock::source::internal, 96'000'000, 47, 0, 3>();
 
     // setup the irq handler before main is called. This 
     // moves the vector table to ram so it can be changed
