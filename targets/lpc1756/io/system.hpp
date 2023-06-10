@@ -229,7 +229,7 @@ namespace klib::lpc1756::io::system {
         }
 
         template <source Source, uint32_t Freq, uint16_t Multiplier, uint8_t PreDivider, uint32_t Div>
-        static void set() {
+        static void set_main() {
             // disconnect the main pll if it is connected.
             if (is_connected<pll::main>()) {
                 // disconnect the pll
@@ -273,6 +273,29 @@ namespace klib::lpc1756::io::system {
             
             // notify klib what freqency we are running
             klib::io::clock::set(Freq);
+        }
+
+        template <uint32_t ExtCrystalFreq, uint8_t PreDivider = 0x1>
+        static void set_usb() {
+            static_assert(
+                (48'000'000 % ExtCrystalFreq) == 0,
+                "Invalid external crystal frequency. Official supported frequencies are 12Mhz, 16Mhz and 24Mhz"
+            );
+
+            // setup the clock to 48 mhz using the oscillator (in this example 
+            // we are using a 12Mhz oscillator)
+            clock::setup<clock::pll::usb>((48'000'000 / ExtCrystalFreq) - 1, PreDivider);
+
+            // enable the pll after configuring it
+            clock::enable<clock::pll::usb, true>();
+
+            // wait until the pll is locked
+            while (!clock::is_locked<clock::pll::usb>()) {
+                // do nothing
+            }
+
+            // connect the usb pll
+            clock::connect<clock::pll::usb, true>();            
         }
     };
 
