@@ -619,6 +619,14 @@ namespace klib::lpc1756::io {
         // type so the klib usb driver can comunicate to the device
         using device = Device;
 
+        /**
+         * @brief Initialize the usb hardware. This requires the usb pll to be enabled beforehand using
+         * 
+         * target::io::system::clock::set_usb<external_crystal_frequency>();
+         * 
+         * @tparam UsbLed 
+         * @tparam UsbConnect 
+         */
         template <bool UsbLed = true, bool UsbConnect = true>
         static void init() {
             // enable the usb power
