@@ -621,6 +621,9 @@ namespace klib::lpc1756::io {
 
         template <bool UsbLed = true, bool UsbConnect = true>
         static void init() {
+            // enable the usb power
+            power_control::enable<Usb>();
+
             // clock register
             constexpr uint32_t ctrl = (0x1 << 4) | (0x1 << 3) | (0x1 << 1);
 
