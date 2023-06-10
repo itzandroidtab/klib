@@ -57,47 +57,6 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
     };
 }
 
-/* Command Codes */
-#define CMD_SET_ADDR        0x00D00500
-#define CMD_CFG_DEV         0x00D80500
-#define CMD_SET_MODE        0x00F30500
-#define CMD_RD_FRAME        0x00F50500
-#define DAT_RD_FRAME        0x00F50200
-#define CMD_RD_TEST         0x00FD0500
-#define DAT_RD_TEST         0x00FD0200
-#define CMD_SET_DEV_STAT    0x00FE0500
-#define CMD_GET_DEV_STAT    0x00FE0500
-#define DAT_GET_DEV_STAT    0x00FE0200
-#define CMD_GET_ERR_CODE    0x00FF0500
-#define DAT_GET_ERR_CODE    0x00FF0200
-#define CMD_RD_ERR_STAT     0x00FB0500
-#define DAT_RD_ERR_STAT     0x00FB0200
-#define DAT_WR_BYTE(x)     (0x00000100 | ((x) << 16))
-#define CMD_SEL_EP(x)      (0x00000500 | ((x) << 16))
-#define DAT_SEL_EP(x)      (0x00000200 | ((x) << 16))
-#define CMD_SEL_EP_CLRI(x) (0x00400500 | ((x) << 16))
-#define DAT_SEL_EP_CLRI(x) (0x00400200 | ((x) << 16))
-#define CMD_SET_EP_STAT(x) (0x00400500 | ((x) << 16))
-#define CMD_CLR_BUF         0x00F20500
-#define DAT_CLR_BUF         0x00F20200
-#define CMD_VALID_BUF       0x00FA0500
-
-#define DEV_CON             0x01
-#define DEV_CON_CH          0x02
-#define DEV_SUS             0x04
-#define DEV_SUS_CH          0x08
-#define DEV_RST             0x10
-
-/* Device Address Register Definitions */
-#define DEV_ADDR_MASK       0x7F
-#define DEV_EN              0x80
-
-/* Endpoint Status Register Definitions */
-#define EP_STAT_ST          0x01
-#define EP_STAT_DA          0x20
-#define EP_STAT_RF_MO       0x40
-#define EP_STAT_CND_ST      0x80
-
 namespace klib::lpc1756::io::detail::usb {
     // TODO: decide if we want memory efficiency or flash 
     // efficiency here. (adds 32 bytes ram or 164 bytes rom)
@@ -206,6 +165,29 @@ namespace klib::lpc1756::io {
             validate_buffer = 0xfa,
         };
 
+        /**
+         * @brief Defice status bits
+         * 
+         */
+        enum class device_status: uint8_t {
+            connect = 0,
+            connect_change = 1,
+            suspend = 2,
+            suspend_change = 3,
+            reset = 4
+        };
+
+        /**
+         * @brief Set enpoint status bits
+         * 
+         */
+        enum class endpoint_status: uint8_t {
+            stall = 0,
+            disable = 5,
+            rate_feedback = 6,
+            conditional_stall = 7
+        };
+
         static void reset() {
             Usb::port->EPIND = 0;
             Usb::port->MAXPSIZE = max_endpoint_size;
@@ -239,29 +221,55 @@ namespace klib::lpc1756::io {
             }
         }
 
-        static void WrCmd(uint32_t cmd) {
+        /**
+         * @brief Write a command without data
+         * 
+         * @tparam T 
+         * @param phase 
+         * @param command 
+         */
+        template <typename T>
+        static void write_command(const command_phase phase, const T command) {
             Usb::port->DEVINTCLR = 0x10;
-            Usb::port->CMDCODE = cmd;
+            Usb::port->CMDCODE = ((static_cast<uint8_t>(phase) << 8) | (static_cast<uint32_t>(command) << 16));
 
             while ((Usb::port->DEVINTST & 0x10) == 0) {
                 // wait
             }
         }
 
-        static void WrCmdDat(uint32_t cmd, uint32_t val) {
+        /**
+         * @brief Write a command with data
+         * 
+         * @tparam T 
+         * @param phase 
+         * @param command 
+         * @param value 
+         */
+        template <typename T>
+        static void write_command(const command_phase phase, const T command, uint8_t value) {
+            // write the command
+            write_command(phase, command);
+
+            // write the value
             Usb::port->DEVINTCLR = 0x10;
-            Usb::port->CMDCODE = cmd;
+            Usb::port->CMDCODE = 0x100 | (value << 16);
 
             while ((Usb::port->DEVINTST & 0x10) == 0) {
                 // wait
             }
+        }
 
-            Usb::port->DEVINTCLR = 0x10;
-            Usb::port->CMDCODE = val;
+        template <typename T>
+        static uint32_t read_result(const command_phase phase, const T command) {
+            Usb::port->DEVINTCLR = 0x10 | 0x20;
+            Usb::port->CMDCODE = ((static_cast<uint8_t>(phase) << 8) | (static_cast<uint32_t>(command) << 16));
 
-            while ((Usb::port->DEVINTST & 0x10) == 0) {
+            while ((Usb::port->DEVINTST & (0x20 | 0x10)) == 0) {
                 // wait
             }
+
+            return (Usb::port->CMDDATA);
         }
 
         /**
@@ -272,49 +280,28 @@ namespace klib::lpc1756::io {
          * @param in_endpoint 
          * @param cmd 
          */
-        static void WrCmdEPDat(const uint8_t endpoint, bool in_endpoint, uint32_t cmd){
-            Usb::port->DEVINTCLR = 0x10;
-            Usb::port->CMDCODE = CMD_SEL_EP(endpoint << 1 | in_endpoint);
+        template <typename T>
+        static void write_ep_command(const uint8_t endpoint, bool in_endpoint, const command_phase phase, const T command) {
+            // write the select endpoint command
+            write_command(command_phase::command, endpoint << 1 | in_endpoint);
 
-            while ((Usb::port->DEVINTST & 0x10) == 0) {
-                // wait
-            }
-
-            Usb::port->DEVINTCLR = 0x10;
-            Usb::port->CMDCODE = cmd;
-
-            while ((Usb::port->DEVINTST & 0x10) == 0) {
-                // wait
-            }
+            // write the command
+            write_command(phase, command);
         }
 
-        static uint32_t RdCmdEP(const uint8_t endpoint, bool in_endpoint){
-            Usb::port->DEVINTCLR = 0x10;
-            Usb::port->CMDCODE = DAT_SEL_EP(endpoint << 1 | in_endpoint);
+        static uint32_t read_ep_command(const uint8_t endpoint, bool in_endpoint) {
+            // write the select endpoint command
+            write_command(command_phase::command, endpoint << 1 | in_endpoint);    
 
-            while ((Usb::port->DEVINTST & 0x10) == 0) {
-                // wait
-            }
-
-            // read data
-            return RdCmdDat(DAT_SEL_EP(endpoint << 1 | in_endpoint));
-        }
-
-        static uint32_t RdCmdDat(uint32_t cmd) {
-            Usb::port->DEVINTCLR = 0x10 | 0x20;
-            Usb::port->CMDCODE = cmd;
-
-            while ((Usb::port->DEVINTST & (0x20 | 0x10)) == 0) {
-                // wait
-            }
-
-            return (Usb::port->CMDDATA);
+            // return the result
+            return read_result(command_phase::read, endpoint << 1 | in_endpoint);     
         }
 
         static void set_device_address_impl(const uint8_t address) {
             // set the address 2x for some reason. TODO: check if this is needed
-            WrCmdDat(CMD_SET_ADDR, DAT_WR_BYTE(DEV_EN | address));
-            WrCmdDat(CMD_SET_ADDR, DAT_WR_BYTE(DEV_EN | address));
+            // set the address enabled bit with the address
+            write_command(command_phase::command, device_command::set_address, 0x80 | address);
+            write_command(command_phase::command, device_command::set_address, 0x80 | address);
         }
 
         static void write_impl(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, 
@@ -336,7 +323,7 @@ namespace klib::lpc1756::io {
             Usb::port->CTRL = 0x00;
 
             // validate the buffer
-            WrCmdEPDat(endpoint, endpoint_mode_to_raw(mode), CMD_VALID_BUF);
+            write_ep_command(endpoint, endpoint_mode_to_raw(mode), command_phase::command, endpoint_command::validate_buffer);
         }
 
         static uint32_t read_impl(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, 
@@ -372,7 +359,7 @@ namespace klib::lpc1756::io {
             // only clear the buffers if we have a non isochronous endpoint
             if (((0x1 << endpoint) & 0x1248) == 0) {
                 // clear the buffer
-                WrCmdEPDat(endpoint, endpoint_mode_to_raw(mode), CMD_CLR_BUF);
+                write_ep_command(endpoint, endpoint_mode_to_raw(mode), command_phase::command, endpoint_command::clear_buffer);
             }
 
             // return the amount of data we have read
@@ -549,8 +536,8 @@ namespace klib::lpc1756::io {
 
         static void device_status_irq() {
             // get the status
-            WrCmd(DAT_GET_DEV_STAT);
-            const uint32_t status = RdCmdDat(DAT_GET_DEV_STAT);
+            write_command(command_phase::read, device_command::get_status);
+            const uint32_t status = read_result(command_phase::read, device_command::get_status);
 
             // check for the different flag
             if (status & 0x10) {
@@ -700,7 +687,7 @@ namespace klib::lpc1756::io {
 
         static void configured(const bool cfg) {
             // mark the endpoint as configured
-            WrCmdDat(CMD_CFG_DEV, DAT_WR_BYTE(cfg ? 0x1 : 0));
+            write_command(command_phase::command, device_command::configure, cfg ? 0x1 : 0);
 
             // mark endpoint 0 (in and out) as realized
             if (cfg) {
@@ -745,7 +732,9 @@ namespace klib::lpc1756::io {
             Usb::port->DEVINTCLR = 0x100;
 
             // enable the endpoint
-            WrCmdDat(CMD_SET_EP_STAT(ep), DAT_WR_BYTE(0));
+            write_command(command_phase::command, 
+                static_cast<uint8_t>(endpoint_command::select_endpoint) | ep, 0
+            );
 
             // reset the endpoint
             reset(endpoint, mode);
@@ -763,7 +752,10 @@ namespace klib::lpc1756::io {
 
         static void reset(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // reset the endpoint
-            WrCmdDat(CMD_SET_EP_STAT(endpoint << 1 | endpoint_mode_to_raw(mode)), DAT_WR_BYTE(0));
+            write_command(command_phase::command, 
+                static_cast<uint8_t>(endpoint_command::set_status) | (endpoint << 1 | endpoint_mode_to_raw(mode)), 
+                0x0
+            );
 
             // get the callback
             const auto callback = state[endpoint].callback;
@@ -781,12 +773,15 @@ namespace klib::lpc1756::io {
 
         static void connect() {
             // connect the pullup
-            WrCmdDat(CMD_SET_DEV_STAT, DAT_WR_BYTE(DEV_CON));
+            write_command(
+                command_phase::command, device_command::set_status, 
+                0x1 << static_cast<uint8_t>(device_status::connect)
+            );
         }
 
         static void disconnect() {
             // disconnect the pullup to disconnect from the host
-            WrCmdDat(CMD_SET_DEV_STAT, DAT_WR_BYTE(0));
+            write_command(command_phase::command, device_command::set_status, 0);
         }
 
         static void ack(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
@@ -801,7 +796,10 @@ namespace klib::lpc1756::io {
         }
 
         static void stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            WrCmdDat(CMD_SET_EP_STAT((endpoint << 1) | endpoint_mode_to_raw(mode)), DAT_WR_BYTE(EP_STAT_ST));
+            write_command(command_phase::command, 
+                static_cast<uint8_t>(endpoint_command::set_status) | (endpoint << 1 | endpoint_mode_to_raw(mode)), 
+                0x1 << static_cast<uint8_t>(endpoint_status::stall)
+            );
 
             // get the callback
             const auto callback = state[endpoint].callback;
@@ -816,7 +814,10 @@ namespace klib::lpc1756::io {
         }
 
         static void un_stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            WrCmdDat(CMD_SET_EP_STAT((endpoint << 1) | endpoint_mode_to_raw(mode)), DAT_WR_BYTE(0x00));
+            write_command(command_phase::command, 
+                static_cast<uint8_t>(endpoint_command::set_status) | (endpoint << 1 | endpoint_mode_to_raw(mode)), 
+                0x0
+            );
 
             // check if we are stalled
             if (!is_stalled(endpoint, mode)) {
@@ -838,7 +839,7 @@ namespace klib::lpc1756::io {
 
         static bool is_stalled(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // return the stalled endpoint flag
-            return RdCmdEP(endpoint, endpoint_mode_to_raw(mode)) & (0x1 << 1);
+            return read_ep_command(endpoint, endpoint_mode_to_raw(mode)) & (0x1 << 1);
         }
 
         static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
