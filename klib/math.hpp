@@ -403,8 +403,8 @@ namespace klib {
      * @param out_max
      * @return
      */
-    template <typename T, typename G = T>
-    constexpr T map(const T x, const G in_min, const G in_max, const G out_min, const G out_max){
+    template <typename T, typename G = T, typename H = T, typename I = T, typename J = T>
+    constexpr T map(const T x, const G in_min, const H in_max, const I out_min, const J out_max){
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 }
