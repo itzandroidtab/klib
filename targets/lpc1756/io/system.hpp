@@ -282,8 +282,7 @@ namespace klib::lpc1756::io::system {
                 "Invalid external crystal frequency. Official supported frequencies are 12Mhz, 16Mhz and 24Mhz"
             );
 
-            // setup the clock to 48 mhz using the oscillator (in this example 
-            // we are using a 12Mhz oscillator)
+            // setup the clock to 48 mhz using the oscillator
             clock::setup<clock::pll::usb>((48'000'000 / ExtCrystalFreq) - 1, PreDivider);
 
             // enable the pll after configuring it
