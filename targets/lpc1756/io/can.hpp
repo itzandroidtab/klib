@@ -416,13 +416,13 @@ namespace klib::lpc1756::io {
             Can::port->MOD |= 0x1;
 
             // calculate the baud rate
-            const uint32_t baud_rate = (klib::io::clock::get() / (Frequency * (1 + prop + (seg1 + 1) + (seg2 + 1)))) - 1;
+            const uint32_t baud_rate = ((klib::io::clock::get() / 1) / (Frequency * (1 + prop + (seg1 + 1) + (seg2 + 1)))) - 1;
 
             // set the bus timing
             Can::port->BTR = (
                 ((Frequency > 100'000) ? 0x0 : 0x1 << 23) |
                 (seg1 << 16) | (seg2 << 20) | (sjw << 14) |
-                (baud_rate & 0x1ff)
+                (baud_rate & 0x3ff)
             );
 
             // set the callbacks
