@@ -169,7 +169,7 @@ namespace klib::usb::device {
         static inline uint8_t used_endpoint = 0;
 
         // configuration value. Value is set in the set config function
-        static inline uint8_t configuration_value = 0x00;
+        static inline uint8_t configuration = 0x00;
 
         // mouse report structure
         struct mouse_report {
@@ -271,7 +271,7 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static bool is_configured() {
-            return static_cast<volatile uint8_t>(configuration_value) != 0;
+            return static_cast<volatile uint8_t>(configuration) != 0;
         }
 
     public:
@@ -451,8 +451,8 @@ namespace klib::usb::device {
             // send the configuration back to the host
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, &configuration_value, 
-                sizeof(configuration_value)
+                usb::endpoint_mode::in, &configuration, 
+                sizeof(configuration)
             );
 
             // check if something went wrong already
@@ -483,7 +483,7 @@ namespace klib::usb::device {
                 Usb::configure(used_endpoint, usb::endpoint_mode::in, sizeof(report_data));
 
                 // store the configuration value
-                configuration_value = packet.wValue;
+                configuration = packet.wValue;
 
                 // notify the usb driver we are configured
                 Usb::configured(true);
@@ -505,7 +505,7 @@ namespace klib::usb::device {
             }
             else if (packet.wValue == 0) {
                 // clear the configuration value
-                configuration_value = 0x00;
+                configuration = 0x00;
 
                 // notify the usb driver we are not configured anymore
                 Usb::configured(false);

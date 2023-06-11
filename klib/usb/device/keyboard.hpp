@@ -168,13 +168,7 @@ namespace klib::usb::device {
         static inline uint8_t used_endpoint = 0;
 
         // configuration value. Value is set in the set config function
-        static inline uint8_t configuration_value = 0x00;
-
-        // flag if we are configured
-        static inline bool configured = false;
-
-        // flag if the device is suspended
-        static inline bool suspended = false;
+        static inline uint8_t configuration = 0x00;
 
         // flag if remote wakeup is supported
         static inline bool remote_wakeup = false;
@@ -202,7 +196,7 @@ namespace klib::usb::device {
             }
             
             // check if we are configured
-            if (!configuration_value) {
+            if (!configuration) {
                 return;
             }
 
@@ -354,8 +348,6 @@ namespace klib::usb::device {
             used_endpoint = 0;
 
             // init all the variables to default
-            suspended = false;
-            configured = false;
             remote_wakeup = false;
 
             // clear the strings we are sending
@@ -366,7 +358,7 @@ namespace klib::usb::device {
         template <typename Usb, bool Async = false>
         static bool write(const char *const data, const uint32_t size) {
             // check if we are configured
-            if (!configuration_value) {
+            if (!configuration) {
                 return false;
             }
 
@@ -429,7 +421,7 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static bool is_configured() {
-            return static_cast<volatile uint8_t>(configuration_value) != 0;
+            return static_cast<volatile uint8_t>(configuration) != 0;
         }
 
     public:
@@ -456,8 +448,8 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static void disconnected() {
-            used_endpoint = 0;
-            configured = false;
+            used_endpoint = 0x00;
+            configuration = 0x00;
         }
 
         /**
@@ -468,11 +460,10 @@ namespace klib::usb::device {
         template <typename Usb>
         static void bus_reset() {
             // clear the used endpoint
-            used_endpoint = 0;
+            used_endpoint = 0x00;
 
             // clear all the variables to default
-            configured = false;
-            suspended = false;
+            configuration = 0x00;
         }
 
         /**
@@ -482,7 +473,7 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static void sleep() {
-            suspended = true;
+            // not implemented
         }
 
         /**
@@ -492,7 +483,7 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static void wakeup() {
-            suspended = false;
+            // not implemented
         }
 
         /**
@@ -621,8 +612,8 @@ namespace klib::usb::device {
             // send the configuration back to the host
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, &configuration_value, 
-                sizeof(configuration_value)
+                usb::endpoint_mode::in, &configuration, 
+                sizeof(configuration)
             );
 
             // check if something went wrong already
@@ -653,8 +644,7 @@ namespace klib::usb::device {
                 Usb::configure(used_endpoint, usb::endpoint_mode::in, sizeof(report_data));
 
                 // store the configuration value
-                configuration_value = packet.wValue;
-                configured = true;
+                configuration = packet.wValue;
 
                 // notify the usb driver we are configured
                 Usb::configured(true);
@@ -674,7 +664,7 @@ namespace klib::usb::device {
             }
             else if (packet.wValue == 0) {
                 // clear the configuration value
-                configuration_value = 0x00;
+                configuration = 0x00;
 
                 // notify the usb driver we are not configured anymore
                 Usb::configured(false);
