@@ -156,25 +156,13 @@ namespace klib::usb::device {
         };
 
         // manufacturer string descriptor
-        const __attribute__((aligned(4))) static inline descriptor::string<4> manufacturer = {
-            .bString = {
-                'k', 'l', 'i', 'b'
-            }
-        };
+        const __attribute__((alligned(4))) static inline auto manufacturer = string_descriptor("KLIB");
 
         // product string descriptor
-        const __attribute__((aligned(4))) static inline descriptor::string<13> product = {
-            .bString = {
-                'k', 'l', 'i', 'b', ' ', 'k', 'e', 'y', 'b', 'o', 'a', 'r', 'd'
-            }
-        };
+        const __attribute__((aligned(4))) static inline auto product = string_descriptor("KLIB Keyboard");
 
         // serial number string descriptor
-        const __attribute__((aligned(4))) static inline descriptor::string<8> serial = {
-            .bString = {
-                '0', '0', '0', '0', '1', '3', '3', '7'
-            }
-        };
+        const __attribute__((aligned(4))) static inline auto serial = string_descriptor("00001337");
 
         // used endpoint for the keyboard
         static inline uint8_t used_endpoint = 0;
