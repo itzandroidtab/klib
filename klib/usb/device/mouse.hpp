@@ -153,7 +153,7 @@ namespace klib::usb::device {
 
         // language descriptor for the keyboard
         const __attribute__((aligned(4))) static inline descriptor::string<1> language = {
-            .bString = {0x0904}
+            .bString = {0x0409}
         };
 
         // manufacturer string descriptor
