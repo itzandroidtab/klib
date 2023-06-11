@@ -64,7 +64,8 @@ target_compile_features(target_cpu PUBLIC cxx_std_20)
 
 # set the target_cpu for klib
 get_filename_component(TARGET_CPU_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=${TARGET_CPU_FOLDER}")
+set(TARGET_CPU ${TARGET_CPU_FOLDER} PARENT_SCOPE)
+target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=${TARGET_CPU}")
 
 # other compile options
 target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile>)
