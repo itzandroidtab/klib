@@ -283,7 +283,7 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static bool is_configured() {
-            return static_cast<volatile uint8_t>(configuration_value) != 0;
+            return static_cast<volatile uint8_t>(configuration) != 0;
         }
 
     public:
