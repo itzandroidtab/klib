@@ -274,6 +274,18 @@ namespace klib::usb::device {
             return is_transmitting;
         }
 
+        /**
+         * @brief Returns if the device is configured
+         * 
+         * @tparam Usb 
+         * @return true 
+         * @return false 
+         */
+        template <typename Usb>
+        static bool is_configured() {
+            return static_cast<volatile uint8_t>(configuration_value) != 0;
+        }
+
     public:
         /**
          * @brief static functions needed for the usb stack. Should not 

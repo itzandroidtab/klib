@@ -199,7 +199,7 @@ namespace klib::usb::device {
             }
             
             // check if we are configured
-            if (!configuration_value) {
+            if (!is_configured<Usb>) {
                 return;
             }
 
@@ -219,7 +219,7 @@ namespace klib::usb::device {
 
         template <typename Usb, bool Async = true>
         static bool write(uint8_t buttons, int8_t x, int8_t y) {
-            if (!configuration_value) {
+            if (!is_configured<Usb>) {
                 return false;
             }
 
@@ -260,6 +260,18 @@ namespace klib::usb::device {
         static bool is_busy() {
             // return if the endpoint is still pending
             return data_updating;
+        }
+
+        /**
+         * @brief Returns if the device is configured
+         * 
+         * @tparam Usb 
+         * @return true 
+         * @return false 
+         */
+        template <typename Usb>
+        static bool is_configured() {
+            return static_cast<volatile uint8_t>(configuration_value) != 0;
         }
 
     public:
