@@ -14,7 +14,7 @@ namespace klib::crypt {
     template <typename T>
     class hmac {
     protected:
-        auto compute_block_sized_key(const uint8_t *const key, uint32_t length) const {
+        static auto compute_block_sized_key(const uint8_t *const key, uint32_t length) {
             std::array<uint8_t, T::block_size> buffer = {};
 
             // check if the key is above the block size. If it is we shorten it.
@@ -35,7 +35,7 @@ namespace klib::crypt {
         }
 
     public:        
-        auto hash(const uint8_t *const key, const uint32_t k_length, const uint8_t *const message, const uint32_t m_length) const {
+        static auto hash(const uint8_t *const key, const uint32_t k_length, const uint8_t *const message, const uint32_t m_length) {
             // compute the block sized key
             const auto block_key = compute_block_sized_key(key, k_length);
 
