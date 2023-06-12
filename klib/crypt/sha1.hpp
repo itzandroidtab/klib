@@ -34,7 +34,7 @@ namespace klib::crypt {
             0xC3D2E1F0,
         };
 
-        uint32_t uint8_to_uint32(const uint8_t *buf) {
+        uint32_t uint8_to_uint32(const uint8_t *buf) const {
             return (
                 static_cast<uint32_t>(buf[3]) << 24 |
                 static_cast<uint32_t>(buf[2]) << 16 |
@@ -43,7 +43,7 @@ namespace klib::crypt {
             );
         }
 
-        uint32_t rotate_left(const uint32_t value, const uint32_t n) {
+        uint32_t rotate_left(const uint32_t value, const uint32_t n) const {
             return (value << n) | (value >> ((sizeof(uint32_t) * 8) - n));
         }
 
@@ -100,6 +100,22 @@ namespace klib::crypt {
 
     public:
         /**
+         * @brief Construct a new sha1 object
+         * 
+         */
+        sha1() {}
+
+        /**
+         * @brief Construct a new sha1 object and call update on the data
+         * 
+         * @param data 
+         * @param length 
+         */
+        sha1(const uint8_t *const data, const uint32_t length) {
+            update(data, length);
+        }
+
+        /**
          * @brief Update the internal structure with the provided 
          * data
          * 
@@ -121,11 +137,6 @@ namespace klib::crypt {
                 }
             }
             size += length;
-        }
-
-        template <uint32_t Size>
-        void update(const std::array<uint8_t, Size>& data) {
-            return update(data.data(), Size);
         }
 
         /**
