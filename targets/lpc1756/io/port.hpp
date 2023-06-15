@@ -85,7 +85,7 @@ namespace klib::lpc1756::io::detail::pins {
         // set the 3 function registers
         if constexpr (std::is_same_v<Periph, io::detail::alternate::func_1>) {
             // setup alternate function 1
-            (*pin_select) = ((*pin_select) & ~(0b11 << ((Pin::number * 2)) % 32)) | (0b01 << ((Pin::number * 2)) % 32);;
+            (*pin_select) = ((*pin_select) & ~(0b11 << ((Pin::number * 2)) % 32)) | (0b01 << ((Pin::number * 2)) % 32);
         }
         else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_2>) {
             // setup alternate function 2
@@ -99,6 +99,20 @@ namespace klib::lpc1756::io::detail::pins {
             // setup normal gpio function
             (*pin_select) &= ~(0b11 << ((Pin::number * 2)) % 32);
         }
+    }
+
+    template <typename Pin, uint8_t Value>
+    static void set_pinmode() {
+        // get the register offset for the pin selection
+        constexpr uint32_t pin_offset = get_pinselect_offset<Pin>();
+
+        // get the pointer to the pin select we need to write to
+        volatile uint32_t *const pin_select = &(
+            (reinterpret_cast<volatile uint32_t *const>(PINCONNECT))[(offsetof(PINCONNECT_Type, PINMODE0) / 4) + pin_offset]
+        );
+
+        // clear the previous value and set the new value
+        (*pin_select) = ((*pin_select) & ~((Value & 0b11) << ((Pin::number * 2)) % 32)) | ((Value & 0b11) << ((Pin::number * 2)) % 32);
     }
 }
 
@@ -176,6 +190,16 @@ namespace klib::lpc1756::io {
             // get the status of the pin
             return Pin::port::port->PIN & detail::pins::mask<Pin>;
         }
+
+        template <bool Val>
+        constexpr static void pullup_enable() {
+            detail::pins::set_pinmode<Pin, Val ? 0b00 : 0b10>();
+        }
+
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            detail::pins::set_pinmode<Pin, Val ? 0b11 : 0b10>();
+        }        
     };
  
     template <typename Pin>
