@@ -101,6 +101,53 @@ namespace klib::lpc1756::io {
         // max size in a single endpoint
         constexpr static uint8_t max_endpoint_size = 64;
         
+        // type to use in device functions
+        using usb_type = usb<Usb, Device, Irq>;
+
+        // type so the klib usb driver can comunicate to the device
+        using device = Device;
+
+    protected:
+        /**
+         * @brief Flags about the usb device we are configured with.
+         * 
+         */
+
+        // check if the device has the usb wakeup callback
+        constexpr static bool has_wakeup_callback = requires() {
+            device::template wakeup<usb_type>();
+        };
+
+        // check if the device has the usb sleep callback
+        constexpr static bool has_sleep_callback = requires() {
+            device::template sleep<usb_type>();
+        };
+
+        // check if the device has the usb disconnected callback
+        constexpr static bool has_disconnected_callback = requires() {
+            device::template disconnected<usb_type>();
+        };
+
+        // check if the device has the usb connected callback
+        constexpr static bool has_connected_callback = requires() {
+            device::template connected<usb_type>();
+        };
+
+        // check if the device has the usb activity callback
+        constexpr static bool has_activity_callback = requires() {
+            device::template activity<usb_type>();
+        };
+
+        // check if the device has the usb bus reset callback
+        constexpr static bool has_bus_reset_callback = requires() {
+            device::template bus_reset<usb_type>();
+        }; 
+
+        // check if the device has the vendor handler
+        constexpr static bool has_endpoint_callback = requires(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
+            device::template endpoint_callback<usb_type>(endpoint, mode);
+        };
+
     protected:
         // physical endpoint count. 2x the amount of the logical 
         // endpoint count as we have a in and out endpoint
@@ -205,8 +252,10 @@ namespace klib::lpc1756::io {
             // enable interrupt endpoint slow and stat interrupt
             Usb::port->DEVINTEN = 0x8 | 0x4;
 
-            // call the device bus reset
-            device::template bus_reset<usb_type>();
+            if constexpr (has_bus_reset_callback) {
+                // call the device bus reset
+                device::template bus_reset<usb_type>();
+            }
         }
 
         static bool endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode) {
@@ -473,11 +522,6 @@ namespace klib::lpc1756::io {
                     break;
             }
 
-            // check if the device has the vendor handler
-            constexpr bool has_endpoint_callback = requires(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-                device::template endpoint_callback<usb_type>(endpoint, mode);
-            };
-
             // check if the device has the endpoint callback
             if constexpr (has_endpoint_callback) {
                 // call the device endpoint callback
@@ -562,25 +606,15 @@ namespace klib::lpc1756::io {
             if (status & 0x2) {
                 // we have a connect change event. Notify the user
                 if (status & 0x1) {
-                    // check if the device has the usb connected callback
-                    constexpr bool has_connected_callback = requires() {
-                        device::template connected<usb_type>();
-                    };
-
                     if constexpr (has_connected_callback) {
                         // call the user function to signal we have connected to a host
-                        Device::template connected<usb_type>();
+                        device::template connected<usb_type>();
                     }
                 }
                 else {
-                    // check if the device has the usb disconnected callback
-                    constexpr bool has_disconnected_callback = requires() {
-                        device::template connected<usb_type>();
-                    };
-
                     if constexpr (has_disconnected_callback) {
                         // call the user function to signal we have disconnected
-                        Device::template disconnected<usb_type>();
+                        device::template disconnected<usb_type>();
                     }
                 }
             }
@@ -589,12 +623,16 @@ namespace klib::lpc1756::io {
             if (status & (0x1 << 3)) {
                 // we have a suspend/resume event
                 if (status & (0x1 << 2)) {
-                    // call the device sleep function
-                    device::template sleep<usb_type>();
+                    if constexpr (has_sleep_callback) {
+                        // call the device sleep function
+                        device::template sleep<usb_type>();
+                    }
                 }
                 else {
-                    // call the device wakeup function
-                    device::template wakeup<usb_type>();
+                    if constexpr (has_wakeup_callback) {                    
+                        // call the device wakeup function
+                        device::template wakeup<usb_type>();
+                    }
                 }
             }
         }
@@ -627,12 +665,6 @@ namespace klib::lpc1756::io {
         }
 
     public:
-        // type to use in device functions
-        using usb_type = usb<Usb, Device, Irq>;
-
-        // type so the klib usb driver can comunicate to the device
-        using device = Device;
-
         /**
          * @brief Initialize the usb hardware. This requires the usb pll to be enabled beforehand using
          * 

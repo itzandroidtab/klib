@@ -286,9 +286,10 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static void disconnected() {
+            // clear all the variables to default
             configuration = 0x00;
         }
-        
+
         /**
          * @brief Called when a bus reset has occured
          * 
@@ -296,37 +297,8 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static void bus_reset() {
-
-        }
-
-        /**
-         * @brief Called when the usb tranceiver goes to sleep
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void sleep() {
-            
-        }
-
-        /**
-         * @brief Called when the usb tranceiver wakes up
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void wakeup() {
-
-        }
-
-        /**
-         * @brief Called when the usb tranceiver has detected activity
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void activity() {
-            // do nothing on a activity packet
+            // clear all the variables to default
+            configuration = 0x00;
         }
 
         /**

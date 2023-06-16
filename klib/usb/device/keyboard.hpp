@@ -458,36 +458,6 @@ namespace klib::usb::device {
         }
 
         /**
-         * @brief Called when the usb tranceiver goes to sleep
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void sleep() {
-            // not implemented
-        }
-
-        /**
-         * @brief Called when the usb tranceiver wakes up
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void wakeup() {
-            // not implemented
-        }
-
-        /**
-         * @brief Called when the usb tranceiver has detected activity
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void activity() {
-            // do nothing on a activity packet
-        }
-
-        /**
          * @brief Clear a feature on the device
          * 
          * @warning only remote wakeup is supported

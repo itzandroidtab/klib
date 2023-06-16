@@ -100,6 +100,53 @@ namespace klib::max32625::io {
         // max size in a single endpoint
         constexpr static uint8_t max_endpoint_size = 64;
         
+        // type to use in device functions
+        using usb_type = usb<Usb, Device, Irq>;
+
+        // type so the klib usb driver can comunicate to the device
+        using device = Device;
+
+    protected:
+        /**
+         * @brief Flags about the usb device we are configured with.
+         * 
+         */
+
+        // check if the device has the usb wakeup callback
+        constexpr static bool has_wakeup_callback = requires() {
+            device::template wakeup<usb_type>();
+        };
+
+        // check if the device has the usb sleep callback
+        constexpr static bool has_sleep_callback = requires() {
+            device::template sleep<usb_type>();
+        };
+
+        // check if the device has the usb disconnected callback
+        constexpr static bool has_disconnected_callback = requires() {
+            device::template disconnected<usb_type>();
+        };
+
+        // check if the device has the usb connected callback
+        constexpr static bool has_connected_callback = requires() {
+            device::template connected<usb_type>();
+        };
+
+        // check if the device has the usb activity callback
+        constexpr static bool has_activity_callback = requires() {
+            device::template activity<usb_type>();
+        };
+
+        // check if the device has the usb bus reset callback
+        constexpr static bool has_bus_reset_callback = requires() {
+            device::template bus_reset<usb_type>();
+        };        
+
+        // check if the device has the vendor handler
+        constexpr static bool has_endpoint_callback = requires(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
+            device::template endpoint_callback<usb_type>(endpoint, mode);
+        };
+
     protected:
         // flag to signal the endpoint is busy and cannot handle a new request
         static inline detail::usb::state state[endpoint_count] = {};
@@ -284,14 +331,9 @@ namespace klib::max32625::io {
             // clear the pullup resistor to disconnect
             disconnect();
 
-            // check if the device has the usb disconnected callback
-            constexpr bool has_disconnected_callback = requires() {
-                device::template connected<usb_type>();
-            };
-
             if constexpr (has_disconnected_callback) {
                 // call the user function to signal we have disconnected
-                Device::template disconnected<usb_type>();
+                device::template disconnected<usb_type>();
             }
 
             // put the usb controller in low power mode
@@ -312,14 +354,9 @@ namespace klib::max32625::io {
             // connect to the usb host
             connect();
 
-            // check if the device has the usb connected callback
-            constexpr bool has_connected_callback = requires() {
-                device::template connected<usb_type>();
-            };
-
             if constexpr (has_connected_callback) {
                 // call the user function to signal we have connected to a host
-                Device::template connected<usb_type>();
+                device::template connected<usb_type>();
             }
 
             // put the usb controller in a low power state until we get 
@@ -336,16 +373,20 @@ namespace klib::max32625::io {
             // wakeup the usb transceiver 
             wakeup();
 
-            // call the user function to signal have detected activity on the bus
-            Device::template activity<usb_type>();
+            if constexpr (has_activity_callback) {
+                // call the user function to signal have detected activity on the bus
+                device::template activity<usb_type>();
+            }
         }
 
         static void bus_reset_irq() {
             // wakeup the usb hardware
             wakeup();
 
-            // call the device bus reset
-            device::template bus_reset<usb_type>();
+            if constexpr (has_bus_reset_callback) {
+                // call the device bus reset
+                device::template bus_reset<usb_type>();
+            }
         }
 
         static void sleep() {
@@ -369,8 +410,10 @@ namespace klib::max32625::io {
                 disable_irq<event::dplus_activity>();
             }
 
-            // call the device sleep function
-            device::template sleep<usb_type>();
+            if constexpr (has_sleep_callback) {
+                // call the device sleep function
+                device::template sleep<usb_type>();
+            }
         }
 
         static void wakeup() {
@@ -383,8 +426,10 @@ namespace klib::max32625::io {
             // power on the usb tranceiver
             port->DEV_CN &= ~(0x1 << 4);
 
-            // call the device wakeup function
-            device::template wakeup<usb_type>();
+            if constexpr (has_wakeup_callback) {
+                // call the device wakeup function
+                device::template wakeup<usb_type>();
+            }
         }
 
         /**
@@ -615,12 +660,6 @@ namespace klib::max32625::io {
         }
 
     public:
-        // type to use in device functions
-        using usb_type = usb<Usb, Device, Irq>;
-
-        // type so the klib usb driver can comunicate to the device
-        using device = Device;
-
         /**
          * @brief Init the usb hardware
          * 
