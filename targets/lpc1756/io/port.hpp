@@ -101,7 +101,24 @@ namespace klib::lpc1756::io::detail::pins {
         }
     }
 
-    template <typename Pin, uint8_t Value>
+    /**
+     * @brief Available pin modes
+     * 
+     */
+    enum class mode {
+        pullup = 0b00,
+        repeater = 0b01,
+        none = 0b10,
+        pulldown = 0b11
+    };
+
+    /**
+     * @brief Helper function to set the mode of a pin. 
+     * 
+     * @tparam Pin 
+     * @tparam Value 
+     */
+    template <typename Pin, mode Value>
     static void set_pinmode() {
         // get the register offset for the pin selection
         constexpr uint32_t pin_offset = get_pinselect_offset<Pin>();
@@ -112,7 +129,10 @@ namespace klib::lpc1756::io::detail::pins {
         );
 
         // clear the previous value and set the new value
-        (*pin_select) = ((*pin_select) & ~((Value & 0b11) << ((Pin::number * 2)) % 32)) | ((Value & 0b11) << ((Pin::number * 2)) % 32);
+        (*pin_select) = ((*pin_select) & ~(
+            (static_cast<uint8_t>(Value) & 0b11) << ((Pin::number * 2)) % 32)) | 
+            ((static_cast<uint8_t>(Value) & 0b11) << ((Pin::number * 2)
+        ) % 32);
     }
 }
 
@@ -193,12 +213,16 @@ namespace klib::lpc1756::io {
 
         template <bool Val>
         constexpr static void pullup_enable() {
-            detail::pins::set_pinmode<Pin, Val ? 0b00 : 0b10>();
+            detail::pins::set_pinmode<Pin, 
+                Val ? detail::pins::mode::pullup : detail::pins::mode::none
+            >();
         }
 
         template <bool Val>
         constexpr static void pulldown_enable() {
-            detail::pins::set_pinmode<Pin, Val ? 0b11 : 0b10>();
+            detail::pins::set_pinmode<Pin, 
+                Val ? detail::pins::mode::pulldown : detail::pins::mode::none
+            >();
         }        
     };
  
