@@ -284,8 +284,15 @@ namespace klib::max32625::io {
             // clear the pullup resistor to disconnect
             disconnect();
 
-            // call the user function to signal we have disconnected
-            Device::template disconnected<usb_type>();
+            // check if the device has the usb disconnected callback
+            constexpr bool has_disconnected_callback = requires() {
+                device::template connected<usb_type>();
+            };
+
+            if constexpr (has_disconnected_callback) {
+                // call the user function to signal we have disconnected
+                Device::template disconnected<usb_type>();
+            }
 
             // put the usb controller in low power mode
             sleep();
@@ -305,8 +312,15 @@ namespace klib::max32625::io {
             // connect to the usb host
             connect();
 
-            // call the user function to signal we have connected to a host
-            Device::template connected<usb_type>();
+            // check if the device has the usb connected callback
+            constexpr bool has_connected_callback = requires() {
+                device::template connected<usb_type>();
+            };
+
+            if constexpr (has_connected_callback) {
+                // call the user function to signal we have connected to a host
+                Device::template connected<usb_type>();
+            }
 
             // put the usb controller in a low power state until we get 
             // activity from the host

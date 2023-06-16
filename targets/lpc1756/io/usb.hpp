@@ -562,12 +562,26 @@ namespace klib::lpc1756::io {
             if (status & 0x2) {
                 // we have a connect change event. Notify the user
                 if (status & 0x1) {
-                    // call the user function to signal we have connected to a host
-                    Device::template connected<usb_type>();
+                    // check if the device has the usb connected callback
+                    constexpr bool has_connected_callback = requires() {
+                        device::template connected<usb_type>();
+                    };
+
+                    if constexpr (has_connected_callback) {
+                        // call the user function to signal we have connected to a host
+                        Device::template connected<usb_type>();
+                    }
                 }
                 else {
-                    // call the user function to signal we have disconnected
-                    Device::template disconnected<usb_type>();
+                    // check if the device has the usb disconnected callback
+                    constexpr bool has_disconnected_callback = requires() {
+                        device::template connected<usb_type>();
+                    };
+
+                    if constexpr (has_disconnected_callback) {
+                        // call the user function to signal we have disconnected
+                        Device::template disconnected<usb_type>();
+                    }
                 }
             }
 

@@ -280,25 +280,15 @@ namespace klib::usb::device {
          */
 
         /**
-         * @brief Called when the usb has connected to a host
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void connected() {
-            // do nothing on a connect event
-        }
-
-        /**
          * @brief Called when the host is disconnected
          * 
          * @tparam Usb 
          */
         template <typename Usb>
         static void disconnected() {
-
+            configuration = 0x00;
         }
-
+        
         /**
          * @brief Called when a bus reset has occured
          * 
