@@ -7,8 +7,6 @@
 #include <klib/usb/device.hpp>
 #include <klib/usb/descriptor.hpp>
 
-#include <klib/stream.hpp>
-
 namespace klib::usb::device {
     class bulk {
     protected:
