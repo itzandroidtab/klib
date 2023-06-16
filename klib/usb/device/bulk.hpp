@@ -170,24 +170,6 @@ namespace klib::usb::device {
         }
 
     public:
-        /**
-         * @brief Init function. Called when the usb stack is initalized
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void init() {
-            // init all the variables to default
-            configuration = 0x00;
-            remote_wakeup = false;
-
-            // clear all the pointers and flags
-            rx_data = {nullptr, 0};
-
-            is_receiving = false;
-            is_transmitting = false;
-        }
-
         template <typename Usb>
         static bool setup(uint8_t *const data, const uint32_t size) {
             if (rx_data.size || is_receiving) {
@@ -290,6 +272,24 @@ namespace klib::usb::device {
          * be called manually
          * 
          */
+
+        /**
+         * @brief Init function. Called when the usb stack is initalized
+         * 
+         * @tparam Usb 
+         */
+        template <typename Usb>
+        static void init() {
+            // init all the variables to default
+            configuration = 0x00;
+            remote_wakeup = false;
+
+            // clear all the pointers and flags
+            rx_data = {nullptr, 0};
+
+            is_receiving = false;
+            is_transmitting = false;
+        }
 
         /**
          * @brief Called when the host is disconnected

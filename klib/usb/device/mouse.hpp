@@ -204,16 +204,6 @@ namespace klib::usb::device {
         }
 
     public:
-        /**
-         * @brief Init function. Called when the usb stack is initalized
-         * 
-         * @tparam Usb 
-         */
-        template <typename Usb>
-        static void init() {
-
-        }
-
         template <typename Usb, bool Async = true>
         static bool write(uint8_t buttons, int8_t x, int8_t y) {
             if (!is_configured<Usb>) {
@@ -278,6 +268,16 @@ namespace klib::usb::device {
          * be called manually
          * 
          */
+
+        /**
+         * @brief Init function. Called when the usb stack is initalized
+         * 
+         * @tparam Usb 
+         */
+        template <typename Usb>
+        static void init() {
+
+        }
 
         /**
          * @brief Called when the host is disconnected
