@@ -97,6 +97,13 @@ namespace klib::usb::device {
             // if not needed this function can be removed
         }; 
 
+        /**
+         * @brief Called when something occured on a endpoint.
+         * 
+         * @tparam Usb 
+         * @param endpoint 
+         * @param mode 
+         */
         template <typename Usb>
         void endpoint_callback(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // if not needed this function can be removed
