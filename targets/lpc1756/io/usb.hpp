@@ -522,7 +522,6 @@ namespace klib::lpc1756::io {
                     break;
             }
 
-            // check if the device has the endpoint callback
             if constexpr (has_endpoint_callback) {
                 // call the device endpoint callback
                 device::template endpoint_callback<usb_type>(endpoint, mode);

@@ -530,6 +530,11 @@ namespace klib::max32625::io {
                         }
                     }
                 }
+
+                if constexpr (has_endpoint_callback) {
+                    // call the device endpoint callback
+                    device::template endpoint_callback<usb_type>(endpoint, klib::usb::usb::endpoint_mode::in);
+                }                
             }
         }
 
@@ -607,6 +612,11 @@ namespace klib::max32625::io {
 
                     // transfer buffer back to the dma controller
                     port->IN_OWNER = (0x1 << ep);
+                }
+
+                if constexpr (has_endpoint_callback) {
+                    // call the device endpoint callback
+                    device::template endpoint_callback<usb_type>(endpoint, klib::usb::usb::endpoint_mode::out);
                 }
             }
         }
