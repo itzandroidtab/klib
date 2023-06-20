@@ -38,6 +38,8 @@ namespace klib {
     // clear the defines
     #undef XSTR
     #undef STR
+#else
+    #error "No target cpu is defined"
 #endif
 
 #endif
