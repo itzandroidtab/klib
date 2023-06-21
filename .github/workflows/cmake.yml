@@ -104,3 +104,5 @@ jobs:
             ${{github.workspace}}/build/project/klib.map
             ${{github.workspace}}/build/project/klib.lss
             ${{github.workspace}}/build/project/klib.memory
+            ${{github.workspace}}/build/project/klib.hex
+            ${{github.workspace}}/build/project/klib.bin
