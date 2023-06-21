@@ -4,7 +4,9 @@
 #include <cstdint>
 
 #include <klib/entry/entry.hpp>
-#include <klib/math.hpp>
+
+#include "math.hpp"
+#include "lookuptable.hpp"
 
 namespace klib {
     /**
@@ -48,7 +50,7 @@ namespace klib {
             "Invalid IRQ count, cannot fit the arm vector table"
         );
         
-    private:
+    protected:
         // array with all the function callbacks. 
         alignas(Alignment) static inline volatile interrupt_callback callbacks[IrqCount] = {};
 
@@ -232,6 +234,142 @@ namespace klib {
         template <uint32_t Irq>
         static void unregister_irq() {
             static_assert(Irq < IrqCount, "Invalid IRQ given to unregister");
+        }
+    };
+
+    /**
+     * @brief IRQ handler that allows for hooks when a interrupt is called. Uses irq_ram in the background.
+     * 
+     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
+     * default arm interrupts). For more interrupts the amount should be aligned to the next
+     * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
+     * 
+     * @tparam IrqCount 
+     * @tparam klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t))) 
+     */
+    template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
+    class irq_hooked: public irq_ram<IrqCount, Alignment> {
+    public:
+        // hook function prototype
+        using hook_function = void(*)(uint32_t);
+
+        // using for the array of callbacks
+        using interrupt_callback = irq_ram<IrqCount, Alignment>::interrupt_callback;
+
+        // using for the arm vector enum
+        using arm_vector = irq_ram<IrqCount, Alignment>::arm_vector;
+
+    protected:
+        // entry and exit hooks
+        static inline hook_function entry_hook = nullptr;
+        static inline hook_function exit_hook = nullptr;
+
+        /**
+         * @brief Interrupt callback that calls the corresponding interrupt in the ram table
+         * 
+         */
+        static void irq_handler() {
+            uint32_t irq;
+
+            // get the current interrupt using some assembly
+            asm volatile("mrs %0, ipsr" : "=r"(irq));
+
+            // check if we have a entry hook
+            if (entry_hook != nullptr) {
+                // call the entry hook
+                entry_hook(irq);
+            }
+
+            // call the callback
+            irq_ram<IrqCount, Alignment>::callbacks[irq]();
+
+            // check if we have a exit hook
+            if (exit_hook != nullptr) {
+                // call the exit hook
+                exit_hook(irq);
+            }
+        }
+
+        /**
+         * @brief Function to set the lookup table at compile time
+         * 
+         * @return constexpr auto 
+         */
+        constexpr static auto set_func(uint32_t) {
+            // return the irq handler for every item in the lookup table
+            return irq_handler;
+        }
+
+        // array with all the function callbacks. 
+        alignas(Alignment) constexpr static auto hooked_callbacks = lookuptable<IrqCount, interrupt_callback>(set_func);
+
+    public:
+        /**
+         * @brief Relocate the interrupt table and init all functions to the default handler
+         * 
+         */
+        static void init() {
+            // update the hooks
+            set_hook(nullptr, nullptr);
+
+            // initialize the irq_ram before we move it to our own table
+            irq_ram<IrqCount, Alignment>::init();
+
+            // move the vector table to the hooked array instead of the ram array
+            (*irq_ram<IrqCount, Alignment>::vtor) = reinterpret_cast<volatile uint32_t>(hooked_callbacks.begin());
+        }
+
+        /**
+         * @brief Set the entry and exit hooks
+         * 
+         * @param entry 
+         * @param exit 
+         */
+        static void set_hook(const hook_function& entry = nullptr, const hook_function& exit = nullptr) {
+            // update the hooks
+            entry_hook = entry;
+            exit_hook = exit;
+        }
+
+        /**
+         * @brief Register a callback
+         * 
+         * @tparam Irq 
+         * @param callback 
+         */
+        template <uint32_t Irq>
+        static void register_irq(const interrupt_callback &callback) {
+            static_assert(Irq < IrqCount, "Invalid IRQ given to register");
+
+            // call the ram register
+            irq_ram<IrqCount, Alignment>::template register_irq<Irq>(callback);
+        }
+
+        /**
+         * @brief Register a arm vector callback
+         * 
+         * @tparam Irq 
+         * @param callback 
+         */
+        template <arm_vector Irq>
+        static void register_irq(const interrupt_callback &callback) {
+            static_assert(Irq < arm_vector::count, "Count can not not be used as a arm vector entry");
+
+            // call the ram register
+            irq_ram<IrqCount, Alignment>::template register_irq<Irq>(callback);
+        }
+
+        /**
+         * @brief Clear a callback
+         * 
+         * @tparam Irq 
+         */
+        template <uint32_t Irq>
+        static void unregister_irq() {
+            static_assert(Irq < IrqCount, "Invalid IRQ given to unregister");
+
+            // call the ram unregister
+            irq_ram<IrqCount, Alignment>::template unregister_irq<Irq>();
         }
     };
 }

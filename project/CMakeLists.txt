@@ -18,6 +18,7 @@ set_target_properties(kproject PROPERTIES OUTPUT_NAME "klib" SUFFIX ".elf")
 
 # set the interrupt implementation
 target_compile_definitions(klib PUBLIC "KLIB_IRQ=irq_ram")
+# target_compile_definitions(klib PUBLIC "KLIB_IRQ=irq_hooked")
 # target_compile_definitions(klib PUBLIC "KLIB_IRQ=irq_flash")
 
 # set the default cout/cin
