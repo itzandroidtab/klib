@@ -29,12 +29,12 @@ namespace klib::lpc1756::io {
         /**
          * @brief Convert seperate date fields to the epoch time
          * 
-         * @param year 
-         * @param month 
-         * @param day 
-         * @param hours 
-         * @param minutes 
-         * @param seconds 
+         * @param year 1970 - 4095
+         * @param month 1 - 12
+         * @param day 1 - (28, 29, 30, 31)
+         * @param hours 0 - 23
+         * @param minutes 0 - 59
+         * @param seconds 0 - 59
          * @return klib::time::s 
          */
         static klib::time::s datetime_to_epoch(const uint16_t year, const uint8_t month, const uint8_t day, 
