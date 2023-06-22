@@ -83,7 +83,10 @@ namespace klib::lpc1756::io {
         }
 
         /**
-         * @brief Get the current epoch time
+         * @brief Get the current epoch time (currently we are using a 32 bit 
+         * values for the second counter. As we do not care about negative 
+         * values we should not have the 2038 issue. This does cause a issue if
+         * we want to have epoch values before 1970)
          * 
          * @return klib::time::s 
          */
