@@ -48,7 +48,6 @@ namespace klib::crypt {
         }
 
         void calc(const uint32_t *const input) {
-            uint32_t a, b, c, d, e, f, k, temp;
             uint32_t w[80] = {};
 
             for (int i = 0; i < 16; i++) {
@@ -59,13 +58,15 @@ namespace klib::crypt {
                 w[i] = rotate_left(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
             }
 
-            a = hash_buffer[0];
-            b = hash_buffer[1];
-            c = hash_buffer[2];
-            d = hash_buffer[3];
-            e = hash_buffer[4];
+            uint32_t a = hash_buffer[0];
+            uint32_t b = hash_buffer[1];
+            uint32_t c = hash_buffer[2];
+            uint32_t d = hash_buffer[3];
+            uint32_t e = hash_buffer[4];
 
             for (int i = 0; i < 80; i++) {
+                uint32_t f, k;
+
                 if (i >= 0 && i < 20) {
                     f = (b & c) | ((~b) & d);
                     k = 0x5A827999;
@@ -78,12 +79,12 @@ namespace klib::crypt {
                     f = (b & c) | (b & d) | (c & d);
                     k = 0x8F1BBCDC;
                 }
-                else if (i >= 60 && i < 80) {
+                else {
                     f = b ^ c ^ d;
                     k = 0xCA62C1D6;
                 }
 
-                temp = rotate_left(a, 5) + f + e + k + w[i];
+                const uint32_t temp = rotate_left(a, 5) + f + e + k + w[i];
                 e = d;
                 d = c;
                 c = rotate_left(b, 30);
@@ -146,20 +147,22 @@ namespace klib::crypt {
          * @return digest 
          */
         std::array<uint8_t, digest_size> finalize() {
-            uint32_t input[16] = {};
-            uint64_t offset = size % block_size;
+            const uint64_t offset = size % block_size;
+            const uint64_t padding_len = offset < 56 ? 56 - offset : 120 - offset;
+
             uint8_t padding[block_size] = {};
-            uint64_t padding_len = offset < 56 ? 56 - offset : 120 - offset;
             padding[0] = 0x80;
 
             update(padding, padding_len);
             size -= padding_len;
 
-            for (int i = 0; i < 14; i++) {
+            uint32_t input[16] = {};
+
+            for (uint8_t i = 0; i < 14; i++) {
                 input[i] = uint8_to_uint32(buffer + (i * 4));
             }
 
-            uint64_t ssize = klib::bswap64(size * 8);
+            const uint64_t ssize = klib::bswap64(size * 8);
             input[14] = (uint32_t)(ssize);
             input[15] = (uint32_t)(ssize >> 32);
 
@@ -170,10 +173,10 @@ namespace klib::crypt {
             std::array<uint8_t, digest_size> ret;
 
             for (uint32_t i = 0; i < hash_size; i++) {
-                ret[i * 4] = ((hash_buffer[i] & 0xFF000000) >> 24);
-                ret[i * 4 + 1] = ((hash_buffer[i] & 0x00FF0000) >> 16);
-                ret[i * 4 + 2] = ((hash_buffer[i] & 0x0000FF00) >> 8);
-                ret[i * 4 + 3] = (hash_buffer[i] & 0x000000FF);
+                ret[i * sizeof(uint32_t) + 0] = ((hash_buffer[i] & 0xFF000000) >> 24);
+                ret[i * sizeof(uint32_t) + 1] = ((hash_buffer[i] & 0x00FF0000) >> 16);
+                ret[i * sizeof(uint32_t) + 2] = ((hash_buffer[i] & 0x0000FF00) >> 8);
+                ret[i * sizeof(uint32_t) + 3] = (hash_buffer[i] & 0x000000FF);
             }
 
             return ret;
