@@ -6,10 +6,15 @@
 #include <lpc1756.hpp>
 #include <klib/units.hpp>
 
+#include "power.hpp"
+
 namespace klib::lpc1756::io::periph {
     struct rtc0 {
         // peripheral id (e.g rtc0, rtc1)
         constexpr static uint32_t id = 0;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 9;
 
         // interrupt id (including the arm vector table)
         constexpr static uint32_t interrupt_id = 33;
@@ -42,13 +47,17 @@ namespace klib::lpc1756::io {
         {
             uint32_t days = 0;
 
-            // convert the year and 
+            // amount of days in a year (non leap years)
+            constexpr auto days_year = (
+                month_days[0] + month_days[1] + month_days[2] + month_days[3] +
+                month_days[4] + month_days[5] + month_days[6] + month_days[7] +
+                month_days[8] + month_days[9] + month_days[10] + month_days[11]
+            );
+
+            // calculate the amount of days till the current year
             for (uint16_t y = 1970; y < year; y++) {
-                // add all the days of this year
-                for (uint8_t m = 0; (m < sizeof(month_days)) && (m < (month - 1)); m++) {
-                    // add the amount of days in the current month
-                    days += month_days[m];
-                }
+                // add all the months
+                days += days_year;
 
                 // check if the current year is a leap year (we do the same 
                 // thing as the hardware does by checking only the lowest 2 
@@ -57,7 +66,13 @@ namespace klib::lpc1756::io {
                 if ((y & 0b11) == 0) {
                     // add a day for a leap year
                     days++;
-                } 
+                }
+            }
+
+            // add the amount of days till the current month
+            for (uint8_t m = 0; m < (month - 1); m++) {
+                // add the current month
+                days += month_days[m];
             }
 
             // add the days but remove 1 for the current day
@@ -68,8 +83,22 @@ namespace klib::lpc1756::io {
         }
 
     public:
+        template <uint16_t CalValue = 0, bool CalDirection = 1>
         static void init() {
-            // do nothing
+            // enable the power for the rtc
+            power_control::enable<Rtc>();
+
+            // check if the rtc is already on
+            if (Rtc::port->CCR & 0x1) {
+                // rtc already on. No need for more configuration
+                return;
+            }
+
+            // setup the calibration if we have any
+            Rtc::port->CALIBRATION = CalValue | (CalDirection << 17);
+
+            // enable the rtc
+            Rtc::port->CCR = 0x1 | ((CalValue == 0) ? (0x1 << 4) : 0x00);
         }
 
         /**
