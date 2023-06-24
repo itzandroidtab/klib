@@ -38,8 +38,7 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
     template <
         typename Mosi = pins::package::lqfp_80::p45, 
         typename Miso = pins::package::lqfp_80::p46,
-        typename Sck = pins::package::lqfp_80::p47,
-        typename Cs0 = pins::package::lqfp_80::p48
+        typename Sck = pins::package::lqfp_80::p47
     >
     struct ssp0 {
         // peripheral id (e.g ssp0, ssp1)
@@ -70,22 +69,15 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
             detail::ssp::ssp<pins::package::lqfp_80::p27, detail::ssp::mode::sck, io::detail::alternate::func_3>
         >;
 
-        using cs0_pins = std::tuple<
-            detail::ssp::ssp<pins::package::lqfp_80::p48, detail::ssp::mode::cs0, io::detail::alternate::func_2>
-        >;
-
         // pin configuration for the ssp. Uses above mapping
         using mosi = std::tuple_element<klib::io::peripheral::get_index<Mosi, mosi_pins>(), mosi_pins>::type;
-        using miso = std::tuple_element<klib::io::peripheral::get_index<Miso, miso_pins>(), mosi_pins>::type;
-        using sck = std::tuple_element<klib::io::peripheral::get_index<Sck, sck_pins>(), mosi_pins>::type;
-        using cs0 = std::tuple_element<klib::io::peripheral::get_index<Cs0, cs0_pins>(), mosi_pins>::type;
+        using miso = std::tuple_element<klib::io::peripheral::get_index<Miso, miso_pins>(), miso_pins>::type;
+        using sck = std::tuple_element<klib::io::peripheral::get_index<Sck, sck_pins>(), sck_pins>::type;
+        using cs0 = detail::ssp::ssp<pins::package::lqfp_80::p48, detail::ssp::mode::cs0, io::detail::alternate::func_2>;
     };
 
     template <
-        typename Mosi = pins::package::lqfp_80::p61, 
-        typename Miso = pins::package::lqfp_80::p62,
-        typename Sck = pins::package::lqfp_80::p63,
-        typename Cs0 = pins::package::lqfp_80::p64
+        typename Sck = pins::package::lqfp_80::p63
     >
     struct ssp1 {
         // peripheral id (e.g ssp0, ssp1)
@@ -101,28 +93,16 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         static inline SSP0_Type *const port = SSP1;
 
         // pins allowed per output pin. Used for determining if a pin is valid on compile time
-        using mosi_pins = std::tuple<
-            detail::ssp::ssp<pins::package::lqfp_80::p61, detail::ssp::mode::mosi, io::detail::alternate::func_2>
-        >;
-
-        using miso_pins = std::tuple<
-            detail::ssp::ssp<pins::package::lqfp_80::p62, detail::ssp::mode::miso, io::detail::alternate::func_2>
-        >;
-
         using sck_pins = std::tuple<
             detail::ssp::ssp<pins::package::lqfp_80::p63, detail::ssp::mode::sck, io::detail::alternate::func_2>,
             detail::ssp::ssp<pins::package::lqfp_80::p17, detail::ssp::mode::sck, io::detail::alternate::func_2>
         >;
 
-        using cs0_pins = std::tuple<
-            detail::ssp::ssp<pins::package::lqfp_80::p64, detail::ssp::mode::cs0, io::detail::alternate::func_2>
-        >;
-
         // pin configuration for the ssp. Uses above mapping
-        using mosi = std::tuple_element<klib::io::peripheral::get_index<Mosi, mosi_pins>(), mosi_pins>::type;
-        using miso = std::tuple_element<klib::io::peripheral::get_index<Miso, miso_pins>(), mosi_pins>::type;
-        using sck = std::tuple_element<klib::io::peripheral::get_index<Sck, sck_pins>(), mosi_pins>::type;
-        using cs0 = std::tuple_element<klib::io::peripheral::get_index<Cs0, cs0_pins>(), mosi_pins>::type;
+        using mosi = detail::ssp::ssp<pins::package::lqfp_80::p61, detail::ssp::mode::mosi, io::detail::alternate::func_2>;
+        using miso = detail::ssp::ssp<pins::package::lqfp_80::p62, detail::ssp::mode::miso, io::detail::alternate::func_2>;
+        using sck = std::tuple_element<klib::io::peripheral::get_index<Sck, sck_pins>(), sck_pins>::type;
+        using cs0 = detail::ssp::ssp<pins::package::lqfp_80::p64, detail::ssp::mode::cs0, io::detail::alternate::func_2>;
     };
 }
 
