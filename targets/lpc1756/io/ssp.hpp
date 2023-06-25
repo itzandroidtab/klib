@@ -227,7 +227,7 @@ namespace klib::lpc1756::io {
          * @param data 
          * @param size 
          */
-        template <bool Async>
+        template <bool Async = false>
         static void write(const uint8_t *const data, const uint16_t size) {
             for (uint32_t i = 0; i < size; i++) {
                 // wait until we can write to the fifo
