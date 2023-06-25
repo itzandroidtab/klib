@@ -24,21 +24,7 @@ namespace klib::lpc1756::io::periph {
         static inline TIMER0_Type *const port = TIMER0;
 
         // available channels in the timer
-        struct channel_0 {
-            constexpr static uint32_t id = 0;
-        };
-
-        struct channel_1 {
-            constexpr static uint32_t id = 1;
-        };
-
-        struct channel_2 {
-            constexpr static uint32_t id = 2;
-        };
-        
-        struct channel_3 {
-            constexpr static uint32_t id = 3;
-        };
+        constexpr static uint32_t max_channels = 4;
     };
 
     struct tc1 {
@@ -55,21 +41,7 @@ namespace klib::lpc1756::io::periph {
         static inline TIMER0_Type *const port = TIMER1;
 
         // available channels in the timer
-        struct channel_0 {
-            constexpr static uint32_t id = 0;
-        };
-
-        struct channel_1 {
-            constexpr static uint32_t id = 1;
-        };
-
-        struct channel_2 {
-            constexpr static uint32_t id = 2;
-        };
-        
-        struct channel_3 {
-            constexpr static uint32_t id = 3;
-        };
+        constexpr static uint32_t max_channels = 4;
     };
 
     struct tc2 {
@@ -86,21 +58,7 @@ namespace klib::lpc1756::io::periph {
         static inline TIMER0_Type *const port = TIMER2;
 
         // available channels in the timer
-        struct channel_0 {
-            constexpr static uint32_t id = 0;
-        };
-
-        struct channel_1 {
-            constexpr static uint32_t id = 1;
-        };
-
-        struct channel_2 {
-            constexpr static uint32_t id = 2;
-        };
-        
-        struct channel_3 {
-            constexpr static uint32_t id = 3;
-        };
+        constexpr static uint32_t max_channels = 4;
     };
 
     struct tc3 {
@@ -117,21 +75,7 @@ namespace klib::lpc1756::io::periph {
         static inline TIMER0_Type *const port = TIMER3;
 
         // available channels in the timer
-        struct channel_0 {
-            constexpr static uint32_t id = 0;
-        };
-
-        struct channel_1 {
-            constexpr static uint32_t id = 1;
-        };
-
-        struct channel_2 {
-            constexpr static uint32_t id = 2;
-        };
-        
-        struct channel_3 {
-            constexpr static uint32_t id = 3;
-        };
+        constexpr static uint32_t max_channels = 4;
     };
 }
 
@@ -142,7 +86,7 @@ namespace klib::lpc1756::io {
      * @tparam Timer 
      * @tparam Mode 
      */
-    template <typename Timer, typename Channel>
+    template <typename Timer, uint8_t Channel>
     class timer {
     public:
         // using for the array of callbacks
@@ -151,6 +95,9 @@ namespace klib::lpc1756::io {
     protected:
         // callback
         static inline interrupt_callback callback = nullptr;
+
+        // make sure the channel is valid
+        static_assert(Channel < Timer::max_channels, "Timer only supports 4 channels");
 
         /**
          * @brief Interrupt handler
@@ -199,7 +146,7 @@ namespace klib::lpc1756::io {
             }
 
             // setup to trigger a interrupt when matching the TC value
-            Timer::port->MCR = (Timer::port->MCR & ~(0b111 << Channel::id)) | (0b011 << Channel::id);
+            Timer::port->MCR = (Timer::port->MCR & ~(0b111 << Channel)) | (0b011 << Channel);
 
             // set the callback
             callback = irq;
@@ -224,7 +171,7 @@ namespace klib::lpc1756::io {
          */
         static void set_frequency(const uint32_t frequency) {
             // set the match register for the desired frequency
-            Timer::port->MR[Channel::id] = (klib::io::clock::get() / frequency) + 1;
+            Timer::port->MR[Channel] = (klib::io::clock::get() / frequency) + 1;
         }
 
         /**
