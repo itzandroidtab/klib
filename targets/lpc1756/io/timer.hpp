@@ -15,7 +15,7 @@ namespace klib::lpc1756::io::periph {
         // peripheral id (e.g tc0, tc1)
         constexpr static uint32_t id = 0;
 
-        // peripheral interrupt position
+        // interrupt id (including the arm vector table)
         constexpr static uint32_t irq_id = 17;
 
         // peripheral clock bit position
@@ -32,7 +32,7 @@ namespace klib::lpc1756::io::periph {
         // peripheral id (e.g tc0, tc1)
         constexpr static uint32_t id = 1;
 
-        // peripheral interrupt position
+        // interrupt id (including the arm vector table)
         constexpr static uint32_t irq_id = 18;
 
         // power bit position
@@ -49,7 +49,7 @@ namespace klib::lpc1756::io::periph {
         // peripheral id (e.g tc0, tc1)
         constexpr static uint32_t id = 2;
 
-        // peripheral interrupt position
+        // interrupt id (including the arm vector table)
         constexpr static uint32_t irq_id = 19;
 
         // power bit position
@@ -66,7 +66,7 @@ namespace klib::lpc1756::io::periph {
         // peripheral id (e.g tc0, tc1)
         constexpr static uint32_t id = 3;
 
-        // peripheral interrupt position
+        // interrupt id (including the arm vector table)
         constexpr static uint32_t irq_id = 20;
 
         // power bit position
