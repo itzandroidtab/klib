@@ -50,6 +50,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 21;
 
+        // base dma id
+        constexpr static uint32_t dma_id = 0;
+
         // port to the SSP hardware
         static inline SSP0_Type *const port = SSP0;
 
@@ -88,6 +91,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 10;
+
+        // base dma id
+        constexpr static uint32_t dma_id = 2;
 
         // port to the SSP hardware
         static inline SSP0_Type *const port = SSP1;
@@ -256,6 +262,82 @@ namespace klib::lpc1756::io {
          */
         static bool is_busy() {
             return Ssp::port->SR & 0x1 << 4;
+        }
+
+    public:
+        /**
+         * @brief Section for the DMA controller. Returns information for the transfer.
+         * 
+         * @note two dma channels are required. One for reading and one for writing (or 
+         * the user can poll/write the other interface in user code)
+         * 
+         */
+
+        /**
+         * @brief Returns the dma channel connection id
+         * 
+         * @return uint16_t 
+         */
+        template <bool Read>
+        static uint16_t dma_id() {
+            // return the base id + 0 for tx and + 1 for rx
+            return Ssp::dma_id + Read;
+        }
+
+        /**
+         * @brief Enable/Disable the dma for the ssp read/write.
+         * 
+         * @tparam Enable 
+         * @tparam Read 
+         */
+        template <bool Enable, bool Read>
+        static void dma_enable() {
+            // set the new state
+            Ssp::port->DMACR = (Ssp::port->DMACR & ~(0x1 << Read)) | (Enable << Read);
+        }
+
+        /**
+         * @brief Returns the address where the dma controller should read/write from. 
+         * 
+         * @return uint32_t* const 
+         */
+        template <bool Read>
+        static volatile uint32_t *const dma_data() {
+            // return the data register
+            return &Ssp::port->DR;
+        }
+
+        /**
+         * @brief Returns the read/write burst size of the ssp
+         * 
+         * @return uint32_t* const 
+         */
+        template <bool Read>
+        static uint32_t dma_burst_size() {
+            // return the width based on the current bit transfer size
+            return (((Ssp::port->CR0 & 0xf) + 1) + 7) / 8;
+        }
+
+        /**
+         * @brief Returns the read/write transfer width of the ssp
+         * 
+         * @return uint32_t* const 
+         */
+        template <bool Read>
+        static uint32_t dma_width() {
+            // return the width based on the current bit transfer size
+            return (((Ssp::port->CR0 & 0xf) + 1) + 7) / 8;
+        }
+
+        /**
+         * @brief Returns the read/write transfer width of the ssp
+         * 
+         * @return uint32_t* const 
+         */
+        template <bool Read>
+        static bool dma_increment() {
+            // return if the dma should increment after a read/write
+            return false;
         }
     };
 }
