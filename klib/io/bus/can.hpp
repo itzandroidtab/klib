@@ -2,6 +2,7 @@
 #define KLIB_CAN_HPP
 
 #include <cstdint>
+
 #include <klib/queue.hpp>
 
 namespace klib::io::can {

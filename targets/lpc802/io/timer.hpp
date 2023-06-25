@@ -1,10 +1,10 @@
 #ifndef KLIB_LPC802_TIMER_HPP
 #define KLIB_LPC802_TIMER_HPP
 
+#include <lpc802.hpp>
+
 #include <klib/io/core_clock.hpp>
 #include <klib/irq_helper.hpp>
-
-#include <lpc802.hpp>
 
 #include "clocks.hpp"
 #include "pins.hpp"

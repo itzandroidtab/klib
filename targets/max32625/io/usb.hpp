@@ -1,14 +1,13 @@
 #ifndef KLIB_MAX32625_USB_HPP
 #define KLIB_MAX32625_USB_HPP
 
+#include <max32625.hpp>
+
 #include <klib/irq_helper.hpp>
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
 
-#include <max32625.hpp>
 #include "clocks.hpp"
-
-#include <klib/stream.hpp>
 
 namespace klib::max32625::io::periph {
     struct usb0 {

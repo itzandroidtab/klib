@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include "lpc1756.hpp"
+#include <lpc1756.hpp>
 
 namespace klib::lpc1756::io::periph {
     struct wdt0 {

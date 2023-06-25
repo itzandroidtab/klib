@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include <lpc802.hpp>
+
 #include "clocks.hpp"
 
 namespace klib::lpc802::io::periph {

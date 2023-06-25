@@ -3,15 +3,15 @@
 
 #include <cstdint>
 
+#include <lpc1756.hpp>
+
 #include <klib/math.hpp>
 #include <klib/io/bus/can.hpp>
 #include <klib/io/core_clock.hpp>
 #include <klib/io/peripheral.hpp>
 
-#include <lpc1756.hpp>
 #include "clocks.hpp"
 #include "power.hpp"
-
 #include "pins.hpp"
 
 namespace klib::lpc1756::io::periph::detail::can {

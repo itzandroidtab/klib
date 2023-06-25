@@ -3,14 +3,14 @@
 
 #include <klib/stream.hpp>
 
+#include <lpc1756.hpp>
+
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
 
-#include <lpc1756.hpp>
-
 #include "pins.hpp"
-#include "io/power.hpp"
-#include "io/clocks.hpp"
+#include "power.hpp"
+#include "clocks.hpp"
 
 namespace klib::lpc1756::io::periph::detail::usb {
     enum class mode {

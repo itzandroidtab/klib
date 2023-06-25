@@ -3,9 +3,9 @@
 
 #include <tuple>
 
-#include <klib/irq_helper.hpp>
-
 #include <max32660.hpp>
+
+#include <klib/irq_helper.hpp>
 
 namespace klib::max32660::io::detail::alternate {
     // alternate functions for all the gpio

@@ -1,9 +1,9 @@
 #include <cstdint>
 
-#include <klib/io/systick.hpp>
-
 #include "lpc802.hpp"
-#include "io/system.hpp"
+
+#include <klib/io/systick.hpp>
+#include <io/system.hpp>
 
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__

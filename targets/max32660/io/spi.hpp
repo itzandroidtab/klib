@@ -3,10 +3,11 @@
 
 #include <cstdint>
 
+#include <max32660.hpp>
+
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
 #include <klib/math.hpp>
-#include <max32660.hpp>
 
 #include "clocks.hpp"
 #include "pins.hpp"
