@@ -8,9 +8,6 @@
 #include <klib/math.hpp>
 #include <max32660.hpp>
 
-// disable the DMA define (TODO: switch over to a generator that does not generate defines)
-#undef DMA
-
 #include "clocks.hpp"
 #include "pins.hpp"
 
