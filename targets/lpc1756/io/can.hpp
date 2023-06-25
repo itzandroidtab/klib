@@ -6,6 +6,7 @@
 #include <klib/math.hpp>
 #include <klib/io/bus/can.hpp>
 #include <klib/io/core_clock.hpp>
+#include <klib/io/peripheral.hpp>
 
 #include <lpc1756.hpp>
 #include "clocks.hpp"
@@ -33,7 +34,10 @@ namespace klib::lpc1756::io::periph::detail::can {
 }
 
 namespace klib::lpc1756::io::periph::lqfp_80 {
-    struct can0_0 {
+    template <
+        typename Td = pins::package::lqfp_80::p38
+    >
+    struct can0 {
         // peripheral id (e.g can0, can1)
         constexpr static uint32_t id = 0;
 
@@ -46,27 +50,15 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         // port to the CAN hardware
         static inline CAN1_Type *const port = CAN1;
 
-        // P0.0 and P0.1
+        // pins allowed per output pin. Used for determining if a pin is valid on compile time
+        using td_pins = std::tuple<
+            detail::can::can<pins::package::lqfp_80::p38, detail::can::mode::td, io::detail::alternate::func_1>,
+            detail::can::can<pins::package::lqfp_80::p44, detail::can::mode::td, io::detail::alternate::func_3>
+        >;
+
+        // pin configuration. Uses above mapping ()
         using rd = detail::can::can<pins::package::lqfp_80::p37, detail::can::mode::rd, io::detail::alternate::func_1>;
-        using td = detail::can::can<pins::package::lqfp_80::p38, detail::can::mode::td, io::detail::alternate::func_1>;
-    };
-
-    struct can0_1 {
-        // peripheral id (e.g can0, can1)
-        constexpr static uint32_t id = 0;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 13;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 41;
-
-        // port to the CAN hardware
-        static inline CAN1_Type *const port = CAN1;
-
-        // P0.21 (not available on 80 pin package) and P0.22
-        // TODO: decide/check if rd of the other configuration can be used
-        using td = detail::can::can<pins::package::lqfp_80::p44, detail::can::mode::td, io::detail::alternate::func_3>;
+        using td = std::tuple_element<klib::io::peripheral::get_index<Td, td_pins>(), td_pins>::type;
     };
 
     struct can1 {
@@ -82,12 +74,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         // port to the CAN hardware
         static inline CAN1_Type *const port = CAN2;
 
-        // P2.7 and P2.8
+        // P2.7 and P2.8 (80 pin package does not have the following so only 1 configuration for can1)
         using rd = detail::can::can<pins::package::lqfp_80::p51, detail::can::mode::rd, io::detail::alternate::func_1>;
         using td = detail::can::can<pins::package::lqfp_80::p50, detail::can::mode::td, io::detail::alternate::func_1>;
-
-        // 80 pin package does not have the following so only 1 configuration for can1
-        // P0.4 and P0.5
     };
 }
 
