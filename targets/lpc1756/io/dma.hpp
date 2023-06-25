@@ -62,9 +62,6 @@ namespace klib::lpc1756::io {
         // make sure we have a valid dma channel
         static_assert(Channel < Dma::max_channels, "DMA does not support this channel");
 
-        // get a reference to the channel
-        static inline volatile dma_ch_Type& channel = Dma::port->CH[Channel];
-
         /**
          * @brief Get the memory burst size for a specific size
          * 
@@ -113,10 +110,10 @@ namespace klib::lpc1756::io {
          */
         static void init() {
             // disable the current channel
-            channel.CONFIG = 0;
+            Dma::port->CH[Channel].CONFIG = 0;
 
             // disable linked lists
-            channel.LLI = 0;
+            Dma::port->CH[Channel].LLI = 0;
 
             // enable dma on the source peripheral
             if constexpr (!std::is_same_v<Source, klib::io::dma::memory>) {
@@ -145,11 +142,11 @@ namespace klib::lpc1756::io {
             static_assert(!std::is_same_v<Destination, klib::io::dma::memory>, "Destination needs to be a peripheral for this function");
 
             // set the source and destination
-            channel.SRCADDR = reinterpret_cast<uint32_t>(source);
-            channel.DESTADDR = reinterpret_cast<uint32_t>(Destination::template dma_data<0>());
+            Dma::port->CH[Channel].SRCADDR = reinterpret_cast<uint32_t>(source);
+            Dma::port->CH[Channel].DESTADDR = reinterpret_cast<uint32_t>(Destination::template dma_data<0>());
 
             // setup the control register for the transfer
-            channel.CONTROL = (
+            Dma::port->CH[Channel].CONTROL = (
                 ((size * sizeof(T)) & 0xfff) | (get_memory_burst_size(size) << 12) | 
                 (Destination::template dma_burst_size<0>() << 15) | (get_transfer_width(sizeof(T)) << 18) |
                 (get_transfer_width(Destination::template dma_width<0>()) << 21) | (MemoryIncrement << 26) | 
@@ -157,7 +154,7 @@ namespace klib::lpc1756::io {
             );
 
             // setup the channel and enable it
-            channel.CONFIG = (
+            Dma::port->CH[Channel].CONFIG = (
                 0x1 | (Destination::template dma_id<0>() << 6) | 
                 (static_cast<uint32_t>(transfer_type::memory_to_peripheral) << 11)
             );
@@ -177,11 +174,11 @@ namespace klib::lpc1756::io {
             static_assert(std::is_same_v<Destination, klib::io::dma::memory>, "Destination needs to be memory for this function");
 
             // set the source and destination
-            channel.SRCADDR = reinterpret_cast<uint32_t>(Source::template dma_data<1>());
-            channel.DESTADDR = reinterpret_cast<uint32_t>(destination);
+            Dma::port->CH[Channel].SRCADDR = reinterpret_cast<uint32_t>(Source::template dma_data<1>());
+            Dma::port->CH[Channel].DESTADDR = reinterpret_cast<uint32_t>(destination);
 
             // setup the control register for the transfer
-            channel.CONTROL = (
+            Dma::port->CH[Channel].CONTROL = (
                 ((size * sizeof(T)) & 0xfff) | (Source::template dma_burst_size<1>() << 12) | 
                 (get_memory_burst_size(size) << 15) | (get_transfer_width(Source::template dma_width<1>()) << 18) |
                 (get_transfer_width(sizeof(T)) << 21) | (Source::template dma_increment<1>() << 26) | 
@@ -189,7 +186,7 @@ namespace klib::lpc1756::io {
             );
 
             // setup the channel and enable it
-            channel.CONFIG = (
+            Dma::port->CH[Channel].CONFIG = (
                 0x1 | (Source::template dma_id<1>() << 6) | 
                 (static_cast<uint32_t>(transfer_type::peripheral_to_memory) << 11)
             );            
@@ -226,7 +223,7 @@ namespace klib::lpc1756::io {
          * @return false 
          */
         static bool is_busy() {
-            const uint32_t config = channel.CONFIG;
+            const uint32_t config = Dma::port->CH[Channel].CONFIG;
 
             // return if the enabled or active flag is set
             return (config & 0x1) | (config & (0x1 << 17));
@@ -238,7 +235,7 @@ namespace klib::lpc1756::io {
          */
         static void stop() {
             // clear the channel enable flag to stop the transfer
-            channel.CONFIG &= ~(0x1);
+            Dma::port->CH[Channel].CONFIG &= ~(0x1);
         }
     };
 }
