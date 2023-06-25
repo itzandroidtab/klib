@@ -343,6 +343,9 @@ namespace klib::usb::device {
                         return usb::handshake::stall;
                     }
 
+                    // set the packet length
+                    length = packet.wLength;
+
                     // check if we got a 0 length packet
                     if (packet.wLength == 0) {
                         // check if the 0 length packet is correct
@@ -378,9 +381,6 @@ namespace klib::usb::device {
                     // change the state to sync
                     current_state = klib::usb::dfu::device_state::download_sync;
             
-                    // set the packet length
-                    length = packet.wLength;
-
                     return usb::handshake::ack;
 
                 case klib::usb::dfu::dfu_request::detach:
