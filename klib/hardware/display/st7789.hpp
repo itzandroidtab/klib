@@ -214,7 +214,7 @@ namespace klib::hardware::display {
 
                 // display inversion off, memory direction control
                 write_cmd(cmd::invon);
-                write_cmd(cmd::madctl, 0b1 << 3);
+                write_cmd(cmd::madctl, 0b0 << 3);
 
                 // frame rate control in idle and partial mode (set 
                 // it so we use the values from frctrl2)
