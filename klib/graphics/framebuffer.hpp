@@ -274,6 +274,11 @@ namespace klib::graphics {
         // color mode with all parameters
         using color_mode = graphics::detail::pixel_conversion<mode>;
 
+        // make sure we have a mode that fits a byte boundry as we
+        // do not have any information about the pixels around the
+        // pixel we are updating
+        static_assert((color_mode::bits % 8) == 0, "Direct framebuffer only supports graphics modes that are % 8");
+
         // color type
         using color_type = color_mode::type;
 
@@ -325,9 +330,39 @@ namespace klib::graphics {
                 Display::start_write();
             }
 
-            // write the raw data to the screen
-            Display::raw_write(reinterpret_cast<const uint8_t*>(&raw), sizeof(raw));
+            // place to store the stream data
+            color_type native = 0;
 
+            // convert the data to a stream we can send. See 
+            // framebuffer::set_pixel for more information about
+            // the conversion from raw to native mode
+            if constexpr (color_mode::bits / 8 == sizeof(uint8_t)) {
+                // nothing to do for 1 byte color modes
+                native = raw;
+            }
+            else if constexpr (
+                color_mode::bits / 8 == sizeof(uint16_t) || 
+                color_mode::bits / 8 == sizeof(uint32_t) ||
+                color_mode::bits / 8 == sizeof(uint64_t)) 
+            {
+                // we can use the buildin byte swap
+                native = klib::bswap(raw);
+            }
+            else {
+                constexpr uint32_t bytes = (color_mode::bits / 8);
+
+                // we need to fall back on a byte conversion
+                for (uint32_t i = 0; i < bytes; i++) {
+                    native |= (
+                        ((raw >> (((bytes - 1) * 8) - (i * 8))) & 0xff) << (i * 8)
+                    );
+                }   
+            }
+
+            // write the raw data to the screen
+            Display::raw_write(reinterpret_cast<const uint8_t*>(&native), sizeof(native));
+
+            // check if we need to update the internal cursor
             if constexpr (AutoIncrement) {
                 // update the cursor on the screen
                 if ((pos.x + 1) >= EndX) {
