@@ -284,6 +284,9 @@ namespace klib::graphics {
 
             // clear the cursor
             cursor = {StartX, StartY};
+
+            // start the write
+            Display::start_write();
         }
 
         constexpr void flush() {
