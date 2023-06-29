@@ -155,8 +155,8 @@ namespace klib::lpc1756::io {
             // setup the clock for the ssp. Value should be between 2 - 254. 
             // Note: to get lower frequencies. the SCR in CR0 can be used to
             // decrease the clock even further. (PCLK / (CPSDVSR * [SCR + 1]))
-            // As most of the time higher speeds is better, SCR is not used
-            // at the moment (last bit does not stick. e.g 0x1 -> 0x0)
+            // As most of the time higher speeds is better, SCR is not used at 
+            // the moment (last bit ofthe CPSR does not stick. e.g 0x1 -> 0x0)
             Ssp::port->CPSR = static_cast<uint8_t>(
                 klib::io::clock::get() / static_cast<uint32_t>(Frequency)
             );
