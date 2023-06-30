@@ -81,7 +81,7 @@ namespace klib {
     }
 
     /**
-     * @brief 32 bit byteswap (converts 0xaabb to 0xbbaa). Explicit 32 bit
+     * @brief 32 bit byteswap (converts 0xaabbccdd to 0xddccbbaa). Explicit 32 bit
      * 
      * @tparam T 
      * @param data 
@@ -93,7 +93,7 @@ namespace klib {
     }
 
     /**
-     * @brief 32 bit byteswap (converts 0xaabb to 0xbbaa). Explicit 32 bit
+     * @brief 64 bit byteswap. Explicit 64 bit
      * 
      * @tparam T 
      * @param data 
@@ -208,7 +208,7 @@ namespace klib {
         }
 
         if (isnan(arg)) {
-            return (__builtin_nanf(""));
+            return arg;
         }
 
         // Negative ceiling
@@ -248,7 +248,7 @@ namespace klib {
         }
 
         if (isnan(arg)) {
-            return (__builtin_nanf(""));
+            return arg;
         }
 
         // Negative flooring
@@ -301,7 +301,7 @@ namespace klib {
     }
 
     /**
-     * @brief Get the lowest value between the two inputs
+     * @brief Get the minimum value from the two input parameters
      * 
      * @tparam T 
      * @tparam G
@@ -315,7 +315,7 @@ namespace klib {
     }
 
     /**
-     * @brief Get the max between the two input values
+     * @brief Get the maximum value of the two input parameters
      * 
      * @tparam T 
      * @tparam G
@@ -393,7 +393,7 @@ namespace klib {
 
     /**
      * Map a range of values to another range of values.
-     * E.g. map 0...255 tot 0...1024.
+     * E.g. map 0...255 to 0...1024.
      * @tparam T
      * @tparam G
      * @param x
