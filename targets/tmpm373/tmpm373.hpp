@@ -6,8 +6,8 @@
 #include "tmpm373.h"
 
 namespace klib::tmpm373 {
-    // irq for the tmpm373
-    using irq = klib::KLIB_IRQ<16 + 1>;
+    // irq for the tmpm373 (see page 59 of the datasheet for the interrupt list)
+    using irq = klib::KLIB_IRQ<16 + 77>;
 
     /**
      * @brief Enable a interrupt
