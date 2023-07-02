@@ -122,6 +122,13 @@ namespace klib::max32660::io {
         }
 
     public:
+        // using for the interrupt callback
+        using interrupt_callback = irq_helper::interrupt_callback;
+
+        /**
+         * @brief Init the port interrupt
+         * 
+         */
         static void init() {
             // register our handler
             irq::template register_irq<Port::irq_id>(irq_handler);
@@ -145,6 +152,11 @@ namespace klib::max32660::io {
             helper.register_irq<Pin::number>(callback);
         }
 
+        /**
+         * @brief Unregister a interrupt for a specific pin
+         * 
+         * @tparam Pin 
+         */
         template <typename Pin>
         static void unregister_irq() {
             // check if the port is correct
@@ -406,7 +418,7 @@ namespace klib::max32660::io {
          * @brief Using for the interrupt callback used in the pin irq
          * 
          */
-        using interrupt_callback = port_interrupt<typename Pin::port>::irq_helper::interrupt_callback::interrupt_callback;
+        using interrupt_callback = port_interrupt<typename Pin::port>::interrupt_callback;
         
     protected:
         /**
