@@ -33,7 +33,8 @@ namespace klib::hardware::touch {
      */
     template <
         uint32_t Points,
-        uint32_t Width, uint32_t Height, 
+        uint32_t Width = 0, 
+        uint32_t Height = 0, 
         uint32_t DisplayWidth = Width, 
         uint32_t DisplayHeight = Height
     >
