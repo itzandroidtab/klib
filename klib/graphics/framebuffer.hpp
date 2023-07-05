@@ -259,30 +259,11 @@ namespace klib::graphics {
             "Framebuffer does not support this output mode for the input mode"
         );
 
-    public:
         /**
-         * @brief Init the framebuffer. Not used in 
-         * the buffered framebuffer
+         * @brief Flush implementation for the framebuffer
          * 
          */
-        constexpr void init() {
-            // do nothing
-        }
-
-        /**
-         * @brief Flush the buffer to the display
-         * 
-         */
-        constexpr void flush() {
-            // set the cursor to the start of the display
-            Display::set_cursor(
-                klib::vector2u{StartX, StartY}, 
-                klib::vector2u{EndX - 1, EndY - 1}
-            );
-
-            // start the display write
-            Display::start_write();
-
+        void flush_impl() {
             // write using the mode we have
             if constexpr (native_mode) {
                 // we should be able to write the native stream 
@@ -358,7 +339,35 @@ namespace klib::graphics {
                     // write the data to the display
                     Display::raw_write(data, step);
                 }
-            }
+            }            
+        }
+
+    public:
+        /**
+         * @brief Init the framebuffer. Not used in 
+         * the buffered framebuffer
+         * 
+         */
+        constexpr void init() {
+            // do nothing
+        }
+
+        /**
+         * @brief Flush the buffer to the display
+         * 
+         */
+        constexpr void flush() {
+            // set the cursor to the start of the display
+            Display::set_cursor(
+                klib::vector2u{StartX, StartY}, 
+                klib::vector2u{EndX - 1, EndY - 1}
+            );
+
+            // start the display write
+            Display::start_write();
+
+            // call the flush implementation
+            flush_impl();
 
             // stop the write to the display
             Display::end_write();
