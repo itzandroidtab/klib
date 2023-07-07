@@ -62,13 +62,6 @@ namespace klib {
          * 
          */
         static void reserved() {
-            volatile uint32_t irq;
-
-            asm volatile("mrs %0, ipsr" : "=r"(irq));
-
-            asm volatile("bkpt");
-
-            (void)irq;
             // loop as some arm interrupt has happend that is not registered. Probably 
             // a hardfault, busfault or a usagefault.
             while (true) {}
@@ -79,13 +72,6 @@ namespace klib {
          * 
          */
         static void default_handler() {
-            volatile uint32_t irq;
-
-            asm volatile("mrs %0, ipsr" : "=r"(irq));
-
-            asm volatile("bkpt");
-
-            (void)irq;
             // return straight away
             return;
         }
