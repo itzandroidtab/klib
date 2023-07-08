@@ -12,9 +12,11 @@ build/
 *.exe
 *.py
 *.bin
+*.txt
+*.zip
 
 # exclude cmakelist files from the gitignore
-!CMakelists.txt
+!CMakeLists.txt
 
 # mac os x stuff
 .DS_Store
