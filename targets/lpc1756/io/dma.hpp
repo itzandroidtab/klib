@@ -6,9 +6,103 @@
 #include <lpc1756.hpp>
 
 #include <klib/io/dma.hpp>
+#include <klib/irq_helper.hpp>
 
 #include "power.hpp"
 #include "clocks.hpp"
+
+namespace klib::lpc1756::io::detail::dma {
+    /**
+     * @brief Available transfer types
+     * 
+     */
+    enum class transfer_type {
+        memory_to_memory = 0x0,
+        memory_to_peripheral = 0x1,
+        peripheral_to_memory = 0x2,
+        peripheral_to_peripheral = 0x3,
+    };
+
+    /**
+     * @brief Helper struct for when there is a limited amount of 
+     * data the dma can send in one go
+     * 
+     */
+    struct transfer_helper {
+        // pointer to the start of the data
+        const uint8_t* data;
+
+        // requested size of the current endpoint
+        uint32_t requested_size;
+
+        // transmitted/received amount of data.
+        uint32_t transferred_size;
+    };
+
+    /**
+     * @brief Get the memory burst size for a specific size
+     * 
+     * @param size 
+     * @return uint8_t 
+     */
+    constexpr uint8_t get_memory_burst_size(uint16_t size) {
+        // return the most appropiate width for the input. TODO: For 
+        // the ssp the limit seems to be 128 bytes
+        const std::array<uint16_t, 7> values = {1, 4, 8, 16, 32, 64, 128};
+
+        for (uint32_t i = values.size(); i != 0; i--) {
+            // check if the current value matches the burst size 
+            // from the data
+            if (size >= values[i - 1]) {
+                return i;
+            }
+        }
+
+        // return the highest value if we didnt find it
+        return values.size() - 1;
+    }
+
+    /**
+     * @brief Get the transfer width from a input size (sizeof(T) or peripheral byte size)
+     * 
+     * @param size 
+     * @return uint8_t 
+     */
+    constexpr uint8_t get_transfer_width(const uint32_t size) {
+        // return the most appropriate width for the input. (note size == 3 
+        // will fall back to single byte width) 
+        switch (size) {
+            case 4:
+                return 0b10;
+            case 2:
+                return 0b01;
+            default:
+                return 0b00;
+        }
+    }
+
+    /**
+     * @brief Convert the peripheral burst size to the parameter the dma needs
+     * 
+     * @param size 
+     * @return uint8_t 
+     */
+    consteval static uint8_t get_peripheral_burst_size(uint16_t size) {
+        // return the most appropiate width for the input.
+        const std::array<uint16_t, 8> values = {1, 4, 8, 16, 32, 64, 128, 256};
+
+        for (uint32_t i = values.size(); i != 0; i--) {
+            // check if the current value matches the burst size 
+            // from the data
+            if (size >= values[i - 1]) {
+                return i;
+            }
+        }
+
+        // return the highest value if we didnt find it
+        return values.size() - 1;
+    }    
+}
 
 namespace klib::lpc1756::io::periph {
     struct dma0 {
@@ -16,7 +110,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 0;
 
         // interrupt id (including the arm vector table)
-        constexpr static uint32_t irq_id = 42;
+        constexpr static uint32_t interrupt_id = 42;
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 29;
@@ -32,6 +126,14 @@ namespace klib::lpc1756::io::periph {
 namespace klib::lpc1756::io {
     template <typename Dma>
     struct dma {
+    public: 
+        // interrupt callback type for the dma channels
+        using interrupt_callback = irq_helper<Dma::max_channels>::interrupt_callback;
+
+    protected:
+        // IRQ helper for the dma channels
+        static inline irq_helper<Dma::max_channels> helper;
+
     public:
         template <bool LittleEndian = true>
         static void init() {
@@ -54,7 +156,49 @@ namespace klib::lpc1756::io {
 
             // clear all interrupt flags
             Dma::port->INTERRCLR = 0xff;
-            Dma::port->INTTCCLEAR = 0xff;            
+            Dma::port->INTTCCLEAR = 0xff;
+
+            // register the interrupt handler
+            irq::register_irq<Dma::interrupt_id>(irq_handler);
+
+            // enable the interrupt
+            enable_irq<Dma::interrupt_id>();
+        }
+
+        /**
+         * @brief Register a callback
+         * 
+         * @tparam Irq 
+         * @param callback 
+         */
+        template <uint32_t Irq>
+        static void register_irq(const interrupt_callback &callback) {
+            helper.template register_irq<Irq>(callback);
+        }
+
+        /**
+         * @brief Clear a callback
+         * 
+         * @tparam Irq 
+         */
+        template <uint32_t Irq>
+        static void unregister_irq() {
+            helper.template unregister_irq<Irq>();
+        }
+
+    public:
+        static void irq_handler() {
+            // get the status and the mask (INTTCSTAT is the masked result. We use 
+            // this as the mask for now)
+            const uint32_t status = Dma::port->INTSTAT;
+            const uint32_t mask = Dma::port->INTTCSTAT;
+
+            // handle the interrupt
+            helper.handle_irq(status, mask);
+
+            // clear the interrupt flag
+            Dma::port->INTTCCLEAR = status & mask;
+            Dma::port->INTERRCLR = status & (~mask);
         }
     };
 
@@ -64,68 +208,77 @@ namespace klib::lpc1756::io {
         // make sure we have a valid dma channel
         static_assert(Channel < Dma::max_channels, "DMA does not support this channel");
 
-        /**
-         * @brief Get the memory burst size for a specific size
-         * 
-         * @param size 
-         * @return uint8_t 
-         */
-        static uint8_t get_memory_burst_size(uint16_t size) {
-            // TODO: optimize this based on the size. Current selection is 4 bytes
-            return 0b01;
-        }
+        // helper for the dma transfers
+        static inline volatile detail::dma::transfer_helper helper = {};
 
         /**
-         * @brief Get the transfer width from a input size (sizeof(T) or peripheral byte size)
+         * @brief DMA channel interrupt handler. Handles multi transmits when 
+         * we have a big size.
          * 
-         * @param size 
-         * @return uint8_t 
          */
-        static uint8_t get_transfer_width(const uint32_t size) {
-            // return the most appropriate width for the input. (note size == 3 
-            // will fall back to single byte width) 
-            switch (size) {
-                case 4:
-                    return 0b10;
-                case 2:
-                    return 0b01;
-                default:
-                    return 0b00;
+        static void irq_handler() {
+            // make sure we have a valid pointer to data before we do anything
+            if (!helper.data) [[unlikely]] {
+                return;
+            }
+
+            // check what type of transfer we were doing
+            if constexpr (std::is_same_v<Source, klib::io::dma::memory> &&
+                !std::is_same_v<Destination, klib::io::dma::memory>)
+            {
+                peripheral_memory_impl<true>();
+            }
+            else if constexpr (!std::is_same_v<Source, klib::io::dma::memory> &&
+                std::is_same_v<Destination, klib::io::dma::memory>)
+            {
+                peripheral_memory_impl<false>();
+            }
+            else if constexpr (std::is_same_v<Source, klib::io::dma::memory> &&
+                std::is_same_v<Destination, klib::io::dma::memory>)
+            {
+                // TODO: implement m2m
+            }
+            else {
+                // TODO: implement p2p
             }
         }
 
         /**
-         * @brief Convert the peripheral burst size to the parameter the dma needs
+         * @brief Memory to peripheral implementation
          * 
-         * @param size 
-         * @return uint8_t 
          */
-        consteval static uint8_t get_peripheral_burst_size(uint16_t size) {
-            // return the most appropiate width for the input.
-            const std::array<uint16_t, 8> values = {1, 4, 8, 16, 32, 64, 128, 256};
+        template <bool M2P>
+        static void peripheral_memory_impl() {
+            // get the amount of data we still have to send
+            const auto transfer_size = (helper.requested_size - helper.transferred_size);
 
-            for (uint32_t i = values.size(); i != 0; i--) {
-                // check if the current value matches the burst size 
-                // from the data
-                if (size >= values[i - 1]) {
-                    return i;
-                }
+            // determine the amount we will send in the current transfer
+            const auto current_transfer = klib::min(transfer_size, 0xfff);
+            const bool needs_irq = transfer_size > 0xfff;
+
+            if constexpr (M2P) {
+                // set the source and destination
+                Dma::port->CH[Channel].SRCADDR = reinterpret_cast<uint32_t>(helper.data) + helper.transferred_size;
+            }
+            else {
+                Dma::port->CH[Channel].DESTADDR = reinterpret_cast<uint32_t>(helper.data) + helper.transferred_size;
             }
 
-            // return the highest value if we didnt find it
-            return values[values.size() - 1];
-        }
+            // set the amount of data we will transfer
+            Dma::port->CH[Channel].CONTROL |= current_transfer;
 
-        /**
-         * @brief Available transfer types
-         * 
-         */
-        enum class transfer_type {
-            memory_to_memory = 0x0,
-            memory_to_peripheral = 0x1,
-            peripheral_to_memory = 0x2,
-            peripheral_to_peripheral = 0x3,
-        };
+            // check if we need a irq after the current
+            if (!needs_irq) [[unlikely]] {
+                // clear the helper items
+                helper.data = nullptr;
+            }
+            else {
+                helper.transferred_size += 0xfff;
+            }
+
+            // enable the channel
+            Dma::port->CH[Channel].CONFIG |= 0x1;
+        }
 
     public:
         /**
@@ -150,6 +303,9 @@ namespace klib::lpc1756::io {
                 // enable the dma on the destination
                 Destination::template dma_enable<true, 0>();
             }
+
+            // register our irq handler for the current channel
+            dma<Dma>::template register_irq<Channel>(irq_handler);
         }
 
         /**
@@ -165,24 +321,32 @@ namespace klib::lpc1756::io {
             static_assert(std::is_same_v<Source, klib::io::dma::memory>, "Source needs to be memory for this function");
             static_assert(!std::is_same_v<Destination, klib::io::dma::memory>, "Destination needs to be a peripheral for this function");
 
-            // set the source and destination
-            Dma::port->CH[Channel].SRCADDR = reinterpret_cast<uint32_t>(source);
+            // set the dma destination
             Dma::port->CH[Channel].DESTADDR = reinterpret_cast<uint32_t>(Destination::template dma_data<0>());
+
+            // update the helper data with the information about the transfer
+            helper.data = reinterpret_cast<const uint8_t*>(source);
+            helper.requested_size = size;
+            helper.transferred_size = 0x00;
 
             // setup the control register for the transfer
             Dma::port->CH[Channel].CONTROL = (
-                ((size * sizeof(T)) & 0xfff) | (get_memory_burst_size(size) << 12) | 
-                (get_peripheral_burst_size(Destination::template dma_burst_size<0>()) << 15) | 
-                (get_transfer_width(sizeof(T)) << 18) | (MemoryIncrement << 26) | 
-                (get_transfer_width(Destination::template dma_width<0>()) << 21) | 
-                (Destination::template dma_increment<0>() << 27)
+                (detail::dma::get_memory_burst_size(size) << 12) | 
+                (detail::dma::get_peripheral_burst_size(Destination::template dma_burst_size<0>()) << 15) | 
+                (detail::dma::get_transfer_width(sizeof(T)) << 18) | 
+                (detail::dma::get_transfer_width(Destination::template dma_width<0>()) << 21) | 
+                (Destination::template dma_increment<0>() << 27) |
+                (MemoryIncrement << 26) | (0x1 << 31)
+            );            
+
+            // setup the channel
+            Dma::port->CH[Channel].CONFIG = (
+                (Destination::template dma_id<0>() << 6) | (size > 0xfff) << 15 | 0x1 << 14 |
+                (static_cast<uint32_t>(detail::dma::transfer_type::memory_to_peripheral) << 11)
             );
 
-            // setup the channel and enable it
-            Dma::port->CH[Channel].CONFIG = (
-                0x1 | (Destination::template dma_id<0>() << 6) | 
-                (static_cast<uint32_t>(transfer_type::memory_to_peripheral) << 11)
-            );
+            // start the transfer
+            peripheral_memory_impl<true>();
         }
 
         /**
@@ -200,21 +364,30 @@ namespace klib::lpc1756::io {
 
             // set the source and destination
             Dma::port->CH[Channel].SRCADDR = reinterpret_cast<uint32_t>(Source::template dma_data<1>());
-            Dma::port->CH[Channel].DESTADDR = reinterpret_cast<uint32_t>(destination);
+
+            // update the helper data with the information about the transfer
+            helper.data = reinterpret_cast<const uint8_t*>(destination);
+            helper.requested_size = size;
+            helper.transferred_size = 0x00;
 
             // setup the control register for the transfer
             Dma::port->CH[Channel].CONTROL = (
-                ((size * sizeof(T)) & 0xfff) | (MemoryIncrement << 27) |
-                (get_peripheral_burst_size(Source::template dma_burst_size<1>()) << 12) | 
-                (get_memory_burst_size(size) << 15) | (get_transfer_width(Source::template dma_width<1>()) << 18) |
-                (get_transfer_width(sizeof(T)) << 21) | (Source::template dma_increment<1>() << 26)
+                (detail::dma::get_peripheral_burst_size(Source::template dma_burst_size<1>()) << 12) | 
+                (detail::dma::get_memory_burst_size(size) << 15) | 
+                (detail::dma::get_transfer_width(Source::template dma_width<1>()) << 18) |
+                (detail::dma::get_transfer_width(sizeof(T)) << 21) | 
+                (Source::template dma_increment<1>() << 26) | 
+                (MemoryIncrement << 27) | (0x1 << 31)
             );
 
-            // setup the channel and enable it
+            // setup the channel
             Dma::port->CH[Channel].CONFIG = (
-                0x1 | (Source::template dma_id<1>() << 6) | 
-                (static_cast<uint32_t>(transfer_type::peripheral_to_memory) << 11)
-            );            
+                (Source::template dma_id<1>() << 6) | (size > 0xfff) << 15 | 0x1 << 14 |
+                (static_cast<uint32_t>(detail::dma::transfer_type::peripheral_to_memory) << 11)
+            );
+
+            // start the transfer
+            peripheral_memory_impl<false>();
         }
 
         /**
@@ -251,7 +424,7 @@ namespace klib::lpc1756::io {
             const uint32_t config = Dma::port->CH[Channel].CONFIG;
 
             // return if the enabled or active flag is set
-            return (config & 0x1) | (config & (0x1 << 17));
+            return (config & 0x1) | (config & (0x1 << 17)) | (helper.data != nullptr);
         }
 
         /**

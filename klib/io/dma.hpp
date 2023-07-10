@@ -4,6 +4,9 @@
 namespace klib::io::dma {
     // Helper struct to signal we are copying from/to memory
     struct memory {};
+
+    // Helper struct to signal there is no channel
+    struct none {};
 }
 
 #endif
