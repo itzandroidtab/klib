@@ -279,7 +279,7 @@ namespace klib::lpc1756::io {
          * @return uint16_t 
          */
         template <bool Read>
-        static uint16_t dma_id() {
+        constexpr static uint16_t dma_id() {
             // return the base id + 0 for tx and + 1 for rx
             return Ssp::dma_id + Read;
         }
@@ -313,9 +313,9 @@ namespace klib::lpc1756::io {
          * @return uint32_t* const 
          */
         template <bool Read>
-        static uint32_t dma_burst_size() {
-            // return the width based on the current bit transfer size
-            return (((Ssp::port->CR0 & 0xf) + 1) + 7) / 8;
+        constexpr static uint32_t dma_burst_size() {
+            // return half the fifo size
+            return 4;
         }
 
         /**
@@ -335,7 +335,7 @@ namespace klib::lpc1756::io {
          * @return uint32_t* const 
          */
         template <bool Read>
-        static bool dma_increment() {
+        constexpr static bool dma_increment() {
             // return if the dma should increment after a read/write
             return false;
         }

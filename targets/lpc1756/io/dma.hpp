@@ -1,6 +1,8 @@
 #ifndef KLIB_LPC1756_DMA_HPP
 #define KLIB_LPC1756_DMA_HPP
 
+#include <array>
+
 #include <lpc1756.hpp>
 
 #include <klib/io/dma.hpp>
@@ -90,7 +92,29 @@ namespace klib::lpc1756::io {
                 default:
                     return 0b00;
             }
-        }        
+        }
+
+        /**
+         * @brief Convert the peripheral burst size to the parameter the dma needs
+         * 
+         * @param size 
+         * @return uint8_t 
+         */
+        consteval static uint8_t get_peripheral_burst_size(uint16_t size) {
+            // return the most appropiate width for the input.
+            const std::array<uint16_t, 8> values = {1, 4, 8, 16, 32, 64, 128, 256};
+
+            for (uint32_t i = values.size(); i != 0; i--) {
+                // check if the current value matches the burst size 
+                // from the data
+                if (size >= values[i - 1]) {
+                    return i;
+                }
+            }
+
+            // return the highest value if we didnt find it
+            return values[values.size() - 1];
+        }
 
         /**
          * @brief Available transfer types
@@ -148,8 +172,9 @@ namespace klib::lpc1756::io {
             // setup the control register for the transfer
             Dma::port->CH[Channel].CONTROL = (
                 ((size * sizeof(T)) & 0xfff) | (get_memory_burst_size(size) << 12) | 
-                (Destination::template dma_burst_size<0>() << 15) | (get_transfer_width(sizeof(T)) << 18) |
-                (get_transfer_width(Destination::template dma_width<0>()) << 21) | (MemoryIncrement << 26) | 
+                (get_peripheral_burst_size(Destination::template dma_burst_size<0>()) << 15) | 
+                (get_transfer_width(sizeof(T)) << 18) | (MemoryIncrement << 26) | 
+                (get_transfer_width(Destination::template dma_width<0>()) << 21) | 
                 (Destination::template dma_increment<0>() << 27)
             );
 
@@ -179,10 +204,10 @@ namespace klib::lpc1756::io {
 
             // setup the control register for the transfer
             Dma::port->CH[Channel].CONTROL = (
-                ((size * sizeof(T)) & 0xfff) | (Source::template dma_burst_size<1>() << 12) | 
+                ((size * sizeof(T)) & 0xfff) | (MemoryIncrement << 27) |
+                (get_peripheral_burst_size(Source::template dma_burst_size<1>()) << 12) | 
                 (get_memory_burst_size(size) << 15) | (get_transfer_width(Source::template dma_width<1>()) << 18) |
-                (get_transfer_width(sizeof(T)) << 21) | (Source::template dma_increment<1>() << 26) | 
-                (MemoryIncrement << 27)
+                (get_transfer_width(sizeof(T)) << 21) | (Source::template dma_increment<1>() << 26)
             );
 
             // setup the channel and enable it
