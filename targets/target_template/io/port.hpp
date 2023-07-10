@@ -23,7 +23,7 @@ namespace klib::target_template::io::periph {
 
         // peripheral interrupt position (numbering starts with the 
         // last item of the arm vector table)
-        constexpr static uint32_t irq_id = 16;
+        constexpr static uint32_t interrupt_id = 16;
 
         // on hardware this should have the port to 
         // write/read the hardware with

@@ -30,7 +30,7 @@ namespace klib::max32660::io::periph {
         constexpr static uint32_t id = 0;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 40;
+        constexpr static uint32_t interrupt_id = 40;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO0;
@@ -41,7 +41,7 @@ namespace klib::max32660::io::periph {
         constexpr static uint32_t id = 0;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 70;
+        constexpr static uint32_t interrupt_id = 70;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO0;
@@ -131,10 +131,10 @@ namespace klib::max32660::io {
          */
         static void init() {
             // register our handler
-            irq::template register_irq<Port::irq_id>(irq_handler);
+            irq::template register_irq<Port::interrupt_id>(irq_handler);
 
             // enable the interrupt
-            enable_irq<Port::irq_id>();
+            enable_irq<Port::interrupt_id>();
         }
 
         /**

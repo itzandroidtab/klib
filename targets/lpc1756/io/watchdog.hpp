@@ -11,7 +11,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 0;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 16;
+        constexpr static uint32_t interrupt_id = 16;
 
         // port to the wdt hardware
         static inline WDT_Type *const port = WDT;

@@ -16,7 +16,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 0;
 
         // interrupt id (including the arm vector table)
-        constexpr static uint32_t irq_id = 17;
+        constexpr static uint32_t interrupt_id = 17;
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 1;
@@ -33,7 +33,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 1;
 
         // interrupt id (including the arm vector table)
-        constexpr static uint32_t irq_id = 18;
+        constexpr static uint32_t interrupt_id = 18;
 
         // power bit position
         constexpr static uint32_t clock_id = 2;
@@ -50,7 +50,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 2;
 
         // interrupt id (including the arm vector table)
-        constexpr static uint32_t irq_id = 19;
+        constexpr static uint32_t interrupt_id = 19;
 
         // power bit position
         constexpr static uint32_t clock_id = 22;
@@ -67,7 +67,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 3;
 
         // interrupt id (including the arm vector table)
-        constexpr static uint32_t irq_id = 20;
+        constexpr static uint32_t interrupt_id = 20;
 
         // power bit position
         constexpr static uint32_t clock_id = 23;
@@ -154,14 +154,14 @@ namespace klib::lpc1756::io {
 
             if (irq) {
                 // register our handler
-                lpc1756::irq::template register_irq<Timer::irq_id>(isr_handler);
+                lpc1756::irq::template register_irq<Timer::interrupt_id>(isr_handler);
 
                 // enable the interrupt
-                lpc1756::template enable_irq<Timer::irq_id>();
+                lpc1756::template enable_irq<Timer::interrupt_id>();
             }
             else {
                 // disable the interrupt
-                lpc1756::template disable_irq<Timer::irq_id>();
+                lpc1756::template disable_irq<Timer::interrupt_id>();
             }
         }
 
