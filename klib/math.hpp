@@ -113,7 +113,7 @@ namespace klib {
      */
     constexpr uint32_t clz(const uint32_t data) {
         // handle the 0 case as buildin_clz(0) is undefined
-        if (data == 0x00) {
+        if (data == 0x00) [[unlikely]] {
             return 32;
         }
 
@@ -128,7 +128,7 @@ namespace klib {
      */
     constexpr uint32_t ctz(const uint32_t data) {
         // handle the 0 case as buildin_ctz(0) is undefined
-        if (data == 0x00) {
+        if (data == 0x00) [[unlikely]] {
             return 32;
         }
 
@@ -168,11 +168,11 @@ namespace klib {
      */
     template <typename T>
     constexpr T pow(const T base, const int_fast32_t exponent) {
-        if (exponent == 0) {
+        if (exponent == 0) [[unlikely]] {
             return 1;
         }
 
-        if (exponent == 1) {
+        if (exponent == 1) [[unlikely]] {
             return base;
         }
 
@@ -199,15 +199,15 @@ namespace klib {
         typename = std::enable_if_t<std::is_floating_point_v<T>>
     >
     constexpr T ceil(T arg) {
-        if (isinf(arg)) {
+        if (isinf(arg)) [[unlikely]] {
             return arg;
         }
 
-        if (arg == 0.0) {
+        if (arg == 0.0) [[unlikely]] {
             return arg;
         }
 
-        if (isnan(arg)) {
+        if (isnan(arg)) [[unlikely]] {
             return arg;
         }
 
@@ -239,15 +239,15 @@ namespace klib {
         typename = std::enable_if_t<std::is_floating_point_v<T>>
     >
     constexpr T floor(const T arg) {
-        if (isinf(arg)) {
+        if (isinf(arg)) [[unlikely]] {
             return arg;
         }
 
-        if (arg == 0.0) {
+        if (arg == 0.0) [[unlikely]] {
             return arg;
         }
 
-        if (isnan(arg)) {
+        if (isnan(arg)) [[unlikely]] {
             return arg;
         }
 
@@ -340,7 +340,7 @@ namespace klib {
         if constexpr (std::is_unsigned_v<T>) {
             return x;
         } else {
-            return x < 0 ? -x : x;
+            return (x < 0) ? -x : x;
         }
     }
 
