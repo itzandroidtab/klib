@@ -69,7 +69,7 @@ namespace klib::graphics {
             Display::start_write();
         }
 
-        constexpr void flush() {
+        constexpr void flush() const {
             // not used in the direct framebuffer
         }
 
@@ -263,7 +263,7 @@ namespace klib::graphics {
          * @brief Flush implementation for the framebuffer
          * 
          */
-        void flush_impl() {
+        void flush_impl() const {
             // write using the mode we have
             if constexpr (native_mode) {
                 // we should be able to write the native stream 
@@ -348,7 +348,7 @@ namespace klib::graphics {
          * the buffered framebuffer
          * 
          */
-        constexpr void init() {
+        constexpr void init() const {
             // do nothing
         }
 
@@ -356,7 +356,7 @@ namespace klib::graphics {
          * @brief Flush the buffer to the display
          * 
          */
-        constexpr void flush() {
+        constexpr void flush() const {
             // set the cursor to the start of the display
             Display::set_cursor(
                 klib::vector2u{StartX, StartY}, 
