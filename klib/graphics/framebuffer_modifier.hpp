@@ -231,6 +231,44 @@ namespace klib::graphics {
             fb.clear(col);
         }
     };
+
+    /**
+     * @brief Movable version of the framebuffer. Only difference is that the 
+     * flush function allows overwriting the start position
+     * 
+     * @tparam Display 
+     * @tparam Mode 
+     * @tparam StartX 
+     * @tparam StartY 
+     * @tparam EndX 
+     * @tparam EndY 
+     */
+    template <
+        typename Display,
+        uint32_t StartX = 0, 
+        uint32_t StartY = 0, 
+        uint32_t EndX = Display::width, 
+        uint32_t EndY = Display::height
+    >
+    class movable_framebuffer: public framebuffer<Display, Display::mode, StartX, StartY, EndX, EndY> {
+    public:
+        constexpr void flush(const klib::vector2u position) {
+            // set the cursor to the start of the display
+            Display::set_cursor(
+                position + klib::vector2u{StartX, StartY}, 
+                position + klib::vector2u{EndX - 1, EndY - 1}
+            );
+
+            // start the display write
+            Display::start_write();
+
+            // call the flush implementation
+            framebuffer<Display, Display::mode, StartX, StartY, EndX, EndY>::flush_impl();
+
+            // stop the write to the display
+            Display::end_write();
+        }
+    };    
 }
 
 #endif
