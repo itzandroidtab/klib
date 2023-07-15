@@ -198,7 +198,6 @@ namespace klib::lpc1756::io {
 
             // clear the interrupt flag
             Dma::port->INTTCCLEAR = status & mask;
-            Dma::port->INTERRCLR = status & (~mask);
         }
     };
 
@@ -339,9 +338,18 @@ namespace klib::lpc1756::io {
                 (MemoryIncrement << 26) | (0x1 << 31)
             );            
 
+            // check if we need a interrupt
+            const bool irq = size > 0xfff;
+
+            // if we are enabling the interrupt make sure we clear the previous flags 
+            // to prevent a interrupt from triggering straight after enabling it
+            if (irq) [[likely]] {
+                Dma::port->INTTCCLEAR = 0x1 << Channel;
+            }
+
             // setup the channel
             Dma::port->CH[Channel].CONFIG = (
-                (Destination::template dma_id<0>() << 6) | (size > 0xfff) << 15 | 0x1 << 14 |
+                (Destination::template dma_id<0>() << 6) | (irq) << 15 |
                 (static_cast<uint32_t>(detail::dma::transfer_type::memory_to_peripheral) << 11)
             );
 
@@ -380,9 +388,18 @@ namespace klib::lpc1756::io {
                 (MemoryIncrement << 27) | (0x1 << 31)
             );
 
+            // check if we need a interrupt
+            const bool irq = size > 0xfff;
+
+            // if we are enabling the interrupt make sure we clear the previous flags 
+            // to prevent a interrupt from triggering straight after enabling it
+            if (irq) [[likely]] {
+                Dma::port->INTTCCLEAR = 0x1 << Channel;
+            }
+
             // setup the channel
             Dma::port->CH[Channel].CONFIG = (
-                (Source::template dma_id<1>() << 6) | (size > 0xfff) << 15 | 0x1 << 14 |
+                (Source::template dma_id<1>() << 6) | (irq) << 15 |
                 (static_cast<uint32_t>(detail::dma::transfer_type::peripheral_to_memory) << 11)
             );
 
