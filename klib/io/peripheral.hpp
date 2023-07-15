@@ -11,10 +11,10 @@ namespace klib::io::peripheral::detail {
      * @tparam Index 
      * @tparam Pin 
      * @tparam ValidPins 
-     * @return constexpr size_t 
+     * @return constexpr uint32_t 
      */
-    template <size_t Index, typename Pin, typename ValidPins>
-    constexpr size_t index() {
+    template <uint32_t Index, typename Pin, typename ValidPins>
+    constexpr uint32_t index() {
         // make sure we do not go out of the tuple bounds
         static_assert(Index < std::tuple_size<ValidPins>::value, "Pin is not supported in this peripheral");
 
