@@ -98,6 +98,32 @@ namespace klib::usb::device {
         }; 
 
         /**
+         * @brief Called when get interface is received
+         * 
+         * @tparam Usb 
+         * @param packet 
+         * @return usb::handshake 
+         */
+        template <typename Usb>
+        static usb::handshake get_interface(const klib::usb::setup_packet &packet) {
+            // if not needed this function can be removed
+            return usb::handshake::stall;
+        }
+
+        /**
+         * @brief Called when set interface is received
+         * 
+         * @tparam Usb 
+         * @param packet 
+         * @return usb::handshake 
+         */
+        template <typename Usb>
+        static usb::handshake set_interface(const klib::usb::setup_packet &packet) {
+            // if not needed this function can be removed
+            return usb::handshake::stall;
+        }
+
+        /**
          * @brief Called when something occured on a endpoint.
          * 
          * @tparam Usb 
