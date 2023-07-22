@@ -69,7 +69,7 @@ namespace klib::lpc1756::io::detail::usb {
      */
     struct state {
         // flag if the endpoint is busy
-        volatile bool is_busy;
+        bool is_busy;
 
         // max size of the endpoint
         uint8_t max_size;
@@ -81,7 +81,7 @@ namespace klib::lpc1756::io::detail::usb {
         uint32_t requested_size;
 
         // transmitted/received amount of data.
-        volatile uint32_t transferred_size; 
+        uint32_t transferred_size; 
 
         // callback function
         klib::usb::usb::usb_callback callback;
@@ -154,10 +154,7 @@ namespace klib::lpc1756::io {
         constexpr static uint8_t physical_endpoint_count = endpoint_count * 2;
 
         // struct with information about the state of a endpoint
-        static inline detail::usb::state state[endpoint_count] = {};
-
-        // control endpoint buffer
-        static inline uint8_t endpoint0_buffer[max_endpoint_size] = {};
+        static inline volatile detail::usb::state state[endpoint_count] = {};
 
         // variable to store the device address. Used to buffer the
         // address before setting it in the hardware
@@ -245,11 +242,12 @@ namespace klib::lpc1756::io {
                 // do nothing
             }
 
+            // enable the interrupts for the control endpoint and all the tx channels
             Usb::port->EPINTCLR = 0xFFFFFFFF;
-            Usb::port->EPINTEN = 0xFFFFFFFF;
-            Usb::port->DEVINTCLR = 0xFFFFFFFF;
+            Usb::port->EPINTEN = 0xaaaaaaab;
 
             // enable interrupt endpoint slow and stat interrupt
+            Usb::port->DEVINTCLR = 0xFFFFFFFF;
             Usb::port->DEVINTEN = 0x8 | 0x4;
 
             if constexpr (has_bus_reset_callback) {
@@ -420,7 +418,7 @@ namespace klib::lpc1756::io {
             klib::usb::setup_packet packet;
 
             // read the setup packet
-            read(nullptr, klib::usb::usb::control_endpoint, 
+            read_impl(klib::usb::usb::control_endpoint, 
                 klib::usb::usb::endpoint_mode::out, 
                 reinterpret_cast<uint8_t*>(&packet), sizeof(packet)
             );
@@ -508,6 +506,9 @@ namespace klib::lpc1756::io {
 
                             // clear the state
                             clear_endpoint_state(endpoint);
+
+                            // disable the interrupt as we are done
+                            Usb::port->EPINTCLR = 0x1 << (endpoint + endpoint_mode_to_raw(mode));
 
                             // check for any callbacks
                             if (callback) {
@@ -708,14 +709,12 @@ namespace klib::lpc1756::io {
             // reset all the info stored about the endpoints
             for (uint32_t i = 0; i < endpoint_count; i++) {
                 // set the endpoint to a known state
-                state[i] = {
-                    .is_busy = false,
-                    .max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0),
-                    .data = nullptr,
-                    .requested_size = 0,
-                    .transferred_size = 0, 
-                    .callback = nullptr,
-                };
+                state[i].is_busy = false;
+                state[i].max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0);
+                state[i].data = nullptr;
+                state[i].requested_size = 0;
+                state[i].transferred_size = 0;
+                state[i].callback = nullptr;
             }
 
             // register ourselfs with the interrupt controller
@@ -930,8 +929,7 @@ namespace klib::lpc1756::io {
                          const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
                          const uint32_t size) 
         {
-            // set the endpoint callback and mark the endpoint as busy
-            state[endpoint].is_busy = true;
+            // set the endpoint callback
             state[endpoint].callback = callback;
             state[endpoint].data = data;
             
@@ -939,8 +937,11 @@ namespace klib::lpc1756::io {
             state[endpoint].requested_size = size;
             state[endpoint].transferred_size = 0;
 
-            // call the read and discard the result
-            (void)read_impl(endpoint, mode, data, size);
+            // mark the endpoint as busy
+            state[endpoint].is_busy = true;
+
+            // enable the interrupt for the channel
+            Usb::port->EPINTEN = 0x1 << (endpoint + endpoint_mode_to_raw(mode));
 
             // notify everything is correct
             return true;
