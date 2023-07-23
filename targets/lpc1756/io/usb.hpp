@@ -507,8 +507,11 @@ namespace klib::lpc1756::io {
                             // clear the state
                             clear_endpoint_state(endpoint);
 
-                            // disable the interrupt as we are done
-                            Usb::port->EPINTCLR = 0x1 << (endpoint + endpoint_mode_to_raw(mode));
+                            // check if we should disable the endpoint interrupt
+                            if (endpoint >= 2) {
+                                // disable the interrupt as we are done
+                                Usb::port->EPINTEN &= ~(0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode)));
+                            }
 
                             // check for any callbacks
                             if (callback) {
@@ -559,21 +562,23 @@ namespace klib::lpc1756::io {
                 // get the endpoint status
                 const uint32_t value = Usb::port->CMDDATA;
 
-                // check if we have a in or out endpoint
-                if ((endpoint & 0x1) == 0) {
-                    // check if we have a setup packet
-                    if (endpoint == 0 && value & (0x1 << 2)) {
-                        // we have a setup packet. Handle it
-                        setup_packet();
-                    }
-                    else {
-                        // we have a out endpoint. 
-                        endpoint_callback(endpoint >> 1, klib::usb::usb::endpoint_mode::out);
-                    }
+                // get the endpoint mode
+                const auto mode = (
+                    (endpoint & 0x1) ? 
+                    klib::usb::usb::endpoint_mode::in : 
+                    klib::usb::usb::endpoint_mode::out
+                );
+
+                const auto ep = endpoint >> 1;
+
+                // check if we have a control endpoint
+                if (ep == 0 && (value & (0x1 << 2))) {
+                    // we have a control endpoint
+                    setup_packet();
                 }
                 else {
-                    // we have a in endpoint
-                    endpoint_callback(endpoint >> 1, klib::usb::usb::endpoint_mode::in);
+                    // we have a other endpoint handle it
+                    endpoint_callback(ep, mode);
                 }
             }
         }
@@ -940,8 +945,11 @@ namespace klib::lpc1756::io {
             // mark the endpoint as busy
             state[endpoint].is_busy = true;
 
-            // enable the interrupt for the channel
-            Usb::port->EPINTEN = 0x1 << (endpoint + endpoint_mode_to_raw(mode));
+            // check if we should enable the endpoint interrupt
+            if (endpoint >= 2) {
+                // enable the interrupt for the channel
+                Usb::port->EPINTEN |= 0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode));
+            }
 
             // notify everything is correct
             return true;
