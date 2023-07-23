@@ -874,16 +874,16 @@ namespace klib::lpc1756::io {
         }
 
         static void un_stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            write_command(command_phase::command, 
-                static_cast<uint8_t>(endpoint_command::set_status) | (endpoint << 1 | endpoint_mode_to_raw(mode)), 
-                0x0
-            );
-
             // check if we are stalled
             if (!is_stalled(endpoint, mode)) {
                 // we are not stalled return
                 return;
             }
+
+            write_command(command_phase::command, 
+                static_cast<uint8_t>(endpoint_command::set_status) | (endpoint << 1 | endpoint_mode_to_raw(mode)), 
+                0x0
+            );
 
             // get the callback
             const auto callback = state[endpoint].callback;
