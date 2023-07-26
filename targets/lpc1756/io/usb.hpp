@@ -156,10 +156,6 @@ namespace klib::lpc1756::io {
         // struct with information about the state of a endpoint
         static inline volatile detail::usb::state state[endpoint_count] = {};
 
-        // variable to store the device address. Used to buffer the
-        // address before setting it in the hardware
-        static inline uint8_t device_address = 0x00;
-
         /**
          * @brief Command phase
          * 
@@ -344,13 +340,6 @@ namespace klib::lpc1756::io {
             return read_result(command_phase::read, endpoint << 1 | in_endpoint);     
         }
 
-        static void set_device_address_impl(const uint8_t address) {
-            // set the address 2x for some reason. TODO: check if this is needed
-            // set the address enabled bit with the address
-            write_command(command_phase::command, device_command::set_address, 0x80 | address);
-            write_command(command_phase::command, device_command::set_address, 0x80 | address);
-        }
-
         static void write_impl(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, 
                                const uint8_t* data, const uint32_t size) 
         {
@@ -438,17 +427,6 @@ namespace klib::lpc1756::io {
         static void endpoint_callback(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             switch (mode) {
                 case klib::usb::usb::endpoint_mode::in:
-                    // check if we need to update the device address. This cannot be 
-                    // done in the set_device_address callback. 
-                    if (device_address) {
-                        // change the device address
-                        set_device_address_impl(device_address);
-
-                        // clear the device address value to prevent it from updating
-                        // again
-                        device_address = 0;
-                    }
-
                     // check if we are busy transmitting data
                     if (state[endpoint].is_busy) {
                         // get the maximum size we can transmit
@@ -733,7 +711,7 @@ namespace klib::lpc1756::io {
             reset();
 
             // clear the device addess for the manual reset
-            set_device_address_impl(0);
+            set_device_address(0);
 
             // init the device
             device::template init<usb_type>();
@@ -801,10 +779,7 @@ namespace klib::lpc1756::io {
         }   
 
         static klib::usb::usb::handshake set_device_address(const uint8_t address) {
-            // set the address in the variable. We cannot update the device address
-            // here as it would change immediately and will not respond to previous
-            // packets
-            device_address = address;
+            write_command(command_phase::command, device_command::set_address, 0x80 | address);
 
             // ack the set device address
             return klib::usb::usb::handshake::ack;
