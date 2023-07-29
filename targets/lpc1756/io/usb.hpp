@@ -555,8 +555,22 @@ namespace klib::lpc1756::io {
                     setup_packet();
                 }
                 else {
-                    // we have a other endpoint handle it
-                    endpoint_callback(ep, mode);
+                    // check if we have a ack or nak. If we have a nak we will
+                    // send it to the callback if available
+                    if (value & (0x1 << 4)) {
+                        // get the callback
+                        const auto callback = state[ep].callback;
+
+                        // check if the callback is valid
+                        if (callback) {
+                            // call the callback
+                            callback(ep, mode, klib::usb::usb::error::nak);
+                        }
+                    }
+                    else {
+                        // we have a ack on a endpoint. Handle it
+                        endpoint_callback(ep, mode);
+                    }
                 }
             }
         }
@@ -699,6 +713,10 @@ namespace klib::lpc1756::io {
                 state[i].transferred_size = 0;
                 state[i].callback = nullptr;
             }
+
+            // enable nack interrupts on all endpoint types except control 
+            // (interrupt in/out, bulk in/out)
+            write_command(command_phase::command, device_command::set_mode, 0b1111 << 3);
 
             // register ourselfs with the interrupt controller
             irq::register_irq<Usb::interrupt_id>(irq_handler);

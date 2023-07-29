@@ -32,6 +32,7 @@ namespace klib::usb {
          */
         enum class error: uint8_t {
             no_error,
+            nak,
             reset,
             stall,
             un_stall,
@@ -584,6 +585,12 @@ namespace klib::usb {
 
         template <typename Usb>
         static void status_callback(const uint8_t endpoint, const endpoint_mode mode, const error error_code) {
+            // check if we have a nak. If we have do nothing
+            if (error_code == error::nak) {
+                // do nothing
+                return;
+            }
+
             // check if we have a error
             if (error_code == error::no_error) {
                 // no error send a ack
