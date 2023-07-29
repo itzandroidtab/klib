@@ -181,11 +181,7 @@ namespace klib::lpc1756::io {
          */
         static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
             // discard anything that is left in the fifo
-            while (Ssp::port->SR & (0x1 << 2)) {
-                // discard the old data and make place for 
-                // the new data
-                (void)Ssp::port->DR;
-            }
+            clear_rx_fifo();
 
             // check if we have a valid pointer to write
             if (tx == nullptr) {
@@ -230,6 +226,8 @@ namespace klib::lpc1756::io {
         /**
          * @brief Write to the ssp bus
          * 
+         * @warning not all data is written unless not busy anymore
+         * 
          * @param data 
          * @param size 
          */
@@ -262,6 +260,20 @@ namespace klib::lpc1756::io {
          */
         static bool is_busy() {
             return Ssp::port->SR & 0x1 << 4;
+        }
+
+        /**
+         * @brief Clear any data left in the rx fifo. This functions 
+         * should be used before starting a dma transfer.
+         * 
+         */
+        static void clear_rx_fifo() {
+            // discard anything that is left in the fifo
+            while (Ssp::port->SR & (0x1 << 2)) {
+                // discard the old data to make place for 
+                // the new data
+                (void)Ssp::port->DR;
+            }
         }
 
     public:
