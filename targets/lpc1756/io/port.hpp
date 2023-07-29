@@ -134,6 +134,28 @@ namespace klib::lpc1756::io::detail::pins {
             ((static_cast<uint8_t>(Value) & 0b11) << ((Pin::number * 2)
         ) % 32);
     }
+
+    /**
+     * @brief Set the open drain of a pin
+     * 
+     * @tparam Pin 
+     * @tparam OpenDrain 
+     */
+    template <typename Pin, bool OpenDrain>
+    static void set_open_drain() {
+        // get a pointer to the open drain registers
+        uint32_t *const open_drain = (
+            reinterpret_cast<volatile uint32_t *const>(&(PINCONNECT->PINMODE_OD0))
+        );
+        
+        // set or clear based on the value
+        if constexpr (OpenDrain) {
+            open_drain[Pin::port::id] |= mask<Pin>;
+        }
+        else {
+            open_drain[Pin::port::id] &= ~(mask<Pin>);
+        }
+    }
 }
 
 // global peripherals, not affected by chip package
