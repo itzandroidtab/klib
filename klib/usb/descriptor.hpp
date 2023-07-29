@@ -18,15 +18,21 @@ namespace klib::usb::descriptor {
      * Descriptor types from the usb 2.0 specification
      * 
      */ 
-    enum class descriptor_type {
+    enum class descriptor_type: uint8_t {
         device = 1,
         configuration = 2,
         string = 3,
         interface = 4,
         endpoint = 5,
-        device_qualifier,
+        device_qualifier = 6,
         other_speed_config = 7,
-        interface_power = 8
+        interface_power = 8,
+        otg = 9,
+        debug = 10,
+        interface_association = 11,
+        bos = 15,
+        device_capability = 16,
+        superspeed_usb_endpoint_compainion = 48,
     };
 
     /**
@@ -278,6 +284,41 @@ namespace klib::usb::descriptor {
     };
 
     static_assert(sizeof(endpoint) == 7, "Endpoint descriptor is not 7 bytes in length");
+
+    /**
+     * @brief Device qualifier descriptor
+     * 
+     */
+    struct qualifier {
+        // size of descriptor in bytes
+        const uint8_t bLength = sizeof(qualifier);
+
+        // descriptorType
+        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::device_qualifier);
+
+        // usb specification number which device compies to
+        uint16_t bcdUSB;
+
+        // class code
+        uint8_t bDeviceClass;
+
+        // subclass code
+        uint8_t bDeviceSubClass;
+
+        // protocol code
+        uint8_t bDeviceProtocol;
+
+        // maximum packet size for other speed
+        uint8_t bMaxPacketSize0;
+
+        // number of possible configurations
+        uint8_t bNumConfigurations;
+
+        // reserved
+        uint8_t bReserved;
+    };
+
+    static_assert(sizeof(qualifier) == 10, "Qualifier descriptor is not 10 bytes in length");
 }
 
 // release the old pack so the rest of the structs are not 
