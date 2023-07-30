@@ -151,8 +151,8 @@ namespace klib::time {
         };
 
         // get the enum value of the type we have
-        uint8_t from = static_cast<uint8_t>(time_to_unit<T>());
-        uint8_t to = static_cast<uint8_t>(time_to_unit<G>());
+        const uint8_t from = static_cast<uint8_t>(time_to_unit<T>());
+        const uint8_t to = static_cast<uint8_t>(time_to_unit<G>());
 
         // return the difference
         return klib::max(value[from], value[to]) / klib::min(value[from], value[to]);
