@@ -80,15 +80,25 @@ namespace klib::lpc1756::io::periph {
     };
 }
 
-namespace klib::lpc1756::io {
+namespace klib::lpc1756::io::detail::timer {
+    /**
+     * @brief Different timer modes
+     * 
+     */
+    enum class mode {
+        one_shot,
+        continuous,
+        counter
+    };
+
     /**
      * @brief Base timer for the lpc1756
      * 
      * @tparam Timer 
      * @tparam Mode 
      */
-    template <typename Timer, uint8_t Channel>
-    class timer {
+    template <typename Timer, uint8_t Channel, mode Mode = mode::continuous>
+    class base_timer {
     public:
         // using for the array of callbacks
         using interrupt_callback = void (*)();
@@ -140,14 +150,17 @@ namespace klib::lpc1756::io {
             // set the timer into timer count mode
             Timer::port->CTCR = 0x00;
 
-            // clear the counter when it is stuck on 0
-            if (!get_counter()) {
-                // clear the counter
-                clear_counter();
-            }
+            // clear the counter
+            clear_counter();
+
+            // channel configuration value
+            const uint8_t value = (
+                (irq != nullptr) | ((Mode == mode::one_shot) << 2) |
+                ((Mode != mode::one_shot && Mode != mode::counter) << 1)
+            );
 
             // setup to trigger a interrupt when matching the TC value
-            Timer::port->MCR = (Timer::port->MCR & ~(0b111 << Channel)) | (0b011 << Channel);
+            Timer::port->MCR = (Timer::port->MCR & ~(0b111 << Channel)) | (value << Channel);
 
             // set the callback
             callback = irq;
@@ -210,6 +223,24 @@ namespace klib::lpc1756::io {
             Timer::port->TC = 0x1;
         }
     };
+}
+
+namespace klib::lpc1756::io {
+    /**
+     * @brief Basic timer. Uses interrupts to call a callback.
+     * 
+     * @tparam Timer 
+     */
+    template <typename Timer, uint32_t Channel>
+    using timer = detail::timer::base_timer<Timer, Channel>;
+
+    /**
+     * @brief Oneshot timer. Uses interrupt to call a callback once.
+     * 
+     * @tparam Timer 
+     */
+    template <typename Timer, uint32_t Channel>
+    using oneshot_timer = detail::timer::base_timer<Timer, Channel, detail::timer::mode::one_shot>;
 }
 
 #endif
