@@ -111,14 +111,18 @@ namespace klib::graphics {
             // convert the data to a stream we can send. See 
             // framebuffer::set_pixel for more information about
             // the conversion from raw to native mode
-            if constexpr (color_mode::bits / 8 == sizeof(uint8_t)) {
+            if constexpr (
+                (color_mode::bits / 8 == sizeof(uint8_t)) && 
+                ((color_mode::bits % 8) == 0)) 
+            {
                 // nothing to do for 1 byte color modes
                 native = raw;
             }
             else if constexpr (
+                ((color_mode::bits % 8) == 0) && (
                 color_mode::bits / 8 == sizeof(uint16_t) || 
                 color_mode::bits / 8 == sizeof(uint32_t) ||
-                color_mode::bits / 8 == sizeof(uint64_t)) 
+                color_mode::bits / 8 == sizeof(uint64_t)))
             {
                 // we can use the buildin byte swap
                 native = klib::bswap(raw);
