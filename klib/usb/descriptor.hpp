@@ -319,6 +319,51 @@ namespace klib::usb::descriptor {
     };
 
     static_assert(sizeof(qualifier) == 10, "Qualifier descriptor is not 10 bytes in length");
+
+    /**
+     * @brief Binary device object store (BOS)
+     * 
+     */
+    struct bos {
+        // size of this descriptor
+        const uint8_t bLength = sizeof(bos);
+
+        // the BOS descriptor type
+        const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::bos);
+
+        // the length of this descriptor and all of 
+        // its sub descriptors
+        uint16_t wTotalLength;
+
+        // the number of separate device capability 
+        // descriptors in the BOS
+        uint8_t bNumDeviceCaps;
+    };
+
+    static_assert(sizeof(bos) == 5, "BOS descriptor is not 5 bytes in length");
+
+    /**
+     * @brief Device capability descriptor
+     * 
+     * @tparam Size 
+     */
+    template <typename T>
+    struct capability {
+        // size of this descriptor
+        const uint8_t bLength = sizeof(capability<T>);
+
+        // the device capability descriptor type
+        const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::device_capability);
+
+        // device capability type (valid values are 
+        // listed in table 9-11)
+        uint8_t bDevCapabilityType;
+
+        // capability specific format
+        T capability_dependent;
+    };
+
+    static_assert(sizeof(capability<uint8_t>) == 4, "uint8_t capability descriptor is not 4 bytes in length");    
 }
 
 // release the old pack so the rest of the structs are not 
