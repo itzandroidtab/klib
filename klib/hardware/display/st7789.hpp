@@ -182,7 +182,9 @@ namespace klib::hardware::display {
             /**
              * @brief inits the display
              *
+             * @tparam InvertedColors 
              */
+            template <bool InvertedColors = false>
             static void init() {
                 // using for the time
                 using namespace klib::time;
@@ -214,7 +216,12 @@ namespace klib::hardware::display {
                 }
 
                 // display inversion off, memory direction control
-                write_cmd(cmd::invon);
+                if constexpr (InvertedColors) {
+                    write_cmd(cmd::invon);
+                }
+                else {
+                    write_cmd(cmd::invoff);
+                }
                 write_cmd(cmd::madctl, 0b0 << 3);
 
                 // frame rate control in idle and partial mode (set 
