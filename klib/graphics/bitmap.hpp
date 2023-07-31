@@ -79,8 +79,8 @@ namespace klib::graphics {
             for (int32_t y = 0; y < height; y++) {
                 for (int32_t x = 0; x < width; x++) {
                     // make sure the position is inside the framebuffer
-                    if (((position.y + y) < 0 || (position.y + y) > static_cast<int32_t>(framebuffer.height)) || 
-                        ((position.x + x) < 0 || (position.x + x) > static_cast<int32_t>(framebuffer.width)))
+                    if (((position.y + y) < 0 || (position.y + y) >= static_cast<int32_t>(framebuffer.height)) || 
+                        ((position.x + x) < 0 || (position.x + x) >= static_cast<int32_t>(framebuffer.width)))
                     {
                         // skip the pixel if it outside of the framebuffer
                         continue;
