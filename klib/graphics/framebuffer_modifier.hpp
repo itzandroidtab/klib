@@ -4,8 +4,10 @@
 #include <cstdint>
 
 #include <klib/vector2.hpp>
-#include <klib/graphics/color.hpp>    
-    
+#include <klib/graphics/color.hpp>
+
+#include "framebuffer.hpp"
+
 namespace klib::graphics {
     /**
      * @brief Framebuffer with a different start position in a another framebuffer
@@ -244,13 +246,13 @@ namespace klib::graphics {
      * @tparam EndY 
      */
     template <
-        typename Display,
+        typename Display, graphics::mode Mode,
         uint32_t StartX = 0, 
         uint32_t StartY = 0, 
         uint32_t EndX = Display::width, 
         uint32_t EndY = Display::height
     >
-    class movable_framebuffer: public framebuffer<Display, Display::mode, StartX, StartY, EndX, EndY> {
+    class movable_framebuffer: public framebuffer<Display, Mode, StartX, StartY, EndX, EndY> {
     public:
         constexpr void flush(const klib::vector2u position) {
             // set the cursor to the start of the display
@@ -263,7 +265,7 @@ namespace klib::graphics {
             Display::start_write();
 
             // call the flush implementation
-            framebuffer<Display, Display::mode, StartX, StartY, EndX, EndY>::flush_impl();
+            framebuffer<Display, Mode, StartX, StartY, EndX, EndY>::flush_impl();
 
             // stop the write to the display
             Display::end_write();
