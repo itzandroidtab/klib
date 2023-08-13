@@ -719,6 +719,17 @@ namespace klib::max32625::io {
         }
 
         /**
+         * @brief Function to check if a endpoint with type is supported at compile time
+         * 
+         * @tparam endpoint 
+         * @tparam type 
+         */
+        template <uint8_t endpoint, klib::usb::descriptor::transfer_type type>
+        constexpr static void is_valid_endpoint() {
+            // TODO: implement this
+        }
+
+        /**
          * @brief Shutdown the usb peripheral
          * 
          */
