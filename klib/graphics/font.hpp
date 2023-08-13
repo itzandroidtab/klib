@@ -140,7 +140,7 @@ namespace klib::graphics {
 
             return characters[ch - ' '];
         }
-    };    
+    };
 }
 
 #endif
