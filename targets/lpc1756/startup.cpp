@@ -38,6 +38,6 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // enable the systick timer
     klib::io::systick::enable();
 
-    // enable MPU, bus and usage faults in seperate inpterrupts
-    // SCB->SHCSR = 0b1011 << 16;
+    // enable MPU, bus and usage faults in separate inpterrupts
+    SCB->SHCSR = 0b111 << 16;
 }
