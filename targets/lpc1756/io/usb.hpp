@@ -429,23 +429,6 @@ namespace klib::lpc1756::io {
                 case klib::usb::usb::endpoint_mode::in:
                     // check if we are busy transmitting data
                     if (state[endpoint].is_busy) {
-                        // get the maximum size we can transmit
-                        const uint32_t s = klib::min(
-                            (state[endpoint].requested_size - state[endpoint].transferred_size),
-                            state[endpoint].max_size
-                        );
-
-                        // check if we are done
-                        if (s) {
-                            write_impl(
-                                endpoint, klib::usb::usb::endpoint_mode::in, 
-                                (state[endpoint].data + state[endpoint].transferred_size), s
-                            );
-
-                            // update the amount we have transferred
-                            state[endpoint].transferred_size += s;
-                        }
-
                         // check if we are done
                         if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
                             // we are done. clear the flag and call the callback
@@ -461,6 +444,24 @@ namespace klib::lpc1756::io {
                                     endpoint, klib::usb::usb::endpoint_mode::in, 
                                     klib::usb::usb::error::no_error
                                 );
+                            }
+                        }
+                        else {
+                            // get the maximum size we can transmit
+                            const uint32_t s = klib::min(
+                                (state[endpoint].requested_size - state[endpoint].transferred_size),
+                                state[endpoint].max_size
+                            );
+
+                            // check if we are done
+                            if (s) {
+                                write_impl(
+                                    endpoint, klib::usb::usb::endpoint_mode::in, 
+                                    (state[endpoint].data + state[endpoint].transferred_size), s
+                                );
+
+                                // update the amount we have transferred
+                                state[endpoint].transferred_size += s;
                             }
                         }
                     }
