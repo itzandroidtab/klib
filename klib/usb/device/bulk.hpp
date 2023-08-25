@@ -207,7 +207,7 @@ namespace klib::usb::device {
             is_transmitting = true;
 
             // start to the write to the endpoint
-            if (!Usb::write(callback<Usb>, config.endpoint0.bEndpointAddress & 0xf, 
+            if (!Usb::write(callback<Usb>, usb::get_endpoint(config.endpoint0.bEndpointAddress), 
                 usb::endpoint_mode::in, data, size))
             {
                 return false;
@@ -442,12 +442,12 @@ namespace klib::usb::device {
             if (packet.wValue == config.configuration.bConfigurationValue) {
                 // configure the endpoints
                 Usb::configure(
-                    config.endpoint0.bEndpointAddress & 0xf, 
+                    usb::get_endpoint(config.endpoint0.bEndpointAddress), 
                     usb::get_endpoint_mode(config.endpoint0.bEndpointAddress), 
                     config.endpoint0.wMaxPacketSize
                 );
                 Usb::configure(
-                    config.endpoint1.bEndpointAddress & 0xf, 
+                    usb::get_endpoint(config.endpoint1.bEndpointAddress), 
                     usb::get_endpoint_mode(config.endpoint1.bEndpointAddress), 
                     config.endpoint1.wMaxPacketSize
                 );
@@ -469,13 +469,13 @@ namespace klib::usb::device {
                 if (configuration) {
                     // reset the endpoint
                     Usb::reset(
-                        config.endpoint0.bEndpointAddress & 0xf, 
+                        usb::get_endpoint(config.endpoint0.bEndpointAddress),
                         usb::get_endpoint_mode(config.endpoint0.bEndpointAddress)
                     );
 
                     // reset the endpoint
                     Usb::reset(
-                        config.endpoint1.bEndpointAddress & 0xf, 
+                        usb::get_endpoint(config.endpoint1.bEndpointAddress),
                         usb::get_endpoint_mode(config.endpoint1.bEndpointAddress)
                     );
                 }
@@ -507,7 +507,7 @@ namespace klib::usb::device {
         template <typename Usb>
         static void endpoint_callback(const uint8_t endpoint, const usb::endpoint_mode mode) {
             // check if we we are receiving data
-            if (endpoint == (config.endpoint1.bEndpointAddress & 0xf)) {
+            if (endpoint == (usb::get_endpoint(config.endpoint1.bEndpointAddress))) {
                 // check if we are receiving already. Do not continue if that is the case
                 if (is_receiving) {
                     // do a early return
@@ -525,7 +525,7 @@ namespace klib::usb::device {
                 is_receiving = true;
 
                 // start a read on the endpoint
-                Usb::read(callback<Usb>, config.endpoint1.bEndpointAddress & 0xf, 
+                Usb::read(callback<Usb>, usb::get_endpoint(config.endpoint1.bEndpointAddress), 
                     usb::endpoint_mode::out, rx_data.data, rx_data.size
                 );
             }
