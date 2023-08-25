@@ -36,6 +36,7 @@ namespace klib::usb {
             reset,
             stall,
             un_stall,
+            cancel,
         };
 
         /**

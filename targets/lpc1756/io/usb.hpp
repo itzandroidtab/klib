@@ -989,6 +989,26 @@ namespace klib::lpc1756::io {
         static bool is_pending(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             return state[endpoint].is_busy;
         }
+
+        static void cancel(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
+            // get the callback
+            const auto callback = state[endpoint].callback;
+
+            // clear the state of the endpoint
+            clear_endpoint_state(endpoint);
+
+            // check if we should disable the endpoint interrupt (only disable out endpoints)
+            if ((mode == klib::usb::usb::endpoint_mode::out) && (endpoint >= 2)) {
+                // disable the interrupt as we are done
+                Usb::port->EPINTEN &= ~(0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode)));
+            }
+
+            // check if the callback is valid
+            if (callback) {
+                // call the callback
+                callback(endpoint, mode, klib::usb::usb::error::cancel);
+            }
+        }
     };
 }
 
