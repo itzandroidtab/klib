@@ -487,7 +487,7 @@ namespace klib::lpc1756::io {
                             clear_endpoint_state(endpoint);
 
                             // check if we should disable the endpoint interrupt
-                            if (endpoint >= 2) {
+                            if (endpoint >= 1) {
                                 // disable the interrupt as we are done
                                 Usb::port->EPINTEN &= ~(0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode)));
                             }
@@ -980,7 +980,7 @@ namespace klib::lpc1756::io {
             state[endpoint].is_busy = true;
 
             // check if we should enable the endpoint interrupt
-            if (endpoint >= 2) {
+            if (endpoint >= 1) {
                 // enable the interrupt for the channel
                 Usb::port->EPINTEN |= 0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode));
             }
@@ -1001,7 +1001,7 @@ namespace klib::lpc1756::io {
             clear_endpoint_state(endpoint);
 
             // check if we should disable the endpoint interrupt (only disable out endpoints)
-            if ((mode == klib::usb::usb::endpoint_mode::out) && (endpoint >= 2)) {
+            if ((mode == klib::usb::usb::endpoint_mode::out) && (endpoint >= 1)) {
                 // disable the interrupt as we are done
                 Usb::port->EPINTEN &= ~(0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode)));
             }
