@@ -671,7 +671,7 @@ namespace klib::lpc1756::io {
          * @tparam UsbLed 
          * @tparam UsbConnect 
          */
-        template <bool UsbLed = true, bool UsbConnect = true>
+        template <bool UsbLed = true, bool UsbConnect = true, bool NakIrq = false>
         static void init() {
             // enable the usb power
             power_control::enable<Usb>();
@@ -715,9 +715,12 @@ namespace klib::lpc1756::io {
                 state[i].callback = nullptr;
             }
 
-            // enable nack interrupts on all endpoint types except control 
-            // (interrupt in/out, bulk in/out)
-            write_command(command_phase::command, device_command::set_mode, 0b1111 << 3);
+            // check if we should enable naks
+            if constexpr (NakIrq) {
+                // enable nak interrupts on all endpoint types except control 
+                // (interrupt in/out, bulk in/out)
+                write_command(command_phase::command, device_command::set_mode, 0b1111 << 3);
+            }
 
             // register ourselfs with the interrupt controller
             irq::register_irq<Usb::interrupt_id>(irq_handler);
