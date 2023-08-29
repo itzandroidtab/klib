@@ -647,6 +647,10 @@ namespace klib::lpc1756::io {
             // create the masked status
             const uint32_t masked_status = status & mask;
 
+            // clear the interrupt status so we dont miss any
+            // interrupts while the user code is running
+            Usb::port->DEVINTCLR = masked_status;
+
             // check for a status interrupt
             if (masked_status & (0x1 << 4)) {
                 // we have a device status interrupt
@@ -656,10 +660,6 @@ namespace klib::lpc1756::io {
                 // we have a endpoint interrupt. Handle it in the data irq
                 data_irq_handler();
             }
-
-            // clear the interrupt status after handling all 
-            // the interrupts
-            Usb::port->DEVINTCLR = masked_status;
         }
 
     public:
