@@ -562,6 +562,215 @@ namespace klib::usb::msc::bot {
             request_data_write<Usb>();
         }     
     };
+
+    /**
+     * @brief Helper class that alows a memory device to be accessed by the bulk only transfer driver
+     * 
+     * @tparam Memory 
+     * @tparam Size 
+     * @tparam SectorSize 
+     * @tparam PageSize 
+     */
+    template <typename Memory, uint32_t Size, uint32_t SectorSize, uint32_t PageSize>
+    class helper {
+    protected:
+        constexpr static uint32_t invalid_sector = 0xffffffff;
+
+        // current sector
+        static inline uint32_t current_sector = invalid_sector;
+
+        // buffer to store a whole sector for writing to the memory
+        static inline uint8_t buffer[SectorSize] = {};
+
+        // flag if we wrote something to the sector buffer
+        static inline bool dirty = false;
+
+        /**
+         * @brief Write or read from the sector
+         * 
+         * @param sector 
+         * @return true 
+         * @return false 
+         */
+        static bool get_sector(const uint32_t sector) {
+            // check if a new sector requested
+            if (current_sector == sector) {
+                return true;
+            }
+
+            // check if we should flush data
+            if (current_sector != invalid_sector && dirty) {
+                // get the starting address of the sector
+                const uint32_t address = (current_sector * SectorSize);
+
+                // do a sector erase
+                Memory::erase(Memory::erase_mode::sector, address);
+
+                // wait until the device is not busy
+                while (Memory::is_busy()) {
+                    // do nothing until the memory is not busy anymore
+                }
+
+                // write the data in pagesize chunks (some memories do not 
+                // support writing big chunks at once)
+                for (uint32_t i = 0; i < sizeof(buffer); i += PageSize) {
+                    // write the buffer
+                    Memory::write(address + i, &buffer[i], PageSize);
+
+                    // wait until the device is not busy
+                    while (Memory::is_busy()) {
+                        // do nothing until the memory is not busy anymore
+                    }
+                }
+
+                dirty = false;
+            }
+
+            // check if we should read a new sector
+            if (sector != invalid_sector) {
+                // get the start address of the next sector
+                const uint32_t address = (sector * SectorSize);
+
+                // read the data from the sector
+                Memory::read(address, buffer, sizeof(buffer));
+
+                // update the current sector and clear the dirty flag
+                current_sector = sector;
+                dirty = false;            
+            }
+            
+            return true;
+        }
+
+    public:
+        /**
+         * @brief Init the memory
+         * 
+         */
+        static void init() {
+            // mark the current sector as invalid
+            current_sector = invalid_sector;
+
+            // clear the dirty flag as we did not do anything yet
+            dirty = false;
+            
+            // initialize the memory
+            Memory::init();
+        }
+
+        /**
+         * @brief Start the memory
+         * 
+         */
+        static void start() {
+            // nothing to do here
+        }
+
+        /**
+         * @brief Stop any pending transaction and flush to disk
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool stop() {
+            // stop any pending transactions and make sure to write the 
+            // last sector we wrote to if it is dirty
+            get_sector(invalid_sector);
+
+            return true;
+        }
+
+        /**
+         * @brief Return if the memory is ready
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool ready() {
+            // return if the device is busy
+            return !Memory::is_busy();
+        }
+
+        /**
+         * @brief Returns if the device can be removed from the host
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool can_remove() {
+            // return the device can be removed
+            return true;
+        }
+
+        /**
+         * @brief Returns the size of the memory device in bytes
+         * 
+         * @return uint32_t 
+         */
+        static uint32_t size() {
+            return Size;
+        }
+
+        /**
+         * @brief Returns if the drive is writable
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool is_writable() {
+            return true;
+        }
+
+        /**
+         * @brief Read a sector. Can read up to SectorSize of bytes 
+         * at once (without crossing a sector boundry)
+         * 
+         * @param data 
+         * @param address 
+         * @param size 
+         * @return true 
+         * @return false 
+         */
+        static bool read(uint8_t *const data, const uint32_t address, const uint16_t size) {
+            // get the sector from memory
+            if (!get_sector(address / SectorSize)) {
+                return false;
+            }
+
+            // copy the data from the buffer to the destination
+            std::copy_n(&buffer[address & (SectorSize - 1)], size, data);
+
+            // return we are good
+            return true;
+        }
+
+        /**
+         * @brief Write to a sector. Can write up to SectorSize of bytes 
+         * at once (without crossing a sector boundry)
+         * 
+         * @param data 
+         * @param address 
+         * @param size 
+         * @return true 
+         * @return false 
+         */
+        static bool write(uint8_t *const data, const uint32_t address, const uint16_t size) {
+            // get the sector
+            if (!get_sector(address / SectorSize)) {
+                return false;
+            }
+
+            // copy the data from the buffer to the destination
+            std::copy_n(data, size, &buffer[address & (SectorSize - 1)]);
+
+            // mark the sector as dirty so we will write it when 
+            // we change sectors
+            dirty = true;
+
+            // return we are good
+            return true;
+        }
+    };    
 }
 
 #endif
