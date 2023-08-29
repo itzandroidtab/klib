@@ -239,11 +239,11 @@ namespace klib::lpc1756::io {
             }
 
             // enable the interrupts for the control endpoint and all the tx channels
-            Usb::port->EPINTCLR = 0xFFFFFFFF;
-            Usb::port->EPINTEN = 0xaaaaaaab;
+            Usb::port->EPINTCLR = 0xffffffff;
+            Usb::port->EPINTEN = 0xffffffff;
 
             // enable interrupt endpoint slow and stat interrupt
-            Usb::port->DEVINTCLR = 0xFFFFFFFF;
+            Usb::port->DEVINTCLR = 0xffffffff;
             Usb::port->DEVINTEN = 0x8 | 0x4;
 
             if constexpr (has_bus_reset_callback) {
@@ -486,12 +486,6 @@ namespace klib::lpc1756::io {
                             // clear the state
                             clear_endpoint_state(endpoint);
 
-                            // check if we should disable the endpoint interrupt
-                            if (endpoint >= 1) {
-                                // disable the interrupt as we are done
-                                Usb::port->EPINTEN &= ~(0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode)));
-                            }
-
                             // check for any callbacks
                             if (callback) {
                                 // call the callback
@@ -512,17 +506,14 @@ namespace klib::lpc1756::io {
         }
 
         static void data_irq_handler() {
-            const uint32_t status = Usb::port->EPINTST;
-            const uint32_t mask = Usb::port->EPINTEN;
-
-            // get the masked status
-            uint32_t masked_status = status & mask;
+            // get the endpoints we should handle
+            uint32_t status = Usb::port->EPINTST;
 
             // amount of trailing zeros in the status register
             uint8_t trailing_zeros = 0;
 
             // check what endpoint has triggered the interrupt (32 == zero's)
-            while ((trailing_zeros = klib::ctz(masked_status)) < 32) {
+            while ((trailing_zeros = klib::ctz(status)) < 32) {
                 // get the current endpoint
                 const uint8_t endpoint = trailing_zeros;
 
@@ -536,7 +527,7 @@ namespace klib::lpc1756::io {
                 }
 
                 // clear the bit from the masked_status interrupts
-                masked_status &= ~(0x1 << endpoint);
+                status &= ~(0x1 << endpoint);
 
                 // get the endpoint status
                 const uint32_t value = Usb::port->CMDDATA;
@@ -979,12 +970,6 @@ namespace klib::lpc1756::io {
             // mark the endpoint as busy
             state[endpoint].is_busy = true;
 
-            // check if we should enable the endpoint interrupt
-            if (endpoint >= 1) {
-                // enable the interrupt for the channel
-                Usb::port->EPINTEN |= 0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode));
-            }
-
             // notify everything is correct
             return true;
         }
@@ -999,12 +984,6 @@ namespace klib::lpc1756::io {
 
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
-
-            // check if we should disable the endpoint interrupt (only disable out endpoints)
-            if ((mode == klib::usb::usb::endpoint_mode::out) && (endpoint >= 1)) {
-                // disable the interrupt as we are done
-                Usb::port->EPINTEN &= ~(0x1 << ((endpoint << 1) | endpoint_mode_to_raw(mode)));
-            }
 
             // check if the callback is valid
             if (callback) {
