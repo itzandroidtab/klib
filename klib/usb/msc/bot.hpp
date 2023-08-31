@@ -66,12 +66,26 @@ namespace klib::usb::msc::bot {
     };
 
     static_assert(sizeof(command_status_wrapper) == 13, "Command status wrapper is not 13 bytes in length");
+}
 
+namespace klib::usb::msc::bot::status {
+    /**
+     * @brief bCSWStatus responses
+     * 
+     */
+    enum class command: uint8_t {
+        passed = 0x00,
+        failed = 0x01,
+        phase_error = 0x02,
+    };
+}
+
+namespace klib::usb::msc::scsi {
     /**
      * @brief Supported scsi commands
      * 
      */
-    enum class scsi_command {
+    enum class command {
         test_unit_ready = 0x00,
         request_sense = 0x03,
         inquiry = 0x12,
@@ -86,18 +100,64 @@ namespace klib::usb::msc::bot {
         mode_sense10 = 0x5a,
         read_capacity16 = 0x9e,
     };
-}
 
-namespace klib::usb::msc::bot::status {
     /**
-     * @brief bCSWStatus responses
+     * @brief Read 10 command structure
      * 
      */
-    enum class command: uint8_t {
-        passed = 0x00,
-        failed = 0x01,
-        phase_error = 0x02,
+    struct read10 {
+        // operation code (0x28 for read10)
+        uint8_t operation_code;
+
+        // b[0..1] = obsolete
+        // b[2] = rebuild assist recovery control
+        // b[3] = force unit access
+        // b[4] = disable page out
+        // b[5..7] = read protect
+        uint8_t flags;
+
+        // logical block address
+        uint32_t address;
+
+        // group number
+        uint8_t group;
+
+        // transfer length
+        uint16_t length;
+
+        uint8_t control;
     };
+
+    static_assert(sizeof(read10) == 10, "Read 10 command structure should be 10 bytes");
+
+    /**
+     * @brief Write 10 command structure
+     * 
+     */
+    struct write10 {
+        // operation code (0x2a for write10)
+        uint8_t operation_code;
+
+        // b[0..1] = obsolete
+        // b[2] = reserved
+        // b[3] = force unit access
+        // b[4] = disable page out
+        // b[5..7] = write protect
+        uint8_t flags;
+
+        // logical block address
+        uint32_t address;
+
+        // group number
+        uint8_t group;
+
+        // transfer length
+        uint16_t length;
+
+        uint8_t control;
+    };
+
+    static_assert(sizeof(write10) == 10, "Write 10 command structure should be 10 bytes");
 }
 
 // release the old pack so the rest of the structs are not 

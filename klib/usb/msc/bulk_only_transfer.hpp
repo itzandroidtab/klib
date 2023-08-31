@@ -207,11 +207,11 @@ namespace klib::usb::msc::bot {
             csw.bCSWStatus = static_cast<uint8_t>(status::command::passed);
 
             // get the scsi command
-            const auto scsi = static_cast<scsi_command>(cbw.CBWCB[0]);
+            const auto scsi = static_cast<msc::scsi::command>(cbw.CBWCB[0]);
 
             // process the scsi command. 
             switch (scsi) {
-                case scsi_command::test_unit_ready:
+                case msc::scsi::command::test_unit_ready:
                     // check if the memory is ready
                     csw.bCSWStatus = (Memory::ready() ? 
                         static_cast<uint8_t>(status::command::passed) : 
@@ -221,17 +221,17 @@ namespace klib::usb::msc::bot {
                     // send the status response directly
                     send_csw<Usb>();
                     break;
-                case scsi_command::request_sense:
+                case msc::scsi::command::request_sense:
                     // respond to the sense request and send a status response
                     // after sending the sense
                     request_sense<Usb>();
                     break;
-                case scsi_command::inquiry:
+                case msc::scsi::command::inquiry:
                     // respond to the inquiry and send a status response after 
                     // sending the sense
                     send_inquiry<Usb>();
                     break;
-                case scsi_command::start_stop_unit:
+                case msc::scsi::command::start_stop_unit:
                     // check if we should stop or start the memory
                     if (cbw.CBWCB[3] & 0x2) {
                         // flush any pending transactions and report the result
@@ -254,12 +254,12 @@ namespace klib::usb::msc::bot {
                     // send the status response directly
                     send_csw<Usb>();
                     break;
-                case scsi_command::mode_sense6:
-                case scsi_command::mode_sense10:
+                case msc::scsi::command::mode_sense6:
+                case msc::scsi::command::mode_sense10:
                     // send the result of the sense
                     send_sense<Usb>();
                     break;
-                case scsi_command::allow_medium_removal:
+                case msc::scsi::command::allow_medium_removal:
                     // check if the memory is ready for removal
                     csw.bCSWStatus = (Memory::can_remove() ? 
                         static_cast<uint8_t>(status::command::passed) : 
@@ -269,20 +269,20 @@ namespace klib::usb::msc::bot {
                     // send the status response directly
                     send_csw<Usb>();
                     break;
-                case scsi_command::receive_diagnostic_result:
+                case msc::scsi::command::receive_diagnostic_result:
                     send_receive_diagnostic_result<Usb>();
                     break;
-                case scsi_command::read_format_capacities:
+                case msc::scsi::command::read_format_capacities:
                     send_format_capacity<Usb>();
                     break;
-                case scsi_command::read_capacity10:
+                case msc::scsi::command::read_capacity10:
                     send_capacity<Usb>();
                     break;
-                case scsi_command::read_capacity16:
+                case msc::scsi::command::read_capacity16:
                     send_capacity16<Usb>();
                     break;
-                case scsi_command::read10:
-                case scsi_command::write10:
+                case msc::scsi::command::read10:
+                case msc::scsi::command::write10:
                     // get the address we should use
                     transfer_block.address = (
                         cbw.CBWCB[2] << 24 | cbw.CBWCB[3] << 16 | 
@@ -294,7 +294,7 @@ namespace klib::usb::msc::bot {
 
                     // start a read or write based on the scsi command we 
                     // received
-                    if (scsi == scsi_command::read10) {
+                    if (scsi == msc::scsi::command::read10) {
                         read_memory<Usb>();
                     }
                     else {
