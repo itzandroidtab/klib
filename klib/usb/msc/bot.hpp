@@ -102,6 +102,45 @@ namespace klib::usb::msc::scsi {
     };
 
     /**
+     * @brief Test unit ready command
+     * 
+     */
+    struct test_unit_ready {
+        // operation code (0x00 for test unit ready)
+        uint8_t operation_code;
+
+        uint32_t reserved;
+
+        // control byte
+        uint8_t control;
+    };
+
+    static_assert(sizeof(test_unit_ready) == 6, "test unit ready command structure should be 6 bytes");
+
+    /**
+     * @brief Test unit ready command
+     * 
+     */
+    struct request_sense {
+        // operation code (0x03 for request sense)
+        uint8_t operation_code;
+
+        // b[0] = descriptor format
+        // b[1..7] = reserved
+        uint8_t desc;
+
+        uint16_t reserved;
+
+        // allocation length
+        uint8_t length;
+
+        // control byte
+        uint8_t control;
+    };
+
+    static_assert(sizeof(request_sense) == 6, "request sense command structure should be 6 bytes");
+
+    /**
      * @brief Read 10 command structure
      * 
      */
@@ -125,6 +164,7 @@ namespace klib::usb::msc::scsi {
         // transfer length
         uint16_t length;
 
+        // control byte
         uint8_t control;
     };
 
@@ -154,6 +194,7 @@ namespace klib::usb::msc::scsi {
         // transfer length
         uint16_t length;
 
+        // control byte
         uint8_t control;
     };
 
