@@ -30,10 +30,10 @@ namespace klib::usb {
         // 0x2 = endpoint
         // 0x3 = Other
         // b[5..6] = Type
-        // 0x0 = standard
-        // 0x1 = interface
-        // 0x2 = vendor
-        // 0x3 = reserved
+        // 0x0 = standard (standard)
+        // 0x1 = interface (uclass)
+        // 0x2 = vendor (vendor)
+        // 0x3 = reserved (reserved)
         // b[7] = data phase transfer
         // 0x0 = host to device
         // 0x1 = device to host

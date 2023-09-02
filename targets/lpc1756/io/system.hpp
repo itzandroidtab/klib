@@ -1,8 +1,9 @@
 #ifndef KLIB_LPC1756_SYSTEM_HPP
 #define KLIB_LPC1756_SYSTEM_HPP
 
-#include <klib/io/core_clock.hpp>
 #include <lpc1756.hpp>
+
+#include <klib/io/core_clock.hpp>
 
 namespace klib::lpc1756::io::system {
     class flash {

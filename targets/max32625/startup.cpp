@@ -1,10 +1,10 @@
 #include <cstdint>
 
+#include <max32625.hpp>
+
 #include <klib/io/systick.hpp>
 #include <klib/io/core_clock.hpp>
 #include <coprocessor/coprocessor.hpp>
-
-#include <max32625.hpp>
 
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__

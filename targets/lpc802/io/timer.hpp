@@ -1,10 +1,10 @@
 #ifndef KLIB_LPC802_TIMER_HPP
 #define KLIB_LPC802_TIMER_HPP
 
+#include <lpc802.hpp>
+
 #include <klib/io/core_clock.hpp>
 #include <klib/irq_helper.hpp>
-
-#include <lpc802.hpp>
 
 #include "clocks.hpp"
 #include "pins.hpp"
@@ -19,7 +19,7 @@ namespace klib::lpc802::io::periph {
         constexpr static uint32_t clock_id = 25;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 39;
+        constexpr static uint32_t interrupt_id = 39;
 
         // port to the timer
         static inline CTIMER0_Type *const port = CTIMER0;
@@ -104,14 +104,14 @@ namespace klib::lpc802::io {
             // make sure the irq is valid
             if (irq) {
                 // register our handler
-                lpc802::irq::template register_irq<Timer::irq_id>(isr_handler);
+                lpc802::irq::template register_irq<Timer::interrupt_id>(isr_handler);
 
                 // enable the interrupt
-                lpc802::template enable_irq<Timer::irq_id>();
+                lpc802::template enable_irq<Timer::interrupt_id>();
             }
             else {
                 // disable the interrupt
-                lpc802::template disable_irq<Timer::irq_id>();
+                lpc802::template disable_irq<Timer::interrupt_id>();
             }
         }
 
@@ -432,10 +432,10 @@ namespace klib::lpc802::io {
 //             Timer::port->MCR = (Timer::port->MCR & ~(0b111 << Channel::id)) | (0b011 << Channel::id);
 
 //             // register our handler
-//             lpc802::irq::template register_irq<Timer::irq_id>(isr_handler);
+//             lpc802::irq::template register_irq<Timer::interrupt_id>(isr_handler);
 
 //             // enable the interrupt
-//             lpc802::template enable_irq<Timer::irq_id>();
+//             lpc802::template enable_irq<Timer::interrupt_id>();
 //         }
 
 //         template <typename Channel>

@@ -1,10 +1,10 @@
 #include <cstdint>
 
+#include <max32660.hpp>
+
 #include <klib/io/systick.hpp>
 #include <coprocessor/coprocessor.hpp>
-
-#include "max32660.hpp"
-#include "io/system.hpp"
+#include <io/system.hpp>
 
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__

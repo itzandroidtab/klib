@@ -111,7 +111,7 @@ namespace klib::lpc802::io {
             // write and set the control parameters (ignore the received data and set the length)
             Spi::port->TXDATCTL = (
                 tx[0] | ((!ExternalCs) << 16) | 
-                (static_cast<uint32_t>(Bits) << 24)
+                ((static_cast<uint32_t>(Bits) - 1) << 24)
             );
 
             // wait until we can receive
@@ -172,7 +172,7 @@ namespace klib::lpc802::io {
             // write and set the control parameters (ignore the received data and set the length)
             Spi::port->TXDATCTL = (
                 data[0] | ((!ExternalCs) << 16) | 
-                (0x1 << 22) | (static_cast<uint32_t>(Bits) << 24)
+                (0x1 << 22) | ((static_cast<uint32_t>(Bits) - 1) << 24)
             );
 
             // check if any rx data was left in the register

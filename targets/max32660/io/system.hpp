@@ -3,9 +3,10 @@
 
 #include <cstdint>
 
+#include <max32660.hpp>
+
 #include <klib/io/core_clock.hpp>
 
-#include <max32660.hpp>
 #include "pins.hpp"
 
 namespace klib::max32660::io::periph::detail::swd {

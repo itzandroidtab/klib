@@ -3,13 +3,11 @@
 
 #include <cstdint>
 
+#include <max32660.hpp>
+
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
 #include <klib/math.hpp>
-#include <max32660.hpp>
-
-// disable the DMA define (TODO: switch over to a generator that does not generate defines)
-#undef DMA
 
 #include "clocks.hpp"
 #include "pins.hpp"
@@ -44,7 +42,7 @@ namespace klib::max32660::io::periph::wlp {
         constexpr static uint32_t clock_id = 6;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 32;
+        constexpr static uint32_t interrupt_id = 32;
 
         // port to the spi peripheral
         static inline SPI17Y_Type *const port = SPI17Y;
@@ -64,7 +62,7 @@ namespace klib::max32660::io::periph::wlp {
         constexpr static uint32_t clock_id = 7;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 33;
+        constexpr static uint32_t interrupt_id = 33;
 
         // port to the spi peripheral
         static inline SPIMSS_Type *const port = SPIMSS;
@@ -86,7 +84,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 6;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 32;
+        constexpr static uint32_t interrupt_id = 32;
 
         // port to the spi peripheral
         static inline SPI17Y_Type *const port = SPI17Y;
@@ -106,7 +104,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 7;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 33;
+        constexpr static uint32_t interrupt_id = 33;
 
         // port to the spi peripheral
         static inline SPIMSS_Type *const port = SPIMSS;
@@ -126,7 +124,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 7;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 33;
+        constexpr static uint32_t interrupt_id = 33;
 
         // port to the spi peripheral
         static inline SPIMSS_Type *const port = SPIMSS;

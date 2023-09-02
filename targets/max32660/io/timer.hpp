@@ -1,10 +1,10 @@
 #ifndef KLIB_MAX32660_TIMER_HPP
 #define KLIB_MAX32660_TIMER_HPP
 
+#include <max32660.hpp>
+
 #include <klib/io/core_clock.hpp>
 #include <klib/math.hpp>
-
-#include <max32660.hpp>
 
 #include "clocks.hpp"
 #include "pins.hpp"
@@ -37,7 +37,7 @@ namespace klib::max32660::io::periph {
         constexpr static uint32_t clock_id = 16;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 22;
+        constexpr static uint32_t interrupt_id = 22;
 
         // port to the timer
         static inline TMR0_Type *const port = TMR1;
@@ -51,7 +51,7 @@ namespace klib::max32660::io::periph {
         constexpr static uint32_t clock_id = 17;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 23;
+        constexpr static uint32_t interrupt_id = 23;
 
         // port to the timer
         static inline TMR0_Type *const port = TMR2;
@@ -68,7 +68,7 @@ namespace klib::max32660::io::periph::wlp {
         constexpr static uint32_t clock_id = 15;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 21;
+        constexpr static uint32_t interrupt_id = 21;
 
         // port to the timer
         static inline TMR0_Type *const port = TMR0;
@@ -86,7 +86,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 15;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 21;
+        constexpr static uint32_t interrupt_id = 21;
 
         // port to the timer
         static inline TMR0_Type *const port = TMR0;
@@ -167,14 +167,14 @@ namespace klib::max32660::io::detail::timer {
             // make sure the irq is valid
             if (irq) {
                 // register our handler
-                max32660::irq::template register_irq<Timer::irq_id>(isr_handler);
+                max32660::irq::template register_irq<Timer::interrupt_id>(isr_handler);
 
                 // enable the interrupt
-                max32660::template enable_irq<Timer::irq_id>();
+                max32660::template enable_irq<Timer::interrupt_id>();
             }
             else {
                 // disable the interrupt
-                max32660::template disable_irq<Timer::irq_id>();
+                max32660::template disable_irq<Timer::interrupt_id>();
             }
         }
 

@@ -126,6 +126,18 @@ SECTIONS
         PROVIDE(__fini_array_end = .);
     } > rom
 
+    /* Stack segment */
+    .stack (NOLOAD) :
+    {
+        . = ALIGN(4);
+        PROVIDE(__stack_start = .);
+
+        . = . + STACK_SIZE;
+        . = ALIGN(4);
+        
+        PROVIDE(__stack_end = .);
+    } > ram
+
     /* Data that needs to be initialized to a value different than 0 */
     .data :
     {
@@ -141,7 +153,7 @@ SECTIONS
         
         PROVIDE(__data_end = .);
         PROVIDE(__data_init_end = LOADADDR(.data));
-    } > ram AT > rom
+    } > ram1 AT > rom
 
     /* Data that needs to be initialized to 0 */
     .bss (NOLOAD) :
@@ -156,18 +168,6 @@ SECTIONS
         . = ALIGN(4);
 
         PROVIDE(__bss_end = .);
-    } > ram
-
-    /* Stack segment */
-    .stack (NOLOAD) :
-    {
-        . = ALIGN(4);
-        PROVIDE(__stack_start = .);
-
-        . = . + STACK_SIZE;
-        . = ALIGN(4);
-        
-        PROVIDE(__stack_end = .);
     } > ram1
 
     /* Heap segment */
@@ -176,7 +176,7 @@ SECTIONS
         . = ALIGN(4);
         PROVIDE(__heap_start = .);
         PROVIDE(__heap_end = (ORIGIN(ram) + LENGTH(ram)));
-    } > ram
+    } > ram1
 
     /* Remove information from the standard libraries */
     /DISCARD/ :

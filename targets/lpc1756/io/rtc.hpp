@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <lpc1756.hpp>
+
 #include <klib/units.hpp>
 
 #include "power.hpp"

@@ -112,6 +112,18 @@ SECTIONS
         PROVIDE(__fini_array_end = .);
     } > rom
 
+    /* Stack segment */
+    .stack (NOLOAD) :
+    {
+        . = ALIGN(4);
+        PROVIDE(__stack_start = .);
+
+        . = . + STACK_SIZE;
+        . = ALIGN(4);
+        
+        PROVIDE(__stack_end = .);
+    } > ram
+
     /* Data that needs to be initialized to a value different than 0 */
     .data :
     {
@@ -142,18 +154,6 @@ SECTIONS
         . = ALIGN(4);
 
         PROVIDE(__bss_end = .);
-    } > ram
-
-    /* Stack segment */
-    .stack (NOLOAD) :
-    {
-        . = ALIGN(4);
-        PROVIDE(__stack_start = .);
-
-        . = . + STACK_SIZE;
-        . = ALIGN(4);
-        
-        PROVIDE(__stack_end = .);
     } > ram
 
     /* Heap segment */

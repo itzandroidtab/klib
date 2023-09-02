@@ -13,7 +13,7 @@ namespace klib::max32660::io::periph {
         constexpr static uint32_t clock_id = 5;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 44;
+        constexpr static uint32_t interrupt_id = 44;
     };
 }
 

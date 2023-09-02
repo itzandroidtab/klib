@@ -160,6 +160,9 @@ namespace klib {
         // using for the array of callbacks
         using interrupt_callback = void (*)();
 
+        // amount of interrupts
+        constexpr static uint16_t irq_count = IrqCount;
+
         /**
          * @brief Available arm vector entries
          * 

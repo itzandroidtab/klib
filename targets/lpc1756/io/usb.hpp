@@ -3,14 +3,14 @@
 
 #include <klib/stream.hpp>
 
+#include <lpc1756.hpp>
+
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
 
-#include <lpc1756.hpp>
-
 #include "pins.hpp"
-#include "io/power.hpp"
-#include "io/clocks.hpp"
+#include "power.hpp"
+#include "clocks.hpp"
 
 namespace klib::lpc1756::io::periph::detail::usb {
     enum class mode {
@@ -69,7 +69,7 @@ namespace klib::lpc1756::io::detail::usb {
      */
     struct state {
         // flag if the endpoint is busy
-        volatile bool is_busy;
+        bool is_busy;
 
         // max size of the endpoint
         uint8_t max_size;
@@ -81,7 +81,7 @@ namespace klib::lpc1756::io::detail::usb {
         uint32_t requested_size;
 
         // transmitted/received amount of data.
-        volatile uint32_t transferred_size; 
+        uint32_t transferred_size; 
 
         // callback function
         klib::usb::usb::usb_callback callback;
@@ -154,14 +154,7 @@ namespace klib::lpc1756::io {
         constexpr static uint8_t physical_endpoint_count = endpoint_count * 2;
 
         // struct with information about the state of a endpoint
-        static inline detail::usb::state state[endpoint_count] = {};
-
-        // control endpoint buffer
-        static inline uint8_t endpoint0_buffer[max_endpoint_size] = {};
-
-        // variable to store the device address. Used to buffer the
-        // address before setting it in the hardware
-        static inline uint8_t device_address = 0x00;
+        static inline volatile detail::usb::state state[endpoint_count] = {};
 
         /**
          * @brief Command phase
@@ -245,11 +238,12 @@ namespace klib::lpc1756::io {
                 // do nothing
             }
 
-            Usb::port->EPINTCLR = 0xFFFFFFFF;
-            Usb::port->EPINTEN = 0xFFFFFFFF;
-            Usb::port->DEVINTCLR = 0xFFFFFFFF;
+            // enable the interrupts for the control endpoint and all the tx channels
+            Usb::port->EPINTCLR = 0xffffffff;
+            Usb::port->EPINTEN = 0xffffffff;
 
             // enable interrupt endpoint slow and stat interrupt
+            Usb::port->DEVINTCLR = 0xffffffff;
             Usb::port->DEVINTEN = 0x8 | 0x4;
 
             if constexpr (has_bus_reset_callback) {
@@ -346,13 +340,6 @@ namespace klib::lpc1756::io {
             return read_result(command_phase::read, endpoint << 1 | in_endpoint);     
         }
 
-        static void set_device_address_impl(const uint8_t address) {
-            // set the address 2x for some reason. TODO: check if this is needed
-            // set the address enabled bit with the address
-            write_command(command_phase::command, device_command::set_address, 0x80 | address);
-            write_command(command_phase::command, device_command::set_address, 0x80 | address);
-        }
-
         static void write_impl(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, 
                                const uint8_t* data, const uint32_t size) 
         {
@@ -420,7 +407,7 @@ namespace klib::lpc1756::io {
             klib::usb::setup_packet packet;
 
             // read the setup packet
-            read(nullptr, klib::usb::usb::control_endpoint, 
+            read_impl(klib::usb::usb::control_endpoint, 
                 klib::usb::usb::endpoint_mode::out, 
                 reinterpret_cast<uint8_t*>(&packet), sizeof(packet)
             );
@@ -440,36 +427,8 @@ namespace klib::lpc1756::io {
         static void endpoint_callback(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             switch (mode) {
                 case klib::usb::usb::endpoint_mode::in:
-                    // check if we need to update the device address. This cannot be 
-                    // done in the set_device_address callback. 
-                    if (device_address) {
-                        // change the device address
-                        set_device_address_impl(device_address);
-
-                        // clear the device address value to prevent it from updating
-                        // again
-                        device_address = 0;
-                    }
-
                     // check if we are busy transmitting data
                     if (state[endpoint].is_busy) {
-                        // get the maximum size we can transmit
-                        const uint32_t s = klib::min(
-                            (state[endpoint].requested_size - state[endpoint].transferred_size),
-                            state[endpoint].max_size
-                        );
-
-                        // check if we are done
-                        if (s) {
-                            write_impl(
-                                endpoint, klib::usb::usb::endpoint_mode::in, 
-                                (state[endpoint].data + state[endpoint].transferred_size), s
-                            );
-
-                            // update the amount we have transferred
-                            state[endpoint].transferred_size += s;
-                        }
-
                         // check if we are done
                         if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
                             // we are done. clear the flag and call the callback
@@ -485,6 +444,24 @@ namespace klib::lpc1756::io {
                                     endpoint, klib::usb::usb::endpoint_mode::in, 
                                     klib::usb::usb::error::no_error
                                 );
+                            }
+                        }
+                        else {
+                            // get the maximum size we can transmit
+                            const uint32_t s = klib::min(
+                                (state[endpoint].requested_size - state[endpoint].transferred_size),
+                                state[endpoint].max_size
+                            );
+
+                            // check if we are done
+                            if (s) {
+                                write_impl(
+                                    endpoint, klib::usb::usb::endpoint_mode::in, 
+                                    (state[endpoint].data + state[endpoint].transferred_size), s
+                                );
+
+                                // update the amount we have transferred
+                                state[endpoint].transferred_size += s;
                             }
                         }
                     }
@@ -529,17 +506,14 @@ namespace klib::lpc1756::io {
         }
 
         static void data_irq_handler() {
-            const uint32_t status = Usb::port->EPINTST;
-            const uint32_t mask = Usb::port->EPINTEN;
-
-            // get the masked status
-            uint32_t masked_status = status & mask;
+            // get the endpoints we should handle
+            uint32_t status = Usb::port->EPINTST;
 
             // amount of trailing zeros in the status register
             uint8_t trailing_zeros = 0;
 
             // check what endpoint has triggered the interrupt (32 == zero's)
-            while ((trailing_zeros = klib::ctz(masked_status)) < 32) {
+            while ((trailing_zeros = klib::ctz(status)) < 32) {
                 // get the current endpoint
                 const uint8_t endpoint = trailing_zeros;
 
@@ -553,26 +527,42 @@ namespace klib::lpc1756::io {
                 }
 
                 // clear the bit from the masked_status interrupts
-                masked_status &= ~(0x1 << endpoint);
+                status &= ~(0x1 << endpoint);
 
                 // get the endpoint status
                 const uint32_t value = Usb::port->CMDDATA;
 
-                // check if we have a in or out endpoint
-                if ((endpoint & 0x1) == 0) {
-                    // check if we have a setup packet
-                    if (endpoint == 0 && value & (0x1 << 2)) {
-                        // we have a setup packet. Handle it
-                        setup_packet();
-                    }
-                    else {
-                        // we have a out endpoint. 
-                        endpoint_callback(endpoint >> 1, klib::usb::usb::endpoint_mode::out);
-                    }
+                // get the endpoint mode
+                const auto mode = (
+                    (endpoint & 0x1) ? 
+                    klib::usb::usb::endpoint_mode::in : 
+                    klib::usb::usb::endpoint_mode::out
+                );
+
+                const auto ep = endpoint >> 1;
+
+                // check if we have a control endpoint
+                if (ep == 0 && (value & (0x1 << 2))) {
+                    // we have a control endpoint
+                    setup_packet();
                 }
                 else {
-                    // we have a in endpoint
-                    endpoint_callback(endpoint >> 1, klib::usb::usb::endpoint_mode::in);
+                    // check if we have a ack or nak. If we have a nak we will
+                    // send it to the callback if available
+                    if (value & (0x1 << 4)) {
+                        // get the callback
+                        const auto callback = state[ep].callback;
+
+                        // check if the callback is valid
+                        if (callback) {
+                            // call the callback
+                            callback(ep, mode, klib::usb::usb::error::nak);
+                        }
+                    }
+                    else {
+                        // we have a ack on a endpoint. Handle it
+                        endpoint_callback(ep, mode);
+                    }
                 }
             }
         }
@@ -648,6 +638,10 @@ namespace klib::lpc1756::io {
             // create the masked status
             const uint32_t masked_status = status & mask;
 
+            // clear the interrupt status so we dont miss any
+            // interrupts while the user code is running
+            Usb::port->DEVINTCLR = masked_status;
+
             // check for a status interrupt
             if (masked_status & (0x1 << 4)) {
                 // we have a device status interrupt
@@ -657,10 +651,6 @@ namespace klib::lpc1756::io {
                 // we have a endpoint interrupt. Handle it in the data irq
                 data_irq_handler();
             }
-
-            // clear the interrupt status after handling all 
-            // the interrupts
-            Usb::port->DEVINTCLR = masked_status;
         }
 
     public:
@@ -672,7 +662,7 @@ namespace klib::lpc1756::io {
          * @tparam UsbLed 
          * @tparam UsbConnect 
          */
-        template <bool UsbLed = true, bool UsbConnect = true>
+        template <bool UsbLed = true, bool UsbConnect = true, bool NakIrq = false>
         static void init() {
             // enable the usb power
             power_control::enable<Usb>();
@@ -708,14 +698,19 @@ namespace klib::lpc1756::io {
             // reset all the info stored about the endpoints
             for (uint32_t i = 0; i < endpoint_count; i++) {
                 // set the endpoint to a known state
-                state[i] = {
-                    .is_busy = false,
-                    .max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0),
-                    .data = nullptr,
-                    .requested_size = 0,
-                    .transferred_size = 0, 
-                    .callback = nullptr,
-                };
+                state[i].is_busy = false;
+                state[i].max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0);
+                state[i].data = nullptr;
+                state[i].requested_size = 0;
+                state[i].transferred_size = 0;
+                state[i].callback = nullptr;
+            }
+
+            // check if we should enable naks
+            if constexpr (NakIrq) {
+                // enable nak interrupts on all endpoint types except control 
+                // (interrupt in/out, bulk in/out)
+                write_command(command_phase::command, device_command::set_mode, 0b1111 << 3);
             }
 
             // register ourselfs with the interrupt controller
@@ -729,7 +724,7 @@ namespace klib::lpc1756::io {
             reset();
 
             // clear the device addess for the manual reset
-            set_device_address_impl(0);
+            set_device_address(0);
 
             // init the device
             device::template init<usb_type>();
@@ -738,6 +733,43 @@ namespace klib::lpc1756::io {
             if constexpr (UsbConnect) {
                 // enable the usb connect pin to allow connections
                 connect();
+            }
+        }
+
+        /**
+         * @brief Function to check if a endpoint with type is supported at compile time
+         * 
+         * @tparam endpoint 
+         * @tparam type 
+         */
+        template <uint8_t endpoint, klib::usb::descriptor::transfer_type type>
+        constexpr static void is_valid_endpoint() {
+            using transfer_type = klib::usb::descriptor::transfer_type;
+
+            // make sure the endpoint is valid
+            static_assert(endpoint <= 0xf, "Invalid endpoint provided");
+
+            // check if the endpoint supports the transfer type
+            if constexpr (type == transfer_type::control) {
+                static_assert(endpoint == 0, 
+                    "Endpoint does not support control mode"
+                );
+            }
+            else if constexpr (type == transfer_type::interrupt) {
+                static_assert((0x1 << endpoint) & 0b10010010010010, 
+                    "Endpoint does not support interrupt mode"
+                );
+            }
+            else if constexpr (type == transfer_type::isochronous) {
+                static_assert((0x1 << endpoint) & 0b1001001001000, 
+                    "Endpoint does not support isochronous mode"
+                );
+            }
+            else {
+                static_assert(
+                    (0x1 << endpoint) & 0b110100100100100, 
+                    "Endpoint does not support bulk mode"
+                );
             }
         }
 
@@ -797,10 +829,7 @@ namespace klib::lpc1756::io {
         }   
 
         static klib::usb::usb::handshake set_device_address(const uint8_t address) {
-            // set the address in the variable. We cannot update the device address
-            // here as it would change immediately and will not respond to previous
-            // packets
-            device_address = address;
+            write_command(command_phase::command, device_command::set_address, 0x80 | address);
 
             // ack the set device address
             return klib::usb::usb::handshake::ack;
@@ -870,16 +899,16 @@ namespace klib::lpc1756::io {
         }
 
         static void un_stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            write_command(command_phase::command, 
-                static_cast<uint8_t>(endpoint_command::set_status) | (endpoint << 1 | endpoint_mode_to_raw(mode)), 
-                0x0
-            );
-
             // check if we are stalled
             if (!is_stalled(endpoint, mode)) {
                 // we are not stalled return
                 return;
             }
+
+            write_command(command_phase::command, 
+                static_cast<uint8_t>(endpoint_command::set_status) | (endpoint << 1 | endpoint_mode_to_raw(mode)), 
+                0x0
+            );
 
             // get the callback
             const auto callback = state[endpoint].callback;
@@ -930,8 +959,7 @@ namespace klib::lpc1756::io {
                          const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
                          const uint32_t size) 
         {
-            // set the endpoint callback and mark the endpoint as busy
-            state[endpoint].is_busy = true;
+            // set the endpoint callback
             state[endpoint].callback = callback;
             state[endpoint].data = data;
             
@@ -939,8 +967,8 @@ namespace klib::lpc1756::io {
             state[endpoint].requested_size = size;
             state[endpoint].transferred_size = 0;
 
-            // call the read and discard the result
-            (void)read_impl(endpoint, mode, data, size);
+            // mark the endpoint as busy
+            state[endpoint].is_busy = true;
 
             // notify everything is correct
             return true;
@@ -948,6 +976,20 @@ namespace klib::lpc1756::io {
 
         static bool is_pending(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             return state[endpoint].is_busy;
+        }
+
+        static void cancel(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
+            // get the callback
+            const auto callback = state[endpoint].callback;
+
+            // clear the state of the endpoint
+            clear_endpoint_state(endpoint);
+
+            // check if the callback is valid
+            if (callback) {
+                // call the callback
+                callback(endpoint, mode, klib::usb::usb::error::cancel);
+            }
         }
     };
 }

@@ -8,231 +8,6 @@
 
 namespace klib::graphics {
     /**
-     * @brief Framebuffer with a different start position in a another framebuffer
-     * 
-     * @tparam FrameBuffer 
-     * @tparam XStart 
-     * @tparam YStart 
-     */
-    template <typename FrameBuffer, uint32_t XStart, uint32_t YStart>
-    class sub_framebuffer {
-    public:
-        // mode for the framebuffer
-        constexpr static graphics::mode mode = FrameBuffer::mode;
-
-    protected:
-        FrameBuffer &fb;
-
-        // color mode with all parameters
-        using color_mode = graphics::detail::pixel_conversion<mode>;
-
-        // color type
-        using color_type = color_mode::type;
-
-    public:
-        constexpr sub_framebuffer(FrameBuffer &fb):
-            fb(fb)
-        {}
-
-        constexpr void init() {
-            // call the framebuffer init
-            fb.init();
-        }
-
-        constexpr void flush() {
-            // call the framebuffer flush
-            fb.flush();
-        }
-
-        constexpr void set_pixel(const klib::vector2u position, const color_type raw) {
-            // move the position with the offset
-            const klib::vector2u sub_position = (
-                position + klib::vector2u{XStart, YStart}
-            );
-
-            fb.set_pixel(sub_position, raw);
-        }
-
-        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
-            // convert the color to raw
-            const auto raw = graphics::detail::color_to_raw<mode>(col);
-
-            // set the pixel using the set_pixel
-            set_pixel(position, raw);
-        }
-
-        constexpr void clear(const color_type raw) {
-            // clear using raw value
-            fb.clear(raw);
-        }
-
-        constexpr void clear(const klib::graphics::color &col) {
-            // clear using color
-            fb.clear(col);
-        }
-    };
-
-    /**
-     * @brief Framebuffer that scales input into multiple pixels to another framebuffer
-     * 
-     * @tparam FrameBuffer 
-     * @tparam XScale 
-     * @tparam YScale 
-     */
-    template <typename FrameBuffer, uint32_t XScale, uint32_t YScale>
-    class scaled_framebuffer {
-    public:
-        // mode for the framebuffer
-        constexpr static graphics::mode mode = FrameBuffer::mode;
-
-    protected:
-        FrameBuffer &fb;
-
-        // make sure we have a positive scale factor
-        static_assert((XScale >= 1) && (YScale >= 1), "Framebuffer scale factor cannot be 0");
-
-        // color mode with all parameters
-        using color_mode = graphics::detail::pixel_conversion<mode>;
-
-        // color type
-        using color_type = color_mode::type;
-
-    public:
-        constexpr scaled_framebuffer(FrameBuffer &fb):
-            fb(fb)
-        {}
-
-        constexpr void init() {
-            // call the framebuffer init
-            fb.init();
-        }
-
-        constexpr void flush() {
-            // call the framebuffer flush
-            fb.flush();
-        }
-
-        constexpr void set_pixel(const klib::vector2u position, const color_type raw) {
-            // convert to the scaled position
-            const klib::vector2u scaled_position = (
-                position * klib::vector2u{XScale, YScale}
-            );
-
-            // scale every pixel scale amount of times
-            for (uint32_t y = 0; y < YScale; y++) {
-                for (uint32_t x = 0; x < XScale; x++) {
-                    // set the pixel multiple times
-                    fb.set_pixel(scaled_position + klib::vector2u{x, y}, raw);
-                }
-            }
-        }
-
-        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
-            // convert the color to raw
-            const auto raw = graphics::detail::color_to_raw<mode>(col);
-
-            // set the pixel using the set_pixel
-            set_pixel(position, raw);
-        }
-
-        constexpr void clear(const color_type raw) {
-            // clear using raw value
-            fb.clear(raw);
-        }
-
-        constexpr void clear(const klib::graphics::color &col) {
-            // clear using color
-            fb.clear(col);
-        }
-    };
-
-    /**
-     * @brief Framebuffer that can flip another framebuffer. Uses all the 
-     * parameters from the original framebuffer. Can be flipped in the x-axis
-     * and the y-axis independently.
-     * 
-     * @tparam FrameBuffer 
-     * @tparam XMirror 
-     * @tparam YMirror 
-     */
-    template <typename FrameBuffer, bool XMirror, bool YMirror>
-    class flipped_framebuffer {
-    public:
-        // mode for the framebuffer
-        constexpr static graphics::mode mode = FrameBuffer::mode;
-
-    protected:
-        FrameBuffer &fb;
-
-        // color mode with all parameters
-        using color_mode = graphics::detail::pixel_conversion<mode>;
-
-        // color type
-        using color_type = color_mode::type;
-
-    public:
-        constexpr flipped_framebuffer(FrameBuffer &fb):
-            fb(fb)
-        {}
-
-        constexpr void init() {
-            // call the framebuffer init
-            fb.init();
-        }
-
-        constexpr void flush() {
-            // call the framebuffer flush
-            fb.flush();
-        }
-
-        constexpr void set_pixel(const klib::vector2u position, const color_type raw) {
-            // mirror using the parameters
-            if constexpr (XMirror && YMirror) {
-                const klib::vector2u pos = (klib::vector2u(
-                    (FrameBuffer::width - 1), (FrameBuffer::height - 1)) - position
-                );
-
-                fb.set_pixel(pos, raw);
-            }
-            else if constexpr (XMirror) {
-                const klib::vector2u pos = (klib::vector2u(
-                    (FrameBuffer::width - 1) - position.x, position.y)
-                );
-
-                fb.set_pixel(pos, raw);
-            }
-            else if constexpr (YMirror) {
-                const klib::vector2u pos = (klib::vector2u(
-                    position.x, (FrameBuffer::height - 1) - position.y)
-                );
-
-                fb.set_pixel(pos, raw);
-            }
-            else {
-                fb.set_pixel(position, raw);
-            }
-        }
-
-        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
-            // convert the color to raw
-            const auto raw = graphics::detail::color_to_raw<mode>(col);
-
-            // set the pixel using the mirror set_pixel
-            set_pixel(position, raw);
-        }
-
-        constexpr void clear(const color_type raw) {
-            // clear using raw value
-            fb.clear(raw);
-        }
-
-        constexpr void clear(const klib::graphics::color &col) {
-            // clear using color
-            fb.clear(col);
-        }
-    };
-
-    /**
      * @brief Direct framebuffer. Implements framebuffer without buffer 
      * and directly writes to the display.
      * 
@@ -274,6 +49,11 @@ namespace klib::graphics {
         // color mode with all parameters
         using color_mode = graphics::detail::pixel_conversion<mode>;
 
+        // make sure we have a mode that fits a byte boundry as we
+        // do not have any information about the pixels around the
+        // pixel we are updating
+        static_assert((color_mode::bits % 8) == 0, "Direct framebuffer only supports graphics modes that are % 8");
+
         // color type
         using color_type = color_mode::type;
 
@@ -284,9 +64,12 @@ namespace klib::graphics {
 
             // clear the cursor
             cursor = {StartX, StartY};
+
+            // start the write
+            Display::start_write();
         }
 
-        constexpr void flush() {
+        constexpr void flush() const {
             // not used in the direct framebuffer
         }
 
@@ -322,9 +105,43 @@ namespace klib::graphics {
                 Display::start_write();
             }
 
-            // write the raw data to the screen
-            Display::raw_write(reinterpret_cast<const uint8_t*>(&raw), sizeof(raw));
+            // place to store the stream data
+            color_type native = 0;
 
+            // convert the data to a stream we can send. See 
+            // framebuffer::set_pixel for more information about
+            // the conversion from raw to native mode
+            if constexpr (
+                (color_mode::bits / 8 == sizeof(uint8_t)) && 
+                ((color_mode::bits % 8) == 0)) 
+            {
+                // nothing to do for 1 byte color modes
+                native = raw;
+            }
+            else if constexpr (
+                ((color_mode::bits % 8) == 0) && (
+                color_mode::bits / 8 == sizeof(uint16_t) || 
+                color_mode::bits / 8 == sizeof(uint32_t) ||
+                color_mode::bits / 8 == sizeof(uint64_t)))
+            {
+                // we can use the buildin byte swap
+                native = klib::bswap(raw);
+            }
+            else {
+                constexpr uint32_t bytes = (color_mode::bits / 8);
+
+                // we need to fall back on a byte conversion
+                for (uint32_t i = 0; i < bytes; i++) {
+                    native |= (
+                        ((raw >> (((bytes - 1) * 8) - (i * 8))) & 0xff) << (i * 8)
+                    );
+                }   
+            }
+
+            // write the raw data to the screen
+            Display::raw_write(reinterpret_cast<const uint8_t*>(&native), sizeof(native));
+
+            // check if we need to update the internal cursor
             if constexpr (AutoIncrement) {
                 // update the cursor on the screen
                 if ((pos.x + 1) >= EndX) {
@@ -446,30 +263,11 @@ namespace klib::graphics {
             "Framebuffer does not support this output mode for the input mode"
         );
 
-    public:
         /**
-         * @brief Init the framebuffer. Not used in 
-         * the buffered framebuffer
+         * @brief Flush implementation for the framebuffer
          * 
          */
-        constexpr void init() {
-            // do nothing
-        }
-
-        /**
-         * @brief Flush the buffer to the display
-         * 
-         */
-        constexpr void flush() {
-            // set the cursor to the start of the display
-            Display::set_cursor(
-                klib::vector2u{StartX, StartY}, 
-                klib::vector2u{EndX - 1, EndY - 1}
-            );
-
-            // start the display write
-            Display::start_write();
-
+        void flush_impl() const {
             // write using the mode we have
             if constexpr (native_mode) {
                 // we should be able to write the native stream 
@@ -545,7 +343,35 @@ namespace klib::graphics {
                     // write the data to the display
                     Display::raw_write(data, step);
                 }
-            }
+            }            
+        }
+
+    public:
+        /**
+         * @brief Init the framebuffer. Not used in 
+         * the buffered framebuffer
+         * 
+         */
+        constexpr void init() const {
+            // do nothing
+        }
+
+        /**
+         * @brief Flush the buffer to the display
+         * 
+         */
+        constexpr void flush() const {
+            // set the cursor to the start of the display
+            Display::set_cursor(
+                klib::vector2u{StartX, StartY}, 
+                klib::vector2u{EndX - 1, EndY - 1}
+            );
+
+            // start the display write
+            Display::start_write();
+
+            // call the flush implementation
+            flush_impl();
 
             // stop the write to the display
             Display::end_write();

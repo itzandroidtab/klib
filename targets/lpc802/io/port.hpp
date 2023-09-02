@@ -5,6 +5,7 @@
 #include <cstddef>
 
 #include <lpc802.hpp>
+
 #include "clocks.hpp"
 #include "matrix.hpp"
 

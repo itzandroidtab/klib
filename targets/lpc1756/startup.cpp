@@ -1,11 +1,11 @@
 #include <cstdint>
 
+#include "lpc1756.hpp"
+
 #include <klib/io/systick.hpp>
 #include <klib/io/core_clock.hpp>
 #include <coprocessor/coprocessor.hpp>
-
-#include "lpc1756.hpp"
-#include "io/system.hpp"
+#include <io/system.hpp>
 
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__
@@ -38,6 +38,6 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // enable the systick timer
     klib::io::systick::enable();
 
-    // enable MPU, bus and usage faults in seperate inpterrupts
-    // SCB->SHCSR = 0b1011 << 16;
+    // enable MPU, bus and usage faults in separate inpterrupts
+    SCB->SHCSR = 0b111 << 16;
 }

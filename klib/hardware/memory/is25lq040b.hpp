@@ -28,6 +28,9 @@ namespace klib::hardware::memory {
             // other commands
             read_status = 0x05,
             write_enable = 0x06,
+            write_status = 0x01,
+            reset_enable = 0x66,
+            reset = 0x99,
         };
         
         /**
@@ -91,11 +94,63 @@ namespace klib::hardware::memory {
         };
 
         /**
+         * @brief Reset the memory device
+         * 
+         */
+        static void reset() {
+            // select the device
+            Cs::template set<false>();
+
+            // create a array for the command
+            const uint8_t command_enable[] = {
+                static_cast<uint8_t>(cmd::reset_enable)
+            };
+
+            // write the command
+            Bus::write(command_enable, sizeof(command_enable));
+
+            // clear the chip select
+            Cs::template set<true>();
+
+            // select the device
+            Cs::template set<false>();
+
+            const uint8_t command[] = {
+                static_cast<uint8_t>(cmd::reset)
+            };
+
+            // write the reset command
+            Bus::write(command, sizeof(command));
+
+            // clear the chip select
+            Cs::template set<true>();
+        }
+
+        /**
          * @brief Init the memory device
          * 
          */
         static void init() {
-            // do noting in the init
+            // reset the device
+            reset();
+
+            // enable the write bit
+            write_enable();
+
+            // select the device
+            Cs::template set<false>();
+
+            // create a array for the command (with a dummy byte)
+            const uint8_t command[] = {
+                static_cast<uint8_t>(cmd::write_status),
+                0x00
+            };
+
+            // write the command to set the write status
+            Bus::write(command, sizeof(command));
+
+            // clear the chip select
+            Cs::template set<true>();
         }
 
         /**

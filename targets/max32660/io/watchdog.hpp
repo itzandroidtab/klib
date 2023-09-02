@@ -12,7 +12,7 @@ namespace klib::max32660::io::periph {
         constexpr static uint32_t id = 0;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 17;
+        constexpr static uint32_t interrupt_id = 17;
 
         // port to the watchdog hardware
         static inline WDT0_Type *const port = WDT0;

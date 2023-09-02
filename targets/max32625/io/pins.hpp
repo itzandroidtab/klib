@@ -3,7 +3,8 @@
 
 #include <type_traits>
 
-#include "../max32625.h"
+#include <max32625.hpp>
+
 #include "pio.hpp"
 
 namespace klib::max32625::io::pins::detail {

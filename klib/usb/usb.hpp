@@ -32,9 +32,11 @@ namespace klib::usb {
          */
         enum class error: uint8_t {
             no_error,
+            nak,
             reset,
             stall,
             un_stall,
+            cancel,
         };
 
         /**
@@ -113,6 +115,16 @@ namespace klib::usb {
             }
         }
 
+        /**
+         * @brief Get the endpoint from a raw field
+         * 
+         * @param raw 
+         * @return constexpr uint8_t 
+         */
+        constexpr static uint8_t get_endpoint(const uint8_t raw) {
+            return raw & 0xf;
+        }
+
     protected:
         /**
          * @brief Send the status of the usb device
@@ -146,7 +158,7 @@ namespace klib::usb {
             switch (recipient) {
                 case setup::recipient_code::endpoint:
                     // check if the usb is stalled
-                    response[0] = Usb::is_stalled(packet.wIndex & 0xf, get_endpoint_mode(packet.wIndex));
+                    response[0] = Usb::is_stalled(get_endpoint(packet.wIndex), get_endpoint_mode(packet.wIndex));
                     response[1] = 0x00;
                     break;
                 
@@ -584,6 +596,12 @@ namespace klib::usb {
 
         template <typename Usb>
         static void status_callback(const uint8_t endpoint, const endpoint_mode mode, const error error_code) {
+            // check if we have a nak. If we have do nothing
+            if (error_code == error::nak) {
+                // do nothing
+                return;
+            }
+
             // check if we have a error
             if (error_code == error::no_error) {
                 // no error send a ack

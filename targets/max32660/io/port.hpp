@@ -3,9 +3,9 @@
 
 #include <tuple>
 
-#include <klib/irq_helper.hpp>
-
 #include <max32660.hpp>
+
+#include <klib/irq_helper.hpp>
 
 namespace klib::max32660::io::detail::alternate {
     // alternate functions for all the gpio
@@ -30,7 +30,7 @@ namespace klib::max32660::io::periph {
         constexpr static uint32_t id = 0;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 40;
+        constexpr static uint32_t interrupt_id = 40;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO0;
@@ -41,7 +41,7 @@ namespace klib::max32660::io::periph {
         constexpr static uint32_t id = 0;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 70;
+        constexpr static uint32_t interrupt_id = 70;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO0;
@@ -122,12 +122,19 @@ namespace klib::max32660::io {
         }
 
     public:
+        // using for the interrupt callback
+        using interrupt_callback = irq_helper::interrupt_callback;
+
+        /**
+         * @brief Init the port interrupt
+         * 
+         */
         static void init() {
             // register our handler
-            irq::template register_irq<Port::irq_id>(irq_handler);
+            irq::template register_irq<Port::interrupt_id>(irq_handler);
 
             // enable the interrupt
-            enable_irq<Port::irq_id>();
+            enable_irq<Port::interrupt_id>();
         }
 
         /**
@@ -145,6 +152,11 @@ namespace klib::max32660::io {
             helper.register_irq<Pin::number>(callback);
         }
 
+        /**
+         * @brief Unregister a interrupt for a specific pin
+         * 
+         * @tparam Pin 
+         */
         template <typename Pin>
         static void unregister_irq() {
             // check if the port is correct
@@ -406,7 +418,7 @@ namespace klib::max32660::io {
          * @brief Using for the interrupt callback used in the pin irq
          * 
          */
-        using interrupt_callback = port_interrupt<typename Pin::port>::irq_helper::interrupt_callback::interrupt_callback;
+        using interrupt_callback = port_interrupt<typename Pin::port>::interrupt_callback;
         
     protected:
         /**

@@ -1,14 +1,13 @@
 #ifndef KLIB_MAX32625_USB_HPP
 #define KLIB_MAX32625_USB_HPP
 
+#include <max32625.hpp>
+
 #include <klib/irq_helper.hpp>
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
 
-#include <max32625.hpp>
 #include "clocks.hpp"
-
-#include <klib/stream.hpp>
 
 namespace klib::max32625::io::periph {
     struct usb0 {
@@ -717,6 +716,17 @@ namespace klib::max32625::io {
 
             // set the usb hardware in sleep mode
             sleep();
+        }
+
+        /**
+         * @brief Function to check if a endpoint with type is supported at compile time
+         * 
+         * @tparam endpoint 
+         * @tparam type 
+         */
+        template <uint8_t endpoint, klib::usb::descriptor::transfer_type type>
+        constexpr static void is_valid_endpoint() {
+            // TODO: implement this
         }
 
         /**

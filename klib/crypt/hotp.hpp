@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <klib/math.hpp>
+
 #include "hmac.hpp"
 
 namespace klib::crypt {

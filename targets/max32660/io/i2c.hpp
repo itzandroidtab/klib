@@ -3,8 +3,9 @@
 
 #include <cstdint>
 
-#include <klib/io/core_clock.hpp>
 #include <max32660.hpp>
+
+#include <klib/io/core_clock.hpp>
 
 #include "clocks.hpp"
 #include "pins.hpp"
@@ -37,7 +38,7 @@ namespace klib::max32660::io::periph::wlp {
         constexpr static uint32_t clock_id = 13;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 29;
+        constexpr static uint32_t interrupt_id = 29;
 
         // port to the i2c hardware
         static inline I2C0_Type *const port = I2C0;
@@ -54,7 +55,7 @@ namespace klib::max32660::io::periph::wlp {
         constexpr static uint32_t clock_id = 28;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 52;
+        constexpr static uint32_t interrupt_id = 52;
 
         // port to the i2c hardware
         static inline I2C0_Type *const port = I2C1;
@@ -73,7 +74,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 13;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 29;
+        constexpr static uint32_t interrupt_id = 29;
 
         // port to the i2c hardware
         static inline I2C0_Type *const port = I2C0;
@@ -90,7 +91,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 28;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 52;
+        constexpr static uint32_t interrupt_id = 52;
 
         // port to the i2c hardware
         static inline I2C0_Type *const port = I2C1;

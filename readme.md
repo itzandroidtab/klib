@@ -4,7 +4,7 @@
 
 Klib uses `cmake` and `arm-none-eabi-gcc` to build excecutables for cortex targets. Currently supported targets can be found in the [target folder](./targets/).
 
-Support for devices varies. Currently some targets have a startup file that can be enabled by adding `startup.cpp` to the target `CMakeLists.txt`. This means by default the coprocessors are not enabled and the cpu clock may not be initialized to the full clock speed.
+Support for devices varies. Currently some targets have a startup file that can be enabled by uncommenting line 6 in the project CMakeLists ([project/CMakeLists.txt](./project/CMakeLists.txt#L6)). This means by default the coprocessors are not enabled and the cpu clock may not be initialized to the full clock speed.
 
 ---
 

@@ -81,7 +81,7 @@ namespace klib {
     }
 
     /**
-     * @brief 32 bit byteswap (converts 0xaabb to 0xbbaa). Explicit 32 bit
+     * @brief 32 bit byteswap (converts 0xaabbccdd to 0xddccbbaa). Explicit 32 bit
      * 
      * @tparam T 
      * @param data 
@@ -93,7 +93,7 @@ namespace klib {
     }
 
     /**
-     * @brief 32 bit byteswap (converts 0xaabb to 0xbbaa). Explicit 32 bit
+     * @brief 64 bit byteswap. Explicit 64 bit
      * 
      * @tparam T 
      * @param data 
@@ -113,7 +113,7 @@ namespace klib {
      */
     constexpr uint32_t clz(const uint32_t data) {
         // handle the 0 case as buildin_clz(0) is undefined
-        if (data == 0x00) {
+        if (data == 0x00) [[unlikely]] {
             return 32;
         }
 
@@ -128,7 +128,7 @@ namespace klib {
      */
     constexpr uint32_t ctz(const uint32_t data) {
         // handle the 0 case as buildin_ctz(0) is undefined
-        if (data == 0x00) {
+        if (data == 0x00) [[unlikely]] {
             return 32;
         }
 
@@ -168,11 +168,11 @@ namespace klib {
      */
     template <typename T>
     constexpr T pow(const T base, const int_fast32_t exponent) {
-        if (exponent == 0) {
+        if (exponent == 0) [[unlikely]] {
             return 1;
         }
 
-        if (exponent == 1) {
+        if (exponent == 1) [[unlikely]] {
             return base;
         }
 
@@ -199,16 +199,16 @@ namespace klib {
         typename = std::enable_if_t<std::is_floating_point_v<T>>
     >
     constexpr T ceil(T arg) {
-        if (isinf(arg)) {
+        if (isinf(arg)) [[unlikely]] {
             return arg;
         }
 
-        if (arg == 0.0) {
+        if (arg == 0.0) [[unlikely]] {
             return arg;
         }
 
-        if (isnan(arg)) {
-            return (__builtin_nanf(""));
+        if (isnan(arg)) [[unlikely]] {
+            return arg;
         }
 
         // Negative ceiling
@@ -239,16 +239,16 @@ namespace klib {
         typename = std::enable_if_t<std::is_floating_point_v<T>>
     >
     constexpr T floor(const T arg) {
-        if (isinf(arg)) {
+        if (isinf(arg)) [[unlikely]] {
             return arg;
         }
 
-        if (arg == 0.0) {
+        if (arg == 0.0) [[unlikely]] {
             return arg;
         }
 
-        if (isnan(arg)) {
-            return (__builtin_nanf(""));
+        if (isnan(arg)) [[unlikely]] {
+            return arg;
         }
 
         // Negative flooring
@@ -301,7 +301,7 @@ namespace klib {
     }
 
     /**
-     * @brief Get the lowest value between the two inputs
+     * @brief Get the minimum value from the two input parameters
      * 
      * @tparam T 
      * @tparam G
@@ -315,7 +315,7 @@ namespace klib {
     }
 
     /**
-     * @brief Get the max between the two input values
+     * @brief Get the maximum value of the two input parameters
      * 
      * @tparam T 
      * @tparam G
@@ -340,7 +340,7 @@ namespace klib {
         if constexpr (std::is_unsigned_v<T>) {
             return x;
         } else {
-            return x < 0 ? -x : x;
+            return (x < 0) ? -x : x;
         }
     }
 
@@ -393,7 +393,7 @@ namespace klib {
 
     /**
      * Map a range of values to another range of values.
-     * E.g. map 0...255 tot 0...1024.
+     * E.g. map 0...255 to 0...1024.
      * @tparam T
      * @tparam G
      * @param x

@@ -40,24 +40,6 @@ namespace klib::io {
         // days of runtime in ms
         static volatile inline time::ms runtime = 0;
 
-        /**
-         * @brief Interrupt handler
-         * 
-         */
-        static void isr_handler() {
-            // clear the interrupt flag by reading 
-            // the systick control register
-            (void) port->ctrl;
-            
-            // increment the current runtime value
-            runtime.value++;
-
-            // run the callback if provided
-            if (callback) {
-                callback();
-            }
-        }
-
         template <typename Irq, bool ExternalClockSource = false>
         static void init_impl(const interrupt_callback& irq) {
             // clear the systick value
@@ -183,6 +165,25 @@ namespace klib::io {
          */
         static klib::time::ms get_runtime() {
             return {runtime.value};
+        }
+
+    public:
+        /**
+         * @brief Interrupt handler. Should not be called by the user
+         * 
+         */
+        static void isr_handler() {
+            // clear the interrupt flag by reading 
+            // the systick control register
+            (void) port->ctrl;
+            
+            // increment the current runtime value
+            runtime.value++;
+
+            // run the callback if provided
+            if (callback) {
+                callback();
+            }
         }
     };
 }

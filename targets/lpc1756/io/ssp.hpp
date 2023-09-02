@@ -50,6 +50,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 21;
 
+        // base dma id
+        constexpr static uint32_t dma_id = 0;
+
         // port to the SSP hardware
         static inline SSP0_Type *const port = SSP0;
 
@@ -88,6 +91,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 10;
+
+        // base dma id
+        constexpr static uint32_t dma_id = 2;
 
         // port to the SSP hardware
         static inline SSP0_Type *const port = SSP1;
@@ -149,8 +155,8 @@ namespace klib::lpc1756::io {
             // setup the clock for the ssp. Value should be between 2 - 254. 
             // Note: to get lower frequencies. the SCR in CR0 can be used to
             // decrease the clock even further. (PCLK / (CPSDVSR * [SCR + 1]))
-            // As most of the time higher speeds is better, SCR is not used
-            // at the moment
+            // As most of the time higher speeds is better, SCR is not used at 
+            // the moment (last bit ofthe CPSR does not stick. e.g 0x1 -> 0x0)
             Ssp::port->CPSR = static_cast<uint8_t>(
                 klib::io::clock::get() / static_cast<uint32_t>(Frequency)
             );
@@ -175,11 +181,7 @@ namespace klib::lpc1756::io {
          */
         static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
             // discard anything that is left in the fifo
-            while (Ssp::port->SR & (0x1 << 2)) {
-                // discard the old data and make place for 
-                // the new data
-                (void)Ssp::port->DR;
-            }
+            clear_rx_fifo();
 
             // check if we have a valid pointer to write
             if (tx == nullptr) {
@@ -224,10 +226,12 @@ namespace klib::lpc1756::io {
         /**
          * @brief Write to the ssp bus
          * 
+         * @warning not all data is written unless not busy anymore
+         * 
          * @param data 
          * @param size 
          */
-        template <bool Async>
+        template <bool Async = false>
         static void write(const uint8_t *const data, const uint16_t size) {
             for (uint32_t i = 0; i < size; i++) {
                 // wait until we can write to the fifo
@@ -256,6 +260,96 @@ namespace klib::lpc1756::io {
          */
         static bool is_busy() {
             return Ssp::port->SR & 0x1 << 4;
+        }
+
+        /**
+         * @brief Clear any data left in the rx fifo. This functions 
+         * should be used before starting a dma transfer.
+         * 
+         */
+        static void clear_rx_fifo() {
+            // discard anything that is left in the fifo
+            while (Ssp::port->SR & (0x1 << 2)) {
+                // discard the old data to make place for 
+                // the new data
+                (void)Ssp::port->DR;
+            }
+        }
+
+    public:
+        /**
+         * @brief Section for the DMA controller. Returns information for the transfer.
+         * 
+         * @note two dma channels are required. One for reading and one for writing (or 
+         * the user can poll/write the other interface in user code)
+         * 
+         */
+
+        /**
+         * @brief Returns the dma channel connection id
+         * 
+         * @return uint16_t 
+         */
+        template <bool Read>
+        constexpr static uint16_t dma_id() {
+            // return the base id + 0 for tx and + 1 for rx
+            return Ssp::dma_id + Read;
+        }
+
+        /**
+         * @brief Enable/Disable the dma for the ssp read/write.
+         * 
+         * @tparam Enable 
+         * @tparam Read 
+         */
+        template <bool Enable, bool Read>
+        static void dma_enable() {
+            // set the new state
+            Ssp::port->DMACR = (Ssp::port->DMACR & ~(0x1 << Read)) | (Enable << Read);
+        }
+
+        /**
+         * @brief Returns the address where the dma controller should read/write from. 
+         * 
+         * @return uint32_t* const 
+         */
+        template <bool Read>
+        static volatile uint32_t *const dma_data() {
+            // return the data register
+            return &Ssp::port->DR;
+        }
+
+        /**
+         * @brief Returns the read/write burst size of the ssp
+         * 
+         * @return uint32_t* const 
+         */
+        template <bool Read>
+        constexpr static uint32_t dma_burst_size() {
+            // return half the fifo size
+            return 4;
+        }
+
+        /**
+         * @brief Returns the read/write transfer width of the ssp
+         * 
+         * @return uint32_t* const 
+         */
+        template <bool Read>
+        static uint32_t dma_width() {
+            // return the width based on the current bit transfer size
+            return (((Ssp::port->CR0 & 0xf) + 1) + 7) / 8;
+        }
+
+        /**
+         * @brief Returns the read/write transfer width of the ssp
+         * 
+         * @return uint32_t* const 
+         */
+        template <bool Read>
+        constexpr static bool dma_increment() {
+            // return if the dma should increment after a read/write
+            return false;
         }
     };
 }

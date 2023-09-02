@@ -134,6 +134,28 @@ namespace klib::lpc1756::io::detail::pins {
             ((static_cast<uint8_t>(Value) & 0b11) << ((Pin::number * 2)
         ) % 32);
     }
+
+    /**
+     * @brief Set the open drain of a pin
+     * 
+     * @tparam Pin 
+     * @tparam OpenDrain 
+     */
+    template <typename Pin, bool OpenDrain>
+    static void set_open_drain() {
+        // get a pointer to the open drain registers
+        uint32_t *const open_drain = (
+            reinterpret_cast<volatile uint32_t *const>(&(PINCONNECT->PINMODE_OD0))
+        );
+        
+        // set or clear based on the value
+        if constexpr (OpenDrain) {
+            open_drain[Pin::port::id] |= mask<Pin>;
+        }
+        else {
+            open_drain[Pin::port::id] &= ~(mask<Pin>);
+        }
+    }
 }
 
 // global peripherals, not affected by chip package
@@ -143,7 +165,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 0;
 
         // peripheral interrupt position
-        // constexpr static uint32_t irq_id = 40;
+        // constexpr static uint32_t interrupt_id = 40;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO0;
@@ -154,7 +176,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 1;
 
         // peripheral interrupt position
-        // constexpr static uint32_t irq_id = 40;
+        // constexpr static uint32_t interrupt_id = 40;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO1;
@@ -165,7 +187,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 2;
 
         // peripheral interrupt position
-        // constexpr static uint32_t irq_id = 40;
+        // constexpr static uint32_t interrupt_id = 40;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO2;
@@ -176,7 +198,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 3;
 
         // peripheral interrupt position
-        // constexpr static uint32_t irq_id = 40;
+        // constexpr static uint32_t interrupt_id = 40;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO3;
@@ -187,7 +209,7 @@ namespace klib::lpc1756::io::periph {
         constexpr static uint32_t id = 4;
 
         // peripheral interrupt position
-        // constexpr static uint32_t irq_id = 40;
+        // constexpr static uint32_t interrupt_id = 40;
 
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO4;

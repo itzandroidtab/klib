@@ -1,7 +1,7 @@
 #ifndef KLIB_MAX32625_CLOCKS_HPP
 #define KLIB_MAX32625_CLOCKS_HPP
 
-#include "max32625.h"
+#include <max32625.hpp>
 
 namespace klib::max32625 {
     class clocks {

@@ -3,8 +3,9 @@
 
 #include <cstdint>
 
-#include <klib/io/core_clock.hpp>
 #include <lpc802.hpp>
+
+#include <klib/io/core_clock.hpp>
 
 namespace klib::lpc802::io::system {
     /**

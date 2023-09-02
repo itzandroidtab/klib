@@ -73,7 +73,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 9;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 30;
+        constexpr static uint32_t interrupt_id = 30;
 
         // configuration of the pins
         using txd = detail::uart::uart<pins::package::tqfn_24::p21, detail::uart::mode::txd, io::detail::alternate::func_2>;
@@ -90,7 +90,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 10;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 31;
+        constexpr static uint32_t interrupt_id = 31;
 
         // configuration of the pins
         using txd = detail::uart::uart<pins::package::tqfn_24::p14, detail::uart::mode::txd, io::detail::alternate::func_2>;
@@ -107,7 +107,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 10;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 31;
+        constexpr static uint32_t interrupt_id = 31;
 
         // configuration of the pins
         using txd = detail::uart::uart<pins::package::tqfn_24::p2, detail::uart::mode::txd, io::detail::alternate::func_3>;
@@ -124,7 +124,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         constexpr static uint32_t clock_id = 10;
 
         // peripheral interrupt position
-        constexpr static uint32_t irq_id = 31;
+        constexpr static uint32_t interrupt_id = 31;
 
         // configuration of the pins
         using txd = detail::uart::uart<pins::package::tqfn_24::p19, detail::uart::mode::txd, io::detail::alternate::func_3>;
