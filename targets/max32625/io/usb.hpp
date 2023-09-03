@@ -90,7 +90,7 @@ namespace klib::max32625::io::detail::usb {
 }
 
 namespace klib::max32625::io {
-    template <typename Usb, typename Device, typename Irq>
+    template <typename Usb, typename Device>
     class usb {
     public:
         // amount of endpoints supported by the max32625
@@ -100,7 +100,7 @@ namespace klib::max32625::io {
         constexpr static uint8_t max_endpoint_size = 64;
         
         // type to use in device functions
-        using usb_type = usb<Usb, Device, Irq>;
+        using usb_type = usb<Usb, Device>;
 
         // type so the klib usb driver can comunicate to the device
         using device = Device;
@@ -672,7 +672,6 @@ namespace klib::max32625::io {
         /**
          * @brief Init the usb hardware
          * 
-         * @tparam Irq 
          */
         static void init() {
             // enable the usb clock
@@ -702,7 +701,7 @@ namespace klib::max32625::io {
             port->EP_BASE = reinterpret_cast<uint32_t>(&descriptor);
 
             // register the irq handler
-            Irq::template register_irq<Usb::interrupt_id>(irq_handler);
+            irq::template register_irq<Usb::interrupt_id>(irq_handler);
 
             // enable the interrupt for a setup packet
             setup_event_irq<event::setup_data_available>(setup_packet_irq);

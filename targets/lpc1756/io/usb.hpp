@@ -92,7 +92,7 @@ namespace klib::lpc1756::io::detail::usb {
 }
 
 namespace klib::lpc1756::io {
-    template <typename Usb, typename Device, typename Irq>
+    template <typename Usb, typename Device>
     class usb {
     public:
         // amount of endpoints supported by the lpc1756
@@ -102,7 +102,7 @@ namespace klib::lpc1756::io {
         constexpr static uint8_t max_endpoint_size = 64;
         
         // type to use in device functions
-        using usb_type = usb<Usb, Device, Irq>;
+        using usb_type = usb<Usb, Device>;
 
         // type so the klib usb driver can comunicate to the device
         using device = Device;
