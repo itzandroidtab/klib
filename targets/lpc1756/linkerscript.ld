@@ -175,7 +175,7 @@ SECTIONS
     {
         . = ALIGN(4);
         PROVIDE(__heap_start = .);
-        PROVIDE(__heap_end = (ORIGIN(ram) + LENGTH(ram)));
+        PROVIDE(__heap_end = (ORIGIN(ram1) + LENGTH(ram1)));
     } > ram1
 
     /* Remove information from the standard libraries */
