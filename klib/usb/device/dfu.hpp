@@ -10,10 +10,9 @@
 #include <klib/usb/dfu/request.hpp>
 
 namespace klib::usb::device {
+    template <typename Memory, uint32_t TransferSize = 64>
     class dfu {
     protected:
-        constexpr static uint32_t max_transfer_size = 64;
-
         /**
          * @brief Enum with the string descriptor indexes
          * 
@@ -27,10 +26,10 @@ namespace klib::usb::device {
         };
 
         // buffer for the firmware
-        static inline uint8_t buffer[max_transfer_size] = {};
+        static inline uint8_t buffer[TransferSize] = {};
 
         // length of the current buffer
-        static inline uint8_t length = 0;
+        static inline uint16_t length = 0;
 
         // flag if we are done with the manifestation stage
         static inline bool manifestation_complete = false;
@@ -46,7 +45,7 @@ namespace klib::usb::device {
          * to the usb hardware in one go.
          * 
          */
-        struct runtime_config_descriptor {
+        struct config_descriptor {
             // configuration descriptor
             descriptor::configuration configuration;
 
@@ -78,9 +77,9 @@ namespace klib::usb::device {
         };
 
         // configuration descriptor
-        __attribute__((aligned(4))) static inline runtime_config_descriptor runtime_config = {
+        __attribute__((aligned(4))) const static inline config_descriptor config = {
             {
-                .wTotalLength = sizeof(runtime_config_descriptor),
+                .wTotalLength = sizeof(config_descriptor),
                 .bNumInterfaces = 0x01,
                 .bConfigurationValue = 0x01,
                 .iConfiguration = 0x00,
@@ -93,13 +92,13 @@ namespace klib::usb::device {
                 .bNumEndpoints = 0x00,
                 .bInterfaceClass = 0xfe,
                 .bInterfaceSubClass = 0x01,
-                .bInterfaceProtocol = 0x01, // 0x01 = runtime, 0x02 = boot mode
+                .bInterfaceProtocol = 0x02, // 0x01 = runtime, 0x02 = boot mode
                 .iInterface = 0x04
             },
             {
-                .bmAttributes = 0b00000101,
+                .bmAttributes = 0b00000001,
                 .wDetachTimeOut = 255,
-                .wTransferSize = max_transfer_size,
+                .wTransferSize = TransferSize,
                 // .bcdDFUVersion = 0x011a, // 0x011a for STM
             }
         };
@@ -126,10 +125,65 @@ namespace klib::usb::device {
  
         // current status and state
         static inline volatile auto current_status = klib::usb::dfu::device_status::ok;
-        static __attribute__((aligned(4))) inline volatile auto current_state = klib::usb::dfu::device_state::app_idle;
+        static __attribute__((aligned(4))) inline volatile auto current_state = klib::usb::dfu::device_state::dfu_idle;
 
         // offset in the current download
         static inline uint32_t offset = 0;
+
+        /**
+         * @brief Callback handler
+         * 
+         * @tparam Usb 
+         * @param endpoint 
+         * @param mode 
+         * @param error_code 
+         */
+        template <typename Usb>
+        static void callback_handler(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code) {
+            // check if we are done with the transfer
+            if (error_code != usb::error::no_error) {
+                // do nothing
+                return;
+            }
+
+            // ack the endpoint
+            Usb::ack(endpoint, mode);
+
+            // check if we have the data and are waiting to write to the flash
+            if (current_state == klib::usb::dfu::device_state::download_busy) {
+                // write to the memory
+                Memory::write(offset, buffer, length);
+
+                // change the state to idle
+                current_state = klib::usb::dfu::device_state::download_idle;
+
+                // add the length to the offset
+                offset += length;
+            }
+            else if (current_state == klib::usb::dfu::device_state::manifset) {
+                // mark we are oke
+                current_status = klib::usb::dfu::device_status::ok;
+
+                // mark the manifest state as done
+                manifestation_complete = true;
+
+                // check if we are manifestation tolerant
+                if (!(config.functional.bmAttributes & (0x1 << 2))) {
+                    // change the state to the sync
+                    current_state = klib::usb::dfu::device_state::manifest_sync;
+                }
+                else {
+                    // change to wait reset
+                    current_state = klib::usb::dfu::device_state::manifest_wait_reset;
+
+                    // disconnect the device
+                    Usb::disconnect();
+
+                    // reset the device
+                    NVIC_SystemReset();
+                }
+            }
+        }
 
     public:
         /**
@@ -142,59 +196,6 @@ namespace klib::usb::device {
         template <typename Usb>
         static bool is_configured() {
             return static_cast<volatile uint8_t>(configuration) != 0;
-        }
-
-        /**
-         * @brief Poll function that calls the write/verity callback. Should be called from a 
-         * context with a lower priority than the usb interrupt.
-         * 
-         * @tparam Usb 
-         * @tparam T 
-         * @param func 
-         */
-        template <typename Usb, typename T>
-        static void poll(const T func) {
-            // check if we have the data and are waiting to write to the flash
-            if (current_state != klib::usb::dfu::device_state::download_busy && 
-                current_state != klib::usb::dfu::device_state::manifset) 
-            {
-                // nothing to do. Do a early exit
-                return;
-            }
-
-            // check if we are in download or manifest mode
-            const bool download = (current_state == klib::usb::dfu::device_state::download_busy);
-
-            // call the write function
-            const bool status = func(download, offset, buffer, length);
-
-            // check what we should do with the result
-            if (download) {
-                if (status) {
-                    // change the state to idle
-                    current_state = klib::usb::dfu::device_state::download_idle;
-
-                    // add the length to the offset
-                    offset += length;
-                }
-                else {
-                    // set we have a error
-                    current_status = klib::usb::dfu::device_status::verify_error;
-                }
-            }
-            else {
-                // set the manifestation as the current state
-                manifestation_complete = status;
-
-                if (status) {
-                    // change the state to idle
-                    current_state = klib::usb::dfu::device_state::manifest_sync;                    
-                }
-                else {
-                    // set we have a error
-                    current_status = klib::usb::dfu::device_status::firmware_error;
-                }  
-            }
         }
 
     public:
@@ -213,6 +214,9 @@ namespace klib::usb::device {
         static void init() {
             // init all the variables to default
             configuration = 0x00;
+
+            // mark the manifestation as complete for now
+            manifestation_complete = true;
         }
 
         /**
@@ -238,8 +242,10 @@ namespace klib::usb::device {
                     // should be 4 byte alligned as some devices requre 
                     // this. Data should also be static to make sure it
                     // is still allocated when the dma is sending it)
-                    if (Usb::write(klib::usb::usb::status_callback<Usb>, klib::usb::usb::control_endpoint, 
-                        usb::endpoint_mode::in, const_cast<const uint8_t *>(reinterpret_cast<const volatile uint8_t *>(&current_state)), 
+                    if (Usb::write(callback_handler<Usb>, klib::usb::usb::control_endpoint, 
+                        usb::endpoint_mode::in, const_cast<const uint8_t *>(
+                            reinterpret_cast<const volatile uint8_t *>(&current_state)
+                        ), 
                         sizeof(current_state)))
                     {
                         // return we should wait on the ack from the write
@@ -262,18 +268,15 @@ namespace klib::usb::device {
                     switch (current_state) {
                         case klib::usb::dfu::device_state::download_sync:
                             current_state = klib::usb::dfu::device_state::download_busy;
-                            timeout = 2;
-                            // poll should call on download now
+
+                            // set the timeout to the memory timeout
+                            timeout = Memory::get_write_timeout();
                             break;
                         case klib::usb::dfu::device_state::manifest_sync:
-                            if (manifestation_complete) {
+                            // check if we should change to idle or stay in manifest
+                            if (manifestation_complete && !(config.functional.bmAttributes & (0x1 << 2))) {
+                                // change to idle
                                 current_state = klib::usb::dfu::device_state::dfu_idle;
-
-                                // reset the state back to runtime mode
-                                runtime_config.interface.bInterfaceProtocol = 1;
-
-                                // the cpu should be reset at this moment to change to the 
-                                // new user appication
                             }
                             else {
                                 current_state = klib::usb::dfu::device_state::manifset;
@@ -299,7 +302,7 @@ namespace klib::usb::device {
                     };
 
                     // write the status to the host
-                    if (Usb::write(klib::usb::usb::status_callback<Usb>, klib::usb::usb::control_endpoint, 
+                    if (Usb::write(callback_handler<Usb>, klib::usb::usb::control_endpoint, 
                          usb::endpoint_mode::in, reinterpret_cast<const uint8_t *const>(&status), sizeof(status)))
                     {
                         // return we should wait on the ack from the write
@@ -366,7 +369,7 @@ namespace klib::usb::device {
                     }
 
                     // we have a non 0 length packet. Read the data
-                    Usb::read(nullptr, klib::usb::usb::control_endpoint, 
+                    Usb::read(callback_handler<Usb>, klib::usb::usb::control_endpoint, 
                         usb::endpoint_mode::in, buffer, length
                     );
 
@@ -389,8 +392,7 @@ namespace klib::usb::device {
                     // wLength = zero
                     // data = none
 
-                    // change to boot mode
-                    runtime_config.interface.bInterfaceProtocol = 2;
+                    // change to idle
                     current_state = klib::usb::dfu::device_state::dfu_idle;
 
                     return usb::handshake::ack;
@@ -471,7 +473,7 @@ namespace klib::usb::device {
                 case descriptor::descriptor_type::configuration:
                     // return the whole configuration descriptor (total size is in 
                     // wTotalLength of the configuration)
-                    return to_description(runtime_config, runtime_config.configuration.wTotalLength);
+                    return to_description(config, config.configuration.wTotalLength);
                 case descriptor::descriptor_type::string:
                     // check what string descriptor to send
                     switch (static_cast<string_index>(index)) {
@@ -533,7 +535,7 @@ namespace klib::usb::device {
         template <typename Usb>
         static usb::handshake set_config(const klib::usb::setup_packet &packet) {
             // check if the set is the same as the configuration we have stored
-            if (packet.wValue == runtime_config.configuration.bConfigurationValue) {
+            if (packet.wValue == config.configuration.bConfigurationValue) {
                 // store the configuration value
                 configuration = packet.wValue;
 
