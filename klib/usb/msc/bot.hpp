@@ -100,7 +100,9 @@ namespace klib::usb::msc::scsi {
         mode_sense10 = 0x5a,
         read_capacity16 = 0x9e,
     };
+}
 
+namespace klib::usb::msc::scsi::commands {
     /**
      * @brief Test unit ready command
      * 
@@ -199,6 +201,51 @@ namespace klib::usb::msc::scsi {
     };
 
     static_assert(sizeof(write10) == 10, "Write 10 command structure should be 10 bytes");
+}
+
+namespace klib::usb::msc::scsi::parameters {
+    // All these parameters use big endian. As we are on a little endian system we need to convert 
+    
+    /**
+     * @brief Sense parameter data
+     * 
+     */
+    template <typename AdditionalSenseData>
+    struct sense {
+        // response code (0x72 or 0x73)
+        uint8_t response_code;
+
+        // sense key
+        uint8_t sense_key;
+
+        // additional sense code
+        uint8_t sense_code;
+
+        // additional sense code qualifier
+        uint8_t sense_code_qualifier;
+
+        uint8_t reserved[3];
+
+        // additional sense length
+        uint8_t length = sizeof(AdditionalSenseData);
+
+        // additional sense data
+        AdditionalSenseData data;
+    };
+
+    /**
+     * @brief Read capacity parameter data
+     * 
+     */
+    struct read_capacity10 {
+        // returned logical block address
+        uint32_t block_address;
+
+        // block length in bytes
+        uint32_t length;
+    };
+
+    static_assert(sizeof(read_capacity10) == 8, "Read capacity 10 response is the wrong size");
 }
 
 // release the old pack so the rest of the structs are not 

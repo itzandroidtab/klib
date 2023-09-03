@@ -276,7 +276,7 @@ namespace klib::usb::msc::bot {
                     send_format_capacity<Usb>();
                     break;
                 case msc::scsi::command::read_capacity10:
-                    send_capacity<Usb>();
+                    send_capacity10<Usb>();
                     break;
                 case msc::scsi::command::read_capacity16:
                     send_capacity16<Usb>();
@@ -326,33 +326,50 @@ namespace klib::usb::msc::bot {
 
         template <typename Usb>
         static void request_sense() {
-            // TODO: move this to somewhere global
-            static uint8_t buffer[18] = {};
+            // create the struct with the additional sense data
+            struct data {
+                uint8_t bytes[10];
+            };
 
-            buffer[0]  = 0x70;     /* Error Code */
-            buffer[1]  = 0x00;     /* Segment Number */
-            buffer[2]  = Memory::ready() ? 0x00 : 0x02; /* Sense Key */
-            buffer[3]  = 0x00;     /* Info - 4 Bytes */
-            buffer[4]  = 0x00;     
-            buffer[5]  = 0x00;     
-            buffer[6]  = 0x00;     
-            buffer[7]  = 0x0A;     /* Additional Sense Length */
-            buffer[8]  = 0x00;     /* Command Specific Info - 4 Bytes */
-            buffer[9]  = 0x00;     
-            buffer[10] = 0x00;     
-            buffer[11] = 0x00;     
-            buffer[12] = 0x3A;     /* Additional Sense Code */
-            buffer[13] = 0x00;     /* Additional Send Qualifier */
-            buffer[14] = 0x00;     /* Reserved - 4 Bytes */
-            buffer[15] = 0x00;
-            buffer[16] = 0x00;
-            buffer[17] = 0x00;
+            // get a reference to the response
+            auto &response = *reinterpret_cast<scsi::parameters::sense<data>*>(block_buffer);
+
+            response.response_code = 0x70;
+            response.sense_key = 0x00;
+            response.sense_code_qualifier = 0x00;
+            response.reserved[0] = 0x00;
+            response.reserved[1] = 0x00;
+            response.reserved[2] = 0x00;
+
+            // set if the device is ready
+            response.sense_code = Memory::ready() ? 0x00 : 0x02;
+
+            // set the length of the additional sense
+            response.length = sizeof(data);
+
+            // command specfic info (4 bytes)
+            response.data.bytes[0] = 0x00;
+            response.data.bytes[1] = 0x00;
+            response.data.bytes[2] = 0x00;
+            response.data.bytes[3] = 0x00;
+
+            // additional sense code
+            response.data.bytes[4] = 0x3A;
+
+            // additional send qualifier
+            response.data.bytes[5] = 0x00;
+
+            // reserved (4 bytes)
+            response.data.bytes[6] = 0x00;
+            response.data.bytes[7] = 0x00;
+            response.data.bytes[8] = 0x00;
+            response.data.bytes[9] = 0x00;
 
             // send the data and send a csw after we have transmitted the data
             Usb::write(callback_handler<Usb, state::send_csw>, 
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
-                buffer, sizeof(buffer)
+                block_buffer, sizeof(response)
             );
         }
 
@@ -447,29 +464,24 @@ namespace klib::usb::msc::bot {
         }
 
         template <typename Usb>
-        static void send_capacity() {
+        static void send_capacity10() {
             // Get the total number of blocks on the "disk".
             const uint32_t size = (Memory::size() / max_packet_size) - 1;
 
-            // TODO: move this to somewhere global
-            static uint8_t buffer[8] = {};
+            // get a reference to the response
+            auto &response = *reinterpret_cast<scsi::parameters::read_capacity10*>(block_buffer);
 
-            /* Prep the response and send it followed by sending the CSW */
-            buffer[0] = static_cast<uint8_t>(size >> 24);
-            buffer[1] = static_cast<uint8_t>(size >> 16);
-            buffer[2] = static_cast<uint8_t>(size >> 8);
-            buffer[3] = static_cast<uint8_t>(size);
+            // set the response data
+            response.block_address = klib::to_big_endian(size);
 
-            buffer[4] = static_cast<uint8_t>((max_packet_size) >> 24);
-            buffer[5] = static_cast<uint8_t>((max_packet_size) >> 16);
-            buffer[6] = static_cast<uint8_t>((max_packet_size) >> 8);
-            buffer[7] = static_cast<uint8_t>(max_packet_size);
+            // set the packet length in bytes
+            response.length = klib::to_big_endian(max_packet_size);
 
             // send the data and send a csw after we have transmitted the data
             Usb::write(callback_handler<Usb, state::send_csw>, 
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
-                buffer, sizeof(buffer)
+                block_buffer, sizeof(response)
             );            
         }
 
