@@ -4,6 +4,7 @@
 #include <limits>
 #include <type_traits>
 #include <cstdint>
+#include <bit>
 
 namespace klib {
     /**
@@ -104,6 +105,24 @@ namespace klib {
         return bswap(static_cast<uint64_t>(data));
     }
 
+    /**
+     * @brief Convert data to big endian. (does nothing on a 
+     * big endian cpu)
+     * 
+     * @tparam T 
+     * @param data 
+     * @return constexpr T 
+     */
+    template <typename T>
+    constexpr T to_big_endian(const T data) {
+        // check if we need to byte swap the data
+        if constexpr (std::endian::native == std::endian::little) {
+            return bswap(data);
+        }
+        else {
+            return data;
+        }
+    }
 
     /**
      * @brief Count leading zero's
