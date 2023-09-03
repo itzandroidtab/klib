@@ -42,6 +42,9 @@ namespace klib::allocator::detail {
             bool in_use;
         };
 
+        // make sure the chunk is alligned on 4 bytes
+        static_assert(sizeof(chunk) == 16, "Chunk size should be 16 bytes");
+
         void add_new_chunk(chunk& ch, chunk *const previous, const uint32_t size = 0) const {
             // mark the new allocation as not in use and 0 size
             ch.magic_header = 0xdeadbeef;
@@ -69,12 +72,12 @@ namespace klib::allocator::detail {
         }
 
     public:
-        allocator(const uint32_t start_address, const uint32_t heap_size):
-            start_address(start_address), heap_size(heap_size), 
-            end_address(start_address)
+        allocator(const uint32_t heap_start, const uint32_t heap_end):
+            start_address(heap_start), heap_size(heap_end - heap_start), 
+            end_address(heap_start)
         {
             // set a chunk on the start address
-            chunk &start_chunk = (*reinterpret_cast<chunk*>(start_address));
+            chunk &start_chunk = (*reinterpret_cast<chunk*>(heap_start));
 
             // create a new chunk at the start chunk
             add_new_chunk(start_chunk, nullptr);
@@ -103,13 +106,16 @@ namespace klib::allocator::detail {
 
             // get the location of a new chunk header
             chunk &next_chunk = (*reinterpret_cast<chunk*>(
-                reinterpret_cast<uint32_t>(&current_chunk) + current_chunk.size + sizeof(chunk)
+                (reinterpret_cast<uint32_t>(&current_chunk) + sizeof(chunk)) + 
+                current_chunk.size
             ));
 
             // check if the next header is also free
             if (!next_chunk.in_use) {
                 // check if the next chunk is the last chunk
                 if (next_chunk.size == 0) {
+                    // clear the size of the current chunk to mark 
+                    // it as the new last chunk
                     current_chunk.size = 0;
 
                     // move the end to the current chunk
@@ -123,11 +129,21 @@ namespace klib::allocator::detail {
 
             // check if the previous header is also free
             if (current_chunk.previous != nullptr && !current_chunk.previous->in_use) {
-                // add our size to the previous chunk
-                current_chunk.previous->size += current_chunk.size;
+                // check if we are the last chunk
+                if (current_chunk.size = 0) {
+                    // clear the size of the previous chunk to mark
+                    // it as the new last chunk
+                    current_chunk.previous->size = 0;
 
-                // dont do anything else with our current chunk
-                return;
+                    // move the end to the current chunk
+                    end_address = reinterpret_cast<const uint32_t>(&current_chunk.previous);
+                }
+                else {
+                    // add our size to the previous chunk (including 
+                    // the size of the chunk) so we point to the next
+                    // chunk
+                    current_chunk.previous->size += sizeof(chunk) + current_chunk.size;
+                }
             }
 
             // change the in use flag
@@ -229,7 +245,10 @@ namespace klib::allocator::detail {
 namespace klib::allocator {
     // allocator for memory on the heap
     [[maybe_unused]]
-    static auto allocator = detail::allocator<4>(reinterpret_cast<uint32_t>(&__heap_start), &__heap_end - &__heap_start);
+    static auto allocator = detail::allocator<4>(
+        reinterpret_cast<uint32_t>(&__heap_start), 
+        reinterpret_cast<uint32_t>(&__heap_end)
+    );
 }
 
 namespace klib {
