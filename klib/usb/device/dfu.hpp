@@ -2,11 +2,11 @@
 #define KLIB_USB_DFU_HPP
 
 #include <algorithm>
+#include <cstdint>
 
-#include <klib/string.hpp>
-#include <klib/usb/device.hpp>
-#include <klib/usb/descriptor.hpp>
+#include <klib/usb/usb.hpp>
 #include <klib/usb/dfu/descriptor.hpp>
+#include <klib/usb/device.hpp>
 #include <klib/usb/dfu/request.hpp>
 
 namespace klib::usb::device {
@@ -180,6 +180,7 @@ namespace klib::usb::device {
                     Usb::disconnect();
 
                     // reset the device
+                    // TODO: change away from the CMSIS functions
                     NVIC_SystemReset();
                 }
             }
