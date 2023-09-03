@@ -141,11 +141,6 @@ namespace klib::lpc1756::io {
         // check if the device has the usb bus reset callback
         constexpr static bool has_bus_reset_callback = requires() {
             device::template bus_reset<usb_type>();
-        }; 
-
-        // check if the device has the vendor handler
-        constexpr static bool has_endpoint_callback = requires(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            device::template endpoint_callback<usb_type>(endpoint, mode);
         };
 
     protected:
@@ -497,11 +492,6 @@ namespace klib::lpc1756::io {
                         }
                     }
                     break;
-            }
-
-            if constexpr (has_endpoint_callback) {
-                // call the device endpoint callback
-                device::template endpoint_callback<usb_type>(endpoint, mode);
             }
         }
 

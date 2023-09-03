@@ -139,11 +139,6 @@ namespace klib::max32625::io {
         // check if the device has the usb bus reset callback
         constexpr static bool has_bus_reset_callback = requires() {
             device::template bus_reset<usb_type>();
-        };        
-
-        // check if the device has the vendor handler
-        constexpr static bool has_endpoint_callback = requires(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            device::template endpoint_callback<usb_type>(endpoint, mode);
         };
 
     protected:
@@ -529,11 +524,6 @@ namespace klib::max32625::io {
                         }
                     }
                 }
-
-                if constexpr (has_endpoint_callback) {
-                    // call the device endpoint callback
-                    device::template endpoint_callback<usb_type>(ep, klib::usb::usb::endpoint_mode::in);
-                }                
             }
         }
 
@@ -611,11 +601,6 @@ namespace klib::max32625::io {
 
                     // transfer buffer back to the dma controller
                     port->IN_OWNER = (0x1 << ep);
-                }
-
-                if constexpr (has_endpoint_callback) {
-                    // call the device endpoint callback
-                    device::template endpoint_callback<usb_type>(ep, klib::usb::usb::endpoint_mode::out);
                 }
             }
         }
