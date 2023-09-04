@@ -27,10 +27,10 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     message("Release build with debugging symbols")
     add_compile_options("-g")
-    add_compile_options("-Os")
+    add_compile_options("-O3")
 else()
     message("Release build")
-    add_compile_options("-O2")
+    add_compile_options("-O3")
 endif()
 
 # change all floating point constants to single precision
@@ -39,47 +39,39 @@ add_compile_options("-fsingle-precision-constant")
 # enable stack usage
 add_compile_options(-fstack-usage)
 
-# default target values
-set(DEFAULT_TARGET_CPU "max32660")
-set(DEFAULT_TARGET_BOARD "evsys")
 
 # include the target cpu and set a target board
 if (DEFINED TARGET_CPU)
     message("Building for target: ${TARGET_CPU}")
+
+    # add the target directory
     add_subdirectory(${CMAKE_SOURCE_DIR}/targets/${TARGET_CPU})
 
+    # check if we have board with names for the pins
     if (DEFINED TARGET_BOARD)
         message("Building for target board: ${TARGET_BOARD}")
         target_compile_definitions(target_cpu PUBLIC "TARGET_BOARD=${TARGET_BOARD}")
     endif()
 
+    # check if the user configured the fpu
     if (DEFINED TARGET_FPU_ENABLED)
-        message("FPU enabled for target: ${TARGET_CPU}")
-        target_compile_definitions(target_cpu PUBLIC "TARGET_FPU_ENABLED=1")
+        message("FPU is ${TARGET_FPU_ENABLED} for target: ${TARGET_CPU}")
+        target_compile_definitions(target_cpu PUBLIC "TARGET_FPU_ENABLED=${TARGET_FPU_ENABLED}")
     else()
         message("FPU disabled for target: ${TARGET_CPU}")
         target_compile_definitions(target_cpu PUBLIC "TARGET_FPU_ENABLED=0")
     endif()
 
+    # check if the user configured the low power sleep
     if (DEFINED TARGET_LOW_POWER_SLEEP)
-        message("Low Power sleep is enabled for target: ${TARGET_CPU}")
-        target_compile_definitions(target_cpu PUBLIC "TARGET_LOW_POWER_SLEEP=1")
+        message("Low Power sleep is ${TARGET_LOW_POWER_SLEEP} for target: ${TARGET_CPU}")
+        target_compile_definitions(target_cpu PUBLIC "TARGET_LOW_POWER_SLEEP=${TARGET_LOW_POWER_SLEEP}")
     else()
         message("Low Power sleep is disabled for target: ${TARGET_CPU}")
         target_compile_definitions(target_cpu PUBLIC "TARGET_LOW_POWER_SLEEP=0")
     endif()
 else()
-    message("Building defualt target: ${DEFAULT_TARGET_CPU}")
-    add_subdirectory(${CMAKE_SOURCE_DIR}/targets/${DEFAULT_TARGET_CPU})
-
-    message("Building for default target board: ${DEFAULT_TARGET_BOARD}")
-    target_compile_definitions(target_cpu PUBLIC "TARGET_BOARD=${DEFAULT_TARGET_BOARD}")
-    
-    message("FPU disabled for target: ${DEFAULT_TARGET_CPU}")
-    target_compile_definitions(target_cpu PUBLIC "TARGET_FPU_ENABLED=0")
-
-    message("Low Power sleep is disabled for target: ${DEFAULT_TARGET_CPU}")
-    target_compile_definitions(target_cpu PUBLIC "TARGET_LOW_POWER_SLEEP=0")
+    message(FATAL_ERROR "No target cpu set. Use -DTARGET_CPU=\"cpu name\" to configure with a specific cpu" )
 endif()
 
 # add the klib library
