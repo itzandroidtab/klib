@@ -50,7 +50,6 @@ target_link_libraries(klib PUBLIC target_cpu_options)
 target_compile_options(klib PRIVATE "-Wall")
 target_compile_options(klib PRIVATE "-Wextra")
 target_compile_options(klib PRIVATE "-Werror")
-target_compile_options(klib PRIVATE "-Wno-unused-function")
 
 target_compile_options(klib PRIVATE "-Wno-maybe-uninitialized")
 target_compile_options(klib PRIVATE "-Wno-unused-function")
