@@ -198,8 +198,8 @@ namespace klib::filesystem::detail {
             const uint32_t offset = index + (index / 2);
 
             // set the fat entry
-            if (offset & 0x1) {
-                fat[offset] = ((value & 0xf) << 4) | (fat[offset] & 0xf);;
+            if (index & 0x1) {
+                fat[offset] = ((value & 0xf) << 4) | (fat[offset] & 0xf);
                 fat[offset + 1] = ((value >> 4) & 0xff);
             }
             else {
@@ -293,7 +293,7 @@ namespace klib::filesystem {
      * @tparam FatSizeLimit Allows to limit the FAT in ram. Can be used 
      * to simulate a big filesystem with low amounts of ram
      */
-    template <uint32_t MaxFiles = 16, uint32_t TotalSize = (1 * 1024 * 1024), uint32_t ClusterSize = 64, uint32_t FatSizeLimit = 0xffffffff>
+    template <uint32_t MaxFiles = 32, uint32_t TotalSize = (1 * 1024 * 1024), uint32_t ClusterSize = 64, uint32_t FatSizeLimit = 0xffffffff>
     class virtual_fat {
     public:
         // sector size of this storage type
@@ -633,7 +633,7 @@ namespace klib::filesystem {
             virtual_media[current++] = {
                 .read = read_directory_structure,
                 .write = write_directory_structure,
-                .sector_count = ((sizeof(fat_directory) * root_entry_count) + (sector_count - 1)) / sector_count
+                .sector_count = ((sizeof(fat_directory) * root_entry_count) + (sector_size - 1)) / sector_size
             };
 
             // set the amount of directory entries that are used
@@ -707,13 +707,13 @@ namespace klib::filesystem {
             };
 
             // set the drive name in the directory
-            for (uint32_t i = 0; i < sizeof(directory[0].name) && i < klib::string::strlen(file_name); i++) {
+            for (uint32_t i = 0; i < sizeof(entry.name) && i < klib::string::strlen(file_name); i++) {
                 entry.name[i] = file_name[i];
             }
 
             virtual_media[fat_directory_count] = {
-                .read = read_directory_structure,
-                .write = write_directory_structure,
+                .read = read,
+                .write = write,
                 .sector_count = ((sizeof(fat_directory) * root_entry_count) + (sector_count - 1)) / sector_count
             };
 
