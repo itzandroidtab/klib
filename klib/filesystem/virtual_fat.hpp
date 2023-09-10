@@ -477,14 +477,31 @@ namespace klib::filesystem {
                 return;
             }
 
-            // get the directory entries
-            const uint32_t byte_count = fat_directory_count * sizeof(fat_directory);
+            // get the amount of bytes used by the fat array
+            const uint32_t size = (fat_directory_count * sizeof(fat_directory));
 
-            // clear the data we are not using
-            std::fill_n(data + byte_count, (sectors * sector_size) - byte_count, 0x00);
+            // read all the fat sectors
+            for (uint32_t i = 0; i < sectors; i++) {
+                // get the fat offset
+                const uint32_t dir_offset = i + offset;
 
-            // copy the entry count of directory structures
-            std::copy_n(reinterpret_cast<const uint8_t*>(&directory), byte_count, data);
+                // get the directory entries
+                const uint32_t byte_count = klib::min(
+                    ((dir_offset * sector_size) > size) ? 0 : (size - (dir_offset * sector_size)), sector_size
+                );
+
+                // check if we need to clear any bytes
+                if (byte_count < sector_size) {
+                    // clear the data we are not using
+                    std::fill_n(data + byte_count, (sectors * sector_size) - byte_count, 0x00);
+                }
+
+                // copy the entry count of directory structures
+                std::copy_n(
+                    &reinterpret_cast<const uint8_t*>(&directory)[dir_offset * sector_size], 
+                    byte_count, &data[i * sector_size]
+                );
+            }
         }
 
         /**
@@ -538,7 +555,8 @@ namespace klib::filesystem {
         template <bool Read, typename T>
         static void read_write_impl(uint32_t sector, T data, uint32_t sectors) {
             uint32_t current_sector = 0;
-            
+            uint32_t data_offset = 0;
+
             // check what media should handle the read
             for (uint32_t i = 0; i < fat_directory_count; i++) {
                 // get the end of the current media
@@ -556,19 +574,22 @@ namespace klib::filesystem {
                     if constexpr (Read) {
                         // check if we have a read function registered
                         if (virtual_media[i].read) {
-                            virtual_media[i].read(media_offset, data, count);
+                            virtual_media[i].read(media_offset, &data[data_offset], count);
                         }
                     }
                     else {
                         // check if we have a read function registered
                         if (virtual_media[i].write) {
-                            virtual_media[i].write(media_offset, data, count);
+                            virtual_media[i].write(media_offset, &data[data_offset], count);
                         }
                     }
 
                     // update the sector and the amount of sectors we want to process
                     sectors -= count;
                     sector += count;
+
+                    // move the offset we are in the ptr
+                    data_offset += (count * sector_size);
                 }
 
                 // check if we have data left to process
@@ -714,7 +735,7 @@ namespace klib::filesystem {
             virtual_media[fat_directory_count] = {
                 .read = read,
                 .write = write,
-                .sector_count = ((sizeof(fat_directory) * root_entry_count) + (sector_count - 1)) / sector_count
+                .sector_count = clusters * sectors_per_cluster
             };
 
             fat_directory_count++;
