@@ -12,13 +12,13 @@ namespace klib::filesystem {
     class attributes {
     public:
         enum : uint8_t {
-            ATTR_READ_ONLY = 0x01,
-            ATTR_HIDDEN = 0x02,
-            ATTR_SYSTEM = 0x04,
-            ATTR_VOLUME_ID = 0x08,
-            ATTR_DIRECTORY = 0x10,
-            ATTR_ARCHIVE = 0x20,
-            ATTR_LONG_NAME = (ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
+            read_only = 0x01,
+            hidden = 0x02,
+            system = 0x04,
+            volume_id = 0x08,
+            directory = 0x10,
+            archive = 0x20,
+            long_name = (read_only | hidden | system | volume_id)
         };
     };
 
@@ -298,6 +298,7 @@ namespace klib::filesystem {
      * to simulate a big filesystem with low amounts of ram
      */
     template <
+        typename Handler,
         uint32_t MaxFiles = 32, 
         uint32_t TotalSize = (1 * 1024 * 1024), 
         uint32_t ClusterSize = 64, 
@@ -391,7 +392,7 @@ namespace klib::filesystem {
         static inline uint32_t cluster_index = 0; 
 
         // fat file allocation table
-        static inline uint8_t fat[sector_size * klib::min(mbr.fat_size16, FatSizeLimit) * mbr.num_fats] = {};
+        static inline uint8_t fat[sector_size * klib::min(mbr.fat_size16, FatSizeLimit) * number_of_fats] = {};
 
         // amount of active fat directory entries
         static inline uint32_t directory_index = 0;
@@ -420,9 +421,75 @@ namespace klib::filesystem {
 
         // callbacks for when a file/media is requested by the host
         // (+ num_fats + mbr + root directory)
-        static inline media virtual_media[root_entry_count + mbr.num_fats + 1 + 1] = {};
+        static inline media virtual_media[root_entry_count + number_of_fats + 1 + 1] = {};
 
     protected:
+        /**
+         * @brief returns if a filename char array is following the 8.3 standard
+         * 
+         * @param filename 
+         * @return true 
+         * @return false 
+         */
+        static bool is_valid_filename(const uint8_t* filename) {
+            // invalid characters for the 8.3 specification
+            constexpr static char invalid_starting_chars[] = {
+                0xe5, // deleted
+                0x00, // deleted (and all following entries are free)
+                0x20, // space not allowed as first character
+            };
+
+            // check for invalid starting characters
+            for (uint32_t i = 0; i < sizeof(invalid_starting_chars); i++) {
+                if (invalid_starting_chars[i] == filename[0]) {
+                    return false;
+                }
+            }
+
+            // make sure all the other characters are valid
+            for (uint32_t i = 0; i < 11; i++) {
+                if (!character_valid(filename[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /**
+         * @brief returns if a character is valid in a 8.3 filename
+         * 
+         * @param character 
+         * @return true 
+         * @return false 
+         */
+        static bool character_valid(const char character) {
+            // all the invalid characters
+            constexpr static char invalid_chars[] = {
+                0x22, 0x2a, 0x2b, 0x2c, 0x2e, 0x2f, 0x3a, 0x3b, 
+                0x3c, 0x3d, 0x3e, 0x3f, 0x5b, 0x5c, 0x5d, 0x7c
+            };
+
+            // lower case characters are not allowed
+            if ((character >= 'a') && (character <= 'z')) {
+                return false;
+            }
+
+            // values less than 0x20 are not allowed except 0x5
+            if ((character < 0x20) && (character != 0x5)) {
+                return false;
+            }
+
+            // check for special characters that are not allowed
+            for (uint32_t i = 0; i < sizeof(invalid_chars); i++) {
+                if (invalid_chars[i] == character) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         /**
          * @brief Read the mbr data
          * 
@@ -533,7 +600,45 @@ namespace klib::filesystem {
                 return;
             }
 
-            // TODO: add this
+            // get a the offset into the fat directory array
+            const uint32_t fat_offset = offset * sector_size / sizeof(fat_directory);
+
+            // get the max amount of items in the current offset
+            const uint32_t entries = klib::max(
+                root_entry_count - (offset * (sector_size / sizeof(fat_directory))), 0
+            );
+
+            // check if a file entry has changed (when we are at offset 0 we skip the
+            // directory entry. On the other offsets we start at index 0)
+            for (uint32_t i = (offset ? 1 : 0); i < entries; i++) {
+                // get a reference to the received structure
+                auto &n = (reinterpret_cast<const fat_directory*>(data))[i];
+                auto &old = directory[fat_offset + i];
+
+                // check if the entry has changed
+                if (n == old) {
+                    // the data is the same. Skip this entry
+                    continue;
+                }
+
+                // check what happend with the file
+                if (n.name[0] == 0xe5) {
+                    // the file has been deleted
+                    Handler::on_delete(old);
+                }
+                else if (n.name != old.name && is_valid_filename(n.name)) {
+                    // a new file has been created
+                    Handler::on_create(n);
+                }
+                else {
+                    // something else changed. Let the handler check what 
+                    // it is it for us
+                    Handler::on_change(old, n);
+                }
+
+                // store the new data in the directory structure
+                old = n;
+            }
         }             
 
         /**
@@ -641,7 +746,7 @@ namespace klib::filesystem {
 
             // initialize the root directory
             directory[0] = {
-                {}, attributes::ATTR_VOLUME_ID | attributes::ATTR_ARCHIVE
+                {}, attributes::volume_id | attributes::archive
             };
 
             // set the drive name in the directory
@@ -662,7 +767,7 @@ namespace klib::filesystem {
             set_fat_read(current);
 
             // increment the amount of media used by the fats
-            current += mbr.num_fats;
+            current += number_of_fats;
 
             // setup the directory read/write
             virtual_media[current++] = {
@@ -724,13 +829,13 @@ namespace klib::filesystem {
             }
 
             // get a reference to the current entry (- num_fats - mbr)
-            fat_directory& entry = directory[directory_index - (mbr.num_fats + 1)];
+            fat_directory& entry = directory[directory_index - (number_of_fats + 1)];
 
             // set the file in the directory
             entry = {
                 .name = {""},
                 .attributes = (write == nullptr) ? 
-                    static_cast<uint8_t>(attributes::ATTR_READ_ONLY) : 
+                    static_cast<uint8_t>(attributes::read_only) : 
                     static_cast<uint8_t>(0x00),
                 .reserved = 0x00,
                 .creation_time_ms = 0x00,
