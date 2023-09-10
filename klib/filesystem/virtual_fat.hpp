@@ -154,7 +154,10 @@ namespace klib::filesystem {
 
         // quantity containing the size in bytes for the file/
         // directory
-        uint32_t filesize;        
+        uint32_t filesize;
+
+        // generate the default comparison operator
+        bool operator==(const fat_directory&) const = default;
     };
 
     static_assert(sizeof(fat_directory) == 32, "Invalid fat directory structure size");
@@ -302,27 +305,8 @@ namespace klib::filesystem {
     protected:
         constexpr static uint32_t root_entry_count = MaxFiles;
 
-        // using for the read and write callbacks
-        using read_callback = void(*)(const uint32_t offset, uint8_t *const data, const uint32_t sectors);
-        using write_callback = void(*)(const uint32_t offset, const uint8_t *const data, const uint32_t sectors);
-
-        /**
-         * @brief 
-         * 
-         */
-        struct media {
-            // media read callback
-            read_callback read;
-
-            // media write callback
-            write_callback write;
-
-            // amount of sectors the media has
-            uint32_t sector_count;
-        };
-
         // amount of fats (recommended value is 2)
-        constexpr static uint8_t number_of_fats = 0x02; 
+        constexpr static uint8_t number_of_fats = 0x01; 
 
         // amount of sectors per cluster
         constexpr static uint8_t sectors_per_cluster = ClusterSize;
@@ -394,19 +378,39 @@ namespace klib::filesystem {
         static_assert(cluster_count <= 65524, "To many sectors for FAT12/FAT16. FAT32 is not supported");
 
         // amount of current fat clusters in use
-        static inline uint32_t fat_cluster_count = 0; 
+        static inline uint32_t cluster_index = 0; 
 
         // fat file allocation table
         static inline uint8_t fat[sector_size * klib::min(mbr.fat_size16, FatSizeLimit) * mbr.num_fats] = {};
 
         // amount of active fat directory entries
-        static inline uint32_t fat_directory_count = 0;
+        static inline uint32_t directory_index = 0;
 
         // fat directory entry
         static inline fat_directory directory[root_entry_count] = {};
 
+        // using for the read and write callbacks
+        using read_callback = void(*)(const uint32_t offset, uint8_t *const data, const uint32_t sectors);
+        using write_callback = void(*)(const uint32_t offset, const uint8_t *const data, const uint32_t sectors);
+
+        /**
+         * @brief 
+         * 
+         */
+        struct media {
+            // media read callback
+            read_callback read;
+
+            // media write callback
+            write_callback write;
+
+            // amount of sectors the media has
+            uint32_t sector_count;
+        };
+
         // callbacks for when a file/media is requested by the host
-        static inline media virtual_media[root_entry_count] = {};
+        // (+ num_fats + mbr + root directory)
+        static inline media virtual_media[root_entry_count + mbr.num_fats + 1 + 1] = {};
 
     protected:
         /**
@@ -478,7 +482,7 @@ namespace klib::filesystem {
             }
 
             // get the amount of bytes used by the fat array
-            const uint32_t size = (fat_directory_count * sizeof(fat_directory));
+            const uint32_t size = (directory_index * sizeof(fat_directory));
 
             // read all the fat sectors
             for (uint32_t i = 0; i < sectors; i++) {
@@ -558,7 +562,7 @@ namespace klib::filesystem {
             uint32_t data_offset = 0;
 
             // check what media should handle the read
-            for (uint32_t i = 0; i < fat_directory_count; i++) {
+            for (uint32_t i = 0; i < directory_index; i++) {
                 // get the end of the current media
                 const uint32_t current_end = current_sector + virtual_media[i].sector_count;
                 
@@ -623,7 +627,7 @@ namespace klib::filesystem {
             }
 
             // mark we have the 2 cluster entries
-            fat_cluster_count = 2;
+            cluster_index = 2;
 
             // initialize the root directory
             directory[0] = {
@@ -658,7 +662,7 @@ namespace klib::filesystem {
             };
 
             // set the amount of directory entries that are used
-            fat_directory_count = current;
+            directory_index = current;
         }
 
         /**
@@ -671,7 +675,7 @@ namespace klib::filesystem {
          */
         static void create_file(const char* file_name, const uint32_t size, const read_callback read = nullptr, const write_callback write = nullptr) {
             // make sure we can create a file
-            if (fat_directory_count + 1 >= root_entry_count) {
+            if ((directory_index + 1) >= (sizeof(virtual_media) / sizeof(virtual_media[0]))) {
                 // we cannot create more files
                 return;
             }
@@ -686,30 +690,31 @@ namespace klib::filesystem {
             // check if we should allocate memory
             if (clusters > 0) {
                 // check if we have enough clusters to allocate for the file
-                if ((fat_cluster_count + clusters) > ((sizeof(fat) * 8) / cluster::bits)) {
+                if ((cluster_index + clusters) > ((sizeof(fat) * 8) / cluster::bits)) {
                     // we do not have enough clusters for the file exit
                     return;
                 }
 
                 // set the clusters in use
-                first_cluster = fat_cluster_count;
+                first_cluster = cluster_index;
 
                 // set all the clusters except the last one
                 for (uint32_t i = 0; i < (clusters - 1); i++) {
-                    const uint32_t index = fat_cluster_count + i;
+                    const uint32_t index = cluster_index + i;
 
                     // update all the clusters
                     cluster::set_cluster(fat, index, index + 1);
                 }
 
                 // set the last cluster as end of the final cluster
-                cluster::set_cluster(fat, fat_cluster_count + (clusters - 1), cluster::final_cluster);
+                cluster::set_cluster(fat, cluster_index + (clusters - 1), cluster::final_cluster);
 
                 // update the amount of clusters we just added
-                fat_cluster_count += clusters;
+                cluster_index += clusters;
             }
 
-            fat_directory& entry = directory[fat_directory_count - (mbr.num_fats + 1)];
+            // get a reference to the current entry (- num_fats - mbr)
+            fat_directory& entry = directory[directory_index - (mbr.num_fats + 1)];
 
             // set the file in the directory
             entry = {
@@ -732,13 +737,13 @@ namespace klib::filesystem {
                 entry.name[i] = file_name[i];
             }
 
-            virtual_media[fat_directory_count] = {
+            virtual_media[directory_index] = {
                 .read = read,
                 .write = write,
                 .sector_count = clusters * sectors_per_cluster
             };
 
-            fat_directory_count++;
+            directory_index++;
         }
 
         /**
