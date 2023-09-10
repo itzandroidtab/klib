@@ -11,7 +11,7 @@ namespace klib::filesystem {
      */
     class attributes {
     public:
-        enum {
+        enum : uint8_t {
             ATTR_READ_ONLY = 0x01,
             ATTR_HIDDEN = 0x02,
             ATTR_SYSTEM = 0x04,
@@ -294,9 +294,16 @@ namespace klib::filesystem {
      * @tparam TotalSize Total disk size
      * @tparam ClusterSize Amount of sectors per cluster
      * @tparam FatSizeLimit Allows to limit the FAT in ram. Can be used 
+     * @tparam NumFats Number of fats
      * to simulate a big filesystem with low amounts of ram
      */
-    template <uint32_t MaxFiles = 32, uint32_t TotalSize = (1 * 1024 * 1024), uint32_t ClusterSize = 64, uint32_t FatSizeLimit = 0xffffffff>
+    template <
+        uint32_t MaxFiles = 32, 
+        uint32_t TotalSize = (1 * 1024 * 1024), 
+        uint32_t ClusterSize = 64, 
+        uint32_t FatSizeLimit = 0xffffffff,
+        uint8_t NumFats = 0x01
+    >
     class virtual_fat {
     public:
         // sector size of this storage type
@@ -305,8 +312,11 @@ namespace klib::filesystem {
     protected:
         constexpr static uint32_t root_entry_count = MaxFiles;
 
+        // make sure the maxfiles template is correct
+        static_assert((MaxFiles & 0xf) == 0, "Maxfiles needs to be a modulo of 16");
+
         // amount of fats (recommended value is 2)
-        constexpr static uint8_t number_of_fats = 0x01; 
+        constexpr static uint8_t number_of_fats = NumFats; 
 
         // amount of sectors per cluster
         constexpr static uint8_t sectors_per_cluster = ClusterSize;
@@ -394,7 +404,7 @@ namespace klib::filesystem {
         using write_callback = void(*)(const uint32_t offset, const uint8_t *const data, const uint32_t sectors);
 
         /**
-         * @brief 
+         * @brief structure for virtual media
          * 
          */
         struct media {
@@ -533,7 +543,7 @@ namespace klib::filesystem {
          * @tparam Index 
          * @param offset 
          */
-        template <uint32_t NumFats, uint32_t Index = 0>
+        template <uint32_t Index = 0>
         static void set_fat_read(uint32_t offset) {
             virtual_media[offset + Index] = {
                 .read = read_fat<Index>,
@@ -542,7 +552,7 @@ namespace klib::filesystem {
             };
 
             if constexpr (Index + 1 < NumFats) {
-                return set_fat_read<NumFats, Index + 1>(offset);
+                return set_fat_read<Index + 1>(offset);
             }
         }
 
@@ -649,7 +659,7 @@ namespace klib::filesystem {
             };
 
             // set all the fat read functions in the virtual media
-            set_fat_read<mbr.num_fats>(current);
+            set_fat_read(current);
 
             // increment the amount of media used by the fats
             current += mbr.num_fats;
@@ -719,7 +729,9 @@ namespace klib::filesystem {
             // set the file in the directory
             entry = {
                 .name = {""},
-                .attributes = attributes::ATTR_READ_ONLY,
+                .attributes = (write == nullptr) ? 
+                    static_cast<uint8_t>(attributes::ATTR_READ_ONLY) : 
+                    static_cast<uint8_t>(0x00),
                 .reserved = 0x00,
                 .creation_time_ms = 0x00,
                 .creation_time = 0x0000,
