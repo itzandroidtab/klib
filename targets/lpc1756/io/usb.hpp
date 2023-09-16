@@ -251,6 +251,12 @@ namespace klib::lpc1756::io {
             }
         }
 
+        /**
+         * @brief Convert a mode to the correct raw value for the usb hardware
+         * 
+         * @param mode 
+         * @return uint8_t 
+         */
         static bool endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode) {
             switch (mode) {
                 case klib::usb::usb::endpoint_mode::out:
@@ -776,6 +782,12 @@ namespace klib::lpc1756::io {
             }
         }
 
+        /**
+         * @brief Function that gets called to notify the driver 
+         * the devices is configured
+         * 
+         * @param cfg 
+         */
         static void configured(const bool cfg) {
             // mark the endpoint as configured
             write_command(command_phase::command, device_command::configure, cfg ? 0x1 : 0);
@@ -798,6 +810,13 @@ namespace klib::lpc1756::io {
             Usb::port->DEVINTCLR = 0x100;
         }
 
+        /**
+         * @brief Configure a endpoint
+         * 
+         * @param endpoint 
+         * @param mode 
+         * @param size 
+         */
         static void configure(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, const uint32_t size) {
             // get the physical endpoint number
             const uint32_t ep = (endpoint << 1) | endpoint_mode_to_raw(mode);
@@ -831,6 +850,11 @@ namespace klib::lpc1756::io {
             reset(endpoint, mode);
         }   
 
+        /**
+         * @brief Set the device address. Handled in hardware
+         * 
+         * @param address 
+         */
         static klib::usb::usb::handshake set_device_address(const uint8_t address) {
             write_command(command_phase::command, device_command::set_address, 0x80 | address);
 
@@ -838,6 +862,12 @@ namespace klib::lpc1756::io {
             return klib::usb::usb::handshake::ack;
         }
 
+        /**
+         * @brief Reset a endpoint
+         * 
+         * @param endpoint 
+         * @param mode
+         */
         static void reset(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // reset the endpoint
             write_command(command_phase::command, 
@@ -859,6 +889,11 @@ namespace klib::lpc1756::io {
             }
         }
 
+        /**
+         * @brief Connect the device to the host by enabling the
+         * pullup
+         * 
+         */
         static void connect() {
             // connect the pullup
             write_command(
@@ -867,11 +902,22 @@ namespace klib::lpc1756::io {
             );
         }
 
+        /**
+         * @brief Disconnect the device from the host by disabling
+         * the pullup
+         * 
+         */
         static void disconnect() {
             // disconnect the pullup to disconnect from the host
             write_command(command_phase::command, device_command::set_status, 0);
         }
 
+        /**
+         * @brief Ack a endpoint
+         * 
+         * @param endpoint 
+         * @param mode
+         */
         static void ack(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // check how we should ack
             if (mode != klib::usb::usb::endpoint_mode::out) {
@@ -883,6 +929,12 @@ namespace klib::lpc1756::io {
             }
         }
 
+        /**
+         * @brief Stall a endpoint
+         * 
+         * @param endpoint 
+         * @param mode
+         */
         static void stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             write_command(command_phase::command, 
                 static_cast<uint8_t>(endpoint_command::set_status) | (endpoint << 1 | endpoint_mode_to_raw(mode)), 
@@ -901,6 +953,12 @@ namespace klib::lpc1756::io {
             }
         }
 
+        /**
+         * @brief Unstall a endpoint
+         * 
+         * @param endpoint 
+         * @param mode
+         */
         static void un_stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // check if we are stalled
             if (!is_stalled(endpoint, mode)) {
@@ -925,11 +983,32 @@ namespace klib::lpc1756::io {
             }
         }
 
+        /**
+         * @brief returns if a endpoint is stalled
+         * 
+         * @param endpoint 
+         * @param mode
+         * @return true 
+         * @return false 
+         */
         static bool is_stalled(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // return the stalled endpoint flag
             return read_ep_command(endpoint, endpoint_mode_to_raw(mode)) & (0x1 << 1);
         }
 
+        /**
+         * @brief Write data to an endpoint.
+         * 
+         * @warning Buffers should be valid until the callback function is called
+         * 
+         * @param callback 
+         * @param endpoint 
+         * @param mode
+         * @param data 
+         * @param size 
+         * @return true 
+         * @return false 
+         */
         static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
                           const klib::usb::usb::endpoint_mode mode, const uint8_t* data, 
                           const uint32_t size) 
@@ -958,6 +1037,19 @@ namespace klib::lpc1756::io {
             return true;
         }
 
+        /**
+         * @brief Read data from a endpoint. Data is only valid when the callback is called.
+         * 
+         * @warning Buffers should be valid until the callback function is called
+         * 
+         * @param callback 
+         * @param endpoint 
+         * @param mode
+         * @param data 
+         * @param size 
+         * @return true 
+         * @return false 
+         */
         static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
                          const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
                          const uint32_t size) 
@@ -987,10 +1079,24 @@ namespace klib::lpc1756::io {
             return true;
         }
 
+        /**
+         * @brief Returns if a endpoint has a pending transmission
+         * 
+         * @param endpoint 
+         * @param mode
+         * @return true 
+         * @return false 
+         */
         static bool is_pending(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             return state[endpoint].is_busy;
         }
 
+        /**
+         * @brief Cancel a pending transaction
+         * 
+         * @param endpoint 
+         * @param mode 
+         */
         static void cancel(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // get the callback
             const auto callback = state[endpoint].callback;

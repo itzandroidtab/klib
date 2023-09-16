@@ -262,6 +262,11 @@ namespace klib::max32625::io {
             }
         }
 
+        /**
+         * @brief Connect the device to the host by enabling the
+         * pullup
+         * 
+         */
         static void connect() {
             // enable interrupts for setup, endpoint in, endpoint out and dma erros
             port->DEV_INTEN |= (0x1 << 8) | (0x1 << 9) | (0x1 << 10) | (0x1 << 12);
@@ -276,11 +281,22 @@ namespace klib::max32625::io {
             port->DEV_CN |= (0x1 << 3) | (0x1 << 9);
         }
 
+        /**
+         * @brief Disconnect the device from the host by disabling
+         * the pullup
+         * 
+         */
         static void disconnect() {
             // disable the pullups to disconnect the device
             port->DEV_CN &= ~(1 << 3);
         }
 
+        /**
+         * @brief Convert a mode to the correct raw value for the usb hardware
+         * 
+         * @param mode 
+         * @return uint8_t 
+         */
         static uint8_t endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode) {
             switch (mode) {
                 case klib::usb::usb::endpoint_mode::out:
@@ -724,6 +740,16 @@ namespace klib::max32625::io {
         }
 
         /**
+         * @brief Function that gets called to notify the driver 
+         * the devices is configured
+         * 
+         * @param cfg 
+         */
+        static void configured(const bool cfg) {
+            // do nothing
+        }
+
+        /**
          * @brief Configure a endpoint
          * 
          * @param endpoint 
@@ -1046,16 +1072,6 @@ namespace klib::max32625::io {
          */
         static bool is_pending(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             return state[endpoint].is_busy;
-        }
-
-        /**
-         * @brief Function that gets called to notify the driver 
-         * the devices is configured
-         * 
-         * @param cfg 
-         */
-        static void configured(const bool cfg) {
-            // do nothing
         }
     };
 }
