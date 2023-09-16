@@ -86,7 +86,7 @@ namespace klib::string {
      * @brief Converts a character to uppercase
      * 
      * @param c 
-     * @return constexpr char 
+     * @return char 
      */
     constexpr char to_upper(const char c) {
         return (is_lower(c) ? c & (~0x20) : c);
@@ -96,7 +96,7 @@ namespace klib::string {
      * @brief Converts a character to lowercase
      * 
      * @param c 
-     * @return constexpr char 
+     * @return char 
      */
     constexpr char to_lower(const char c) {
         return (is_upper(c) ? c | 0x20 : c);
@@ -106,7 +106,7 @@ namespace klib::string {
      * @brief Count the amount of characters before a null terminator
      * 
      * @param str 
-     * @return constexpr uint32_t 
+     * @return uint32_t 
      */
     constexpr uint32_t strlen(const char* str) {
         uint32_t count = 0;
@@ -125,7 +125,7 @@ namespace klib::string {
      * 
      * @param destination 
      * @param source 
-     * @return constexpr char* 
+     * @return char* 
      */
     constexpr char* strcpy(char* destination, const char* source) {
         while (*source != '\0') {
@@ -135,7 +135,7 @@ namespace klib::string {
             source++;
         }
 
-        // add a null terminator after the text7
+        // add a null terminator after the string
         *destination = '\0';
 
         return destination;
@@ -146,30 +146,20 @@ namespace klib::string {
      * 
      * @param destination 
      * @param source 
-     * @return constexpr char* 
+     * @return char* 
      */
     constexpr char* strcat(char* destination, const char* source) {
         // get the length of the string
         const uint32_t len = strlen(destination);
 
-        // move the destination to the end
-        destination += len;
-
-        while (*source != '\0') {
-            *destination = *source;
-
-            destination++;
-            source++;
-        }
-
-        // add a null terminator after the text
-        *destination = '\0';
+        // copy the source to the destination with the length offset
+        return strcpy(destination + len, source);
 
         return destination;
     }
 
     /**
-     * @brief Pad a string with a character for amount of times
+     * @brief Pad a string on the left with a character for amount of times
      * 
      * @param str 
      * @param amount 
@@ -196,6 +186,13 @@ namespace klib::string {
         } 
     }
 
+    /**
+     * @brief Pad a string on the right with a character for amount of times
+     * 
+     * @param str 
+     * @param amount 
+     * @param ch 
+     */
     constexpr void right_pad(char *const str, const uint32_t amount, const char ch = ' ') {
         // get the length of the string
         const uint32_t len = strlen(str);
@@ -482,7 +479,7 @@ namespace klib::string {
      * 
      * @param str 
      * @param base
-     * @return constexpr int 
+     * @return int 
      */
     template <base B = _default_base>
     constexpr int stoi(const char *const str) {
