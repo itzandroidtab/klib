@@ -9,6 +9,10 @@
 
 namespace klib::usb::device {
     class bulk {
+    public:
+        // using for the array of callbacks
+        using interrupt_callback = void(*)();
+
     protected:
         /**
          * @brief Enum with the string descriptor indexes
@@ -57,8 +61,8 @@ namespace klib::usb::device {
             .bDeviceSubClass = 0x00,
             .bDeviceProtocol = 0x00,
             .bMaxPacketSize = 0x40,
-            .idVendor = 0x0B6A,
-            .idProduct = 0x1717,
+            .idVendor = 0x6666,
+            .idProduct = 0xdead,
             .bcdDevice = 0x0200,
             .iManufacturer = 0x01,
             .iProduct = 0x02,
@@ -119,29 +123,19 @@ namespace klib::usb::device {
         // flag if remote wakeup is supported
         static inline bool remote_wakeup = false;
 
-        struct _rx_data {
-            // pointer where to store the data
-            uint8_t *volatile data;
+        // callbacks
+        static inline interrupt_callback transmit_callback = nullptr;
+        static inline interrupt_callback receive_callback = nullptr;
 
-            // requested amount of data
-            volatile uint32_t size;
-        };
-
-        struct _tx_data {
-            // pointer where to store the data
-            const uint8_t *volatile data;
-
-            // requested amount of data
-            volatile uint32_t size;
-        };
-
-        // static parameters with data to write to the host
-        static inline _rx_data rx_data = {nullptr, 0};
-
-        // flag to signal we are transmitting
-        static inline volatile bool is_receiving = false;
-        static inline volatile bool is_transmitting = false;
-
+        /**
+         * @brief Callback for when a write or read is 
+         * finished. Calls the user callbacks if available
+         * 
+         * @tparam Usb 
+         * @param endpoint 
+         * @param mode 
+         * @param error_code 
+         */
         template <typename Usb>
         static void callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code) {
             // only continue if we do not have any errors
@@ -157,33 +151,80 @@ namespace klib::usb::device {
 
             // check if we should read or write
             if (mode == usb::endpoint_mode::in) {
-                // we just wrote data. Clear the tx data
-                is_transmitting = false;
+                if (transmit_callback) {
+                    transmit_callback();
+                }
             }
             else {
-                // clear the size to mark we have data
-                rx_data.size = 0;
-
-                // clear the flag we are receiving
-                is_receiving = false;
+                if (receive_callback) {
+                    receive_callback();
+                }
             }
         }
 
     public:
-        template <typename Usb>
+        /**
+         * @brief Register the transmit and receive callbacks
+         * 
+         * @param transmit 
+         * @param receive 
+         */
+        static void register_callback(const interrupt_callback& transmit = nullptr, const interrupt_callback& receive = nullptr) {
+            // set the transmit callback
+            transmit_callback = transmit;
+
+            // set the receive callback
+            receive_callback = receive;
+        }
+
+        /**
+         * @brief Setup a read. Calls the receive callback when 
+         * all the data is send to the host
+         * 
+         * @tparam Usb 
+         * @tparam Async 
+         * @param data 
+         * @param size 
+         * @return true 
+         * @return false 
+         */
+        template <typename Usb, bool Async = false>
         static bool setup(uint8_t *const data, const uint32_t size) {
-            if (rx_data.size || is_receiving) {
+            if (data == nullptr || !size || is_busy<Usb, true>()) {
                 // we are still transmitting
                 return false;
             }
 
-            // set the buffer so we can receive data
-            rx_data = {data, size};
+            // start a read on the endpoint
+            Usb::read(callback<Usb>, usb::get_endpoint(config.endpoint1.bEndpointAddress), 
+                usb::endpoint_mode::out, data, size
+            );
+
+            // check if we should exit
+            if constexpr (Async) {
+                return true;
+            }
+
+            // wait until we are done transmitting all characters
+            while (is_busy<Usb, true>()) {
+                // wait
+            }
 
             // return success
             return true;
         }
 
+        /**
+         * @brief write data to the host. Calls the transmit 
+         * callback when all the data is send
+         * 
+         * @tparam Usb 
+         * @tparam Async 
+         * @param data 
+         * @param size 
+         * @return true 
+         * @return false 
+         */
         template <typename Usb, bool Async = false>
         static bool write(const uint8_t *const data, const uint32_t size) {
             // check if we are configured
@@ -198,17 +239,14 @@ namespace klib::usb::device {
             }
 
             // check if a request is already pending
-            if (is_busy<Usb>()) {
+            if (is_busy<Usb, false>()) {
                 // a other request is already pending exit
                 return false;
             }
 
-            // set the pointer and the size
-            is_transmitting = true;
-
             // start to the write to the endpoint
             if (!Usb::write(callback<Usb>, usb::get_endpoint(config.endpoint0.bEndpointAddress), 
-                usb::endpoint_mode::in, data, size))
+                usb::get_endpoint_mode(config.endpoint0.bEndpointAddress), data, size))
             {
                 return false;
             }
@@ -219,7 +257,7 @@ namespace klib::usb::device {
             }
 
             // wait until we are done transmitting all characters
-            while (is_busy<Usb>()) {
+            while (is_busy<Usb, false>()) {
                 // do nothing
             }
 
@@ -227,31 +265,30 @@ namespace klib::usb::device {
         }
 
         /**
-         * @brief Returns if we have data available in the receive buffer
+         * @brief Returns if the read or write is busy based 
+         * on the template parameter
          * 
          * @tparam Usb 
+         * @tparam Read 
          * @return true 
          * @return false 
          */
-        template <typename Usb>
-        static bool has_data() {
-            // return if we have the size still set. If it is 
-            // empty we have received the whole buffer and cannot
-            // receive more
-            return (!rx_data.size) && (rx_data.data != nullptr);
-        }
-
-        /**
-         * @brief Returns if a previous request is still busy.
-         * 
-         * @tparam Usb 
-         * @return true 
-         * @return false 
-         */
-        template <typename Usb>
+        template <typename Usb, bool Read>
         static bool is_busy() {
-            // return if the data is set. If it is we are still transmitting
-            return is_transmitting;
+            if constexpr (Read) {
+                // return if the read is still pending
+                return Usb::is_pending(
+                    usb::get_endpoint(config.endpoint1.bEndpointAddress),
+                    usb::get_endpoint_mode(config.endpoint1.bEndpointAddress)
+                );
+            }
+            else {
+                // return if the transmit is still pending
+                return Usb::is_pending(
+                    usb::get_endpoint(config.endpoint0.bEndpointAddress),
+                    usb::get_endpoint_mode(config.endpoint0.bEndpointAddress)
+                );
+            }
         }
 
         /**
@@ -283,12 +320,6 @@ namespace klib::usb::device {
             // init all the variables to default
             configuration = 0x00;
             remote_wakeup = false;
-
-            // clear all the pointers and flags
-            rx_data = {nullptr, 0};
-
-            is_receiving = false;
-            is_transmitting = false;
         }
 
         /**
@@ -502,33 +533,6 @@ namespace klib::usb::device {
         static uint8_t get_device_status() {
             // TODO: implement the correct get device status using the remote wakeup and self powered flags
             return 0;
-        }
-
-        template <typename Usb>
-        static void endpoint_callback(const uint8_t endpoint, const usb::endpoint_mode mode) {
-            // check if we we are receiving data
-            if (endpoint == (usb::get_endpoint(config.endpoint1.bEndpointAddress))) {
-                // check if we are receiving already. Do not continue if that is the case
-                if (is_receiving) {
-                    // do a early return
-                    return;
-                }
-
-                // check if we have a buffer to store the data into
-                if (rx_data.data == nullptr || (!rx_data.size)) {
-                    // we do not have a valid buffer or we have received a 
-                    // message already. do a early return
-                    return;
-                }
-
-                // mark we are receiving data
-                is_receiving = true;
-
-                // start a read on the endpoint
-                Usb::read(callback<Usb>, usb::get_endpoint(config.endpoint1.bEndpointAddress), 
-                    usb::endpoint_mode::out, rx_data.data, rx_data.size
-                );
-            }
         }
     };
 }
