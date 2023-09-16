@@ -71,6 +71,10 @@ namespace klib::lpc1756::io::detail::usb {
         // flag if the endpoint is busy
         bool is_busy;
 
+        // flag if a endpoint out interrupt is pending
+        // (only used on out endpoints)
+        bool interrupt_pending;
+
         // max size of the endpoint
         uint8_t max_size;
 
@@ -233,7 +237,7 @@ namespace klib::lpc1756::io {
                 // do nothing
             }
 
-            // enable the interrupts for the control endpoint and all the tx channels
+            // enable the interrupts for all the endpoints
             Usb::port->EPINTCLR = 0xffffffff;
             Usb::port->EPINTEN = 0xffffffff;
 
@@ -419,79 +423,81 @@ namespace klib::lpc1756::io {
             state[endpoint].data = nullptr;
         }
 
-        static void endpoint_callback(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            switch (mode) {
-                case klib::usb::usb::endpoint_mode::in:
-                    // check if we are busy transmitting data
-                    if (state[endpoint].is_busy) {
-                        // check if we are done
-                        if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
-                            // we are done. clear the flag and call the callback
-                            const auto callback = state[endpoint].callback;
+        static void endpoint_in_callback(const uint8_t endpoint) {
+            // check if we are busy transmitting data
+            if (!state[endpoint].is_busy) {
+                return;
+            }
 
-                            // clear the state
-                            clear_endpoint_state(endpoint);
+            // check if we are done
+            if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
+                // we are done. clear the flag and call the callback
+                const auto callback = state[endpoint].callback;
 
-                            // check for any callbacks
-                            if (callback) {
-                                // call the callback
-                                callback(
-                                    endpoint, klib::usb::usb::endpoint_mode::in, 
-                                    klib::usb::usb::error::no_error
-                                );
-                            }
-                        }
-                        else {
-                            // get the maximum size we can transmit
-                            const uint32_t s = klib::min(
-                                (state[endpoint].requested_size - state[endpoint].transferred_size),
-                                state[endpoint].max_size
-                            );
+                // clear the state
+                clear_endpoint_state(endpoint);
 
-                            // check if we are done
-                            if (s) {
-                                write_impl(
-                                    endpoint, klib::usb::usb::endpoint_mode::in, 
-                                    (state[endpoint].data + state[endpoint].transferred_size), s
-                                );
+                // check for any callbacks
+                if (callback) {
+                    // call the callback
+                    callback(
+                        endpoint, klib::usb::usb::endpoint_mode::in, 
+                        klib::usb::usb::error::no_error
+                    );
+                }
+            }
+            else {
+                // get the maximum size we can transmit
+                const uint32_t s = klib::min(
+                    (state[endpoint].requested_size - state[endpoint].transferred_size),
+                    state[endpoint].max_size
+                );
 
-                                // update the amount we have transferred
-                                state[endpoint].transferred_size += s;
-                            }
-                        }
-                    }
-                    break;
+                // check if we are done
+                if (s) {
+                    write_impl(
+                        endpoint, klib::usb::usb::endpoint_mode::in, 
+                        (state[endpoint].data + state[endpoint].transferred_size), s
+                    );
 
-                case klib::usb::usb::endpoint_mode::out:
-                default:
-                    // check if we should receive more data
-                    if (state[endpoint].is_busy) {
-                        // receive more data
-                        state[endpoint].transferred_size += read_impl(
-                            endpoint, klib::usb::usb::endpoint_mode::out, 
-                            (state[endpoint].data + state[endpoint].transferred_size),
-                            state[endpoint].requested_size - state[endpoint].transferred_size
-                        );
+                    // update the amount we have transferred
+                    state[endpoint].transferred_size += s;
+                }
+            }            
+        }
 
-                        // check if we are done
-                        if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
-                            // we are done. clear the flag and call the callback
-                            const auto callback = state[endpoint].callback;
+        static void endpoint_out_callback(const uint8_t endpoint) {
+            // check if we are busy.
+            if (!state[endpoint].is_busy) {
+                // set the flag we have a out interrupt pending
+                state[endpoint].interrupt_pending = true;
 
-                            // clear the state
-                            clear_endpoint_state(endpoint);
+                return;
+            }
 
-                            // check for any callbacks
-                            if (callback) {
-                                // call the callback
-                                callback(
-                                    endpoint, klib::usb::usb::endpoint_mode::out, 
-                                    klib::usb::usb::error::no_error
-                                );
-                            }
-                        }
-                    }
-                    break;
+            // receive more data
+            state[endpoint].transferred_size += read_impl(
+                endpoint, klib::usb::usb::endpoint_mode::out, 
+                (state[endpoint].data + state[endpoint].transferred_size),
+                state[endpoint].requested_size - state[endpoint].transferred_size
+            );
+
+            // check if we are done
+            if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
+                // we are done. clear the flag and call the callback
+                const auto callback = state[endpoint].callback;
+
+                // clear the state
+                clear_endpoint_state(endpoint);
+
+                // check for any callbacks
+                if (callback) {
+                    // call the callback
+                    callback(
+                        endpoint, klib::usb::usb::endpoint_mode::out, 
+                        klib::usb::usb::error::no_error
+                    );
+                }
             }
         }
 
@@ -550,8 +556,15 @@ namespace klib::lpc1756::io {
                         }
                     }
                     else {
-                        // we have a ack on a endpoint. Handle it
-                        endpoint_callback(ep, mode);
+                        // handle the endpoint request
+                        switch (mode) {
+                            case klib::usb::usb::endpoint_mode::in:
+                                endpoint_in_callback(ep);
+                                break;
+                            case klib::usb::usb::endpoint_mode::out:
+                                endpoint_out_callback(ep);
+                                break;
+                        }
                     }
                 }
             }
@@ -959,6 +972,16 @@ namespace klib::lpc1756::io {
 
             // mark the endpoint as busy
             state[endpoint].is_busy = true;
+            
+            // check if we already received data while we were not reading
+            if (state[endpoint].interrupt_pending) {
+                // clear the pending interrupt flag
+                state[endpoint].interrupt_pending = false;
+
+                // process the data we already received by forcing a interrupt
+                // on the endpoint we are reading
+                Usb::port->EPINTSET = (0x1 << (endpoint << 1) | endpoint_mode_to_raw(mode));
+            }
 
             // notify everything is correct
             return true;
