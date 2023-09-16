@@ -23,7 +23,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // oscillator)
     // (((15 + 1) * 2 * 12Mhz) / (0 + 1) = 384Mhz) / (3 + 1) = 96Mhz
     clock::set_main<clock::source::main, 96'000'000, 15, 0, 3>();
-    // clock::set<clock::source::internal, 96'000'000, 47, 0, 3>();
+    // clock::set_main<clock::source::internal, 96'000'000, 47, 0, 3>();
 
     // setup the irq handler before main is called. This 
     // moves the vector table to ram so it can be changed
