@@ -273,7 +273,7 @@ namespace klib::string::detail {
             }
         }
 
-        while (static_cast<int>(value) > 0) {
+        while (static_cast<uint32_t>(value) > 0) {
             chars += 1;
 
             if constexpr (B == base::BIN) {
