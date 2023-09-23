@@ -180,8 +180,7 @@ namespace klib::usb::device {
                     Usb::disconnect();
 
                     // reset the device
-                    // TODO: change away from the CMSIS functions
-                    // NVIC_SystemReset();
+                    Memory::reset();
                 }
             }
         }
