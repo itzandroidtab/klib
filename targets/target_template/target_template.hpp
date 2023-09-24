@@ -26,6 +26,22 @@ namespace klib::template {
     static void disable_irq() {
         // disable a interrupt
     }
+    
+    /**
+     * @brief Global enable interrupts.
+     * 
+     */
+    static void enable_irq() {
+        // enable the global interrupts
+    }
+
+    /**
+     * @brief Global disable interrupts. Prevents any interrupt from triggering
+     * 
+     */
+    static void disable_irq() {
+        // globally disable the interrupts
+    }
 }
 
 #endif

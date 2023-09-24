@@ -34,6 +34,22 @@ namespace klib::lpc1788 {
         // disable the irq
         NVIC_DisableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
     }
+    
+    /**
+     * @brief Global enable interrupts.
+     * 
+     */
+    static void enable_irq() {
+        __enable_irq();
+    }
+
+    /**
+     * @brief Global disable interrupts. Prevents any interrupt from triggering
+     * 
+     */
+    static void disable_irq() {
+        __disable_irq();
+    }
 }
 
 #endif
