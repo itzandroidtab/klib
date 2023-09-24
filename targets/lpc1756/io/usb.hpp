@@ -635,8 +635,11 @@ namespace klib::lpc1756::io {
             }
         }
 
+    public:
         /**
          * @brief Interrupt handler for the usb driver
+         * 
+         * @warning Should not be called by the user
          * 
          */
         static void irq_handler() {
