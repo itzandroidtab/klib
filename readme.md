@@ -1,6 +1,6 @@
 # C++ cortex-m hardware library
 
-![klib library](https://github.com/itzandroidtab/klib/actions/workflows/cmake.yml/badge.svg)
+![klib library](https://github.com/itzandroidtab/klib/actions/workflows/build.yml/badge.svg)
 
 Klib uses `cmake` and `arm-none-eabi-gcc` to build excecutables for cortex targets. Currently supported targets can be found in the [target folder](./targets/).
 
