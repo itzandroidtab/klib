@@ -417,6 +417,11 @@ namespace klib::lpc1756::io {
                 reinterpret_cast<uint8_t*>(&packet), sizeof(packet)
             );
 
+            // clear the pending flag on the first interrupt when 
+            // we receive a setup packet. This is to prevent us from
+            // reading the setup packet again
+            state[0].interrupt_pending = false;
+
             // handle the setup packet in the klib library
             klib::usb::usb::handle_setup_packet<usb_type>(packet);
         }
