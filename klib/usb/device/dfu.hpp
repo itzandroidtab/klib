@@ -154,13 +154,16 @@ namespace klib::usb::device {
             // check if we have the data and are waiting to write to the flash
             if (current_state == klib::usb::dfu::device_state::download_busy) {
                 // write to the memory
-                Memory::write(offset, buffer, length);
+                if (!Memory::write(offset, buffer, length)) {
+                    current_status = klib::usb::dfu::device_status::verify_error;
+                }
+                else {
+                    // change the state to idle
+                    current_state = klib::usb::dfu::device_state::download_idle;
 
-                // change the state to idle
-                current_state = klib::usb::dfu::device_state::download_idle;
-
-                // add the length to the offset
-                offset += length;
+                    // add the length to the offset
+                    offset += length;
+                }
             }
             else if (current_state == klib::usb::dfu::device_state::manifset) {
                 // mark we are oke
