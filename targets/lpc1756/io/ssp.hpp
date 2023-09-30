@@ -235,7 +235,7 @@ namespace klib::lpc1756::io {
         static void write(const uint8_t *const data, const uint16_t size) {
             for (uint32_t i = 0; i < size; i++) {
                 // wait until we can write to the fifo
-                while (!Ssp::port->SR & (0x1 << 1)) {
+                while (!(Ssp::port->SR & (0x1 << 1))) {
                     // do nothing
                 }
 
