@@ -125,15 +125,15 @@ namespace klib {
     struct busy_wait {};
 
     /**
-     * @brief Delay using a hardware timer. When using the 
-     * systick timer the accuracy drops to the millisecond 
-     * level.
+     * @brief Delay using a hardware timer. The systick timer
+     * has its own implementation that limits the accuracy to
+     * 1 micro second
      * 
      * @tparam Timer 
      * @tparam T 
      * @param time 
      */
-    template <typename Timer, typename T>
+    template <typename Timer = io::systick, typename T = time::ms>
     static void delay(const T time) {
         // get the amount of seconds in the time
         const auto sec = static_cast<time::s>(time);
