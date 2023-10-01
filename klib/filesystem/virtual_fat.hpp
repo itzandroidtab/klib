@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <algorithm>
 
-namespace klib::filesystem {
+namespace klib::filesystem::detail {
     /**
      * @brief fat file attributes
      * 
@@ -31,7 +31,7 @@ namespace klib::filesystem {
      * @brief Fat boot sector as described in the fat specification
      * 
      */
-    struct fat_boot_sector {
+    struct boot_sector {
         // jump instruction to boot code
         uint8_t bootjmp[3];
 
@@ -114,7 +114,7 @@ namespace klib::filesystem {
     * @brief Fat directory structure as described in the fat specification
      * 
      */
-    struct fat_directory {
+    struct directory {
         // short filename limited to 11 characters (8.3 format)
         uint8_t name[11];
 
@@ -158,17 +158,15 @@ namespace klib::filesystem {
         uint32_t filesize;
 
         // generate the default comparison operator
-        bool operator==(const fat_directory&) const = default;
+        bool operator==(const directory&) const = default;
     };
 
-    static_assert(sizeof(fat_directory) == 32, "Invalid fat directory structure size");
+    static_assert(sizeof(directory) == 32, "Invalid fat directory structure size");
 
     // release the old pack so the rest of the structs are not 
     // affected by the pack(1)
     #pragma pack(pop)
-}
 
-namespace klib::filesystem::detail {
     template <uint32_t ClusterCount, bool fat12, bool fat32>
     class cluster {};
 
@@ -332,7 +330,7 @@ namespace klib::filesystem {
 
         // get the root directory sector count
         constexpr static uint32_t root_directory_sector_count = (
-            ((root_entry_count * sizeof(fat_directory)) + (sector_size - 1)) / sector_size
+            ((root_entry_count * sizeof(detail::directory)) + (sector_size - 1)) / sector_size
         );
 
         // calculate the fat size or use the max fat size (calculation 
@@ -343,7 +341,7 @@ namespace klib::filesystem {
         );
 
         // mbr boot sector
-        constexpr static inline fat_boot_sector mbr = {
+        constexpr static inline detail::boot_sector mbr = {
             .bootjmp = {0xeb, 0x3c, 0x90},
             .oem_name = {'M','S','D','O','S','5','.','0'},  
 
@@ -399,7 +397,7 @@ namespace klib::filesystem {
         static inline uint32_t directory_index = 0;
 
         // fat directory entry
-        static inline fat_directory directory[root_entry_count] = {};
+        static inline detail::directory directory[root_entry_count] = {};
 
         // using for the read and write callbacks
         using read_callback = void(*)(const uint32_t offset, uint8_t *const data, const uint32_t sectors);
@@ -560,7 +558,7 @@ namespace klib::filesystem {
             }
 
             // get the amount of bytes used by the fat array
-            const uint32_t size = (directory_index * sizeof(fat_directory));
+            const uint32_t size = (directory_index * sizeof(detail::directory));
 
             // read all the fat sectors
             for (uint32_t i = 0; i < sectors; i++) {
@@ -602,18 +600,18 @@ namespace klib::filesystem {
             }
 
             // get a the offset into the fat directory array
-            const uint32_t fat_offset = offset * sector_size / sizeof(fat_directory);
+            const uint32_t fat_offset = offset * sector_size / sizeof(detail::directory);
 
             // get the max amount of items in the current offset
             const uint32_t entries = klib::max(
-                root_entry_count - (offset * (sector_size / sizeof(fat_directory))), 0
+                root_entry_count - (offset * (sector_size / sizeof(detail::directory))), 0
             );
 
             // check if a file entry has changed (when we are at offset 0 we skip the
             // directory entry. On the other offsets we start at index 0)
             for (uint32_t i = (offset ? 1 : 0); i < entries; i++) {
                 // get a reference to the received structure
-                auto &n = (reinterpret_cast<const fat_directory*>(data))[i];
+                auto &n = (reinterpret_cast<const detail::directory*>(data))[i];
                 auto &old = directory[fat_offset + i];
 
                 // check if the entry has changed
@@ -747,7 +745,7 @@ namespace klib::filesystem {
 
             // initialize the root directory
             directory[0] = {
-                {}, attributes::volume_id | attributes::archive
+                {}, detail::attributes::volume_id | detail::attributes::archive
             };
 
             // set the drive name in the directory
@@ -761,7 +759,7 @@ namespace klib::filesystem {
             virtual_media[current++] = {
                 .read = read_mbr,
                 .write = nullptr,
-                .sector_count = (sizeof(fat_boot_sector) + (sector_count - 1)) / sector_count
+                .sector_count = (sizeof(detail::boot_sector) + (sector_count - 1)) / sector_count
             };
 
             // set all the fat read functions in the virtual media
@@ -774,7 +772,7 @@ namespace klib::filesystem {
             virtual_media[current++] = {
                 .read = read_directory_structure,
                 .write = write_directory_structure,
-                .sector_count = ((sizeof(fat_directory) * root_entry_count) + (sector_size - 1)) / sector_size
+                .sector_count = ((sizeof(detail::directory) * root_entry_count) + (sector_size - 1)) / sector_size
             };
 
             // set the amount of directory entries that are used
@@ -830,13 +828,13 @@ namespace klib::filesystem {
             }
 
             // get a reference to the current entry (- num_fats - mbr)
-            fat_directory& entry = directory[directory_index - (number_of_fats + 1)];
+            detail::directory& entry = directory[directory_index - (number_of_fats + 1)];
 
             // set the file in the directory
             entry = {
                 .name = {""},
                 .attributes = (write == nullptr) ? 
-                    static_cast<uint8_t>(attributes::read_only) : 
+                    static_cast<uint8_t>(detail::attributes::read_only) : 
                     static_cast<uint8_t>(0x00),
                 .reserved = 0x00,
                 .creation_time_ms = 0x00,
