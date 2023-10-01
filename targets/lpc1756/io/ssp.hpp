@@ -259,7 +259,7 @@ namespace klib::lpc1756::io {
          * @return false 
          */
         static bool is_busy() {
-            return Ssp::port->SR & 0x1 << 4;
+            return Ssp::port->SR & (0x1 << 4);
         }
 
         /**
@@ -327,7 +327,7 @@ namespace klib::lpc1756::io {
         template <bool Read>
         constexpr static uint32_t dma_burst_size() {
             // return half the fifo size
-            return 4;
+            return 2;
         }
 
         /**
