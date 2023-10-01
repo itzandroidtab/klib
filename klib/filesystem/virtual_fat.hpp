@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <type_traits>
+#include <algorithm>
 
 namespace klib::filesystem {
     /**
