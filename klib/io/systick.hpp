@@ -161,10 +161,25 @@ namespace klib::io {
         /**
          * @brief Get the runtime of the cpu in milliseconds
          * 
-         * @return klib::time::ms 
+         * @tparam T 
+         * @return T 
          */
-        static klib::time::ms get_runtime() {
-            return {runtime.value};
+        template <typename T = time::ms>
+        static T get_runtime() requires time::is_time_unit<T> {
+            // check what time unit the callee wants
+            if constexpr (std::is_same_v<T, time::us> || std::is_same_v<T, time::ns>) {
+                // return the higher precision conversion (as the counter
+                // counts down we have to invert the result of the micro
+                // second calculation)
+                return (
+                    static_cast<time::us>(time::ms{runtime.value}) + 
+                    (time::us{999} - time::us{(get_counter() * 1'000) / port->load})
+                );
+            }
+            else {
+                // use the ms runtime value if not us or ns
+                return {runtime.value};
+            }
         }
 
     public:

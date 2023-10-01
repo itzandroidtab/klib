@@ -57,8 +57,8 @@ namespace klib::detail {
     }
 
     /**
-     * @brief Delay using the systick timer. Timing uses the 
-     * remainder of the systick counter to increase accuracy.
+     * @brief Delay using the systick timer. Timing accuracy depends 
+     * on the cpu accuracy.
      * 
      * @tparam Timer 
      * @tparam T 
@@ -66,14 +66,14 @@ namespace klib::detail {
      */
     template <typename Timer>
     static void systick_delay_impl(const time::us time) {
-        // get the counter value
-        const uint32_t count = Timer::get_counter();
-
         // calculate the amount of time to wait
-        const time::ms target = Timer::get_runtime() + static_cast<time::ms>(time);
+        const auto target = Timer::template get_runtime<time::us>() + time;
+
+        // get the target time in ms
+        const auto target_ms = static_cast<time::ms>(target);
 
         // wait until we have reached the target runtime
-        while (Timer::get_runtime() != target) {
+        while (Timer::get_runtime() < target_ms) {
             // if we dont have low power sleep enabled we will just busy loop
             if constexpr (TARGET_LOW_POWER_SLEEP == true) {
                 // let the cpu sleep until we have a interrupt
@@ -83,7 +83,7 @@ namespace klib::detail {
 
         // wait until the counter goes over the count we 
         // had before 
-        while (Timer::get_counter() < count) {
+        while (Timer::template get_runtime<time::us>() < target) {
             // wait and do nothing. We cannot use the low power sleep here as 
             // no interrupt will trigger
         }
