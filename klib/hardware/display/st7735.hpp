@@ -274,6 +274,58 @@ namespace klib::hardware::display {
     };
 
     /**
+     * @brief Display write override with dma. Has support for 2 
+     * channels as some hardware requires a channel for reading the 
+     * spi data as well. If not used it can be set to:
+     * "klib::io::dma::none"
+     * 
+     * @tparam DmaTx 
+     * @tparam DmaRx 
+     * @tparam Bus 
+     * @tparam PinDC 
+     * @tparam PinRst 
+     * @tparam Mode 
+     * @tparam Width 
+     * @tparam Height 
+     * @tparam XOffset 
+     * @tparam YOffset 
+     */
+    template <
+        typename DmaTx, typename DmaRx,
+        typename Bus, typename PinDC, typename PinRst, 
+        graphics::mode Mode = graphics::mode::rgb565,
+        uint32_t Width = 80, uint32_t Height = 160, 
+        uint32_t XOffset = 26, uint32_t YOffset = 1
+    >
+    class st7735_dma: public st7735<Bus, PinDC, PinRst, Mode, Width, Height, XOffset, YOffset> {
+    protected:
+        // rx data for if we have a rx dma
+        static inline uint32_t rx;
+
+    public:
+        /**
+         * @brief Do a raw write using the dma
+         * 
+         * @warning DMA channels should be initialized before 
+         * calling this function
+         * 
+         * @param data 
+         * @param size 
+         */
+        static void raw_write(const uint8_t *const data, const uint32_t size) {
+            // check if we have a receive dma channel
+            if constexpr (!std::is_same_v<DmaRx, klib::io::dma::none>) {
+                // read memory into the rx buffer. Do not increment as we 
+                // do not care about the result of what we are reading
+                DmaRx::template read<false>(&rx, size);
+            }
+
+            // write to the dma channel
+            DmaTx::template write<true>(data, size);
+        }
+    };
+
+    /**
      * @brief Using for the st7735 mini display with the resolution 80 x 160
      * 
      * @tparam Bus 

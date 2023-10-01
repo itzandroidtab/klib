@@ -356,15 +356,15 @@ namespace klib::hardware::display {
          * @param size 
          */
         static void raw_write(const uint8_t *const data, const uint32_t size) {
-            // write to the dma channel
-            DmaTx::template write<true>(data, size);
-
             // check if we have a receive dma channel
             if constexpr (!std::is_same_v<DmaRx, klib::io::dma::none>) {
                 // read memory into the rx buffer. Do not increment as we 
                 // do not care about the result of what we are reading
                 DmaRx::template read<false>(&rx, size);
             }
+
+            // write to the dma channel
+            DmaTx::template write<true>(data, size);
         }
     };
 }
