@@ -3,7 +3,111 @@
 
 #include <cstdint>
 
+#include <klib/vector2.hpp>
+
+#include "color.hpp"
+
 namespace klib::graphics {
+    template <uint32_t Width, uint32_t Height, mode Mode>
+    class bitmap {
+    protected:
+        // color mode with all parameters
+        using color_mode = graphics::detail::pixel_conversion<Mode>;
+
+        // Size used for the array
+        constexpr static uint32_t size = (Width * Height);
+
+    public:
+        // array to store the bitmap (const as the image cannot change)
+        const color_mode::type data[size];
+
+        /**
+         * @brief Get the pixel data of a position 
+         * 
+         * @param x 
+         * @param y 
+         * @return bool set or unset
+         */
+        constexpr color_mode::type get_pixel(const klib::vector2u position) const {
+            // index to store the data
+            const auto index = ((position.y * width) + position.x);
+
+            // return the index
+            return data[index];
+        }
+
+    public:
+        // width and height of the icon
+        constexpr static uint32_t width = Width;
+        constexpr static uint32_t height = Height;
+
+        /**
+         * @brief Construct a new bitmap using a array
+         * 
+         * @param data 
+         */
+        template <typename... T> 
+        constexpr bitmap(const klib::graphics::color arg, const T... args):
+            data{detail::color_to_raw<Mode>(arg), detail::color_to_raw<Mode>(args)...}
+        {
+            // make sure the input size matches the amount of data we are expecting
+            static_assert((sizeof...(T) + 1) == (Width * Height), "Parameter size does not match");
+        }
+
+        /**
+         * @brief Construct a new bitmap using a array
+         * 
+         * @param data 
+         */
+        template <typename... T> 
+        constexpr bitmap(const color_mode::type arg, const T... args):
+            data{arg, args...}
+        {
+            // make sure the input size matches the amount of data we are expecting
+            static_assert((sizeof...(T) + 1) == (Width * Height), "Parameter size does not match");
+        }
+
+        /**
+         * @brief Construct a empty bitmap
+         * 
+         */
+        constexpr bitmap(): data{} {}
+
+        /**
+         * @brief Draw the bitmap to the framebuffer
+         * 
+         * @tparam Fb 
+         * @param framebuffer 
+         * @param position 
+         * @param foreground 
+         * @param background 
+         */
+        template <typename Fb>
+        void draw(Fb& framebuffer, const klib::vector2i& position) const {
+            // draw every pixel in the bitmap
+            for (int32_t y = 0; y < height; y++) {
+                for (int32_t x = 0; x < width; x++) {
+                    // make sure the position is inside the framebuffer
+                    if (((position.y + y) < 0 || (position.y + y) >= static_cast<int32_t>(framebuffer.height)) || 
+                        ((position.x + x) < 0 || (position.x + x) >= static_cast<int32_t>(framebuffer.width)))
+                    {
+                        // skip the pixel if it outside of the framebuffer
+                        continue;
+                    }
+
+                    // check if the pixel is set or not
+                    const auto pixel = get_pixel(klib::vector2i{x, y}.cast<uint32_t>());
+
+                    // get the position
+                    const auto pos = position + klib::vector2i{x, y};
+
+                    // set the pixel
+                    framebuffer.set_pixel(pos.cast<uint32_t>(), pixel);
+                }
+            }
+        }
+    };
+
     template <uint32_t Width, uint32_t Height>
     class mono_bitmap {
     protected:
@@ -17,13 +121,12 @@ namespace klib::graphics {
         /**
          * @brief Get the pixel data of a position 
          * 
-         * @param x 
-         * @param y 
+         * @param position
          * @return bool set or unset
          */
-        constexpr bool get_pixel(const uint32_t x, const uint32_t y) const {
+        constexpr bool get_pixel(const klib::vector2u position) const {
             // calculate the main part of the index
-            const uint32_t t = (y * Width + x);
+            const uint32_t t = (position.y * Width + position.x);
 
             // get the index of the data
             const uint32_t index = t / 8;
@@ -87,7 +190,7 @@ namespace klib::graphics {
                     }
 
                     // check if the pixel is set or not
-                    const bool is_set = get_pixel(x, y);
+                    const bool is_set = get_pixel(klib::vector2i{x, y}.cast<uint32_t>());
 
                     // get the position
                     const auto pos = position + klib::vector2i{x, y};
