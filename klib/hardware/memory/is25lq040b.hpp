@@ -1,5 +1,5 @@
-#ifndef KLIB_M24C04_HPP
-#define KLIB_M24C04_HPP
+#ifndef KLIB_IS25LQ040B_HPP
+#define KLIB_IS25LQ040B_HPP
 
 #include <cstdint>
 
