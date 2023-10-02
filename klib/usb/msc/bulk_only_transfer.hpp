@@ -5,6 +5,8 @@
 #include <algorithm>
 
 #include <klib/usb/usb.hpp>
+#include <klib/string.hpp>
+
 #include "bot.hpp"
 
 namespace klib::usb::msc::bot {
@@ -33,10 +35,7 @@ namespace klib::usb::msc::bot {
         // information for the the transfers
         static inline volatile block transfer_block;
 
-        // current block address 
-        static volatile inline uint32_t block_address = 0;
-        static volatile inline uint16_t block_amount = 0;
-
+        // buffer to store one packet for the usb stack
         static inline uint8_t block_buffer[max_packet_size] = {};
 
         // available states for the callback handler
