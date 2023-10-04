@@ -685,10 +685,9 @@ namespace klib::lpc1756::io {
             power_control::enable<Usb>();
 
             // clock register
-            constexpr uint32_t ctrl = (0x1 << 4) | (0x1 << 3) | (0x1 << 1);
+            constexpr uint32_t ctrl = (0x1 << 4) | (0x1 << 1);
 
             // enable the device clock and AHB clock for the usb
-            // TODO: determine if we also need the OTG clock
             Usb::port->OTGCLKCTRL = ctrl;
 
             // wait until the data is set
