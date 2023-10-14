@@ -227,7 +227,7 @@ namespace klib::time {
     }
 
     constexpr s::operator ms() const {
-        return (value * conversion_factor<s, s>());
+        return (value * conversion_factor<s, ms>());
     }
 
     /**
