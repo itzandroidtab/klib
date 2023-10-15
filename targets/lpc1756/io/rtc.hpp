@@ -84,8 +84,13 @@ namespace klib::lpc1756::io {
         }
 
     public:
-        template <uint16_t CalValue = 0, bool CalDirection = 1>
-        static void init() {
+        /**
+         * @brief Initialize the RTC
+         * 
+         * @param cal_value 
+         * @param cal_direction
+         */
+        static void init(const uint16_t cal_value = 0, const bool cal_direction = 1) {
             // enable the power for the rtc
             power_control::enable<Rtc>();
 
@@ -96,10 +101,10 @@ namespace klib::lpc1756::io {
             }
 
             // setup the calibration if we have any
-            Rtc::port->CALIBRATION = CalValue | (CalDirection << 17);
+            Rtc::port->CALIBRATION = cal_value | (cal_direction << 17);
 
             // enable the rtc
-            Rtc::port->CCR = 0x1 | ((CalValue == 0) ? (0x1 << 4) : 0x00);
+            Rtc::port->CCR = 0x1 | ((cal_value == 0) ? (0x1 << 4) : 0x00);
         }
 
         /**
