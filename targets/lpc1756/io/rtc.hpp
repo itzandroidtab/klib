@@ -136,7 +136,7 @@ namespace klib::lpc1756::io {
          */
         static void set(const klib::time::s time) {
             // get the amount of days in the epoch time
-            uint32_t days = time.value / (24 * 60 * 60);
+            uint32_t days = (time.value / (24 * 60 * 60)) + 1;
             uint32_t years = 1970;
 
             // check all the years 
