@@ -134,13 +134,17 @@ namespace klib {
      * @param time 
      */
     template <
-        typename Timer = io::systick,
+        typename Timer = io::systick<>,
         bool LowPowerSleep = TARGET_LOW_POWER_SLEEP,
         typename T = time::ms
     >
     static void delay(const T time) {
         // get the amount of seconds in the time
         const auto sec = static_cast<time::s>(time);
+
+        constexpr static bool is_systick = requires() {
+            Timer::get_runtime();
+        };
 
         // delay in 1 second intervals as some timers 
         // do not support frequencies below 1hz
@@ -149,7 +153,7 @@ namespace klib {
                 // busy wait just waits based on a aproximation
                 detail::busy_delay_impl(time::s(1));
             }
-            else if constexpr (std::is_same_v<Timer, klib::io::systick>) {
+            else if constexpr (is_systick) {
                 // use the freerunning system timer
                 detail::systick_delay_impl<Timer, LowPowerSleep>(time::s(1));
             }
@@ -169,7 +173,7 @@ namespace klib {
             // busy wait just waits based on a aproximation
             detail::busy_delay_impl(usec);
         }
-        else if constexpr (std::is_same_v<Timer, klib::io::systick>) {
+        else if constexpr (is_systick) {
             // use the freerunning system timer
             detail::systick_delay_impl<Timer, LowPowerSleep>(usec);
         }

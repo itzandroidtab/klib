@@ -7,6 +7,12 @@
 #include <klib/units.hpp>
 
 namespace klib::io {
+    /**
+     * @brief Systick class uses cpu id 0 by default
+     * 
+     * @tparam CpuId 
+     */
+    template <uint32_t CpuId = 0>
     class systick {
     protected:
         /**
