@@ -8,6 +8,7 @@
 #include <klib/string.hpp>
 
 #include "bot.hpp"
+#include "msc.hpp"
 
 namespace klib::usb::msc::bot {
     template <typename Memory, uint8_t InEndpoint, uint8_t OutEndpoint>
