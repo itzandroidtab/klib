@@ -78,6 +78,26 @@ namespace klib::lpc1756::io::periph {
         // available channels in the timer
         constexpr static uint32_t max_channels = 4;
     };
+
+    struct pwm1 {
+        // peripheral id (e.g pwm0, pwm1)
+        constexpr static uint32_t id = 1;
+
+        // interrupt id (including the arm vector table)
+        constexpr static uint32_t interrupt_id = 35;
+
+        // power bit position
+        constexpr static uint32_t clock_id = 6;
+
+        // port to the PWM hardware
+        static inline PWM1_Type *const port = PWM1;
+
+        // available channels in the pwm (Base and timer mode)
+        constexpr static uint32_t max_channels = 4;
+
+        // available channels in pwm mode
+        constexpr static uint32_t max_pwm_channels = 7;
+    };
 }
 
 namespace klib::lpc1756::io::detail::timer {
@@ -241,6 +261,169 @@ namespace klib::lpc1756::io {
      */
     template <typename Timer, uint32_t Channel>
     using oneshot_timer = detail::timer::base_timer<Timer, Channel, detail::timer::mode::one_shot>;
+
+    /**
+     * @brief Pwm timer.
+     * 
+     * @tparam Pwm 
+     * @tparam Channel 
+     */
+    template <
+        typename Pin, typename Pwm, uint8_t Channel, 
+        uint32_t Frequency, uint8_t Bits
+    >
+    class pwm_timer: public detail::timer::base_timer<Pwm, 0, detail::timer::mode::continuous> {
+    protected:
+        // make sure the channel is valid
+        static_assert(Channel < Pwm::max_pwm_channels, "Pwm only supports 7 channels");
+        static_assert(Channel != 0, "Pwm does not support channel 0 (is used as the base channel)");
+
+        // check if the amount of bits is valid
+        static_assert(Bits >= 1 && Bits <= 16, "Amount of bits must be >= 1 && <= 16");
+
+        // make sure the frequency is valid
+        static_assert(Frequency != 0, "Pwm frequency cannot be 0");
+
+        // multiplier for the frequency
+        constexpr static uint32_t multiplier = (klib::exp2(Bits) - 1);
+
+        /**
+         * @brief Calculate the stepsize used in the set functions
+         * 
+         * @return uint32_t 
+         */
+        template <bool FloatingPoint = true>
+        static auto calculate_stepsize() {
+            // calculate the maximum compare value
+            const auto cmp = (klib::io::clock::get() / Frequency) + 1;
+
+            if constexpr (FloatingPoint) {
+                // calculate the step size
+                return klib::max(static_cast<float>(cmp) / multiplier, 1.f);
+            }
+            else {
+                // calculate the step size
+                return klib::max(cmp / multiplier, 1);
+            }
+        }
+
+    public:
+        static void init() {
+            // init the base timer on the BaseChannel
+            detail::timer::base_timer<
+                Pwm, 0, detail::timer::mode::continuous
+            >::init(nullptr, Frequency);
+
+            // disable the interrupts
+            Pwm::port->IR = 0;
+
+            // enable the pwm
+            Pwm::port->TCR |= (0x1 << 3);
+
+            // TODO: add support for this
+            io::detail::pins::set_peripheral<Pin, io::detail::alternate::func_1>();
+
+            // enable the channel as pwm
+            Pwm::port->PCR |= (0x1 << (Channel + 8));
+        }
+
+        /**
+         * @brief Set the dutycycle of the Pwm pin
+         * 
+         * @tparam Dutycycle 
+         */
+        template <uint16_t Dutycycle>
+        static void dutycycle() {
+            // calculate the step size
+            const uint32_t value = calculate_stepsize() * (Dutycycle & multiplier);
+
+            // set the dutycycle (if we are above channel 4 we switch 
+            // from array to direct naming)
+            if constexpr (Channel < 4) {
+                Pwm::port->MR[Channel] = value;
+            }
+            else if constexpr (Channel == 4) {
+                Pwm::port->MR4 = value;
+            }
+            else if constexpr (Channel == 5) {
+                Pwm::port->MR5 = value;
+            }
+            else if constexpr (Channel == 6) {
+                Pwm::port->MR6 = value;
+            }
+
+            // update the pwm
+            Pwm::port->LER |= (0x1 << Channel);
+        }
+
+        /**
+         * @brief Set the dutycycle of the timer pin
+         * 
+         * @param dutycycle
+         */
+        static void dutycycle(uint16_t dutycycle) {
+            // calculate the step size
+            const uint32_t value = calculate_stepsize() * (dutycycle & multiplier);
+
+            // set the dutycycle (if we are above channel 4 we switch 
+            // from array to direct naming)
+            if constexpr (Channel < 4) {
+                Pwm::port->MR[Channel] = value;
+            }
+            else if constexpr (Channel == 4) {
+                Pwm::port->MR4 = value;
+            }
+            else if constexpr (Channel == 5) {
+                Pwm::port->MR5 = value;
+            }
+            else if constexpr (Channel == 6) {
+                Pwm::port->MR6 = value;
+            }
+
+            // update the pwm
+            Pwm::port->LER |= (0x1 << Channel);
+        }
+
+        /**
+         * @brief Enable or disable output.
+         * 
+         * @tparam Value 
+         */
+        template <bool Value>
+        static void set() {
+            // clear or set the pin to the peripheral
+            if constexpr (Value) {
+                io::detail::pins::set_peripheral<Pin, io::detail::alternate::func_1>();
+            }
+            else {
+                // change the mode to a output pin
+                pin_out<Pin>::init();
+
+                // set the pin to output a low
+                pin_out<Pin>::template set<false>();
+            }
+        }
+
+        /**
+         * @brief Enable or disable output.
+         * 
+         * @param value 
+         */
+        static void set(bool value) {
+            // clear or set the pin to the peripheral
+            if (value) {
+                io::detail::pins::set_peripheral<Pin, io::detail::alternate::func_1>();
+            }
+            else {
+                // change the mode to a output pin
+                pin_out<Pin>::init();
+
+                // set the pin to output a low
+                pin_out<Pin>::template set<false>();
+            }
+        }
+
+    };
 }
 
 #endif
