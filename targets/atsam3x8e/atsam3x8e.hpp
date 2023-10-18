@@ -7,7 +7,7 @@
 
 namespace klib::atsam3x8e {
     // irq for the atsam3x8e
-    using irq = klib::KLIB_IRQ<16 + 28>;
+    using irq = klib::KLIB_IRQ<0, 16 + 28>;
 
     /**
      * @brief Enable a interrupt

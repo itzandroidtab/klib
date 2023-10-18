@@ -16,10 +16,11 @@ namespace klib {
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
      * 
+     * @tparam CpuId 
      * @tparam IrqCount 
      * @tparam Alignment 
      */
-    template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
+    template <uint32_t CpuId, uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
     class irq_ram {
     public:
         // using for the array of callbacks
@@ -80,10 +81,13 @@ namespace klib {
         /**
          * @brief Relocate the interrupt table and init all functions to the default handler
          * 
+         * @tparam UpdateVectorTable 
+         * @param stack_end 
          */
-        static void init() {
+        template <bool UpdateVectorTable = (CpuId == 0)>
+        static void init(const uint32_t* stack_end = &__stack_end) {
             // set the first position to the stack pointer
-            callbacks[static_cast<uint8_t>(arm_vector::stack_ptr)] = reinterpret_cast<interrupt_callback>(&__stack_end);
+            callbacks[static_cast<uint8_t>(arm_vector::stack_ptr)] = reinterpret_cast<interrupt_callback>(stack_end);
 
             // setup the arm vector table
             for (uint8_t i = static_cast<const uint8_t>(arm_vector::reset); 
@@ -97,8 +101,20 @@ namespace klib {
                 callbacks[i] = &default_handler;
             }
 
-            // move the vector table to the callback address
-            (*vtor) = reinterpret_cast<volatile uint32_t>(&callbacks);
+            // check if we need to set the vtor register
+            if constexpr (UpdateVectorTable) {
+                // move the vector table to the callback address
+                (*vtor) = reinterpret_cast<volatile uint32_t>(&callbacks);
+            }
+        }
+
+        /**
+         * @brief Return the beginning of the callback array
+         * 
+         * @return auto*
+         */
+        static auto* begin() {
+            return callbacks;
         }
 
         /**
@@ -151,10 +167,11 @@ namespace klib {
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
      * 
+     * @tparam CpuId 
      * @tparam IrqCount 
      * @tparam Alignment 
      */
-    template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
+    template <uint32_t CpuId, uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
     class irq_flash {
     public:
         // using for the array of callbacks
@@ -200,11 +217,25 @@ namespace klib {
         /**
          * @brief Set the vector table to the array provided by the user
          * 
+         * @tparam UpdateVectorTable 
          * @param vectors 
          */
+        template <bool UpdateVectorTable = (CpuId == 0)>
         static void init(const interrupt_callback *const vectors) {
-            // move the vector table to the callback address
-            (*vtor) = reinterpret_cast<volatile uint32_t>(vectors);
+            // check if we need to set the vtor register
+            if constexpr (UpdateVectorTable) {
+                // move the vector table to the callback address
+                (*vtor) = reinterpret_cast<volatile uint32_t>(vectors);
+            }
+        }
+
+        /**
+         * @brief Return the beginning of the callback array
+         * 
+         * @return auto* 
+         */
+        static auto* begin() {
+            return (*vtor);
         }
 
         /**
@@ -247,11 +278,12 @@ namespace klib {
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
      * 
+     * @tparam CpuId 
      * @tparam IrqCount 
      * @tparam klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t))) 
      */
-    template <uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
-    class irq_hooked: public irq_ram<IrqCount, Alignment> {
+    template <uint32_t CpuId, uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
+    class irq_hooked: public irq_ram<CpuId, IrqCount, Alignment> {
     public:
         // hook function prototype
         using hook_function = void(*)(uint32_t);
@@ -284,7 +316,7 @@ namespace klib {
             }
 
             // call the callback
-            irq_ram<IrqCount, Alignment>::callbacks[irq]();
+            irq_ram<CpuId, IrqCount, Alignment>::callbacks[irq]();
 
             // check if we have a exit hook
             if (exit_hook != nullptr) {
@@ -310,16 +342,31 @@ namespace klib {
         /**
          * @brief Relocate the interrupt table and init all functions to the default handler
          * 
+         * @tparam UpdateVectorTable 
+         * @param stack_end 
          */
-        static void init() {
+        template <bool UpdateVectorTable = (CpuId == 0)>
+        static void init(const uint32_t* stack_end = &__stack_end) {
             // update the hooks
             set_hook(nullptr, nullptr);
 
             // initialize the irq_ram before we move it to our own table
-            irq_ram<IrqCount, Alignment>::init();
+            irq_ram<CpuId, IrqCount, Alignment>::template init<UpdateVectorTable>(stack_end);
 
-            // move the vector table to the hooked array instead of the ram array
-            (*irq_ram<IrqCount, Alignment>::vtor) = reinterpret_cast<volatile uint32_t>(hooked_callbacks.begin());
+            // check if we need to set the vtor register
+            if constexpr (UpdateVectorTable) {
+                // move the vector table to the hooked array instead of the ram array
+                (*irq_ram<CpuId, IrqCount, Alignment>::vtor) = reinterpret_cast<volatile uint32_t>(hooked_callbacks.begin());
+            }
+        }
+
+        /**
+         * @brief Return the beginning of the callback array
+         * 
+         * @return auto* 
+         */
+        static auto* begin() {
+            return hooked_callbacks.begin();
         }
 
         /**
