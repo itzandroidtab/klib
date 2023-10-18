@@ -52,7 +52,7 @@ jobs:
           tar -xf ${{github.workspace}}/svdconv.tbz2 
           chmod +x ${{github.workspace}}/svdconv
           
-          ${{github.workspace}}/svdconv ${{github.workspace}}/targets/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd --generate=header -o ${{github.workspace}}/targets/${{matrix.cpu}}/ -x INFO -x WARNING
+          ${{github.workspace}}/svdconv ${{github.workspace}}/targets/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd -x "INFO" -x "WARNING" --generate=header -o ${{github.workspace}}/targets/${{matrix.cpu}}/
           sed -i '/#include "system_/d' ${{github.workspace}}/targets/${{matrix.cpu}}/${{matrix.cpu}}.h
 
       - name: Create main
