@@ -23,7 +23,7 @@ namespace klib::detail {
      * @tparam Timer
      * @param time 
      */
-    template <typename Timer>
+    template <typename Timer, bool LowPowerSleep>
     static void timer_delay_impl(const time::us time) {
         // do nothing when the value is 0
         if (time.value == 0) {
@@ -46,7 +46,7 @@ namespace klib::detail {
         // loop until we are done
         while (!done<Timer>) {
             // if we dont have low power sleep enabled we will just busy loop
-            if constexpr (TARGET_LOW_POWER_SLEEP == true) {
+            if constexpr (LowPowerSleep) {
                 // let the cpu sleep until we have a interrupt
                 asm("WFE");
             }
@@ -64,7 +64,7 @@ namespace klib::detail {
      * @tparam T 
      * @param time 
      */
-    template <typename Timer>
+    template <typename Timer, bool LowPowerSleep>
     static void systick_delay_impl(const time::us time) {
         // calculate the amount of time to wait
         const auto target = Timer::template get_runtime<time::us>() + time;
@@ -75,7 +75,7 @@ namespace klib::detail {
         // wait until we have reached the target runtime
         while (Timer::get_runtime() < target_ms) {
             // if we dont have low power sleep enabled we will just busy loop
-            if constexpr (TARGET_LOW_POWER_SLEEP == true) {
+            if constexpr (LowPowerSleep) {
                 // let the cpu sleep until we have a interrupt
                 asm("WFE");
             }
@@ -133,7 +133,11 @@ namespace klib {
      * @tparam T 
      * @param time 
      */
-    template <typename Timer = io::systick, typename T = time::ms>
+    template <
+        typename Timer = io::systick,
+        bool LowPowerSleep = TARGET_LOW_POWER_SLEEP,
+        typename T = time::ms
+    >
     static void delay(const T time) {
         // get the amount of seconds in the time
         const auto sec = static_cast<time::s>(time);
@@ -147,11 +151,11 @@ namespace klib {
             }
             else if constexpr (std::is_same_v<Timer, klib::io::systick>) {
                 // use the freerunning system timer
-                detail::systick_delay_impl<Timer>(time::s(1));
+                detail::systick_delay_impl<Timer, LowPowerSleep>(time::s(1));
             }
             else {
                 // otherwise use the provided timer
-                detail::timer_delay_impl<Timer>(time::s(1));
+                detail::timer_delay_impl<Timer, LowPowerSleep>(time::s(1));
             }
         }
 
@@ -167,11 +171,11 @@ namespace klib {
         }
         else if constexpr (std::is_same_v<Timer, klib::io::systick>) {
             // use the freerunning system timer
-            detail::systick_delay_impl<Timer>(usec);
+            detail::systick_delay_impl<Timer, LowPowerSleep>(usec);
         }
         else {
             // otherwise use the provided timer
-            detail::timer_delay_impl<Timer>(usec);
+            detail::timer_delay_impl<Timer, LowPowerSleep>(usec);
         }
     }
 }
