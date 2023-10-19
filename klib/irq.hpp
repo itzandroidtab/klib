@@ -84,7 +84,7 @@ namespace klib {
          * @tparam UpdateVectorTable 
          * @param stack_end 
          */
-        template <bool UpdateVectorTable = (CpuId == 0)>
+        template <bool UpdateVectorTable = true>
         static void init(const uint32_t* stack_end = &__stack_end) {
             // set the first position to the stack pointer
             callbacks[static_cast<uint8_t>(arm_vector::stack_ptr)] = reinterpret_cast<interrupt_callback>(stack_end);
@@ -220,7 +220,7 @@ namespace klib {
          * @tparam UpdateVectorTable 
          * @param vectors 
          */
-        template <bool UpdateVectorTable = (CpuId == 0)>
+        template <bool UpdateVectorTable = true>
         static void init(const interrupt_callback *const vectors) {
             // check if we need to set the vtor register
             if constexpr (UpdateVectorTable) {
@@ -345,7 +345,7 @@ namespace klib {
          * @tparam UpdateVectorTable 
          * @param stack_end 
          */
-        template <bool UpdateVectorTable = (CpuId == 0)>
+        template <bool UpdateVectorTable = true>
         static void init(const uint32_t* stack_end = &__stack_end) {
             // update the hooks
             set_hook(nullptr, nullptr);
