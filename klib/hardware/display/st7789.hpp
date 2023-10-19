@@ -4,6 +4,7 @@
 #include <klib/delay.hpp>
 #include <klib/vector2.hpp>
 #include <klib/graphics/color.hpp>
+#include <klib/graphics/display.hpp>
 #include <klib/io/dma.hpp>
 
 namespace klib::hardware::display {
@@ -181,10 +182,16 @@ namespace klib::hardware::display {
         public:
             /**
              * @brief inits the display
-             *
+             * 
              * @tparam InvertedColors 
+             * @tparam XMirror 
+             * @tparam YMirror 
              */
-            template <bool InvertedColors = false>
+            template <
+                bool InvertedColors = true, bool RGBMode = true,
+                graphics::orientation Orientation = graphics::orientation::portrait,
+                bool XMirror = false, bool YMirror = false
+            >
             static void init() {
                 // using for the time
                 using namespace klib::time;
@@ -222,7 +229,11 @@ namespace klib::hardware::display {
                 else {
                     write_cmd(cmd::invoff);
                 }
-                write_cmd(cmd::madctl, 0b0 << 3);
+
+                write_cmd(cmd::madctl, 
+                    (RGBMode << 3) | ((Orientation == graphics::orientation::landscape) << 5) |
+                    (XMirror << 6) | (YMirror << 7)
+                );
 
                 // frame rate control in idle and partial mode (set 
                 // it so we use the values from frctrl2)
