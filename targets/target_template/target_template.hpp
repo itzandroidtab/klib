@@ -8,6 +8,15 @@ namespace klib::template {
     using irq = klib::KLIB_IRQ<0, 16 + 16>;
 
     /**
+     * @brief Get the current cpu id
+     * 
+     * @return uint32_t 
+     */
+    static uint32_t get_cpu_id() {
+        return 0;
+    }
+
+    /**
      * @brief Enable a interrupt
      * 
      * @tparam Irq 

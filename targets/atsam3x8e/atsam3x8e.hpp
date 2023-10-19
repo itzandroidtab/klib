@@ -10,6 +10,17 @@ namespace klib::atsam3x8e {
     using irq = klib::KLIB_IRQ<0, 16 + 28>;
 
     /**
+     * @brief Get the current cpu id
+     * 
+     * @return uint32_t 
+     */
+    static uint32_t get_cpu_id() {
+        // NOTE: this mcu only has 1 core. So we always 
+        // return id 0
+        return 0;
+    }
+
+    /**
      * @brief Enable a interrupt
      * 
      * @tparam Irq 
