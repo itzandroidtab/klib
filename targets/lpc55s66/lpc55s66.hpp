@@ -11,6 +11,25 @@ namespace klib::lpc55s66 {
     using irq1 = klib::KLIB_IRQ<1, 16 + 40>;
 
     /**
+     * @brief Get the current cpu id
+     * 
+     * @return uint32_t 
+     */
+    static uint32_t get_cpu_id() {
+        // pointer to the vector table offset register
+        const volatile uint32_t *const vtor = ((volatile uint32_t*)0xE000ED08);
+
+        // check if the current vector table points to irq0 or irq1
+        if ((*vtor) == reinterpret_cast<const uint32_t>(irq0::begin())) {
+            // vector table matches irq0. We are running on CPU0
+            return 0;
+        }
+
+        // not CPU0. That only leaves CPU1
+        return 1;
+    }
+
+    /**
      * @brief Enable a interrupt
      * 
      * @tparam Irq 
