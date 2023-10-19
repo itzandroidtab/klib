@@ -18,8 +18,8 @@ namespace klib::graphics {
         constexpr static uint32_t size = (Width * Height);
 
     public:
-        // array to store the bitmap (const as the image cannot change)
-        const color_mode::type data[size];
+        // array to store the bitmap
+        color_mode::type data[size];
 
         /**
          * @brief Get the pixel data of a position 
@@ -115,8 +115,8 @@ namespace klib::graphics {
         constexpr static uint32_t raw_size = ((Width * Height) + 7) / 8;
 
     public:
-        // array to store the bitmap (const as the image cannot change)
-        const uint8_t data[raw_size];
+        // array to store the bitmap
+        uint8_t data[raw_size];
 
         /**
          * @brief Get the pixel data of a position 
