@@ -1,8 +1,6 @@
 #ifndef KLIB_LPC1756_USB_HPP
 #define KLIB_LPC1756_USB_HPP
 
-#include <klib/stream.hpp>
-
 #include <lpc1756.hpp>
 
 #include <klib/usb/usb.hpp>
