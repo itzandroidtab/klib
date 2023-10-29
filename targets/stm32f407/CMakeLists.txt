@@ -1,7 +1,7 @@
 # export our linkerscript
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
-# set the max32660 cpu options as a seperate target so the driver layer can link agains klib
+# set the stm32f407 cpu options as a seperate target so the driver layer can link agains klib
 add_library (target_cpu_options INTERFACE)
 
 # alias projectname::target_cpu_options to target_cpu_options

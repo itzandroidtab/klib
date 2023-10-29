@@ -1,7 +1,7 @@
 # export our linkerscript
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
-# set the max32660 cpu options as a seperate target so the driver layer can link agains klib
+# set the lpc1756 cpu options as a seperate target so the driver layer can link agains klib
 add_library (target_cpu_options INTERFACE)
 
 # alias projectname::target_cpu_options to target_cpu_options
@@ -30,7 +30,7 @@ target_compile_options(target_cpu_options INTERFACE "-fno-exceptions")
 target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-tables")
 
 
-# cpu max32660 target drivers 
+# cpu lpc1756 target drivers 
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m3.cpp
 )
