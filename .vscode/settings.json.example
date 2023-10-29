@@ -1,0 +1,8 @@
+{
+    "target_cpu": "lpc1756",
+    "cmake.configureSettings": {
+        "TARGET_CPU": "lpc1756",
+        "TARGET_LOW_POWER_SLEEP": "1"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+}
