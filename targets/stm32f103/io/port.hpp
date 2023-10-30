@@ -194,9 +194,39 @@ namespace klib::stm32f103::io {
         constexpr static bool get() {
             // get the status of the pin
             return Pin::port::port->IDR & detail::pins::mask<Pin>;
-        }     
+        }
+
+        template <bool Val>
+        constexpr static void pullup_enable() {
+            if constexpr (Val) {
+                // enable the pullup
+                Pin::port::port->ODR |= detail::pins::mask<Pin>;
+
+                // change to input with pull-up/pull-down
+                detail::pins::set_config<Pin, 0b10>();
+            }
+            else {
+                // change back to floating
+                detail::pins::set_config<Pin, 0b01>();
+            }
+        }
+
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            if constexpr (Val) {
+                // enable the pulldown
+                Pin::port::port->ODR &= ~detail::pins::mask<Pin>;
+
+                // change to input with pull-up/pull-down
+                detail::pins::set_config<Pin, 0b10>();
+            }
+            else {
+                // change back to floating
+                detail::pins::set_config<Pin, 0b01>();
+            }
+        }    
     };
- 
+
     template <typename Pin>
     class pin_out {
     public:
