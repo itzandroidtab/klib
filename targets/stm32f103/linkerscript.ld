@@ -10,7 +10,7 @@ OUTPUT_ARCH(arm);
 /* 
 The stack size used by the application. NOTE: you need to adjust according to your application. 
 */
-STACK_SIZE = 0x4000;
+STACK_SIZE = 0x1000;
 
 /*
 Memories definitions
