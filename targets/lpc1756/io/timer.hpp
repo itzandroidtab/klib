@@ -9,6 +9,7 @@
 
 #include "clocks.hpp"
 #include "power.hpp"
+#include "port.hpp"
 
 namespace klib::lpc1756::io::periph {
     struct tc0 {
