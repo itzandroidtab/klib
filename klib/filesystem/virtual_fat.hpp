@@ -186,7 +186,7 @@ namespace klib::filesystem::detail {
             reverved = ClusterCount + 1,
             bad_sector = 0xff7,
             reserved1 = 0xff8,
-            final_cluster = 0xffff            
+            final_cluster = 0xfff            
         };
 
         /**
@@ -207,6 +207,25 @@ namespace klib::filesystem::detail {
             else {
                 fat[offset] = value & 0xff;
                 fat[offset + 1] = ((value >> 8) & 0xf) | (fat[offset + 1] & 0xf0);                
+            }
+        }
+
+        /**
+         * @brief get the cluster value at a specific index
+         * 
+         * @param fat 
+         * @param index 
+         * @return type 
+         */
+        static type get_cluster(uint8_t *const fat, const uint32_t index) {
+            const uint32_t offset = index + (index / 2);
+
+            // restore the fat entry
+            if (index & 0x1) {
+                return (fat[offset + 1] << 4) | (fat[offset] >> 4);
+            }
+            else {
+                return ((fat[offset + 1] & 0xf) << 8) | fat[offset];              
             }
         }
     };
@@ -243,6 +262,20 @@ namespace klib::filesystem::detail {
             // set the fat entry
             fat[offset] = value & 0xff;
             fat[offset + 1] = value >> 8;
+        }
+
+        /**
+         * @brief get the cluster value at a specific index
+         * 
+         * @param fat 
+         * @param index 
+         * @return type 
+         */
+        static type get_cluster(uint8_t *const fat, const uint32_t index) {
+            const uint32_t offset = index * 2;
+
+            // restore the fat entry
+            return (fat[offset + 1] << 8) | fat[offset];
         }
     };
 
@@ -281,6 +314,23 @@ namespace klib::filesystem::detail {
             fat[offset + 2] = (value >> 16) & 0xff;
             fat[offset + 3] = (fat[offset + 3] & 0xf0) | ((value >> 24) & 0x0f);
         }
+
+        /**
+         * @brief get the cluster value at a specific index
+         * 
+         * @param fat 
+         * @param index 
+         * @return type 
+         */
+        static type get_cluster(uint8_t *const fat, const uint32_t index) {
+            const uint32_t offset = index * 4;
+
+            // restore the fat entry
+            return (
+                (fat[offset + 3] << 8) | (fat[offset + 2] << 8) | 
+                (fat[offset + 1] << 8) | fat[offset]
+            );
+        }
     };
 }
 
@@ -292,16 +342,16 @@ namespace klib::filesystem {
      * @tparam MaxFiles Max amount of files that can be stored
      * @tparam TotalSize Total disk size
      * @tparam ClusterSize Amount of sectors per cluster
-     * @tparam FatSizeLimit Allows to limit the FAT in ram. Can be used 
-     * @tparam NumFats Number of fats
+     * @tparam FatRamSizeLimit Allows to limit the FAT in ram. Can be used 
      * to simulate a big filesystem with low amounts of ram
+     * @tparam NumFats Number of fats
      */
     template <
         typename Handler,
         uint32_t MaxFiles = 32, 
         uint32_t TotalSize = (1 * 1024 * 1024), 
         uint32_t ClusterSize = 64, 
-        uint32_t FatSizeLimit = 0xffffffff,
+        uint32_t FatRamSizeLimit = 0xffffffff,
         uint8_t NumFats = 0x01
     >
     class virtual_fat {
@@ -391,7 +441,7 @@ namespace klib::filesystem {
         static inline uint32_t cluster_index = 0; 
 
         // fat file allocation table
-        static inline uint8_t fat[sector_size * klib::min(mbr.fat_size16, FatSizeLimit) * number_of_fats] = {};
+        static inline uint8_t fat[sector_size * klib::min(mbr.fat_size16, FatRamSizeLimit) * number_of_fats] = {};
 
         // amount of active fat directory entries
         static inline uint32_t directory_index = 0;
@@ -526,10 +576,10 @@ namespace klib::filesystem {
             // read all the fat sectors
             for (uint32_t i = 0; i < sectors; i++) {
                 // get the fat offset
-                const uint32_t fat_offset = i + offset + (Fat * klib::min(mbr.fat_size16, FatSizeLimit));
+                const uint32_t fat_offset = i + offset + (Fat * klib::min(mbr.fat_size16, FatRamSizeLimit));
 
                 // check if we should read the actual fat or the "simulated fat"
-                if (fat_offset >= FatSizeLimit) {
+                if (fat_offset >= FatRamSizeLimit) {
                     // fill the "simulated fat" with all zero to mark as free
                     std::fill_n(data, sector_size, 0x00);
                 }
@@ -594,22 +644,26 @@ namespace klib::filesystem {
          */
         static void write_directory_structure(const uint32_t offset, const uint8_t *const data, const uint32_t sectors) {
             // check if it is trying to write outside of the fat directory array
-            if ((offset + sectors * sector_size) > sizeof(directory)) {
+            if (((offset * sector_size) + (sectors * sector_size)) > sizeof(directory)) {
                 // it is trying to write outside the directory structure exit
                 return;
             }
 
-            // get a the offset into the fat directory array
-            const uint32_t fat_offset = offset * sector_size / sizeof(detail::directory);
+            // max amount of directory entries in a single sector
+            constexpr static uint32_t max_directories_sector = (sector_size / sizeof(detail::directory));
+
+            // get the start offset into the fat directory array
+            const uint32_t fat_offset = offset * max_directories_sector;
 
             // get the max amount of items in the current offset
-            const uint32_t entries = klib::max(
-                root_entry_count - (offset * (sector_size / sizeof(detail::directory))), 0
+            const uint32_t entries = klib::min(
+                klib::max((static_cast<int32_t>(root_entry_count) - fat_offset), 0), 
+                max_directories_sector
             );
 
             // check if a file entry has changed (when we are at offset 0 we skip the
             // directory entry. On the other offsets we start at index 0)
-            for (uint32_t i = (offset ? 1 : 0); i < entries; i++) {
+            for (uint32_t i = (offset ? 0 : 1); i < entries; i++) {
                 // get a reference to the received structure
                 auto &n = (reinterpret_cast<const detail::directory*>(data))[i];
                 auto &old = directory[fat_offset + i];
@@ -623,16 +677,16 @@ namespace klib::filesystem {
                 // check what happend with the file
                 if (n.name[0] == 0xe5) {
                     // the file has been deleted
-                    Handler::on_delete(old);
+                    Handler::on_delete(fat_offset + i, old);
                 }
-                else if (n.name != old.name && is_valid_filename(n.name)) {
+                else if (!std::ranges::equal(n.name, old.name) && is_valid_filename(n.name)) {
                     // a new file has been created
-                    Handler::on_create(n);
+                    Handler::on_create(fat_offset + i, n);
                 }
                 else {
                     // something else changed. Let the handler check what 
                     // it is it for us
-                    Handler::on_change(old, n);
+                    Handler::on_change(fat_offset + i, old, n);
                 }
 
                 // store the new data in the directory structure
@@ -712,12 +766,32 @@ namespace klib::filesystem {
 
                 // check if we have data left to process
                 if (!sectors) {
-                    break;
+                    return;
                 }
 
                 // move past the current media to go to the next one
                 current_sector += virtual_media[i].sector_count;
-            }             
+            }
+
+            // check if we need to do something with the unhandled sector. We do not know 
+            // yet what file this is for. We either need to store all the data until the
+            // fat is updated or we have the handler figure it out. Here we leave it to the
+            // handler.
+            if constexpr (Read) {
+                // reading a sector that is not mapped. Fill with zero
+                std::fill_n(data, sector_size * sectors, 0x00);
+            }
+            else {
+                // check if we have a file handler
+                constexpr static bool has_file_handler = requires(uint32_t offset, const uint8_t* data, uint32_t sectors) {
+                    Handler::file_handler(offset, data, sectors);
+                };
+
+                if constexpr (has_file_handler) {
+                    // call the file handler so it can handle the unhandled sector
+                    Handler::file_handler(sector, data, sectors);
+                }
+            }
         }
 
     public:
