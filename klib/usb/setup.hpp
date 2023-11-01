@@ -168,19 +168,19 @@ namespace klib::usb::setup {
 
         // wValue = zero
         // wIndex = interface
-        // wlength = one
+        // wLength = one
         // data = alternate interface
         get_interface = 0x0a,
 
         // wValue = alternate setting
         // wIndex = interface
-        // wlength = zero
+        // wLength = zero
         // data = none
         set_interface = 0x0b,
 
         // wValue = zero
         // wIndex = endpoint
-        // wlength = two
+        // wLength = 2
         // data = frame number
         synch_frame = 0x0c,
     };
