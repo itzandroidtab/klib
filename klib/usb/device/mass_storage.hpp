@@ -127,9 +127,6 @@ namespace klib::usb::device {
         // serial number string descriptor
         const __attribute__((aligned(4))) static inline auto serial = string_descriptor("000000001337");
 
-        // configuration string descriptor
-        const __attribute__((aligned(4))) static inline auto configuration_string = string_descriptor("MSC Config");
-
         // configuration value. Value is set in the set config function
         static inline uint8_t configuration = 0x00;
 
@@ -345,8 +342,6 @@ namespace klib::usb::device {
                             return to_description(product, product.bLength);
                         case string_index::serial:
                             return to_description(serial, serial.bLength);
-                        case string_index::config:
-                            return to_description(configuration_string, configuration_string.bLength);
                         default:
                             // unknown string descriptor
                             break;
