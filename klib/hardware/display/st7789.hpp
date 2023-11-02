@@ -184,6 +184,8 @@ namespace klib::hardware::display {
              * @brief inits the display
              * 
              * @tparam InvertedColors 
+             * @tparam RGBMode 
+             * @tparam Orientation 
              * @tparam XMirror 
              * @tparam YMirror 
              */
@@ -222,7 +224,7 @@ namespace klib::hardware::display {
                         break;
                 }
 
-                // display inversion off, memory direction control
+                // display inversion configuration
                 if constexpr (InvertedColors) {
                     write_cmd(cmd::invon);
                 }
@@ -230,6 +232,7 @@ namespace klib::hardware::display {
                     write_cmd(cmd::invoff);
                 }
 
+                // memory direction control
                 write_cmd(cmd::madctl, 
                     (RGBMode << 3) | ((Orientation == graphics::orientation::landscape) << 5) |
                     (XMirror << 6) | (YMirror << 7)

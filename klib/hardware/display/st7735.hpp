@@ -131,8 +131,18 @@ namespace klib::hardware::display {
         public:
             /**
              * @brief inits the display
-             *
+             * 
+             * @tparam InvertedColors 
+             * @tparam RGBMode 
+             * @tparam Orientation 
+             * @tparam XMirror 
+             * @tparam YMirror 
              */
+            template <
+                bool InvertedColors = true, bool RGBMode = true,
+                graphics::orientation Orientation = graphics::orientation::portrait,
+                bool XMirror = false, bool YMirror = false
+            >
             static void init() {
                 // using for the time
                 using namespace klib::time;
@@ -175,9 +185,19 @@ namespace klib::hardware::display {
                 // vcomh voltage control
                 write_cmd(cmd::vmctr1, 0x0E);
 
-                // display inversion off, memory direction control
-                write_cmd(cmd::invon);
-                write_cmd(cmd::madctl, 0b1 << 3);
+                // display inversion configuration
+                if constexpr (InvertedColors) {
+                    write_cmd(cmd::invon);
+                }
+                else {
+                    write_cmd(cmd::invoff);
+                }
+
+                // memory direction control
+                write_cmd(cmd::madctl, 
+                    (RGBMode << 3) | ((Orientation == graphics::orientation::landscape) << 5) |
+                    (XMirror << 6) | (YMirror << 7)
+                );
 
                 // set screen based on the input mode
                 switch (Mode) {
