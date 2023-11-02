@@ -289,10 +289,10 @@ namespace klib {
         using hook_function = void(*)(uint32_t);
 
         // using for the array of callbacks
-        using interrupt_callback = irq_ram<IrqCount, Alignment>::interrupt_callback;
+        using interrupt_callback = irq_ram<CpuId, IrqCount, Alignment>::interrupt_callback;
 
         // using for the arm vector enum
-        using arm_vector = irq_ram<IrqCount, Alignment>::arm_vector;
+        using arm_vector = irq_ram<CpuId, IrqCount, Alignment>::arm_vector;
 
     protected:
         // entry and exit hooks
@@ -392,7 +392,7 @@ namespace klib {
             static_assert(Irq < IrqCount, "Invalid IRQ given to register");
 
             // call the ram register
-            irq_ram<IrqCount, Alignment>::template register_irq<Irq>(callback);
+            irq_ram<CpuId, IrqCount, Alignment>::template register_irq<Irq>(callback);
         }
 
         /**
@@ -406,7 +406,7 @@ namespace klib {
             static_assert(Irq < arm_vector::count, "Count can not not be used as a arm vector entry");
 
             // call the ram register
-            irq_ram<IrqCount, Alignment>::template register_irq<Irq>(callback);
+            irq_ram<CpuId, IrqCount, Alignment>::template register_irq<Irq>(callback);
         }
 
         /**
@@ -419,7 +419,7 @@ namespace klib {
             static_assert(Irq < IrqCount, "Invalid IRQ given to unregister");
 
             // call the ram unregister
-            irq_ram<IrqCount, Alignment>::template unregister_irq<Irq>();
+            irq_ram<CpuId, IrqCount, Alignment>::template unregister_irq<Irq>();
         }
     };
 }
