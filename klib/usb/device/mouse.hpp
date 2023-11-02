@@ -83,9 +83,9 @@ namespace klib::usb::device {
             .idVendor = 0x0B6A,
             .idProduct = 0x003F,
             .bcdDevice = 0x0100,
-            .iManufacturer = 0x01,
-            .iProduct = 0x02,
-            .iSerialNumber = 0x03,
+            .iManufacturer = static_cast<uint8_t>(string_index::manufacturer),
+            .iProduct = static_cast<uint8_t>(string_index::product),
+            .iSerialNumber = static_cast<uint8_t>(string_index::serial),
             .bNumConfigurations = 0x1
         };
 

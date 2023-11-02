@@ -72,9 +72,9 @@ namespace klib::usb::device {
             .idVendor = 0x0483,
             .idProduct = 0xDF11,
             .bcdDevice = 0x0002,
-            .iManufacturer = 0x01,
-            .iProduct = 0x02,
-            .iSerialNumber = 0x03,
+            .iManufacturer = static_cast<uint8_t>(string_index::manufacturer),
+            .iProduct = static_cast<uint8_t>(string_index::product),
+            .iSerialNumber = static_cast<uint8_t>(string_index::serial),
             .bNumConfigurations = 0x1
         };
 
@@ -95,7 +95,7 @@ namespace klib::usb::device {
                 .bInterfaceClass = 0xfe,
                 .bInterfaceSubClass = 0x01,
                 .bInterfaceProtocol = 0x02, // 0x01 = runtime, 0x02 = boot mode
-                .iInterface = 0x04
+                .iInterface = static_cast<uint8_t>(string_index::flash_information),
             },
             {
                 .bmAttributes = 0b00000001,

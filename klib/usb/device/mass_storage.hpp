@@ -23,7 +23,6 @@ namespace klib::usb::device {
             manufacturer = 1,
             product = 2,
             serial = 3,
-            config = 4,
         };
 
         // Push the current pack to the stack and set the pack to 1
@@ -65,9 +64,9 @@ namespace klib::usb::device {
             .idVendor = 0x6666,
             .idProduct = 0xBEEF,
             .bcdDevice = 0x0100,
-            .iManufacturer = 0x01,
-            .iProduct = 0x02,
-            .iSerialNumber = 0x03,
+            .iManufacturer = static_cast<uint8_t>(string_index::manufacturer),
+            .iProduct = static_cast<uint8_t>(string_index::product),
+            .iSerialNumber = static_cast<uint8_t>(string_index::serial),
             .bNumConfigurations = 0x1
         };
 
