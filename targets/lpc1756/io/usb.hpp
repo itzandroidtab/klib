@@ -82,6 +82,9 @@ namespace klib::lpc1756::io::detail::usb {
         // requested size of the current endpoint
         uint32_t requested_size;
 
+        // maximum requested size. (only used on out endpoints)
+        uint32_t max_requested_size;
+
         // transmitted/received amount of data.
         uint32_t transferred_size; 
 
@@ -488,7 +491,7 @@ namespace klib::lpc1756::io {
             state[endpoint].transferred_size += read_impl(
                 endpoint, klib::usb::usb::endpoint_mode::out, 
                 (state[endpoint].data + state[endpoint].transferred_size),
-                state[endpoint].requested_size - state[endpoint].transferred_size
+                state[endpoint].max_requested_size - state[endpoint].transferred_size
             );
 
             // check if we are done
@@ -1057,14 +1060,40 @@ namespace klib::lpc1756::io {
          */
         static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
                          const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
-                         const uint32_t size) 
+                         const uint32_t size)
+        {
+            // call read with a fixed size
+            return read(callback, endpoint, mode, data, size, size);
+        }
+
+        /**
+         * @brief Read data from a endpoint. Data is only valid when the callback is called. Has a 
+         * min size and max size for dynamic data length. The difference between min and max size is
+         * determined by the endpoint size. For example if the endpoint size is 8 bytes, min size is 
+         * 2 bytes, max is 10 bytes the maximum amount of data that will be received is 8 bytes.
+         * 
+         * @warning Buffers should be valid until the callback function is called
+         * 
+         * @param callback 
+         * @param endpoint 
+         * @param mode 
+         * @param data 
+         * @param min_size 
+         * @param max_size 
+         * @return true 
+         * @return false 
+         */
+        static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
+                         const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
+                         const uint32_t min_size, const uint32_t max_size) 
         {
             // set the endpoint callback
             state[endpoint].callback = callback;
             state[endpoint].data = data;
             
             // set the endpoint data
-            state[endpoint].requested_size = size;
+            state[endpoint].requested_size = min_size;
+            state[endpoint].max_requested_size = max_size;
             state[endpoint].transferred_size = 0;
 
             // mark the endpoint as busy
