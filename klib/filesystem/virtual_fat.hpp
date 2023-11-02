@@ -697,7 +697,6 @@ namespace klib::filesystem {
         /**
          * @brief Set the virtual media with the provided number of fats
          * 
-         * @tparam NumFats 
          * @tparam Index 
          * @param offset 
          */
@@ -709,7 +708,7 @@ namespace klib::filesystem {
                 .sector_count = mbr.fat_size16
             };
 
-            if constexpr (Index + 1 < NumFats) {
+            if constexpr (Index + 1 < number_of_fats) {
                 return set_fat_read<Index + 1>(offset);
             }
         }
@@ -971,6 +970,24 @@ namespace klib::filesystem {
          */
         static void read(uint32_t sector, uint8_t *const data, uint32_t sectors) {
             read_write_impl<true>(sector, data, sectors);
+        }
+
+        /**
+         * @brief Get the sector from the cluster
+         * 
+         * @param cluster 
+         * @return uint32_t 
+         */
+        constexpr static uint32_t cluster_to_sector(const uint32_t cluster) {
+            // calculate the amount of sectors before the data starts
+            constexpr uint32_t sectors = (
+                ((sizeof(detail::boot_sector) + (sector_count - 1)) / sector_count) +
+                (number_of_fats * mbr.fat_size16) + 
+                (((sizeof(detail::directory) * root_entry_count) + (sector_size - 1)) / sector_size)
+            );
+
+            // remove 2 from the cluster index as those are reserved
+            return (sectors / sector_size) + ((cluster - 2) * sectors_per_cluster);
         }
     };
 }
