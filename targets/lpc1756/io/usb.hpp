@@ -1070,7 +1070,7 @@ namespace klib::lpc1756::io {
          * @brief Read data from a endpoint. Data is only valid when the callback is called. Has a 
          * min size and max size for dynamic data length. The difference between min and max size is
          * determined by the endpoint size. For example if the endpoint size is 8 bytes, min size is 
-         * 2 bytes, max is 10 bytes the maximum amount of data that will be received is 8 bytes.
+         * 2 bytes, max is 32 bytes the maximum amount of data that will be received is 8 bytes.
          * 
          * @warning Buffers should be valid until the callback function is called
          * 
