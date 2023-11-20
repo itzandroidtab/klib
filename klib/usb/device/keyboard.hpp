@@ -9,6 +9,7 @@
 #include <klib/usb/hid/descriptor.hpp>
 
 namespace klib::usb::device {
+    template <uint32_t Endpoint = 6>
     class keyboard_hid {
     protected:
         /**
@@ -143,7 +144,7 @@ namespace klib::usb::device {
                 .wDescriptorLength = sizeof(report)
             },
             {
-                .bEndpointAddress = 0x84,
+                .bEndpointAddress = 0x80 | Endpoint,
                 .bmAttributes = 0x03,
                 .wMaxPacketSize = 0x0040,
                 .bInterval = 0x01
@@ -205,7 +206,7 @@ namespace klib::usb::device {
 
                 // send the no key pressed to the host
                 Usb::write(
-                    hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f, 
+                    hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
                     mode, report_data, sizeof(report_data)
                 );
 
@@ -231,7 +232,7 @@ namespace klib::usb::device {
 
                 // send the report to the host
                 Usb::write(
-                    hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f, 
+                    hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
                     mode, report_data, sizeof(report_data)
                 );
 
@@ -255,7 +256,7 @@ namespace klib::usb::device {
 
             // send the report to the host
             Usb::write(
-                hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f, 
+                hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
                 mode, report_data, sizeof(report_data)
             );
 
@@ -370,7 +371,7 @@ namespace klib::usb::device {
             irq_data = data;
 
             // write the first report to the endpoint
-            if (!Usb::write(hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f, 
+            if (!Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
                 usb::endpoint_mode::in, report_data, sizeof(report_data))) 
             {
                 return false;
@@ -600,8 +601,8 @@ namespace klib::usb::device {
             if (packet.wValue == config.configuration.bConfigurationValue) {
                 // configure the endpoint for our report data
                 Usb::configure(
-                    config.endpoint.bEndpointAddress & 0x0f, usb::endpoint_mode::in, 
-                    sizeof(report_data)
+                    usb::get_endpoint(config.endpoint.bEndpointAddress), 
+                    usb::endpoint_mode::in, sizeof(report_data)
                 );
 
                 // store the configuration value
@@ -614,7 +615,7 @@ namespace klib::usb::device {
                 std::fill_n(report_data, sizeof(report_data), 0x00);
 
                 // write the inital report
-                if (Usb::write(hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f, 
+                if (Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
                     usb::endpoint_mode::in, report_data, sizeof(report_data))) 
                 {
                     // no issue for now ack
@@ -632,7 +633,10 @@ namespace klib::usb::device {
                 // reset the used endpoint if we have one
                 if (configuration != 0) {
                     // reset the endpoint
-                    Usb::reset(config.endpoint.bEndpointAddress & 0x0f, usb::endpoint_mode::in);
+                    Usb::reset(
+                        usb::get_endpoint(config.endpoint.bEndpointAddress), 
+                        usb::endpoint_mode::in
+                    );
                 } 
 
                 // clear the configuration value
