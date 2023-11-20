@@ -50,6 +50,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         // port to the CAN hardware
         static inline CAN1_Type *const port = CAN1;
 
+        // amount of hardware buffers for transmitting data
+        constexpr static uint32_t tx_buffers = 3;
+
         // pins allowed per output pin. Used for determining if a pin is valid on compile time
         using td_pins = std::tuple<
             detail::can::can<pins::package::lqfp_80::p38, detail::can::mode::td, io::detail::alternate::func_1>,
@@ -73,6 +76,9 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
 
         // port to the CAN hardware
         static inline CAN1_Type *const port = CAN2;
+
+        // amount of hardware buffers for transmitting data
+        constexpr static uint32_t tx_buffers = 3;
 
         // P2.7 and P2.8 (80 pin package does not have the following so only 1 configuration for can1)
         using rd = detail::can::can<pins::package::lqfp_80::p51, detail::can::mode::rd, io::detail::alternate::func_1>;
@@ -149,13 +155,23 @@ namespace klib::lpc1756::io::detail {
 }
 
 namespace klib::lpc1756::io {
-    template <typename Can>
+    /**
+     * @brief lpc1756 can driver
+     * 
+     * @tparam Can 
+     * @tparam CanTxBuffers amount of tx hardware buffers used. Can help
+     * when a protocol needs a specific order of messages
+     */
+    template <typename Can, uint32_t CanTxBuffers = Can::tx_buffers>
     class can {
     public:
         // using for the array of callbacks
         using interrupt_callback = void(*)();
 
     protected:
+        // make sure the amount of tx buffers is supported
+        static_assert(CanTxBuffers > 0 && CanTxBuffers <= Can::tx_buffers, "Invalid buffer count");
+
         // callbacks
         static inline interrupt_callback transmit_callback = nullptr;
         static inline interrupt_callback receive_callback = nullptr;
@@ -214,7 +230,8 @@ namespace klib::lpc1756::io {
             // index of the used buffer
             buffer_index index;
 
-            // check what buffer to write to
+            // check what buffer to write to. Some buffers might be 
+            // disabled based on the value in CanTxBuffers.
             if (status & (0x1 << 2)) {
                 // point the pointer to the first buffer
                 buffer = reinterpret_cast<hw_buffer *const>(
@@ -223,14 +240,14 @@ namespace klib::lpc1756::io {
 
                 index = buffer_index::buffer_0;
             }
-            else if (status & (0x1 << 10)) {
+            else if (status & (0x1 << 10) && (CanTxBuffers > 1)) {
                 buffer = reinterpret_cast<hw_buffer *const>(
                     const_cast<uint32_t*>(&(Can::port->TFI2))
                 );
 
                 index = buffer_index::buffer_1;
             }
-            else if (status & (0x1 << 18)) {
+            else if (status & (0x1 << 18) && (CanTxBuffers > 2)) {
                 buffer = reinterpret_cast<hw_buffer *const>(
                     const_cast<uint32_t*>(&(Can::port->TFI3))
                 );
@@ -472,8 +489,18 @@ namespace klib::lpc1756::io {
             // get the status register
             const uint32_t status = Can::port->SR;
 
-            // return if any of the buffers is empty
-            return (status & ((0x1 << 2) | (0x1 << 10) | (0x1 << 18))) == 0;
+            // check what bits we should check
+            if constexpr (CanTxBuffers > 2) {
+                // return if any of the buffers is empty
+                return (status & ((0x1 << 2) | (0x1 << 10) | (0x1 << 18))) == 0;
+            }
+            else if constexpr (CanTxBuffers > 1) {
+                // return if one of the first 2 buffers is empty
+                return (status & ((0x1 << 2) | (0x1 << 10))) == 0;
+            }
+
+            // return if the first buffer is empty
+            return (status & ((0x1 << 2))) == 0;
         }
 
         /**
