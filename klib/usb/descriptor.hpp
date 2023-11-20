@@ -363,7 +363,44 @@ namespace klib::usb::descriptor {
         T capability_dependent;
     };
 
-    static_assert(sizeof(capability<uint8_t>) == 4, "uint8_t capability descriptor is not 4 bytes in length");    
+    static_assert(sizeof(capability<uint8_t>) == 4, "Capability descriptor is not 4 bytes in length");
+
+    /**
+     * @brief Interface association descriptor 
+     * 
+     */
+    struct interface_association {
+        // size of this descriptor
+        const uint8_t bLength = sizeof(interface_association);
+
+        // the device capability descriptor type
+        const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::interface_association);
+
+        // first interface number of the next 
+        // descriptor
+        uint8_t bFirstInterface;
+
+        // number of interfaces that follow this
+        // descriptor
+        uint8_t bInterfaceCount;
+
+        // 	bInterfaceClass used for the interface
+        uint8_t bFunctionClass;
+
+        // bInterfaceSubClass used for the 
+        // interface
+        uint8_t bFunctionSubClass;
+
+        // bInterfaceProtocol used for the 
+        // interface
+        uint8_t bFunctionProtocol;
+
+        // index of string descirptor describing 
+        // this interface
+        uint8_t iFunction;
+    };
+
+    static_assert(sizeof(interface_association) == 8, "Interface association descriptor is not 8 bytes in length");
 }
 
 // release the old pack so the rest of the structs are not 
