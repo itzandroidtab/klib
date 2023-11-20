@@ -19,15 +19,15 @@ namespace klib::graphics {
          * @param ch 
          * @return mono_bitmap<width, height> 
          */
-        const mono_bitmap<width, height>& get_character(const char ch) const;
+        constexpr mono_bitmap<width, height> get_character(const char ch) const;
     };
 
     /**
      * @brief Example 8x8 ascii font
      * 
      */
-    class ascii_font: public font<8, 8> {
-    protected:
+    class ascii_font_8x8: public font<8, 8> {
+    public:
         constexpr static mono_bitmap<8, 8> characters[] = {
             {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // space
             {0x18, 0x3c, 0x3c, 0x18, 0x18, 0x00, 0x18, 0x00}, // !
@@ -126,6 +126,68 @@ namespace klib::graphics {
             {0x76, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // ~ 
         };
 
+        /**
+         * @brief Get a character from the font
+         * 
+         * @param ch 
+         * @return mono_bitmap<width, height> 
+         */
+        constexpr mono_bitmap<8, 8> get_character(const char ch) const {
+            if (ch > (' ' + sizeof(characters) / sizeof(characters[0])) || ch < ' ') {
+                return characters[0];
+            }
+
+            return characters[ch - ' '];
+        }
+    };
+
+    /**
+     * @brief Example 8x8 ascii font
+     * 
+     */
+    class ascii_font_16x16: public font<16, 16> {
+    protected:
+        /**
+         * @brief Expand the lower nibble to 8 bits by 
+         * duplicating every bit
+         * 
+         * @param value 
+         * @return constexpr uint8_t 
+         */
+        constexpr static uint8_t expand(const uint8_t value) {
+            uint8_t ret = 0;
+
+            for (uint32_t i = 0; i < 4; i++) {
+                ret >>= 2;
+
+                const bool x = (value >> i) & 0x1;
+
+                // update the return value
+                ret |= (x ? 0b11 : 0b00) << 6;
+            }
+
+            return ret;
+        }
+
+        constexpr static mono_bitmap<16, 16> convert(const uint32_t index) {
+            mono_bitmap<16, 16> ch;
+
+            // get the character we want
+            const auto& character = ascii_font_8x8::characters[index].data;
+
+            for (uint32_t i = 0; i < sizeof(ascii_font_8x8::characters[0].data); i++) {
+                // expand every single bit to 2 bits
+                ch.data[(i * 4)] = expand(character[i] >> 4);
+                ch.data[(i * 4) + 1] = expand(character[i] & 0xf);
+
+                // copy it to the next line as well
+                ch.data[(i * 4) + 2] = expand(character[i] >> 4);
+                ch.data[(i * 4) + 3] = expand(character[i] & 0xf);
+            }
+
+            return ch;
+        }
+
     public:
         /**
          * @brief Get a character from the font
@@ -133,12 +195,12 @@ namespace klib::graphics {
          * @param ch 
          * @return mono_bitmap<width, height> 
          */
-        const mono_bitmap<8, 8>& get_character(const char ch) const {
-            if (ch > (' ' + sizeof(characters) / sizeof(characters[0])) || ch < ' ') {
-                return characters[0];
+        constexpr mono_bitmap<16, 16> get_character(const char ch) const {
+            if (ch > (' ' + sizeof(ascii_font_8x8::characters) / sizeof(ascii_font_8x8::characters[0])) || ch < ' ') {
+                return convert(0);
             }
 
-            return characters[ch - ' '];
+            return convert(ch - ' ');
         }
     };
 }
