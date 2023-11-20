@@ -163,9 +163,28 @@ namespace klib::lpc1756::io {
                 days -= y;
             }
 
-            // set the year, month and days
+            // set the year
             Rtc::port->YEAR = years;
             Rtc::port->DOY = days;
+
+            uint32_t months = 1;
+
+            // get the amount of months
+            for (uint32_t i = 0; i < sizeof(month_days) / sizeof(month_days[0]); i++) {
+                // check if we have more days than the 
+                // current month has
+                if (days < month_days[i]) {
+                    break;
+                }
+
+                // increment the months
+                months++;
+                days -= month_days[i];
+            }
+
+            // set the month and the days
+            Rtc::port->MONTH = months;
+            Rtc::port->DOM = days;
 
             // get the seconds left over
             const uint32_t seconds = time.value % (24 * 60 * 60);
