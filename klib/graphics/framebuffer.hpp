@@ -30,7 +30,7 @@ namespace klib::graphics {
         uint32_t StartX = 0, uint32_t StartY = 0, 
         uint32_t EndX = Display::width, 
         uint32_t EndY = Display::height,
-        std::endian Endian = std::endian::native,
+        std::endian Endian = std::endian::native
     >
     class direct_framebuffer {
     public:
@@ -230,7 +230,8 @@ namespace klib::graphics {
         typename Display, graphics::mode Mode,
         uint32_t StartX = 0, uint32_t StartY = 0, 
         uint32_t EndX = Display::width, 
-        uint32_t EndY = Display::height
+        uint32_t EndY = Display::height,
+        std::endian Endian = std::endian::native
     >
     class framebuffer {
     public:
