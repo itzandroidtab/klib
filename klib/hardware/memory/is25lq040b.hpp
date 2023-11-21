@@ -4,7 +4,16 @@
 #include <cstdint>
 
 namespace klib::hardware::memory {
-    template <typename Bus, typename Cs>
+    /**
+     * @brief Driver for the is25lq040
+     * 
+     * @tparam Bus 
+     * @tparam Cs 
+     * @tparam BusyWait check the busy wait flag after enabling 
+     * the write enable latch. This might be needed for slower 
+     * memory devices for proper writes
+     */
+    template <typename Bus, typename Cs, bool BusyWait = false>
     class is25lq040b {
     protected:
         /**
@@ -52,6 +61,14 @@ namespace klib::hardware::memory {
 
             // clear the chip select
             Cs::template set<true>();
+
+            // check if we should wait on the busy wait flag
+            if constexpr (BusyWait) {
+                // wait until the busy flag is cleared
+                while (is_busy<true>()) {
+                    // wait
+                }
+            }
         }
 
         /**
@@ -156,16 +173,28 @@ namespace klib::hardware::memory {
         /**
          * @brief Check if the device is still busy writing/erasing
          * 
+         * @tparam BusyFlagOnly when this function will only check 
+         * the busy flag instead of also checking the write enable
+         * latch
          * @return true 
          * @return false 
          */
+        template <bool BusyFlagOnly = false>
         static bool is_busy() {
             // get the status register
             const uint8_t status = get_status();
 
-            // return if the write busy bit is set or if the 
-            // write enable latch is still latched
-            return (status & 0x3);
+            // check if we should wait only on the busy
+            // flag
+            if constexpr (BusyFlagOnly) {
+                // return if the write busy bit is set
+                return (status & 0x1);
+            }
+            else {
+                // return if the write busy bit is set or if the 
+                // write enable latch is still latched
+                return (status & 0x3);
+            }
         }
 
         /**

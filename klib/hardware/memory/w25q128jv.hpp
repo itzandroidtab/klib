@@ -11,9 +11,12 @@ namespace klib::hardware::memory {
      * 
      * @tparam Bus 
      * @tparam Cs 
+     * @tparam BusyWait check the busy wait flag after enabling 
+     * the write enable latch. This might be needed for slower 
+     * memory devices for proper writes
      */
-    template <typename Bus, typename Cs>
-    class w25q128jv: public is25lq040b<Bus, Cs> {};
+    template <typename Bus, typename Cs, bool BusyWait = false>
+    class w25q128jv: public is25lq040b<Bus, Cs, BusyWait> {};
 }
 
 #endif
