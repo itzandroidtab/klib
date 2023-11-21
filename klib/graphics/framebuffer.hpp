@@ -2,6 +2,7 @@
 #define KLIB_FRAMEBUFFER_HPP
 
 #include <cstdint>
+#include <bit>
 
 #include <klib/vector2.hpp>
 #include <klib/graphics/color.hpp>
@@ -28,7 +29,8 @@ namespace klib::graphics {
         typename Display, bool AutoIncrement = true, 
         uint32_t StartX = 0, uint32_t StartY = 0, 
         uint32_t EndX = Display::width, 
-        uint32_t EndY = Display::height
+        uint32_t EndY = Display::height,
+        std::endian Endian = std::endian::native,
     >
     class direct_framebuffer {
     public:
@@ -105,41 +107,50 @@ namespace klib::graphics {
                 Display::start_write();
             }
 
-            // place to store the stream data
-            color_type native = 0;
-
-            // convert the data to a stream we can send. See 
-            // framebuffer::set_pixel for more information about
-            // the conversion from raw to native mode
-            if constexpr (
-                (color_mode::bits / 8 == sizeof(uint8_t)) && 
-                ((color_mode::bits % 8) == 0)) 
-            {
-                // nothing to do for 1 byte color modes
-                native = raw;
-            }
-            else if constexpr (
-                ((color_mode::bits % 8) == 0) && (
-                color_mode::bits / 8 == sizeof(uint16_t) || 
-                color_mode::bits / 8 == sizeof(uint32_t) ||
-                color_mode::bits / 8 == sizeof(uint64_t)))
-            {
-                // we can use the buildin byte swap
-                native = klib::bswap(raw);
+            // check if we need to flip the data around to match the
+            // native stream. If the bus supports writing in big endian
+            // then we do not need to convert it to big endian
+            if constexpr (Endian == std::endian::big) {
+                // write the raw data to the screen
+                Display::raw_write(reinterpret_cast<const uint8_t*>(&raw), sizeof(raw));
             }
             else {
-                constexpr uint32_t bytes = (color_mode::bits / 8);
+                // place to store the stream data
+                color_type native = 0;
 
-                // we need to fall back on a byte conversion
-                for (uint32_t i = 0; i < bytes; i++) {
-                    native |= (
-                        ((raw >> (((bytes - 1) * 8) - (i * 8))) & 0xff) << (i * 8)
-                    );
-                }   
+                // convert the data to a stream we can send. See 
+                // framebuffer::set_pixel for more information about
+                // the conversion from raw to native mode
+                if constexpr (
+                    (color_mode::bits / 8 == sizeof(uint8_t)) && 
+                    ((color_mode::bits % 8) == 0)) 
+                {
+                    // nothing to do for 1 byte color modes
+                    native = raw;
+                }
+                else if constexpr (
+                    ((color_mode::bits % 8) == 0) && (
+                    color_mode::bits / 8 == sizeof(uint16_t) || 
+                    color_mode::bits / 8 == sizeof(uint32_t) ||
+                    color_mode::bits / 8 == sizeof(uint64_t)))
+                {
+                    // we can use the buildin byte swap
+                    native = klib::bswap(raw);
+                }
+                else {
+                    constexpr uint32_t bytes = (color_mode::bits / 8);
+
+                    // we need to fall back on a byte conversion
+                    for (uint32_t i = 0; i < bytes; i++) {
+                        native |= (
+                            ((raw >> (((bytes - 1) * 8) - (i * 8))) & 0xff) << (i * 8)
+                        );
+                    }   
+                }
+
+                // write the raw data to the screen
+                Display::raw_write(reinterpret_cast<const uint8_t*>(&native), sizeof(native));
             }
-
-            // write the raw data to the screen
-            Display::raw_write(reinterpret_cast<const uint8_t*>(&native), sizeof(native));
 
             // check if we need to update the internal cursor
             if constexpr (AutoIncrement) {
@@ -402,7 +413,13 @@ namespace klib::graphics {
                 // store the data in big endian format. We do this so we can send 
                 // the data directly to the display in the native format
                 for (uint32_t i = 0; i < bytes; i++) {
-                    buffer[index + i] = (raw >> (((bytes - 1) * 8) - (i * 8))) & 0xff;
+                    // check how we need to write the data
+                    if constexpr (Endian == std::endian::big) {
+                        buffer[index + i] = (raw >> (((bytes - 1) * 8) - (i * 8))) & 0xff;
+                    }
+                    else {
+                        buffer[index + i] = (raw >> (i * 8)) & 0xff;
+                    }
                 }
             }
             else {
