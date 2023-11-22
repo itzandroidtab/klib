@@ -304,10 +304,10 @@ namespace klib::lpc1756::io::system {
         template <bool Enable>
         static void enable() {
             if constexpr (Enable) {
-                PINCONNECT->PINSEL10 = 0x1 << 3;
+                PINCONNECT->PINSEL[10] = 0x1 << 3;
             }
             else {
-                PINCONNECT->PINSEL10 = 0;
+                PINCONNECT->PINSEL[10] = 0;
             }
         }
 

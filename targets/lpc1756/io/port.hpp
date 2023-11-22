@@ -51,23 +51,7 @@ namespace klib::lpc1756::io::detail::pins {
         );
 
         // check what pointer to return
-        switch (offset) {
-            case 1:
-                return offsetof(PINCONNECT_Type, PINSEL1) / 4;
-            case 2:
-                return offsetof(PINCONNECT_Type, PINSEL2) / 4;
-            case 3:
-                return offsetof(PINCONNECT_Type, PINSEL3) / 4;
-            case 4:
-                return offsetof(PINCONNECT_Type, PINSEL4) / 4;
-            case 7:
-                return offsetof(PINCONNECT_Type, PINSEL7) / 4;
-            case 9:
-                return offsetof(PINCONNECT_Type, PINSEL9) / 4;
-            default:
-            case 0:
-                return offsetof(PINCONNECT_Type, PINSEL0) / 4;
-        }
+        return offset;
     }
 
     /**
@@ -81,27 +65,26 @@ namespace klib::lpc1756::io::detail::pins {
         // get the register offset for the pin selection
         constexpr uint32_t pin_offset = get_pinselect_offset<Pin>();
 
-        // get the pointer to the pin select we need to write to
-        volatile uint32_t *const pin_select = &(
-            (reinterpret_cast<volatile uint32_t *const>(PINCONNECT))[pin_offset]
-        );
-
         // set the 3 function registers
         if constexpr (std::is_same_v<Periph, io::detail::alternate::func_1>) {
             // setup alternate function 1
-            (*pin_select) = ((*pin_select) & ~(0b11 << ((Pin::number * 2)) % 32)) | (0b01 << ((Pin::number * 2)) % 32);
+            PINCONNECT->PINSEL[pin_offset] = (
+                PINCONNECT->PINSEL[pin_offset] & ~(0b11 << ((Pin::number * 2)) % 32)) | (0b01 << ((Pin::number * 2)) % 32
+            );
         }
         else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_2>) {
             // setup alternate function 2
-            (*pin_select) = ((*pin_select) & ~(0b11 << ((Pin::number * 2)) % 32)) | (0b10 << ((Pin::number * 2)) % 32);
+            PINCONNECT->PINSEL[pin_offset] = (
+                PINCONNECT->PINSEL[pin_offset] & ~(0b11 << ((Pin::number * 2)) % 32)) | (0b10 << ((Pin::number * 2)) % 32
+            );
         }
         else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_3>) {
             // setup alternate function 3
-            (*pin_select) |= (0b11 << ((Pin::number * 2)) % 32);
+            PINCONNECT->PINSEL[pin_offset] |= (0b11 << ((Pin::number * 2)) % 32);
         }
         else {
             // setup normal gpio function
-            (*pin_select) &= ~(0b11 << ((Pin::number * 2)) % 32);
+            PINCONNECT->PINSEL[pin_offset] &= ~(0b11 << ((Pin::number * 2)) % 32);
         }
     }
 
@@ -127,13 +110,8 @@ namespace klib::lpc1756::io::detail::pins {
         // get the register offset for the pin selection
         constexpr uint32_t pin_offset = get_pinselect_offset<Pin>();
 
-        // get the pointer to the pin select we need to write to
-        volatile uint32_t *const pin_select = &(
-            (reinterpret_cast<volatile uint32_t *const>(PINCONNECT))[(offsetof(PINCONNECT_Type, PINMODE0) / 4) + pin_offset]
-        );
-
         // clear the previous value and set the new value
-        (*pin_select) = ((*pin_select) & ~(
+        PINCONNECT->PINMODE[pin_offset] = (PINCONNECT->PINMODE[pin_offset] & ~(
             (static_cast<uint8_t>(Value) & 0b11) << ((Pin::number * 2)) % 32)) | 
             ((static_cast<uint8_t>(Value) & 0b11) << ((Pin::number * 2)
         ) % 32);
@@ -146,18 +124,13 @@ namespace klib::lpc1756::io::detail::pins {
      * @tparam OpenDrain 
      */
     template <typename Pin, bool OpenDrain>
-    static void set_open_drain() {
-        // get a pointer to the open drain registers
-        uint32_t *const open_drain = (
-            reinterpret_cast<volatile uint32_t *const>(&(PINCONNECT->PINMODE_OD0))
-        );
-        
+    static void set_open_drain() {        
         // set or clear based on the value
         if constexpr (OpenDrain) {
-            open_drain[Pin::port::id] |= mask<Pin>;
+            PINCONNECT->PINMODE[Pin::port::id] |= mask<Pin>;
         }
         else {
-            open_drain[Pin::port::id] &= ~(mask<Pin>);
+            PINCONNECT->PINMODE[Pin::port::id] &= ~(mask<Pin>);
         }
     }
 }
