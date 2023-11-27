@@ -118,14 +118,68 @@ namespace klib::lpc1756::io {
     protected:
         template <klib::io::spi::bits Bits>
         constexpr static uint8_t convert_bits() {
-            using bits = klib::io::spi::bits;
-
             // make sure we have an amount of bits we support
             static_assert(static_cast<uint32_t>(Bits) >= 8, "below 8 bits per transfer is not supported");
             static_assert(static_cast<uint32_t>(Bits) <= 16, "above 16 bits per transfer is not supported");
 
             // return the raw value
             return static_cast<uint8_t>(Bits) - 1;
+        }
+
+        /**
+         * @brief Write size amount of data to the fifo buffer
+         * 
+         * @param data 
+         * @param size 
+         * @param transmitted 
+         * @return uint16_t 
+         */
+        static uint16_t write_fifo(const uint8_t *const data, const uint16_t size, const uint16_t transmitted) {
+            uint16_t t = 0;
+
+            // write as many bytes until the fifo is full
+            while ((Ssp::port->SR & (0x1 << 1)) && ((transmitted + t) < size)) {
+                // write dummy data if we have a nullptr
+                if (data == nullptr) {
+                    Ssp::port->DR = 0x00;
+                }
+                else {
+                    Ssp::port->DR = data[transmitted + t];
+                }
+
+                // increment the amount of bytes transmitted
+                t++;
+            }
+
+            return t;
+        }
+
+        /**
+         * @brief Read size amount of data from the fifo buffer
+         * 
+         * @param data 
+         * @param size 
+         * @param received 
+         * @return uint16_t 
+         */
+        static uint16_t read_fifo(uint8_t *const data, const uint16_t size, const uint16_t received) {
+            uint16_t r = 0;
+
+            // read as much data as we can
+            while (Ssp::port->SR & (0x1 << 2) && ((received + r) < size)) {
+                // read the data.
+                const uint16_t d = Ssp::port->DR;
+
+                // store the value if we do not have a nullptr
+                if (data != nullptr) {
+                    data[received + r] = d;
+                }
+
+                // increment the amount of bytes read
+                r++;
+            }
+
+            return r;
         }
 
     public:
@@ -179,46 +233,25 @@ namespace klib::lpc1756::io {
          * @param rx 
          * @param size 
          */
+        template <bool Async = false>
         static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
-            // discard anything that is left in the fifo
-            clear_rx_fifo();
+            // amount of data received/transmitted
+            uint32_t transmitted = 0;
+            uint32_t received = 0;
 
-            // check if we have a valid pointer to write
-            if (tx == nullptr) {
-                // write all the data to the fifo
-                for (uint32_t i = 0; i < size; i++) {
-                    // wait until we can write to the fifo
-                    while (!Ssp::port->SR & (0x1 << 1)) {
-                        // do nothing
-                    }
+            // write and read until we are done
+            while ((size - transmitted) > 0 || (size - received) > 0) {
+                // write the tx data
+                transmitted += write_fifo(tx, size, transmitted);
 
-                    // write dummy data
-                    Ssp::port->DR = 0x00;
-
-                    // wait until there is data in the receive fifo
-                    while (!Ssp::port->SR & (0x1 << 2)) {
-                        // do nothing
-                    }
-
-                    rx[i] = Ssp::port->DR;
-                }
+                // read the rx data
+                received += read_fifo(rx, size, received);
             }
-            else {
-                for (uint32_t i = 0; i < size; i++) {
-                    // wait until we can write to the fifo
-                    while (!Ssp::port->SR & (0x1 << 1)) {
-                        // do nothing
-                    }
 
-                    // write the data
-                    Ssp::port->DR = tx[i];
-
-                    // wait until there is data in the receive fifo
-                    while (!Ssp::port->SR & (0x1 << 2)) {
-                        // do nothing
-                    }
-
-                    rx[i] = Ssp::port->DR;
+            // check if we should wait until completion
+            if constexpr (!Async) {
+                while (is_busy()) {
+                    // wait until we are done
                 }
             }
         }
@@ -233,22 +266,7 @@ namespace klib::lpc1756::io {
          */
         template <bool Async = false>
         static void write(const uint8_t *const data, const uint16_t size) {
-            for (uint32_t i = 0; i < size; i++) {
-                // wait until we can write to the fifo
-                while (!(Ssp::port->SR & (0x1 << 1))) {
-                    // do nothing
-                }
-
-                // write the data
-                Ssp::port->DR = data[i];
-            }
-
-            // check if we should wait until completion
-            if constexpr (!Async) {
-                while (is_busy()) {
-                    // wait until we are done
-                }
-            }
+            write_read<Async>(data, nullptr, size);
         }
 
         /**
