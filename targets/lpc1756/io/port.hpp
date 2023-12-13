@@ -201,7 +201,7 @@ namespace klib::lpc1756::io::detail {
         constexpr static uint32_t clock_id = 17;
 
     protected:
-        // amount of can devices that can be serviced in the single interrupt
+        // amount of ports that are handled in this interrupt
         constexpr static uint32_t port_count = 2;
 
         // interrupt callbacks

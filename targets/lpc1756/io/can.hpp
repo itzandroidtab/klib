@@ -93,7 +93,7 @@ namespace klib::lpc1756::io::detail {
         using interrupt_callback = void(*)();
 
     protected:
-        // amount of can devices that can be serviced in the single interrupt
+        // amount of ports that are handled in this interrupt
         constexpr static uint32_t can_count = 2;
 
         // interrupt callbacks
@@ -466,8 +466,7 @@ namespace klib::lpc1756::io {
         }
 
         /**
-         * @brief Returns if we have data available. This function 
-         * is non blocking
+         * @brief Returns if we have data available
          * 
          * @return true 
          * @return false 
@@ -480,7 +479,7 @@ namespace klib::lpc1756::io {
         /**
          * @brief Function that returns if the transmitting side is 
          * busy. If this function returns false it means there is 
-         * no space in the internal buffers. Function is non blocking
+         * no space in the internal buffers
          * 
          * @return true 
          * @return false 
@@ -505,7 +504,8 @@ namespace klib::lpc1756::io {
 
         /**
          * @brief Write a frame to the bus. If no data can be written the 
-         * packet is lost
+         * packet is lost. If async == false this function blocks until
+         * the data is written on the bus
          * 
          * @param frame 
          */
@@ -517,6 +517,10 @@ namespace klib::lpc1756::io {
 
         /**
          * @brief Read a frame from the can hardware
+         * 
+         * @warning undefined behaviour if data is read without data in the 
+         * hardware buffer. (check has_data() or wait for the receive
+         * interrupt)
          * 
          * @return klib::io::can::frame 
          */
