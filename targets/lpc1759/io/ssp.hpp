@@ -1,7 +1,8 @@
 #ifndef KLIB_LPC1759_SSP_HPP
 #define KLIB_LPC1759_SSP_HPP
 
-#include <targets/core/nxp/lpc175x/ssp.hpp>
+#include <klib/io/peripheral.hpp>
+#include <targets/core/nxp/lpc17xx/ssp.hpp>
 #include "pins.hpp"
 
 namespace klib::lpc1759::io::periph::detail::ssp {
@@ -105,7 +106,7 @@ namespace klib::lpc1759::io::periph::lqfp_80 {
 
 namespace klib::lpc1759::io {
     template <typename Ssp>
-    using ssp = klib::core::lpc175x::io::ssp<Ssp>;
+    using ssp = klib::core::lpc17xx::io::ssp<Ssp>;
 }
 
 #endif

@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "targets/core/nxp/lpc175x/port.hpp"
-#include "targets/core/nxp/lpc175x/port_interrupt.hpp"
+#include <targets/core/nxp/lpc175x/port.hpp>
+#include <targets/core/nxp/lpc175x/port_interrupt.hpp>
 
 // global peripherals, not affected by chip package
 namespace klib::lpc1759::io::periph {
@@ -54,6 +54,10 @@ namespace klib::lpc1759::io::periph {
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO4;
     };
+}
+
+namespace klib::lpc1759::io::detail::pins {
+    using namespace klib::core::lpc175x::io::detail::pins;
 }
 
 namespace klib::lpc1759::io {
