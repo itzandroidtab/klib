@@ -1,15 +1,14 @@
-#ifndef KLIB_NXP_LPC175X_SSP_HPP
-#define KLIB_NXP_LPC175X_SSP_HPP
+#ifndef KLIB_NXP_LPC17XX_SSP_HPP
+#define KLIB_NXP_LPC17XX_SSP_HPP
 
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
-#include <klib/io/peripheral.hpp>
 
-#include "port.hpp"
-#include "clocks.hpp"
-#include "power.hpp"
+#include <io/port.hpp>
+#include <io/clocks.hpp>
+#include <io/power.hpp>
 
-namespace klib::core::lpc175x::io {
+namespace klib::core::lpc17xx::io {
     template <typename Ssp>
     class ssp {
     protected:
@@ -88,19 +87,26 @@ namespace klib::core::lpc175x::io {
         >
         static void init() {
             // enable the power for the ssp
-            io::power_control::enable<Ssp>();
+            target::io::power_control::enable<Ssp>();
+
+            // check if we need to setup the clock
+            constexpr bool need_clock_setup = requires() {
+                target::io::clocks::set<Ssp>();
+            };
 
             // setup the clock
-            io::clocks::set<Ssp>();
+            if constexpr (need_clock_setup) {
+                target::io::clocks::set<Ssp>();
+            }
 
             // configure the gpio pins
-            io::detail::pins::set_peripheral<typename Ssp::sck::pin, typename Ssp::sck::periph>();
-            io::detail::pins::set_peripheral<typename Ssp::mosi::pin, typename Ssp::mosi::periph>();
-            io::detail::pins::set_peripheral<typename Ssp::miso::pin, typename Ssp::miso::periph>();
+            target::io::detail::pins::set_peripheral<typename Ssp::sck::pin, typename Ssp::sck::periph>();
+            target::io::detail::pins::set_peripheral<typename Ssp::mosi::pin, typename Ssp::mosi::periph>();
+            target::io::detail::pins::set_peripheral<typename Ssp::miso::pin, typename Ssp::miso::periph>();
 
             // only configure the chipselect when not using a different pin
             if constexpr (!ExternalCs) {
-                io::detail::pins::set_peripheral<typename Ssp::cs0::pin, typename Ssp::cs0::periph>();
+                target::io::detail::pins::set_peripheral<typename Ssp::cs0::pin, typename Ssp::cs0::periph>();
             }
             
             // setup the clock for the ssp. Value should be between 2 - 254. 
