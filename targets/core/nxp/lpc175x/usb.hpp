@@ -5,10 +5,10 @@
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
 
-#include "port.hpp"
-#include "power.hpp"
-#include "clocks.hpp"
+#include <io/power.hpp>
 
+#include "clocks.hpp"
+#include "port.hpp"
 
 namespace klib::core::lpc175x::io::detail::usb {
     /**

@@ -9,8 +9,9 @@
 #include <klib/io/core_clock.hpp>
 #include <klib/io/peripheral.hpp>
 
+#include <io/power.hpp>
+
 #include "clocks.hpp"
-#include "power.hpp"
 #include "port.hpp"
 
 namespace klib::core::lpc175x::io::detail {

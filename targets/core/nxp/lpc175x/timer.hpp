@@ -6,8 +6,9 @@
 #include <klib/klib.hpp>
 #include <klib/io/core_clock.hpp>
 
+#include <io/power.hpp>
+
 #include "clocks.hpp"
-#include "power.hpp"
 #include "port.hpp"
 
 namespace klib::core::lpc175x::io::detail::timer {
