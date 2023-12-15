@@ -4,6 +4,7 @@
 #include <klib/delay.hpp>
 #include <klib/vector2.hpp>
 #include <klib/graphics/color.hpp>
+#include <klib/graphics/display.hpp>
 #include <klib/io/dma.hpp>
 
 namespace klib::hardware::display {
