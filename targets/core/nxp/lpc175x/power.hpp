@@ -1,7 +1,7 @@
 #ifndef KLIB_NXP_LPC175X_POWER_CONTROL_HPP
 #define KLIB_NXP_LPC175X_POWER_CONTROL_HPP
 
-#include <lpc1756.hpp>
+#include <klib/klib.hpp>
 
 namespace klib::core::lpc175x::io {
     class power_control {

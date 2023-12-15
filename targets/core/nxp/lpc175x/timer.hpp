@@ -97,14 +97,14 @@ namespace klib::core::lpc175x::io::detail::timer {
 
             if (irq) {
                 // register our handler
-                lpc1756::irq::template register_irq<Timer::interrupt_id>(isr_handler);
+                target::irq::register_irq<Timer::interrupt_id>(isr_handler);
 
                 // enable the interrupt
-                lpc1756::template enable_irq<Timer::interrupt_id>();
+                target::enable_irq<Timer::interrupt_id>();
             }
             else {
                 // disable the interrupt
-                lpc1756::template disable_irq<Timer::interrupt_id>();
+                target::disable_irq<Timer::interrupt_id>();
             }
         }
 
