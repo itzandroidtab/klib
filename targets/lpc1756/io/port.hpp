@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "targets/core/nxp/lpc175x/port.hpp"
-#include "targets/core/nxp/lpc175x/port_interrupt.hpp"
+#include <targets/core/nxp/lpc175x/port.hpp>
+#include <targets/core/nxp/lpc175x/port_interrupt.hpp>
 
 // global peripherals, not affected by chip package
 namespace klib::lpc1756::io::periph {
