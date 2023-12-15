@@ -67,7 +67,7 @@ namespace klib::core::lpc175x::io::detail::timer {
          */
         static void init(const interrupt_callback& irq, const uint32_t frequency) {
             // enable power to the timer peripheral
-            power_control::enable<Timer>();
+            target::io::power_control::enable<Timer>();
 
             // enable the clock on the timer peripheral
             clocks::set<Timer>();

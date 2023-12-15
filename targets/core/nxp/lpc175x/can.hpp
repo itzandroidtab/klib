@@ -331,7 +331,7 @@ namespace klib::core::lpc175x::io {
         template <uint32_t Frequency = 500'000>
         static void init(const interrupt_callback& transmit = nullptr, const interrupt_callback& receive = nullptr) {
             // init using the pconp register
-            power_control::enable<Can>();
+            target::io::power_control::enable<Can>();
 
             // enable the clock to the peripheral
             clocks::set<Can, clocks::divider::div_1>();

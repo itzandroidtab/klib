@@ -53,7 +53,7 @@ namespace klib::core::lpc175x::io {
         >
         static void init() {
             // enable power to the spi peripheral
-            power_control::enable<Spi>();
+            target::io::power_control::enable<Spi>();
 
             // enable the clocks on the spi peripheral
             clocks::set<Spi>();

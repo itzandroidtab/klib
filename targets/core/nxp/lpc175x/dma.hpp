@@ -119,7 +119,7 @@ namespace klib::core::lpc175x::io {
         template <bool LittleEndian = true>
         static void init() {
             // enable the dma controller
-            power_control::enable<Dma>();
+            target::io::power_control::enable<Dma>();
 
             // enable the dma controller with the endianness
             Dma::port->CONFIG = 0x1 | (LittleEndian << 1);

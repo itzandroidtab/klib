@@ -630,7 +630,7 @@ namespace klib::core::lpc175x::io {
         template <bool UsbLed = true, bool UsbConnect = true, bool NakIrq = false>
         static void init() {
             // enable the usb power
-            power_control::enable<Usb>();
+            target::io::power_control::enable<Usb>();
 
             // clock register
             constexpr uint32_t ctrl = (0x1 << 4) | (0x1 << 1);

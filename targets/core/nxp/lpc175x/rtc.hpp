@@ -75,7 +75,7 @@ namespace klib::core::lpc175x::io {
          */
         static void init(const uint16_t cal_value = 0, const bool cal_direction = 1) {
             // enable the power for the rtc
-            power_control::enable<Rtc>();
+            target::io::power_control::enable<Rtc>();
 
             // check if the rtc is already on
             if (Rtc::port->CCR & 0x1) {
