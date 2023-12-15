@@ -56,6 +56,10 @@ namespace klib::lpc1756::io::periph {
     };
 }
 
+namespace klib::lpc1756::io::detail::pins {
+    using namespace klib::core::lpc175x::io::detail::pins;
+}
+
 namespace klib::lpc1756::io {
     template <typename Pin>
     using pin_in = klib::core::lpc175x::io::pin_in<Pin>;
