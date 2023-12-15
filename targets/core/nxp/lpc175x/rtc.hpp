@@ -6,7 +6,7 @@
 #include <klib/klib.hpp>
 #include <klib/units.hpp>
 
-#include "power.hpp"
+#include <io/power.hpp>
 
 namespace klib::core::lpc175x::io {
     template <typename Rtc>

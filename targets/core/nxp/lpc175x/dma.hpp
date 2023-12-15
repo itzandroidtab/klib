@@ -7,8 +7,9 @@
 #include <klib/io/dma.hpp>
 #include <klib/irq_helper.hpp>
 
+#include <io/power.hpp>
+
 #include "clocks.hpp"
-#include "power.hpp"
 
 namespace klib::core::lpc175x::io::detail::dma {
     /**
