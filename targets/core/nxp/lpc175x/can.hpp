@@ -1,10 +1,9 @@
-#ifndef KLIB_LPC1756_CAN_HPP
-#define KLIB_LPC1756_CAN_HPP
+#ifndef KLIB_NXP_LPC175X_CAN_HPP
+#define KLIB_NXP_LPC175X_CAN_HPP
 
 #include <cstdint>
 
-#include <lpc1756.hpp>
-
+#include <klib/klib.hpp>
 #include <klib/math.hpp>
 #include <klib/io/bus/can.hpp>
 #include <klib/io/core_clock.hpp>
@@ -12,81 +11,9 @@
 
 #include "clocks.hpp"
 #include "power.hpp"
-#include "pins.hpp"
+#include "port.hpp"
 
-namespace klib::lpc1756::io::periph::detail::can {
-    enum class mode {
-        rd,
-        td,
-    };
-
-    template <typename Pin, mode Type, typename Periph>
-    struct can {
-        // pin of the peripheral
-        using pin = Pin;
-
-        // type of the pin
-        constexpr static mode type = Type;
-
-        // alternate function
-        using periph = Periph;
-    };
-}
-
-namespace klib::lpc1756::io::periph::lqfp_80 {
-    template <
-        typename Td = pins::package::lqfp_80::p38
-    >
-    struct can0 {
-        // peripheral id (e.g can0, can1)
-        constexpr static uint32_t id = 0;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 13;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 41;
-
-        // port to the CAN hardware
-        static inline CAN1_Type *const port = CAN1;
-
-        // amount of hardware buffers for transmitting data
-        constexpr static uint32_t tx_buffers = 3;
-
-        // pins allowed per output pin. Used for determining if a pin is valid on compile time
-        using td_pins = std::tuple<
-            detail::can::can<pins::package::lqfp_80::p38, detail::can::mode::td, io::detail::alternate::func_1>,
-            detail::can::can<pins::package::lqfp_80::p44, detail::can::mode::td, io::detail::alternate::func_3>
-        >;
-
-        // pin configuration. Uses above mapping ()
-        using rd = detail::can::can<pins::package::lqfp_80::p37, detail::can::mode::rd, io::detail::alternate::func_1>;
-        using td = std::tuple_element<klib::io::peripheral::get_index<Td, td_pins>(), td_pins>::type;
-    };
-
-    struct can1 {
-        // peripheral id (e.g can0, can1)
-        constexpr static uint32_t id = 1;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 14;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 41;
-
-        // port to the CAN hardware
-        static inline CAN1_Type *const port = CAN2;
-
-        // amount of hardware buffers for transmitting data
-        constexpr static uint32_t tx_buffers = 3;
-
-        // P2.7 and P2.8 (80 pin package does not have the following so only 1 configuration for can1)
-        using rd = detail::can::can<pins::package::lqfp_80::p51, detail::can::mode::rd, io::detail::alternate::func_1>;
-        using td = detail::can::can<pins::package::lqfp_80::p50, detail::can::mode::td, io::detail::alternate::func_1>;
-    };
-}
-
-namespace klib::lpc1756::io::detail {
+namespace klib::core::lpc175x::io::detail {
     class can_interrupt {
     public:
         // using for the array of callbacks
@@ -103,10 +30,10 @@ namespace klib::lpc1756::io::detail {
         template <typename Can>
         static void init() {
             // register the interrupt handler
-            irq::register_irq<Can::interrupt_id>(irq_handler);
+            target::irq::register_irq<Can::interrupt_id>(irq_handler);
 
             // enable the interrupt
-            enable_irq<Can::interrupt_id>();            
+            target::enable_irq<Can::interrupt_id>();            
         }
 
         /**
@@ -154,7 +81,7 @@ namespace klib::lpc1756::io::detail {
     };
 }
 
-namespace klib::lpc1756::io {
+namespace klib::core::lpc175x::io {
     /**
      * @brief lpc1756 can driver
      * 

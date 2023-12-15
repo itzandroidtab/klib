@@ -1,66 +1,16 @@
-#ifndef KLIB_LPC1756_USB_HPP
-#define KLIB_LPC1756_USB_HPP
+#ifndef KLIB_NXP_LPC175X_USB_HPP
+#define KLIB_NXP_LPC175X_USB_HPP
 
-#include <lpc1756.hpp>
-
+#include <klib/klib.hpp>
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
 
-#include "pins.hpp"
+#include "port.hpp"
 #include "power.hpp"
 #include "clocks.hpp"
 
-namespace klib::lpc1756::io::periph::detail::usb {
-    enum class mode {
-        dplus,
-        dminus,
-        vbus,
-        connect,
-        led,
-    };
 
-    template <typename Pin, mode Type, typename Periph>
-    struct usb {
-        // pin of the peripheral
-        using pin = Pin;
-
-        // type of the pin
-        constexpr static mode type = Type;
-
-        // alternate function
-        using periph = Periph;
-    };
-}
-
-namespace klib::lpc1756::io::periph::lqfp_80 {
-    struct usb0 {
-        // peripheral id (e.g usb0, usb1)
-        constexpr static uint32_t id = 0;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 31;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 40;
-
-        // port to the usb hardware
-        static inline USB_Type *const port = USB;
-
-        // configuration of the pins 
-        using connect = detail::usb::usb<pins::package::lqfp_80::p49, detail::usb::mode::connect, io::detail::alternate::func_1>;
-        using led = detail::usb::usb<pins::package::lqfp_80::p25, detail::usb::mode::led, io::detail::alternate::func_1>;
-        using vbus = detail::usb::usb<pins::package::lqfp_80::p18, detail::usb::mode::vbus, io::detail::alternate::func_2>;
-        using dplus = detail::usb::usb<pins::package::lqfp_80::p22, detail::usb::mode::dplus, io::detail::alternate::func_1>;
-        using dminus = detail::usb::usb<pins::package::lqfp_80::p23, detail::usb::mode::dminus, io::detail::alternate::func_1>;
-    };
-}
-
-namespace klib::lpc1756::io::detail::usb {
-    // TODO: decide if we want memory efficiency or flash 
-    // efficiency here. (adds 32 bytes ram or 164 bytes rom)
-    // // change the packing and push the old packing
-    // #pragma pack(push, 1)
-
+namespace klib::core::lpc175x::io::detail::usb {
     /**
      * @brief Struct to store the state of a endpoint
      * 
@@ -91,12 +41,9 @@ namespace klib::lpc1756::io::detail::usb {
         // callback function
         klib::usb::usb::usb_callback callback;
     };
-
-    // // restore the old packing
-    // #pragma pack(pop)
 }
 
-namespace klib::lpc1756::io {
+namespace klib::core::lpc175x::io {
     template <typename Usb, typename Device>
     class usb {
     public:
@@ -731,10 +678,10 @@ namespace klib::lpc1756::io {
             }
 
             // register ourselfs with the interrupt controller
-            irq::register_irq<Usb::interrupt_id>(irq_handler);
+            target::irq::register_irq<Usb::interrupt_id>(irq_handler);
 
             // enable the usb interrupt
-            enable_irq<Usb::interrupt_id>();
+            target::enable_irq<Usb::interrupt_id>();
 
             // do a partial manual reset since automatic bus 
             // reset is not working.

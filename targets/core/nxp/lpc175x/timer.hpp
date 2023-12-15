@@ -1,107 +1,16 @@
-#ifndef KLIB_LPC1756_TIMER_HPP
-#define KLIB_LPC1756_TIMER_HPP
+#ifndef KLIB_NXP_LPC175X_TIMER_HPP
+#define KLIB_NXP_LPC175X_TIMER_HPP
 
 #include <cstdint>
 
-#include <lpc1756.hpp>
-
+#include <klib/klib.hpp>
 #include <klib/io/core_clock.hpp>
 
 #include "clocks.hpp"
 #include "power.hpp"
 #include "port.hpp"
 
-namespace klib::lpc1756::io::periph {
-    struct tc0 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 0;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 17;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 1;
-
-        // port to the timer hardware
-        static inline TIMER0_Type *const port = TIMER0;
-
-        // available channels in the timer
-        constexpr static uint32_t max_channels = 4;
-    };
-
-    struct tc1 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 1;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 18;
-
-        // power bit position
-        constexpr static uint32_t clock_id = 2;
-
-        // port to the timer hardware
-        static inline TIMER0_Type *const port = TIMER1;
-
-        // available channels in the timer
-        constexpr static uint32_t max_channels = 4;
-    };
-
-    struct tc2 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 2;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 19;
-
-        // power bit position
-        constexpr static uint32_t clock_id = 22;
-
-        // port to the timer hardware
-        static inline TIMER0_Type *const port = TIMER2;
-
-        // available channels in the timer
-        constexpr static uint32_t max_channels = 4;
-    };
-
-    struct tc3 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 3;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 20;
-
-        // power bit position
-        constexpr static uint32_t clock_id = 23;
-
-        // port to the timer hardware
-        static inline TIMER0_Type *const port = TIMER3;
-
-        // available channels in the timer
-        constexpr static uint32_t max_channels = 4;
-    };
-
-    struct pwm1 {
-        // peripheral id (e.g pwm0, pwm1)
-        constexpr static uint32_t id = 1;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 35;
-
-        // power bit position
-        constexpr static uint32_t clock_id = 6;
-
-        // port to the PWM hardware
-        static inline PWM1_Type *const port = PWM1;
-
-        // available channels in the pwm (Base and timer mode)
-        constexpr static uint32_t max_channels = 4;
-
-        // available channels in pwm mode
-        constexpr static uint32_t max_pwm_channels = 7;
-    };
-}
-
-namespace klib::lpc1756::io::detail::timer {
+namespace klib::core::lpc175x::io::detail::timer {
     /**
      * @brief Different timer modes
      * 
@@ -246,7 +155,7 @@ namespace klib::lpc1756::io::detail::timer {
     };
 }
 
-namespace klib::lpc1756::io {
+namespace klib::core::lpc175x::io {
     /**
      * @brief Basic timer. Uses interrupts to call a callback.
      * 

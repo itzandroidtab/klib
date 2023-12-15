@@ -1,17 +1,16 @@
-#ifndef KLIB_LPC1756_DMA_HPP
-#define KLIB_LPC1756_DMA_HPP
+#ifndef KLIB_NXP_LPC175X_DMA_HPP
+#define KLIB_NXP_LPC175X_DMA_HPP
 
 #include <array>
 
-#include <lpc1756.hpp>
-
+#include <klib/klib.hpp>
 #include <klib/io/dma.hpp>
 #include <klib/irq_helper.hpp>
 
-#include "power.hpp"
 #include "clocks.hpp"
+#include "power.hpp"
 
-namespace klib::lpc1756::io::detail::dma {
+namespace klib::core::lpc175x::io::detail::dma {
     /**
      * @brief Available transfer types
      * 
@@ -104,28 +103,9 @@ namespace klib::lpc1756::io::detail::dma {
     }    
 }
 
-namespace klib::lpc1756::io::periph {
-    struct dma0 {
-        // peripheral id (e.g dma0, dma1)
-        constexpr static uint32_t id = 0;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 42;
-
-        // peripheral clock bit position
-        constexpr static uint32_t clock_id = 29;
-
-        // port to the GPDMA hardware
-        static inline GPDMA_Type *const port = GPDMA;
-
-        // available channels in the dma
-        constexpr static uint32_t max_channels = 8;
-    };
-}
-
-namespace klib::lpc1756::io {
+namespace klib::core::lpc175x::io {
     template <typename Dma>
-    struct dma {
+    class dma {
     public: 
         // interrupt callback type for the dma channels
         using interrupt_callback = irq_helper<Dma::max_channels>::interrupt_callback;
@@ -159,10 +139,10 @@ namespace klib::lpc1756::io {
             Dma::port->INTTCCLEAR = 0xff;
 
             // register the interrupt handler
-            irq::register_irq<Dma::interrupt_id>(irq_handler);
+            target::irq::register_irq<Dma::interrupt_id>(irq_handler);
 
             // enable the interrupt
-            enable_irq<Dma::interrupt_id>();
+            target::enable_irq<Dma::interrupt_id>();
         }
 
         /**
@@ -202,7 +182,7 @@ namespace klib::lpc1756::io {
     };
 
     template <typename Dma, uint8_t Channel, typename Source, typename Destination>
-    struct dma_channel {
+    class dma_channel {
     protected:
         // make sure we have a valid dma channel
         static_assert(Channel < Dma::max_channels, "DMA does not support this channel");

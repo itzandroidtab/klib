@@ -1,12 +1,12 @@
-#ifndef KLIB_LPC1756_FLASH_HPP
-#define KLIB_LPC1756_FLASH_HPP
+#ifndef KLIB_NXP_LPC17XX_FLASH_HPP
+#define KLIB_NXP_LPC17XX_FLASH_HPP
 
 #include <cstdint>
+
+#include <klib/klib.hpp>
 #include <klib/io/core_clock.hpp>
 
-#include <lpc1756.hpp>
-
-namespace klib::lpc1756::io {
+namespace klib::core::lpc17xx::io {
     /**
      * @brief Driver for the lpc17xx flash. Uses IAP calls to write flash. The 
      * IAP calls use a maximum of 128 bytes of user ram and the top 32 bytes of 
@@ -72,13 +72,13 @@ namespace klib::lpc1756::io {
          */
         static void iap_call(const uint32_t* cmd, uint32_t* result) {
             // disable interrupts as the flash is remapped
-            disable_irq();
+            target::disable_irq();
 
             // call the iap
             (*reinterpret_cast<void(*)(const uint32_t*, uint32_t*)>(0x1fff1ff1))(cmd, result);
 
             // reenable the interrupts again
-            enable_irq();
+            target::enable_irq();
         }
 
         static iap_result prepare_for_write(const uint32_t start, const uint32_t end) {

@@ -1,9 +1,9 @@
-#ifndef KLIB_LPC1756_CLOCKS_HPP
-#define KLIB_LPC1756_CLOCKS_HPP
+#ifndef KLIB_NXP_LPC175X_CLOCKS_HPP
+#define KLIB_NXP_LPC175X_CLOCKS_HPP
 
-#include <lpc1756.hpp>
+#include <klib/klib.hpp>
 
-namespace klib::lpc1756 {
+namespace klib::core::lpc175x::io {
     class clocks {
     public:
         /**
