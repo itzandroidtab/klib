@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <targets/core/nxp/lpc175x/usb.hpp>
+#include "pins.hpp"
 
 namespace klib::lpc1756::io::periph::detail::usb {
     enum class mode {
