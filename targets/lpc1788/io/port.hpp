@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstddef>
 
-#include <lpc1788.hpp>
+#include <targets/core/nxp/lpc178x/port.hpp>
 
 namespace klib::lpc1788::io::detail::pins {
     // get the pin mask of a pin number
@@ -61,6 +61,18 @@ namespace klib::lpc1788::io::periph {
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO5;
     };
+}
+
+namespace klib::lpc1788::io::detail::pins {
+    using namespace klib::core::lpc178x::io::detail::pins;
+}
+
+namespace klib::lpc1788::io {
+    template <typename Pin>
+    using pin_in = klib::core::lpc178x::io::pin_in<Pin>;
+
+    template <typename Pin>
+    using pin_out = klib::core::lpc178x::io::pin_out<Pin>;
 }
 
 #endif
