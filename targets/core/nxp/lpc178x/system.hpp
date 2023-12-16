@@ -30,7 +30,7 @@ namespace klib::core::lpc178x::io::system {
          */
         enum class pll {
             main = 0,
-            usb = 1
+            alternate = 1
         };
 
         /**
@@ -193,6 +193,47 @@ namespace klib::core::lpc178x::io::system {
 
             // notify klib what freqency we are running
             klib::io::clock::set(Freq);
+        }
+
+        template <
+            uint32_t Freq, uint16_t Multiplier, 
+            pre_divider PreDivider
+        >
+        static void set_usb() {
+            static_assert((Freq % 48'000'000) == 0, "Pll frequency needs to be 48, 96 or 144Mhz");
+            static_assert(Freq <= 144'000'000, "Maximum USB pll frequency supported is 144Mhz");
+            static_assert(Freq >= 48'000'000, "Minumim USB pll frequency supported is 48Mhz");
+
+            // check if the crystal is stable and enabled
+            if (!crystal::status()) {
+                crystal::enable<true>();
+
+                // wait until the crystal is stable
+                while (!crystal::status()) {
+                    // do nothing
+                }
+            }
+
+            // change usb to sysclk if it is connected to the pll
+            if (((SYSCON->USBCLKSEL >> 8) & 0b11) == 0x02) {
+                // change to sysclk
+                SYSCON->USBCLKSEL &= ~(0b11 << 8);
+            }
+
+            // setup the second pll 
+            setup<pll::alternate>(Multiplier, PreDivider);
+
+            // enable the pll
+            enable<pll::alternate, true>();
+
+            // wait until the pll is locked
+            while (!is_locked<pll::alternate>()) {
+                // do nothing
+            }
+
+            // setup the correct divider for the usb and 
+            // change to the alternate pll
+            SYSCON->USBCLKSEL = (Freq / 48'000'000) | (0x2 << 8);
         }
     };
 
