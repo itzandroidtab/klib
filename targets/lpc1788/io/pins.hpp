@@ -5,7 +5,7 @@
 
 #include "port.hpp"
 
-namespace klib::lpc1788::pins::package::lqfp208 {
+namespace klib::lpc1788::pins::package::lqfp_208 {
     struct p1 {
         // P3.12
         using port = io::periph::gpio3;

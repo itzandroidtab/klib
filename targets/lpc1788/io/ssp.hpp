@@ -26,12 +26,12 @@ namespace klib::lpc1788::io::periph::detail::ssp {
     };
 }
 
-namespace klib::lpc1788::io::periph::lqfp208 {
+namespace klib::lpc1788::io::periph::lqfp_208 {
     template <
-        typename Mosi = pins::package::lqfp208::p124, 
-        typename Miso = pins::package::lqfp208::p126,
-        typename Sck = pins::package::lqfp208::p128,
-        typename Cs = pins::package::lqfp208::p130
+        typename Mosi = pins::package::lqfp_208::p124, 
+        typename Miso = pins::package::lqfp_208::p126,
+        typename Sck = pins::package::lqfp_208::p128,
+        typename Cs = pins::package::lqfp_208::p130
     >
     struct ssp0 {
         // peripheral id (e.g ssp0, ssp1)
@@ -51,27 +51,27 @@ namespace klib::lpc1788::io::periph::lqfp208 {
 
         // pins allowed per output pin. Used for determining if a pin is valid on compile time
         using mosi_pins = std::tuple<
-            detail::ssp::ssp<pins::package::lqfp208::p124, detail::ssp::mode::mosi, core::lpc178x::io::detail::alternate::func_2>,
-            detail::ssp::ssp<pins::package::lqfp208::p78, detail::ssp::mode::mosi, core::lpc178x::io::detail::alternate::func_5>,
-            detail::ssp::ssp<pins::package::lqfp208::p47, detail::ssp::mode::mosi, core::lpc178x::io::detail::alternate::func_2>
+            detail::ssp::ssp<pins::package::lqfp_208::p124, detail::ssp::mode::mosi, core::lpc178x::io::detail::alternate::func_2>,
+            detail::ssp::ssp<pins::package::lqfp_208::p78, detail::ssp::mode::mosi, core::lpc178x::io::detail::alternate::func_5>,
+            detail::ssp::ssp<pins::package::lqfp_208::p47, detail::ssp::mode::mosi, core::lpc178x::io::detail::alternate::func_2>
         >;
 
         using miso_pins = std::tuple<
-            detail::ssp::ssp<pins::package::lqfp208::p126, detail::ssp::mode::miso, core::lpc178x::io::detail::alternate::func_2>,
-            detail::ssp::ssp<pins::package::lqfp208::p76, detail::ssp::mode::miso, core::lpc178x::io::detail::alternate::func_5>,
-            detail::ssp::ssp<pins::package::lqfp208::p57, detail::ssp::mode::miso, core::lpc178x::io::detail::alternate::func_2>
+            detail::ssp::ssp<pins::package::lqfp_208::p126, detail::ssp::mode::miso, core::lpc178x::io::detail::alternate::func_2>,
+            detail::ssp::ssp<pins::package::lqfp_208::p76, detail::ssp::mode::miso, core::lpc178x::io::detail::alternate::func_5>,
+            detail::ssp::ssp<pins::package::lqfp_208::p57, detail::ssp::mode::miso, core::lpc178x::io::detail::alternate::func_2>
         >;
 
         using sck_pins = std::tuple<
-            detail::ssp::ssp<pins::package::lqfp208::p128, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_2>,
-            detail::ssp::ssp<pins::package::lqfp208::p70, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_5>,
-            detail::ssp::ssp<pins::package::lqfp208::p85, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_2>
+            detail::ssp::ssp<pins::package::lqfp_208::p128, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_2>,
+            detail::ssp::ssp<pins::package::lqfp_208::p70, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_5>,
+            detail::ssp::ssp<pins::package::lqfp_208::p85, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_2>
         >;
 
         using cs_pins = std::tuple<
-            detail::ssp::ssp<pins::package::lqfp208::p130, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_2>,
-            detail::ssp::ssp<pins::package::lqfp208::p90, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_5>,
-            detail::ssp::ssp<pins::package::lqfp208::p64, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_2>
+            detail::ssp::ssp<pins::package::lqfp_208::p130, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_2>,
+            detail::ssp::ssp<pins::package::lqfp_208::p90, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_5>,
+            detail::ssp::ssp<pins::package::lqfp_208::p64, detail::ssp::mode::sck, core::lpc178x::io::detail::alternate::func_2>
         >;
 
         // pin configuration for the ssp. Uses above mapping

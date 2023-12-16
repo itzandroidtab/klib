@@ -7,7 +7,6 @@
 #include <klib/irq_helper.hpp>
 
 #include "clocks.hpp"
-#include "port.hpp"
 
 namespace klib::core::lpc175x::io::detail {
     /**
