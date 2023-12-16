@@ -1,12 +1,12 @@
-#ifndef KLIB_LPC1756_USB_HPP
-#define KLIB_LPC1756_USB_HPP
+#ifndef KLIB_LPC1788_USB_HPP
+#define KLIB_LPC1788_USB_HPP
 
 #include <cstdint>
 
 #include <targets/core/nxp/lpc17xx/usb.hpp>
 #include "pins.hpp"
 
-namespace klib::lpc1756::io::periph::detail::usb {
+namespace klib::lpc1788::io::periph::detail::usb {
     enum class mode {
         dplus,
         dminus,
@@ -28,7 +28,7 @@ namespace klib::lpc1756::io::periph::detail::usb {
     };
 }
 
-namespace klib::lpc1756::io::periph::lqfp_80 {
+namespace klib::lpc1788::io::periph::lqfp_208 {
     struct usb0 {
         // peripheral id (e.g usb0, usb1)
         constexpr static uint32_t id = 0;
@@ -43,15 +43,15 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
         static inline USB_Type *const port = USB;
 
         // configuration of the pins 
-        using connect = detail::usb::usb<pins::package::lqfp_80::p49, detail::usb::mode::connect, core::lpc175x::io::detail::alternate::func_1>;
-        using led = detail::usb::usb<pins::package::lqfp_80::p25, detail::usb::mode::led, core::lpc175x::io::detail::alternate::func_1>;
-        using vbus = detail::usb::usb<pins::package::lqfp_80::p18, detail::usb::mode::vbus, core::lpc175x::io::detail::alternate::func_2>;
-        using dplus = detail::usb::usb<pins::package::lqfp_80::p22, detail::usb::mode::dplus, core::lpc175x::io::detail::alternate::func_1>;
-        using dminus = detail::usb::usb<pins::package::lqfp_80::p23, detail::usb::mode::dminus, core::lpc175x::io::detail::alternate::func_1>;
+        using connect = detail::usb::usb<pins::package::lqfp_208::p132, detail::usb::mode::connect, core::lpc178x::io::detail::alternate::func_1>;
+        using led = detail::usb::usb<pins::package::lqfp_208::p66, detail::usb::mode::led, core::lpc178x::io::detail::alternate::func_1>;
+        using vbus = detail::usb::usb<pins::package::lqfp_208::p42, detail::usb::mode::vbus, core::lpc178x::io::detail::alternate::func_2>;
+        using dplus = detail::usb::usb<pins::package::lqfp_208::p61, detail::usb::mode::dplus, core::lpc178x::io::detail::alternate::func_1>;
+        using dminus = detail::usb::usb<pins::package::lqfp_208::p62, detail::usb::mode::dminus, core::lpc178x::io::detail::alternate::func_1>;
     };
 }
 
-namespace klib::lpc1756::io {
+namespace klib::lpc1788::io {
     template <typename Usb, typename Device>
     using usb = core::lpc17xx::io::usb<Usb, Device>;
 }

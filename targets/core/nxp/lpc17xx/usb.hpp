@@ -1,16 +1,15 @@
-#ifndef KLIB_NXP_LPC175X_USB_HPP
-#define KLIB_NXP_LPC175X_USB_HPP
+#ifndef KLIB_NXP_LPC17XX_USB_HPP
+#define KLIB_NXP_LPC17XX_USB_HPP
 
 #include <klib/klib.hpp>
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
 
 #include <io/power.hpp>
+#include <io/port.hpp>
+#include <io/clocks.hpp>
 
-#include "clocks.hpp"
-#include "port.hpp"
-
-namespace klib::core::lpc175x::io::detail::usb {
+namespace klib::core::lpc17xx::io::detail::usb {
     /**
      * @brief Struct to store the state of a endpoint
      * 
@@ -43,7 +42,7 @@ namespace klib::core::lpc175x::io::detail::usb {
     };
 }
 
-namespace klib::core::lpc175x::io {
+namespace klib::core::lpc17xx::io {
     template <typename Usb, typename Device>
     class usb {
     public:
@@ -644,19 +643,19 @@ namespace klib::core::lpc175x::io {
             }
 
             // setup the io
-            io::detail::pins::set_peripheral<typename Usb::vbus::pin, typename Usb::vbus::periph>();
-            io::detail::pins::set_peripheral<typename Usb::dplus::pin, typename Usb::dplus::periph>();
-            io::detail::pins::set_peripheral<typename Usb::dminus::pin, typename Usb::dminus::periph>();
+            target::io::detail::pins::set_peripheral<typename Usb::vbus::pin, typename Usb::vbus::periph>();
+            target::io::detail::pins::set_peripheral<typename Usb::dplus::pin, typename Usb::dplus::periph>();
+            target::io::detail::pins::set_peripheral<typename Usb::dminus::pin, typename Usb::dminus::periph>();
 
             // check if we need to enable the USB connect pin
             if constexpr (UsbConnect) {
                 // setup the usb connect pin
-                io::detail::pins::set_peripheral<typename Usb::connect::pin, typename Usb::connect::periph>();
+                target::io::detail::pins::set_peripheral<typename Usb::connect::pin, typename Usb::connect::periph>();
             }
 
             // check if we need to enable the usb led
             if constexpr (UsbLed) {
-                io::detail::pins::set_peripheral<typename Usb::led::pin, typename Usb::led::periph>();
+                target::io::detail::pins::set_peripheral<typename Usb::led::pin, typename Usb::led::periph>();
             }
 
             // reset all the info stored about the endpoints
