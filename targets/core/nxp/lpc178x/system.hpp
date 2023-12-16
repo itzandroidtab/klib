@@ -5,6 +5,198 @@
 #include <io/port.hpp>
 
 namespace klib::core::lpc178x::io::system {
+    class crystal {
+    public:
+        static bool status() {
+            return SYSCON->SCS & (0x1 << 6);
+        }
+
+        template <bool Enable>
+        static void enable() {
+            if constexpr (Enable) {
+                SYSCON->SCS |= (0x1 << 5);
+            }
+            else {
+                SYSCON->SCS &= ~(0x1 << 5);
+            }
+        }
+    };
+
+    class clock {
+    public:
+        /**
+         * @brief Available plls on the chip
+         * 
+         */
+        enum class pll {
+            main = 0,
+            usb = 1
+        };
+
+        /**
+         * @brief Available clock sources
+         * 
+         */
+        enum class source {
+            internal = 0,
+            main = 1,
+        };
+
+        /**
+         * @brief Available pre dividers
+         * 
+         */
+        enum class pre_divider {
+            div_1 = 0x00,
+            div_2 = 0x01,
+            div_4 = 0x02,
+            div_8 = 0x03,
+        };
+
+        /**
+         * @brief Feed the pll
+         * 
+         * @tparam Pll 
+         */
+        template <pll Pll>
+        static void feed() {
+            // check what pll to feed with the feed sequence
+            if constexpr (Pll == pll::main) {
+                SYSCON->PLL0FEED = 0xaa;
+                SYSCON->PLL0FEED = 0x55;
+            }
+            else {
+                SYSCON->PLL1FEED = 0xaa;
+                SYSCON->PLL1FEED = 0x55;
+            }
+        }
+
+        /**
+         * @brief Setup a pll
+         * 
+         * @details PLL0 calculation:
+         *     FCCO = (2 * M * FIN) / N
+         * 
+         *     M = (FCCO * N) / (2 * FIN)
+         *     N = (2 * M * FIN) / FCCO
+         *     FIN = (FCCO * N) / (2 * M)
+         * 
+         * @tparam Pll 
+         * @param multiplier PLL multiplier.
+         * @param pre_divider pre divider value.
+         */
+        template <pll Pll>
+        static void setup(const uint16_t multiplier, const pre_divider divider) {
+            // check what pll to configure
+            if constexpr (Pll == pll::main) {
+                SYSCON->PLL0CFG = (multiplier | (static_cast<uint32_t>(divider) << 5));
+            }
+            else {
+                SYSCON->PLL1CFG = (multiplier | (static_cast<uint32_t>(divider) << 5));
+            }
+        }
+
+        /**
+         * @brief Enable/Disable a pll
+         * 
+         * @tparam Pll 
+         */
+        template <pll Pll, bool Enable>
+        static void enable() {
+            if constexpr (Pll == pll::main) {
+                SYSCON->PLL0CON = Enable;
+            }
+            else {
+                SYSCON->PLL1CON = Enable;
+            }
+
+            feed<Pll>();
+        }
+
+        /**
+         * @brief Returns if the pll is locked
+         * 
+         * @tparam Pll 
+         * @return true 
+         * @return false 
+         */
+        template <pll Pll>
+        static bool is_locked() {
+            if constexpr (Pll == pll::main) {
+                return SYSCON->PLL0STAT & (0x1 << 10);
+            }
+            else {
+                return SYSCON->PLL1STAT & (0x1 << 10);
+            }
+        }
+
+        template <
+            source Source, uint32_t Freq, 
+            uint16_t Multiplier, pre_divider PreDivider, 
+            uint8_t Div
+        >
+        static void set_main() {
+            // enable the crystal if we are changing to that
+            if constexpr (Source == source::main) {
+                crystal::enable<true>();
+
+                // wait until the crystal is stable
+                while (!crystal::status()) {
+                    // do nothing
+                }
+            }
+
+            // enable/disable the boost based on the frequency 
+            // (> 100 Mhz = on)
+            SYSCON->PBOOST = (Freq > 100'000'000) ? 0b11 : 0b00;
+
+            // check if we need to enable the pll
+            if constexpr (Multiplier) {
+                // disconnect the main pll if it is connected.
+                if (SYSCON->CCLKSEL & (0x1 << 8)) {
+                    SYSCON->CCLKSEL &= ~(0x1 << 8);
+                }
+
+                // change usb to sysclk if it is connected to the pll
+                if (((SYSCON->USBCLKSEL >> 8) & 0b11) == 0x01) {
+                    // change to sysclk
+                    SYSCON->USBCLKSEL &= ~(0b11 << 8);
+                }
+
+                // change spifi to sysclk if it is connected to the pll
+                if (((SYSCON->SPIFICLKSEL >> 8) & 0b11) == 0x01) {
+                    // change to sysclk
+                    SYSCON->SPIFICLKSEL &= ~(0b11 << 8);
+                }
+
+                // Change to the requested source
+                SYSCON->CLKSRCSEL = static_cast<uint32_t>(Source);
+
+                // setup the main pll 
+                setup<pll::main>(Multiplier, PreDivider);
+
+                // enable the pll
+                enable<pll::main, true>();
+
+                // wait until the pll is locked
+                while (!is_locked<pll::main>()) {
+                    // do nothing
+                }
+            }
+            else {
+                // Change to the requested source
+                SYSCON->CLKSRCSEL = static_cast<uint32_t>(Source);
+            }
+
+            // setup the cpu clock divider
+            SYSCON->CCLKSEL = Div & 0x1f | ((Multiplier > 0) << 8);
+
+            // notify klib what freqency we are running
+            klib::io::clock::set(Freq);
+        }
+    };
+
+
     class trace {
     private:
         struct clk {

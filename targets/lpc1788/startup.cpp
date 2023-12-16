@@ -4,7 +4,9 @@
 
 #include <klib/io/systick.hpp>
 #include <klib/io/core_clock.hpp>
+
 #include <io/clocks.hpp>
+#include <io/system.hpp>
 
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__
@@ -13,9 +15,17 @@
 
 void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::lpc1788;
+    using clock = target::io::system::clock;
 
-    // default clock speed is 12mhz (for now no pll yet)
-    klib::io::clock::set(12'000'000);
+    // setup the flash wait state to 5 + 1 CPU clocks
+    target::io::system::flash::setup<5>();
+
+    // setup the clock to 120Mhz (in this example we are using a 12Mhz 
+    // oscillator). FCCO needs to be in range 156 - 320Mhz
+    // (((9 + 1) * 2 * 12Mhz) / (0 + 1) = 240Mhz) / (1 + 1) = 120Mhz
+    clock::set_main<
+        clock::source::main, 120'000'000, 9, clock::pre_divider::div_1, 1
+    >();
 
     // set the global peripheral clock divider to 1. All the
     // drivers expect this value. At the moment they do not 
