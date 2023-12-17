@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <targets/core/nxp/lpc175x/usb.hpp>
+#include <targets/core/nxp/lpc17xx/usb.hpp>
 #include "pins.hpp"
 
 namespace klib::lpc1759::io::periph::detail::usb {
@@ -53,7 +53,7 @@ namespace klib::lpc1759::io::periph::lqfp_80 {
 
 namespace klib::lpc1759::io {
     template <typename Usb, typename Device>
-    using usb = core::lpc175x::io::usb<Usb, Device>;
+    using usb = core::lpc17xx::io::usb<Usb, Device>;
 }
 
 #endif
