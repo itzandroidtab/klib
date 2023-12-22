@@ -91,12 +91,12 @@ namespace klib::core::lpc17xx::io {
 
             // check if we need to setup the clock
             constexpr bool need_clock_setup = requires() {
-                target::io::clocks::set<Ssp>();
+                target::io::clocks::set<Ssp, target::io::clocks::divider::div_1>();
             };
 
             // setup the clock
             if constexpr (need_clock_setup) {
-                target::io::clocks::set<Ssp>();
+                target::io::clocks::set<Ssp, target::io::clocks::divider::div_1>();
             }
 
             // configure the gpio pins
