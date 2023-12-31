@@ -230,6 +230,10 @@ namespace klib {
             return arg;
         }
 
+        if (static_cast<int64_t>(arg) == arg) {
+            return arg;
+        }
+
         // Negative ceiling
         if (arg < 0.0) {
             return static_cast<T>(
@@ -239,7 +243,7 @@ namespace klib {
 
         // Positive ceiling
         return static_cast<T>(
-            static_cast<int64_t>(arg)
+            static_cast<int64_t>(arg) + 1
         );
     }
 
@@ -267,6 +271,10 @@ namespace klib {
         }
 
         if (isnan(arg)) [[unlikely]] {
+            return arg;
+        }
+        
+        if (static_cast<int64_t>(arg) == arg) {
             return arg;
         }
 
