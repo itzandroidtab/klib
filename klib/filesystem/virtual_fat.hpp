@@ -832,7 +832,7 @@ namespace klib::filesystem {
             virtual_media[current++] = {
                 .read = read_mbr,
                 .write = nullptr,
-                .sector_count = (sizeof(detail::boot_sector) + (sector_count - 1)) / sector_count
+                .sector_count = (sizeof(detail::boot_sector) + (sector_size - 1)) / sector_size
             };
 
             // set all the fat read functions in the virtual media
@@ -981,7 +981,7 @@ namespace klib::filesystem {
         constexpr static uint32_t cluster_to_sector(const uint32_t cluster) {
             // calculate the amount of sectors before the data starts
             constexpr uint32_t sectors = (
-                ((sizeof(detail::boot_sector) + (sector_count - 1)) / sector_count) +
+                ((sizeof(detail::boot_sector) + (sector_size - 1)) / sector_size) +
                 (number_of_fats * mbr.fat_size16) + 
                 (((sizeof(detail::directory) * root_entry_count) + (sector_size - 1)) / sector_size)
             );
