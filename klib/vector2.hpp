@@ -71,8 +71,8 @@ namespace klib {
          * @return
          */
         constexpr vector2<T> &operator+=(const T other) {
-            x += other.x;
-            y += other.y;
+            x += other;
+            y += other;
 
             return *this;
         }
