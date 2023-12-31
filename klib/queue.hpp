@@ -163,6 +163,16 @@ namespace klib {
         constexpr uint32_t max_size() const {
             return MaxSize;
         }
+
+        /**
+         * Is this queue write optimized or
+         * read optimized?
+         * 
+         * @return constexpr queue_optimization 
+         */
+        constexpr queue_optimization optimized_for() const {
+            return Optimization;
+        }
     };
 }
 
