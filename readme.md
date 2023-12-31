@@ -69,3 +69,6 @@ Klib has the following implementations:
 * Flash/custom vector table (allows a vector table stored in flash or for a custom ram based implementation)
 
 When chosing one of the ram based vector table implementations all the code works by default as this allows the code to change the interrupt at runtime. When chosing the flash/custom vector table the user needs to create the vector table and pass it to the flash based vector table implementation. With this implementation the interrupts are not configured automaticly when needed and need to be changed by the user to the correct callback/handler. For more information about the different implementations see [irq.hpp](./klib/irq.hpp) as a reference.
+
+## Tests
+Klib has tests for the microcontroller indepented code. The resuls of the tests can be found [here](https://github.com/itzandroidtab/klib-x86/actions)
