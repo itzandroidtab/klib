@@ -168,15 +168,15 @@ namespace klib::time {
     }
 
     constexpr ns::operator us() const {
-        return (value * conversion_factor<ns, us>());
+        return (value / conversion_factor<ns, us>());
     } 
 
     constexpr ns::operator ms() const {
-        return (value * conversion_factor<ns, ms>());
+        return (value / conversion_factor<ns, ms>());
     } 
 
     constexpr ns::operator s() const {
-        return (value * conversion_factor<ns, s>());
+        return (value / conversion_factor<ns, s>());
     }
 
     constexpr us operator"" _us(const uint64_t value) {
