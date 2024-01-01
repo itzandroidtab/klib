@@ -1,6 +1,7 @@
 #ifndef KLIB_NXP_LPC17XX_SSP_HPP
 #define KLIB_NXP_LPC17XX_SSP_HPP
 
+#include <klib/multispan.hpp>
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
 
@@ -25,18 +26,21 @@ namespace klib::core::lpc17xx::io {
         /**
          * @brief Write size amount of data to the fifo buffer
          * 
+         * @tparam T 
          * @param data 
          * @param size 
          * @param transmitted 
          * @return uint16_t 
          */
-        static uint16_t write_fifo(const uint8_t *const data, const uint16_t size, const uint16_t transmitted) {
+        template <typename T>
+        static uint16_t write_fifo(const T& data, const uint16_t size, const uint16_t transmitted) {
             uint16_t t = 0;
 
             // write as many bytes until the fifo is full
             while ((Ssp::port->SR & (0x1 << 1)) && ((transmitted + t) < size)) {
-                // write dummy data if we have a nullptr
-                if (data == nullptr) {
+                // write dummy data if we dont have data or if we need 
+                // to send more data we have in the buffer
+                if (data.empty() || ((transmitted + t) >= data.size())) {
                     Ssp::port->DR = 0x00;
                 }
                 else {
@@ -53,12 +57,14 @@ namespace klib::core::lpc17xx::io {
         /**
          * @brief Read size amount of data from the fifo buffer
          * 
+         * @tparam T 
          * @param data 
          * @param size 
          * @param received 
          * @return uint16_t 
          */
-        static uint16_t read_fifo(uint8_t *const data, const uint16_t size, const uint16_t received) {
+        template <typename T>
+        static uint16_t read_fifo(const T& data, const uint16_t size, const uint16_t received) {
             uint16_t r = 0;
 
             // read as much data as we can
@@ -67,7 +73,7 @@ namespace klib::core::lpc17xx::io {
                 const uint16_t d = Ssp::port->DR;
 
                 // store the value if we do not have a nullptr
-                if (data != nullptr) {
+                if ((!data.empty()) && ((received + r) < data.size())) {
                     data[received + r] = d;
                 }
 
@@ -136,11 +142,20 @@ namespace klib::core::lpc17xx::io {
          * @param rx 
          * @param size 
          */
-        template <bool Async = false>
-        static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
+        template <
+            bool Async = false,
+            typename T = std::span<const uint8_t>,
+            typename G = std::span<uint8_t>
+        > 
+        static void write_read(const T& tx, const G& rx) requires is_span_type_c<uint8_t, T> && is_span_type<uint8_t, G> {
             // amount of data received/transmitted
             uint32_t transmitted = 0;
             uint32_t received = 0;
+
+            // get the amount of data to receive and transmit. The smaller 
+            // between the two must still write/read the data to clear the
+            // fifo
+            const uint32_t size = klib::max(tx.size(), rx.size());
 
             // write and read until we are done
             while ((size - transmitted) > 0 || (size - received) > 0) {
@@ -167,9 +182,9 @@ namespace klib::core::lpc17xx::io {
          * @param data 
          * @param size 
          */
-        template <bool Async = false>
-        static void write(const uint8_t *const data, const uint16_t size) {
-            write_read<Async>(data, nullptr, size);
+        template <bool Async = false, typename T = std::span<const uint8_t>>
+        static void write(const T& data) requires is_span_type_c<uint8_t, T> {
+            write_read<Async>(data, {nullptr, 0});
         }
 
         /**
