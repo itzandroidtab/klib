@@ -19,7 +19,7 @@ namespace klib::crypt {
     public:
         static uint32_t hash(const uint8_t *const key, const uint32_t length, const uint64_t counter) {
             // convert the counter from little endian to big endian
-            const uint64_t be_counter = klib::bswap64(counter);
+            const uint64_t be_counter = klib::to_big_endian<uint64_t>(counter);
 
             // first phase. get the digest of the message using the key
             const auto digest = hmac<T>::hash(key, length, reinterpret_cast<const uint8_t*>(&be_counter), sizeof(be_counter));
