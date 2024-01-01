@@ -108,6 +108,11 @@ namespace klib {
             return first.size() + second.size();
         }
 
+        /**
+         * @brief Returns if the span is empty
+         * 
+         * @return uint32_t 
+         */
         uint32_t empty() const {
             return size() == 0;
         }
