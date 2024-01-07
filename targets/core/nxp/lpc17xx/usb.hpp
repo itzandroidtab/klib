@@ -960,8 +960,7 @@ namespace klib::core::lpc17xx::io {
          * @param callback 
          * @param endpoint 
          * @param mode
-         * @param data 
-         * @param size 
+         * @param data
          * @return true 
          * @return false 
          */

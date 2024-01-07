@@ -4,8 +4,10 @@
 #include <cstdint>
 
 #include <klib/klib.hpp>
+#include <klib/multispan.hpp>
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
+#include <klib/math.hpp>
 
 #include <io/power.hpp>
 
@@ -94,35 +96,39 @@ namespace klib::core::lpc175x::io {
          * 
          * @param tx 
          * @param rx 
-         * @param size 
          */
-        static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
-            // check if we have a valid pointer to write
-            if (tx == nullptr) {
-                // write all the data to the fifo
-                for (uint32_t i = 0; i < size; i++) {
-                    // write dummy data
-                    Spi::port->DR = 0x00;
+        template <
+            bool Async = false,
+            typename T = std::span<const uint8_t>,
+            typename G = std::span<uint8_t>
+        > 
+        static void write_read(const T& tx, const G& rx) requires is_span_type_c<uint8_t, T> && is_span_type<uint8_t, G> {
+            // get the amount of data to receive and transmit. To read more data
+            // we still need to write. Otherwise we will stall and wait endlessly
+            // on more data
+            const uint32_t size = klib::max(tx.size(), rx.size());
 
-                    // wait until the write is done
-                    while (!is_done()) {
-                        // do nothing
-                    }
-
-                    rx[i] = Spi::port->DR;
-                }
-            }
-            else {
-                for (uint32_t i = 0; i < size; i++) {
-                    // write the data
+            // write all the data to the fifo
+            for (uint32_t i = 0; i < size; i++) {
+                // write real or dummy data
+                if ((!tx.empty()) || (i < tx.size())) {
                     Spi::port->DR = tx[i];
+                }
+                else {
+                    Spi::port->DR = 0x00;
+                }
 
-                    // wait until the write is done
-                    while (!is_done()) {
-                        // do nothing
-                    }
+                // wait until the write is done
+                while (!is_done()) {
+                    // do nothing
+                }
 
-                    rx[i] = Spi::port->DR;
+                // read the data from the bus
+                const uint32_t data = Spi::port->DR;
+
+                // store the data if we can
+                if ((!rx.empty()) && (i < rx.size())) {
+                    rx[i] = data;
                 }
             }
         }
@@ -131,10 +137,10 @@ namespace klib::core::lpc175x::io {
          * @brief Write to the spi bus
          * 
          * @param data 
-         * @param size 
          */
-        static void write(const uint8_t *const data, const uint16_t size) {
-            for (uint32_t i = 0; i < size; i++) {
+        template <typename T = std::span<const uint8_t>>
+        static void write(const T& data) requires is_span_type_c<uint8_t, T> {
+            for (uint32_t i = 0; i < data.size(); i++) {
                 // write the data
                 Spi::port->DR = data[i];
 

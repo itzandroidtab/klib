@@ -140,7 +140,6 @@ namespace klib::core::lpc17xx::io {
          * 
          * @param tx 
          * @param rx 
-         * @param size 
          */
         template <
             bool Async = false,
@@ -180,7 +179,6 @@ namespace klib::core::lpc17xx::io {
          * @warning not all data is written unless not busy anymore
          * 
          * @param data 
-         * @param size 
          */
         template <bool Async = false, typename T = std::span<const uint8_t>>
         static void write(const T& data) requires is_span_type_c<uint8_t, T> {
