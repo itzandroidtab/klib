@@ -1,6 +1,8 @@
 #ifndef KLIB_NXP_LPC17XX_USB_HPP
 #define KLIB_NXP_LPC17XX_USB_HPP
 
+#include <span>
+
 #include <klib/klib.hpp>
 #include <klib/usb/usb.hpp>
 #include <klib/math.hpp>
@@ -964,12 +966,11 @@ namespace klib::core::lpc17xx::io {
          * @return false 
          */
         static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
-                          const klib::usb::usb::endpoint_mode mode, const uint8_t* data, 
-                          const uint32_t size) 
+                          const klib::usb::usb::endpoint_mode mode, const std::span<const uint8_t> data) 
         {
             
             // get the size we can write in a single transmission
-            const uint32_t s = klib::min(size, state[endpoint].max_size);
+            const uint32_t s = klib::min(data.size(), state[endpoint].max_size);
 
             // set the endpoint callback and mark the endpoint as busy
             state[endpoint].is_busy = true;
@@ -978,14 +979,14 @@ namespace klib::core::lpc17xx::io {
             // we remove the const here as we know we dont write to it.
             // the state cannot have the const as the read does write to 
             // the array
-            state[endpoint].data = const_cast<uint8_t*>(data);
+            state[endpoint].data = const_cast<uint8_t*>(data.data());
             
             // set the endpoint data
-            state[endpoint].requested_size = size;
+            state[endpoint].requested_size = data.size();
             state[endpoint].transferred_size = s;
 
             // call the write implementation
-            write_impl(endpoint, mode, data, s);
+            write_impl(endpoint, mode, data.data(), s);
 
             // notify everything is correct
             return true;
@@ -1000,16 +1001,14 @@ namespace klib::core::lpc17xx::io {
          * @param endpoint 
          * @param mode
          * @param data 
-         * @param size 
          * @return true 
          * @return false 
          */
         static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
-                         const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
-                         const uint32_t size)
+                         const klib::usb::usb::endpoint_mode mode, const std::span<uint8_t> data)
         {
             // call read with a fixed size
-            return read(callback, endpoint, mode, data, size, size);
+            return read(callback, endpoint, mode, data.data(), data.size(), data.size());
         }
 
         /**
@@ -1030,7 +1029,7 @@ namespace klib::core::lpc17xx::io {
          * @return false 
          */
         static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
-                         const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
+                         const klib::usb::usb::endpoint_mode mode, uint8_t *const data, 
                          const uint32_t min_size, const uint32_t max_size) 
         {
             // set the endpoint callback
