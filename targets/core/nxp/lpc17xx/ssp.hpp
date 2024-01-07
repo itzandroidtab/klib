@@ -36,8 +36,10 @@ namespace klib::core::lpc17xx::io {
         static uint16_t write_fifo(const T& data, const uint16_t size, const uint16_t transmitted) {
             uint16_t t = 0;
 
-            // write as many bytes until the fifo is full
-            while ((Ssp::port->SR & (0x1 << 1)) && ((transmitted + t) < size)) {
+            // write as many bytes until the fifo is full (or until we have half 
+            // the rx fifo filled. This is so we do not miss any received data 
+            // when high ssp speeds are used)
+            while ((Ssp::port->SR & (0x1 << 1)) && ((transmitted + t) < size) && !(Ssp::port->RIS & (0x1 << 2))) {
                 // write dummy data if we dont have data or if we need 
                 // to send more data we have in the buffer
                 if (data.empty() || ((transmitted + t) >= data.size())) {
