@@ -182,7 +182,7 @@ namespace klib::core::lpc17xx::io {
          */
         template <bool Async = false, typename T = std::span<const uint8_t>>
         static void write(const T& data) requires is_span_type_c<uint8_t, T> {
-            write_read<Async>(data, {nullptr, 0});
+            write_read<Async>(data, std::span<uint8_t>());
         }
 
         /**

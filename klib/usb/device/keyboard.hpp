@@ -372,7 +372,7 @@ namespace klib::usb::device {
 
             // write the first report to the endpoint
             if (!Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                usb::endpoint_mode::in, report_data, sizeof(report_data))) 
+                usb::endpoint_mode::in, report_data)) 
             {
                 return false;
             }

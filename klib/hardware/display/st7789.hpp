@@ -138,7 +138,7 @@ namespace klib::hardware::display {
                 PinDC::template set<false>();
 
                 // write the command
-                Bus::write(reinterpret_cast<const uint8_t *>(&command), sizeof(cmd));
+                Bus::write({reinterpret_cast<const uint8_t *>(&command), sizeof(cmd)});
 
                 // only write the data if we have arguments
                 if (size) {
@@ -146,7 +146,7 @@ namespace klib::hardware::display {
                     PinDC::template set<true>();
 
                     // write the data of the command
-                    Bus::write(arguments, size);
+                    Bus::write({arguments, size});
                 }
             }
 
@@ -374,11 +374,13 @@ namespace klib::hardware::display {
             if constexpr (!std::is_same_v<DmaRx, klib::io::dma::none>) {
                 // read memory into the rx buffer. Do not increment as we 
                 // do not care about the result of what we are reading
-                DmaRx::template read<false>(&rx, size);
+                DmaRx::template read<false>(std::span<uint8_t>{
+                    reinterpret_cast<uint8_t*>(&rx), size
+                });
             }
 
             // write to the dma channel
-            DmaTx::template write<true>(data, size);
+            DmaTx::template write<true>(std::span<const uint8_t>{data, size});
         }
     };
 }
