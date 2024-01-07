@@ -207,7 +207,7 @@ namespace klib::usb::device {
                 // send the no key pressed to the host
                 Usb::write(
                     hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    mode, report_data, sizeof(report_data)
+                    mode, report_data
                 );
 
                 // clear the data to notify we are done with the string
@@ -233,7 +233,7 @@ namespace klib::usb::device {
                 // send the report to the host
                 Usb::write(
                     hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    mode, report_data, sizeof(report_data)
+                    mode, report_data
                 );
 
                 // mark we have send a no keys between two repeated keys              
@@ -257,7 +257,7 @@ namespace klib::usb::device {
             // send the report to the host
             Usb::write(
                 hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                mode, report_data, sizeof(report_data)
+                mode, report_data
             );
 
             // return we are done
@@ -574,8 +574,8 @@ namespace klib::usb::device {
             // send the configuration back to the host
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, &configuration, 
-                sizeof(configuration)
+                usb::endpoint_mode::in, 
+                {&configuration, sizeof(configuration)}
             );
 
             // check if something went wrong already
@@ -616,7 +616,7 @@ namespace klib::usb::device {
 
                 // write the inital report
                 if (Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    usb::endpoint_mode::in, report_data, sizeof(report_data))) 
+                    usb::endpoint_mode::in, report_data)) 
                 {
                     // no issue for now ack
                     return usb::handshake::ack;
@@ -688,10 +688,8 @@ namespace klib::usb::device {
                     std::fill_n(report_data, sizeof(report_data), 0x00);
 
                     // write the data to the control endpoint
-                    if (Usb::write(
-                            nullptr, usb::control_endpoint, 
-                            usb::endpoint_mode::in, report_data, 
-                            sizeof(report_data))) 
+                    if (Usb::write(nullptr, usb::control_endpoint, 
+                        usb::endpoint_mode::in, report_data)) 
                     {
                         // no issue for now ack
                         return usb::handshake::ack;
@@ -713,10 +711,8 @@ namespace klib::usb::device {
                         const uint8_t idle = 0;
 
                         // write the data to the control endpoint
-                        if (Usb::write(
-                            nullptr, usb::control_endpoint, 
-                            usb::endpoint_mode::in, report_data, 
-                            sizeof(report_data))) 
+                        if (Usb::write(nullptr, usb::control_endpoint, usb::endpoint_mode::in, 
+                            report_data)) 
                         {
                             // no issue for now ack
                             return usb::handshake::ack;
