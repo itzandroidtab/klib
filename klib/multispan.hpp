@@ -12,7 +12,7 @@ namespace klib::detail {
      * @tparam T 
      */
     template <typename T>
-    class multispan_base_t {};
+    class multispan_base {};
 }
 
 namespace klib {
@@ -25,7 +25,7 @@ namespace klib {
     template <typename T, typename G>
     concept is_span_type = (
         std::is_same_v<std::span<T>, G> || 
-        std::is_base_of<detail::multispan_base_t<T>, G>::value
+        std::is_base_of<detail::multispan_base<T>, G>::value
     );
 
     /**
@@ -38,8 +38,8 @@ namespace klib {
     template <typename T, typename G>
     concept is_span_type_c = (
         std::is_same_v<std::span<T>, G> || std::is_same_v<std::span<const T>, G> ||
-        std::is_base_of<detail::multispan_base_t<T>, G>::value || 
-        std::is_base_of<detail::multispan_base_t<const T>, G>::value
+        std::is_base_of<detail::multispan_base<T>, G>::value || 
+        std::is_base_of<detail::multispan_base<const T>, G>::value
     );
 
     /**
@@ -52,7 +52,7 @@ namespace klib {
         typename G = std::span<T>, 
         typename H = std::span<T>
     > requires is_span_type<T, G> && is_span_type<T, H>
-    class multispan: public detail::multispan_base_t<T> {
+    class multispan: public detail::multispan_base<T> {
     protected:
         // the two internal spans
         G first;
