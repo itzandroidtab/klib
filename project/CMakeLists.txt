@@ -29,6 +29,9 @@ target_compile_definitions(klib PUBLIC "KLIB_DEFAULT_CIN=rtt")
 target_compile_definitions(klib PUBLIC "BUFFER_SIZE_UP=256")
 target_compile_definitions(klib PUBLIC "BUFFER_SIZE_DOWN=16")
 
+# set if we should support certain callbacks
+target_compile_definitions(klib PUBLIC "SYSTICK_CALLBACK_ENABLED=false")
+
 # link the klib_project to klib and the cpu target
 target_link_libraries(klib_project PUBLIC klib)
 target_link_libraries(klib_project PUBLIC target_cpu)

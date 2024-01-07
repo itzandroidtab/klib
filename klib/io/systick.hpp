@@ -12,7 +12,7 @@ namespace klib::io {
      * 
      * @tparam CpuId 
      */
-    template <uint32_t CpuId = 0>
+    template <uint32_t CpuId = 0, bool Callback = SYSTICK_CALLBACK_ENABLED>
     class systick {
     protected:
         /**
@@ -51,8 +51,11 @@ namespace klib::io {
             // clear the systick value
             port->value = 0;
 
-            // register the callback
-            callback = irq;
+            // only register the callback when enabled
+            if constexpr (Callback) {
+                // register the callback
+                callback = irq;
+            }
 
             // register our handler
             Irq::template register_irq<Irq::arm_vector::systick>(isr_handler);
@@ -201,9 +204,12 @@ namespace klib::io {
             // increment the current runtime value
             runtime.value++;
 
-            // run the callback if provided
-            if (callback) {
-                callback();
+            // only run the callback when enabled
+            if constexpr (Callback) {
+                // run the callback if provided
+                if (callback) {
+                    callback();
+                }
             }
         }
     };
