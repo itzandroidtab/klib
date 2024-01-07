@@ -2,6 +2,7 @@
 #define KLIB_NXP_LPC17XX_FLASH_HPP
 
 #include <cstdint>
+#include <span>
 
 #include <klib/klib.hpp>
 #include <klib/io/core_clock.hpp>
@@ -200,14 +201,19 @@ namespace klib::core::lpc17xx::io {
         /**
          * @brief Write to the address with data
          * 
+         * @warning can only write 256, 512, 1024 or 4096 bytes at a time
+         * 
+         * @tparam T 
          * @param address 
          * @param data 
          * @param size 
+         * @return success
          */
-        static bool write(const uint32_t address, const uint8_t *const data, const uint16_t size) {
+        template <typename T>
+        static bool write(const uint32_t address, const std::span<T> data) {
             // get the sector number from the address
             const uint32_t start_sector = address_to_sector(address);
-            const uint32_t end_sector = address_to_sector(address + size);
+            const uint32_t end_sector = address_to_sector(address + data.size_bytes());
 
             // prepare the sector for a write
             if (prepare_for_write(start_sector, end_sector) != iap_result::success) {
@@ -217,8 +223,8 @@ namespace klib::core::lpc17xx::io {
             // create the command for the iap call
             const uint32_t buffer[5] = {
                 iap_cmd::copy_ram_to_flash,
-                address, reinterpret_cast<uint32_t>(data), 
-                size, get_clock_khz()
+                address, reinterpret_cast<uint32_t>(data.data()), 
+                data.size_bytes(), get_clock_khz()
             };
 
             // return status
