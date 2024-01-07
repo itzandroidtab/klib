@@ -385,7 +385,9 @@ namespace klib::usb {
             const uint32_t size = klib::min(descriptor.size, static_cast<uint32_t>(packet.wLength));
 
             // write the data to the endpoint buffer and check if we directly fail
-            if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::in, {descriptor.desc, size})) {
+            if (Usb::write(status_callback<Usb>, control_endpoint, endpoint_mode::in, 
+                {descriptor.desc, size})) 
+            {
                 // no errors return we need to wait on the callback
                 return handshake::wait;
             }

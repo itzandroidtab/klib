@@ -367,7 +367,7 @@ namespace klib::usb::msc::bot {
             Usb::write(callback_handler<Usb, state::send_csw>, 
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
-                block_buffer
+                {reinterpret_cast<const uint8_t*>(&response), sizeof(response)}
             );
         }
 
@@ -479,7 +479,7 @@ namespace klib::usb::msc::bot {
             Usb::write(callback_handler<Usb, state::send_csw>, 
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
-                block_buffer
+                {reinterpret_cast<const uint8_t*>(&response), sizeof(response)}
             );            
         }
 
