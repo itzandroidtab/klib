@@ -6,6 +6,11 @@
 #include <klib/io/core_clock.hpp>
 #include <klib/units.hpp>
 
+// set a default if the define is not set
+#ifndef SYSTICK_CALLBACK_ENABLED
+    #define SYSTICK_CALLBACK_ENABLED false
+#endif
+
 namespace klib::io {
     /**
      * @brief Systick class uses cpu id 0 by default

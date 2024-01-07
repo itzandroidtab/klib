@@ -5,6 +5,11 @@
 #include <klib/io/core_clock.hpp>
 #include <klib/io/systick.hpp>
 
+// set a default if the define is not set
+#ifndef TARGET_LOW_POWER_SLEEP
+    #define TARGET_LOW_POWER_SLEEP false
+#endif
+
 namespace klib::detail {
     /**
      * @brief Flag for waiting until a timer is triggered
