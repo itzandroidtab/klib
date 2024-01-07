@@ -2,6 +2,7 @@
 #define KLIB_NXP_LPC175X_DMA_HPP
 
 #include <array>
+#include <span>
 
 #include <klib/klib.hpp>
 #include <klib/io/dma.hpp>
@@ -297,15 +298,18 @@ namespace klib::core::lpc175x::io {
          * @param size 
          */
         template <bool MemoryIncrement = true, typename T>
-        static void write(const T *const source, uint16_t size) {
+        static void write(const std::span<T>& source) {
             static_assert(std::is_same_v<Source, klib::io::dma::memory>, "Source needs to be memory for this function");
             static_assert(!std::is_same_v<Destination, klib::io::dma::memory>, "Destination needs to be a peripheral for this function");
+
+            // get the amount of bytes we need to transmit
+            const uint32_t size = source.size_bytes();
 
             // set the dma destination
             Dma::port->CH[Channel].DESTADDR = reinterpret_cast<uint32_t>(Destination::template dma_data<0>());
 
             // update the helper data with the information about the transfer
-            helper.data = reinterpret_cast<const uint8_t*>(source);
+            helper.data = reinterpret_cast<const uint8_t*>(source.data());
             helper.requested_size = size;
             helper.transferred_size = 0x00;
 
@@ -347,15 +351,18 @@ namespace klib::core::lpc175x::io {
          * @param size 
          */
         template <bool MemoryIncrement = true, typename T>
-        static void read(T *const destination, uint16_t size) {
+        static void read(const std::span<T>& destination) {
             static_assert(!std::is_same_v<Source, klib::io::dma::memory>, "Source needs to be a peripheral for this function");
             static_assert(std::is_same_v<Destination, klib::io::dma::memory>, "Destination needs to be memory for this function");
+
+            // get the amount of bytes we need to transmit
+            const uint32_t size = destination.size_bytes();
 
             // set the source and destination
             Dma::port->CH[Channel].SRCADDR = reinterpret_cast<uint32_t>(Source::template dma_data<1>());
 
             // update the helper data with the information about the transfer
-            helper.data = reinterpret_cast<const uint8_t*>(destination);
+            helper.data = reinterpret_cast<const uint8_t*>(destination.data());
             helper.requested_size = size;
             helper.transferred_size = 0x00;
 
