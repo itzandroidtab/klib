@@ -250,9 +250,10 @@ namespace klib::graphics {
         uint32_t StartX = 0, 
         uint32_t StartY = 0, 
         uint32_t EndX = Display::width, 
-        uint32_t EndY = Display::height
+        uint32_t EndY = Display::height,
+        std::endian Endian = std::endian::native
     >
-    class movable_framebuffer: public framebuffer<Display, Mode, StartX, StartY, EndX, EndY> {
+    class movable_framebuffer: public framebuffer<Display, Mode, StartX, StartY, EndX, EndY, Endian> {
     public:
         constexpr void flush(const klib::vector2u position) {
             // set the cursor to the start of the display
@@ -265,7 +266,7 @@ namespace klib::graphics {
             Display::start_write();
 
             // call the flush implementation
-            framebuffer<Display, Mode, StartX, StartY, EndX, EndY>::flush_impl();
+            framebuffer<Display, Mode, StartX, StartY, EndX, EndY, Endian>::flush_impl();
 
             // stop the write to the display
             Display::end_write();
