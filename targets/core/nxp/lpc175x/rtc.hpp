@@ -5,67 +5,13 @@
 
 #include <klib/klib.hpp>
 #include <klib/units.hpp>
+#include <klib/io/rtc.hpp>
 
 #include <io/power.hpp>
 
 namespace klib::core::lpc175x::io {
     template <typename Rtc>
     class rtc {
-    protected:
-        // amount of days in a month without the leapyears
-        constexpr static uint8_t month_days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-        // amount of days in a year (non leap years)
-        constexpr static auto days_year = (
-            month_days[0] + month_days[1] + month_days[2] + month_days[3] +
-            month_days[4] + month_days[5] + month_days[6] + month_days[7] +
-            month_days[8] + month_days[9] + month_days[10] + month_days[11]
-        );
-
-        /**
-         * @brief Convert seperate date fields to the epoch time
-         * 
-         * @param year 1970 - 4095
-         * @param month 1 - 12
-         * @param day 1 - (28, 29, 30, 31)
-         * @param hours 0 - 23
-         * @param minutes 0 - 59
-         * @param seconds 0 - 59
-         * @return klib::time::s 
-         */
-        static klib::time::s datetime_to_epoch(const uint16_t year, const uint8_t month, const uint8_t day, 
-            const uint8_t hours, const uint8_t minutes, const uint8_t seconds) 
-        {
-            uint32_t days = 0;
-
-            // calculate the amount of days till the current year
-            for (uint16_t y = 1970; y < year; y++) {
-                // add all the months
-                days += days_year;
-
-                // check if the current year is a leap year (we do the same 
-                // thing as the hardware does by checking only the lowest 2 
-                // bits. This will work fine between 1901 - 2099 but will 
-                // fail at year 2100)
-                if ((y & 0b11) == 0) {
-                    // add a day for a leap year
-                    days++;
-                }
-            }
-
-            // add the amount of days till the current month
-            for (uint8_t m = 0; m < (month - 1); m++) {
-                // add the current month
-                days += month_days[m];
-            }
-
-            // add the days but remove 1 for the current day
-            days += (static_cast<int8_t>(day) - 1);
-
-            // convert the days with the hours, minutes and seconds to the epoch time
-            return {(days * (60 * 60 * 24)) + (hours * (60 * 60)) + (minutes * 60) + seconds};
-        }
-
     public:
         /**
          * @brief Initialize the RTC
@@ -77,11 +23,23 @@ namespace klib::core::lpc175x::io {
             // enable the power for the rtc
             target::io::power_control::enable<Rtc>();
 
-            // check if the rtc is already on
-            if (Rtc::port->CCR & 0x1) {
+            // check if the rtc is already on (and not in reset)
+            if (Rtc::port->CCR & 0x1 && !(Rtc::port->CCR & (0x1 << 1))) {
                 // rtc already on. No need for more configuration
                 return;
             }
+
+            // disable the oscillator fail detect interrupt
+            Rtc::port->RTC_AUXEN = 0x00;
+
+            // clear the fail detect flag
+            Rtc::port->RTC_AUX = 0x1 << 4;
+
+            // disable all the counter increment interrupts
+            Rtc::port->CIIR = 0xff;
+
+            // disable the alarm
+            Rtc::port->AMR = 0xff;
 
             // setup the calibration if we have any
             Rtc::port->CALIBRATION = cal_value | (cal_direction << 17);
@@ -110,7 +68,7 @@ namespace klib::core::lpc175x::io {
          */
         static klib::time::s get() {
             // convert the current date and time to epoch seconds
-            return datetime_to_epoch(
+            return klib::io::rtc::datetime_to_epoch(
                 Rtc::port->YEAR, Rtc::port->MONTH, 
                 Rtc::port->DOM, Rtc::port->HRS, 
                 Rtc::port->MIN, Rtc::port->SEC
@@ -124,15 +82,22 @@ namespace klib::core::lpc175x::io {
          */
         static void set(const klib::time::s time) {
             // get the amount of days in the epoch time
-            uint32_t days = (time.value / (24 * 60 * 60)) + 1;
+            uint32_t days = (time.value / (24 * 60 * 60));
             uint32_t years = 1970;
+
+            // 01-01-1970 was a thursday (3). Add that to our epoch
+            // days to calculate the current day of the week
+            Rtc::port->DOW = (days + 3) % 7;
+            
+            // add one to the days
+            days += 1;
 
             // check all the years 
             while (true) {
                 // check if the current year is a leap year
                 const uint32_t y = (
-                    (((years + 1) & 0b11) == 0) ? 
-                    days_year + 1: days_year
+                    ((years & 0b11) == 0) ? 
+                    klib::io::rtc::days_year + 1: klib::io::rtc::days_year
                 );
 
                 // check if the amount of days in the year
@@ -153,16 +118,16 @@ namespace klib::core::lpc175x::io {
             uint32_t months = 1;
 
             // get the amount of months
-            for (uint32_t i = 0; i < sizeof(month_days) / sizeof(month_days[0]); i++) {
+            for (uint32_t i = 0; i < (sizeof(klib::io::rtc::month_days) / sizeof(klib::io::rtc::month_days[0])); i++) {
                 // check if we have more days than the 
                 // current month has
-                if (days < month_days[i]) {
+                if (days < klib::io::rtc::month_days[i]) {
                     break;
                 }
 
                 // increment the months
                 months++;
-                days -= month_days[i];
+                days -= klib::io::rtc::month_days[i];
             }
 
             // set the month and the days
@@ -174,7 +139,7 @@ namespace klib::core::lpc175x::io {
 
             // set the hours, minutes and seconds
             Rtc::port->HRS = seconds / (60 * 60);
-            Rtc::port->MIN = (seconds / 60) % 60;
+            Rtc::port->MIN = (seconds % (60 * 60)) / 60;
             Rtc::port->SEC = seconds % 60;
         }
     };
