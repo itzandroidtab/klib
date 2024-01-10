@@ -87,3 +87,4 @@ jobs:
             ${{github.workspace}}/build/project/klib.memory
             ${{github.workspace}}/build/project/klib.hex
             ${{github.workspace}}/build/project/klib.bin
+            ${{github.workspace}}/targets/${{matrix.cpu}}/${{matrix.cpu}}.h
