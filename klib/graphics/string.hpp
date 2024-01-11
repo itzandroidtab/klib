@@ -61,7 +61,7 @@ namespace klib::graphics {
          * @param background 
          */
         template <typename Fb>
-        void draw(Fb& framebuffer, const char* str = nullptr, 
+        void draw(Fb& framebuffer, const char* str, 
             const klib::vector2i& position = {}, 
             const color foreground = klib::graphics::black, 
             const color background = klib::graphics::transparent) const 
