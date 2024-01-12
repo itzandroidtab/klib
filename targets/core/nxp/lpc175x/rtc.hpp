@@ -19,7 +19,7 @@ namespace klib::core::lpc175x::io {
          * @param cal_value 
          * @param cal_direction
          */
-        static void init(const uint16_t cal_value = 0, const bool cal_direction = 1) {
+        static void init(const uint32_t cal_value = 0, const bool cal_direction = 1) {
             // enable the power for the rtc
             target::io::power_control::enable<Rtc>();
 
@@ -42,7 +42,7 @@ namespace klib::core::lpc175x::io {
             Rtc::port->AMR = 0xff;
 
             // setup the calibration if we have any
-            Rtc::port->CALIBRATION = cal_value | (cal_direction << 17);
+            Rtc::port->CALIBRATION = (cal_value & 0x1ffff) | (cal_direction << 17);
 
             // enable the rtc
             Rtc::port->CCR = 0x1 | ((cal_value == 0) ? (0x1 << 4) : 0x00);
