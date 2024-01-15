@@ -72,7 +72,7 @@ namespace klib {
         using const_reference     = const element_type&;
 
         /**
-         * @brief Construct a new multiptr object using a initializer list, raw 
+         * @brief Construct a new multispan object using a initializer list, raw 
          * array(not a pointer) or std::array
          * 
          * for raw pointers {ptr, size} should be used as a parameter
@@ -116,6 +116,15 @@ namespace klib {
          */
         constexpr uint32_t empty() const {
             return size() == 0;
+        }
+
+        /**
+         * @brief Returns the amount of bytes the combined spans use
+         * 
+         * @return constexpr uint32_t 
+         */
+        constexpr uint32_t size_bytes() const {
+            return first.size_bytes() + second.size_bytes();
         }
     };
 }
