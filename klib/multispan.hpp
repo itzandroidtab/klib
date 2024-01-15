@@ -79,7 +79,7 @@ namespace klib {
          * @param first 
          * @param second 
          */
-        multispan(const G& first, const H& second):
+        constexpr multispan(const G& first, const H& second):
             first(first), second(second)
         {}
 
@@ -104,7 +104,7 @@ namespace klib {
          * 
          * @return uint32_t 
          */
-        uint32_t size() const {
+        constexpr uint32_t size() const {
             return first.size() + second.size();
         }
 
@@ -113,7 +113,7 @@ namespace klib {
          * 
          * @return uint32_t 
          */
-        uint32_t empty() const {
+        constexpr uint32_t empty() const {
             return size() == 0;
         }
     };
