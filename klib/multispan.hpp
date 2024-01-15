@@ -24,7 +24,7 @@ namespace klib {
      */
     template <typename T, typename G>
     concept is_span_type = (
-        std::is_same_v<std::span<T>, G> || 
+        std::is_same_v<std::span<std::remove_reference_t<T>>, G> || 
         std::is_base_of<detail::multispan_base<T>, G>::value
     );
 
@@ -37,7 +37,8 @@ namespace klib {
      */
     template <typename T, typename G>
     concept is_span_type_c = (
-        std::is_same_v<std::span<T>, G> || std::is_same_v<std::span<const T>, G> ||
+        std::is_same_v<std::span<std::remove_reference_t<T>>, G> || 
+        std::is_same_v<std::span<const std::remove_reference_t<T>>, G> ||
         std::is_base_of<detail::multispan_base<T>, G>::value || 
         std::is_base_of<detail::multispan_base<const T>, G>::value
     );
