@@ -2,6 +2,7 @@
 #define KLIB_LPC802_SPI_HPP
 
 #include <klib/io/bus/spi.hpp>
+#include <klib/multispan.hpp>
 
 #include "pins.hpp"
 #include "matrix.hpp"
@@ -99,9 +100,15 @@ namespace klib::lpc802::io {
          * 
          * @param tx 
          * @param rx 
-         * @param size 
          */
-        static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
+        template <
+            typename T = std::span<const uint8_t>,
+            typename G = std::span<uint8_t>
+        > 
+        static void write_read(const T& tx, const G& rx) requires is_span_type_c<uint8_t, T> && is_span_type<uint8_t, G> {
+            // get the size we should read/write
+            const auto size = klib::min(tx.size(), rx.size());
+
             // check if we need to write anything
             if (!size) {
                 // exit if we do not need to write anything
@@ -160,11 +167,11 @@ namespace klib::lpc802::io {
          * @brief Write to the spi bus
          * 
          * @param data 
-         * @param size 
          */
-        static void write(const uint8_t *const data, const uint16_t size) {
+        template <typename T = std::span<const uint8_t>>
+        static void write(const T& data) requires is_span_type<uint8_t, T> {
             // check if we need to write anything
-            if (!size) {
+            if (!data.size()) {
                 // exit if we do not need to write anything
                 return;
             }
@@ -182,7 +189,7 @@ namespace klib::lpc802::io {
             }
 
             // write all the data to the hardware
-            for (uint32_t i = 1; i < size; i++) {
+            for (uint32_t i = 1; i < data.size(); i++) {
                 // wait until we can transmit
                 while (!(Spi::port->STAT & (0x1 << 1))) {
                     // wait until we are done writing the previous data
@@ -195,7 +202,7 @@ namespace klib::lpc802::io {
                 }
                 else {
                     // check if we are the last write in the data
-                    if (i + 1 >= size) {
+                    if (i + 1 >= data.size()) {
                         // set the end of transfer bit
                         Spi::port->TXDATCTL = data[i] | (0x1 << 20);
                     }
