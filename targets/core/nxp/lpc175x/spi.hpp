@@ -46,6 +46,65 @@ namespace klib::core::lpc175x::io {
             return (Spi::port->SR & (0x1 << 7));
         }
 
+        /**
+         * @brief Helper function that writes and reads from the spi bus
+         * 
+         * @tparam T 
+         * @tparam G 
+         * @param tx 
+         * @param rx 
+         */
+        template <typename T, typename G>
+        static void write_read_helper(const T& tx, const G& rx) {
+            // get the amount of data to receive and transmit. To read more data
+            // we still need to write. Otherwise we will stall and wait endlessly
+            // on more data
+            const uint32_t size = klib::max(tx.size(), rx.size());
+
+            // write all the data to the fifo
+            for (uint32_t i = 0; i < size; i++) {
+                // write real or dummy data
+                if ((!tx.empty()) || (i < tx.size())) {
+                    Spi::port->DR = tx[i];
+                }
+                else {
+                    Spi::port->DR = 0x00;
+                }
+
+                // wait until the write is done
+                while (!is_done()) {
+                    // do nothing
+                }
+
+                // read the data from the bus
+                const uint32_t data = Spi::port->DR;
+
+                // store the data if we can
+                if ((!rx.empty()) && (i < rx.size())) {
+                    rx[i] = data;
+                }
+            }
+        }
+
+        /**
+         * @brief Helper that writes data to the spi port
+         * 
+         * @tparam T 
+         * @param data 
+         */
+        template <typename T>
+        static void write_helper(const T& data) {
+            for (uint32_t i = 0; i < data.size(); i++) {
+                // write the data
+                Spi::port->DR = data[i];
+
+                // wait until the write is done
+                while (!is_done()) {
+                    // do nothing
+                }
+            }
+        }
+
     public:
         template <
             klib::io::spi::mode Mode = klib::io::spi::mode::mode0,
@@ -97,40 +156,52 @@ namespace klib::core::lpc175x::io {
          * @param tx 
          * @param rx 
          */
+        static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <typename T, typename G>
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t, T, G>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
         template <
-            bool Async = false,
-            typename T = std::span<const uint8_t>,
-            typename G = std::span<uint8_t>
-        > 
-        static void write_read(const T& tx, const G& rx) requires is_span_type_c<uint8_t, T> && is_span_type<uint8_t, G> {
-            // get the amount of data to receive and transmit. To read more data
-            // we still need to write. Otherwise we will stall and wait endlessly
-            // on more data
-            const uint32_t size = klib::max(tx.size(), rx.size());
+            typename T, typename E, typename F
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        )
+        static void write_read(const multispan<T, E, F>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
 
-            // write all the data to the fifo
-            for (uint32_t i = 0; i < size; i++) {
-                // write real or dummy data
-                if ((!tx.empty()) || (i < tx.size())) {
-                    Spi::port->DR = tx[i];
-                }
-                else {
-                    Spi::port->DR = 0x00;
-                }
-
-                // wait until the write is done
-                while (!is_done()) {
-                    // do nothing
-                }
-
-                // read the data from the bus
-                const uint32_t data = Spi::port->DR;
-
-                // store the data if we can
-                if ((!rx.empty()) && (i < rx.size())) {
-                    rx[i] = data;
-                }
-            }
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <
+            typename T, typename E, typename F, 
+            typename G, typename H
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        ) 
+        static void write_read(const multispan<T, E, F>& tx, const multispan<uint8_t, G, H>& rx) {
+            return write_read_helper(tx, rx);
         }
 
         /**
@@ -138,17 +209,23 @@ namespace klib::core::lpc175x::io {
          * 
          * @param data 
          */
-        template <typename T = std::span<const uint8_t>>
-        static void write(const T& data) requires is_span_type_c<uint8_t, T> {
-            for (uint32_t i = 0; i < data.size(); i++) {
-                // write the data
-                Spi::port->DR = data[i];
+        static void write(const std::span<const uint8_t>& data) {
+            return write_helper(data);
+        }
 
-                // wait until the write is done
-                while (!is_done()) {
-                    // do nothing
-                }
-            }
+        /**
+         * @brief Write data to the spi bus
+         * 
+         * @param data 
+         */
+        template <
+            typename T, typename E, typename F
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        )
+        static void write(const multispan<T, E, F>& data) {
+            return write_helper(data);
         }
     };
 }

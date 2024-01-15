@@ -56,56 +56,16 @@ namespace klib::lpc802::io {
         // check if we are in 8 bit mode
         static_assert(Bits == klib::io::spi::bits::bit_8, "Only 8 bit mode is currently supported");
 
-    public:
-        template <
-            typename Sck, typename Mosi, 
-            typename Miso, typename Cs,
-            klib::io::spi::mode Mode = klib::io::spi::mode::mode0,
-            uint32_t Frequency = 1'000'000
-        >
-        constexpr static void init() {
-            // enable the spi perihperal clock
-            clocks::enable<Spi>();
-
-            // configure the pins using the switch matrix
-            using matrix = matrix<periph::matrix0>;
-
-            // setup the matrix with the supplied pins
-            matrix::setup<Sck, matrix::flex_matrix::spi0_sck>();
-            matrix::setup<Mosi, matrix::flex_matrix::spi0_mosi>();
-            matrix::setup<Miso, matrix::flex_matrix::spi0_miso>();
-
-            // check if we should setup the cs
-            if constexpr (!ExternalCs) {
-                matrix::setup<Cs, matrix::flex_matrix::spi0_ssel0>();
-            }
-
-            // setup the spi clock
-            // TODO: make the clock selectable (currently set to Main clock)
-            SYSCON->SPI0CLKSEL = 1;
-
-            // set the spi configuration (master mode and spi mode)
-            Spi::port->CFG = (
-                (0x1 << 2) | 
-                (klib::io::spi::get_cpol<Mode>() << 5) |
-                (klib::io::spi::get_cpha<Mode>() << 4)
-            );
-
-            // enable the spi
-            Spi::port->CFG |= 0x1;
-        }
-
         /**
-         * @brief Write and read from the spi bus
+         * @brief Helper to write and read from the spi bus
          * 
+         * @tparam T 
+         * @tparam G 
          * @param tx 
          * @param rx 
          */
-        template <
-            typename T = std::span<const uint8_t>,
-            typename G = std::span<uint8_t>
-        > 
-        static void write_read(const T& tx, const G& rx) requires is_span_type_c<uint8_t, T> && is_span_type<uint8_t, G> {
+        template <typename T, typename G> 
+        static void write_read_helper(const T& tx, const G& rx) {
             // get the size we should read/write
             const auto size = klib::min(tx.size(), rx.size());
 
@@ -164,12 +124,13 @@ namespace klib::lpc802::io {
         }
 
         /**
-         * @brief Write to the spi bus
+         * @brief Helper to write to the spi bus
          * 
+         * @tparam T 
          * @param data 
          */
-        template <typename T = std::span<const uint8_t>>
-        static void write(const T& data) requires is_span_type<uint8_t, T> {
+        template <typename T>
+        static void write_helper(const T& data) {
             // check if we need to write anything
             if (!data.size()) {
                 // exit if we do not need to write anything
@@ -212,6 +173,123 @@ namespace klib::lpc802::io {
                     }
                 }
             }
+        }
+
+    public:
+        template <
+            typename Sck, typename Mosi, 
+            typename Miso, typename Cs,
+            klib::io::spi::mode Mode = klib::io::spi::mode::mode0,
+            uint32_t Frequency = 1'000'000
+        >
+        constexpr static void init() {
+            // enable the spi perihperal clock
+            clocks::enable<Spi>();
+
+            // configure the pins using the switch matrix
+            using matrix = matrix<periph::matrix0>;
+
+            // setup the matrix with the supplied pins
+            matrix::setup<Sck, matrix::flex_matrix::spi0_sck>();
+            matrix::setup<Mosi, matrix::flex_matrix::spi0_mosi>();
+            matrix::setup<Miso, matrix::flex_matrix::spi0_miso>();
+
+            // check if we should setup the cs
+            if constexpr (!ExternalCs) {
+                matrix::setup<Cs, matrix::flex_matrix::spi0_ssel0>();
+            }
+
+            // setup the spi clock
+            // TODO: make the clock selectable (currently set to Main clock)
+            SYSCON->SPI0CLKSEL = 1;
+
+            // set the spi configuration (master mode and spi mode)
+            Spi::port->CFG = (
+                (0x1 << 2) | 
+                (klib::io::spi::get_cpol<Mode>() << 5) |
+                (klib::io::spi::get_cpha<Mode>() << 4)
+            );
+
+            // enable the spi
+            Spi::port->CFG |= 0x1;
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <typename T, typename G>
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t, T, G>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <
+            typename T, typename E, typename F
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        )
+        static void write_read(const multispan<T, E, F>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <
+            typename T, typename E, typename F, 
+            typename G, typename H
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        ) 
+        static void write_read(const multispan<T, E, F>& tx, const multispan<uint8_t, G, H>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write to the spi bus
+         * 
+         * @param data 
+         */
+        static void write(const std::span<const uint8_t>& data) {
+            return write_helper(data);
+        }
+
+        /**
+         * @brief Write data to the spi bus
+         * 
+         * @param data 
+         */
+        template <
+            typename T, typename E, typename F
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        )
+        static void write(const multispan<T, E, F>& data) {
+            return write_helper(data);
         }
     };
 }

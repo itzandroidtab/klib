@@ -86,6 +86,43 @@ namespace klib::core::lpc17xx::io {
             return r;
         }
 
+        /**
+         * @brief Helper to write and read from the ssp bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <
+            bool Async = false, typename T, 
+            typename G
+        > 
+        static void write_read_helper(const T& tx, const G& rx) {
+            // amount of data received/transmitted
+            uint32_t transmitted = 0;
+            uint32_t received = 0;
+
+            // get the amount of data to receive and transmit. The smaller 
+            // between the two must still write/read the data to clear the
+            // fifo
+            const uint32_t size = klib::max(tx.size(), rx.size());
+
+            // write and read until we are done
+            while ((size - transmitted) > 0 || (size - received) > 0) {
+                // write the tx data
+                transmitted += write_fifo(tx, size, transmitted);
+
+                // read the rx data
+                received += read_fifo(rx, size, received);
+            }
+
+            // check if we should wait until completion
+            if constexpr (!Async) {
+                while (is_busy()) {
+                    // wait until we are done
+                }
+            }
+        }
+
     public:
         template <
             klib::io::spi::mode Mode = klib::io::spi::mode::mode0,
@@ -137,54 +174,90 @@ namespace klib::core::lpc17xx::io {
             Ssp::port->CR1 = 0x1 << 1;
         }
 
+
         /**
-         * @brief Write and read from the ssp bus
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <bool Async = false>
+        static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper<Async>(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
          * 
          * @param tx 
          * @param rx 
          */
         template <
-            bool Async = false,
-            typename T = std::span<const uint8_t>,
-            typename G = std::span<uint8_t>
-        > 
-        static void write_read(const T& tx, const G& rx) requires is_span_type_c<uint8_t, T> && is_span_type<uint8_t, G> {
-            // amount of data received/transmitted
-            uint32_t transmitted = 0;
-            uint32_t received = 0;
-
-            // get the amount of data to receive and transmit. The smaller 
-            // between the two must still write/read the data to clear the
-            // fifo
-            const uint32_t size = klib::max(tx.size(), rx.size());
-
-            // write and read until we are done
-            while ((size - transmitted) > 0 || (size - received) > 0) {
-                // write the tx data
-                transmitted += write_fifo(tx, size, transmitted);
-
-                // read the rx data
-                received += read_fifo(rx, size, received);
-            }
-
-            // check if we should wait until completion
-            if constexpr (!Async) {
-                while (is_busy()) {
-                    // wait until we are done
-                }
-            }
+            bool Async = false, typename T, 
+            typename G
+        >
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t, T, G>& rx) {
+            return write_read_helper<Async>(tx, rx);
         }
 
         /**
-         * @brief Write to the ssp bus
+         * @brief Write and read from the spi bus
          * 
-         * @warning not all data is written unless not busy anymore
+         * @param tx 
+         * @param rx 
+         */
+        template <
+            bool Async = false, typename T, 
+            typename E, typename F
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        )
+        static void write_read(const multispan<T, E, F>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper<Async>(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <
+            bool Async = false, typename T, typename E, 
+            typename F, typename G, typename H
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        ) 
+        static void write_read(const multispan<T, E, F>& tx, const multispan<uint8_t, G, H>& rx) {
+            return write_read_helper<Async>(tx, rx);
+        }
+
+        /**
+         * @brief Write to the spi bus
          * 
          * @param data 
          */
-        template <bool Async = false, typename T = std::span<const uint8_t>>
-        static void write(const T& data) requires is_span_type_c<uint8_t, T> {
-            write_read<Async>(data, std::span<uint8_t>());
+        template <bool Async = false>
+        static void write(const std::span<const uint8_t>& data) {
+            return write_read_helper<Async>(data);
+        }
+
+        /**
+         * @brief Write data to the spi bus
+         * 
+         * @param data 
+         */
+        template <
+            bool Async = false, typename T, 
+            typename E, typename F
+        >
+        requires (
+            std::same_as<std::remove_cv_t<T>, uint8_t>
+        )
+        static void write(const multispan<T, E, F>& data) {
+            return write_read_helper<Async>(data);
         }
 
         /**
