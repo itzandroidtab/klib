@@ -225,7 +225,7 @@ namespace klib::max32660::io {
          * @return false 
          */
         template <typename T, typename G>
-        static bool write(const uint32_t address, const klib::multispan<uint8_t, T, G>& data) {
+        static bool write(const uint32_t address, const klib::multispan<const uint8_t, T, G>& data) {
             return write_helper(address, data);
         }
     };
