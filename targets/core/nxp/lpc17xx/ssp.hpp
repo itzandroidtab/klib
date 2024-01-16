@@ -226,7 +226,7 @@ namespace klib::core::lpc17xx::io {
          */
         template <bool Async = false>
         static void write(const std::span<const uint8_t>& data) {
-            return write_read_helper<Async>(data);
+            return write_read_helper<Async>(data, std::span<uint8_t>{});
         }
 
         /**
@@ -236,7 +236,7 @@ namespace klib::core::lpc17xx::io {
          */
         template <bool Async = false>
         static void write(const multispan<const uint8_t>& data) {
-            return write_read_helper<Async>(data);
+            return write_read_helper<Async>(data, std::span<uint8_t>{});
         }
 
         /**
