@@ -6,58 +6,43 @@
 
 namespace klib::detail {
     /**
-     * @brief Multispan base for checking if we have a multispan 
-     * with type checking
+     * @brief Helper concept to check if two types match
+     * 
+     * @tparam T 
+     * @tparam G 
+     */
+    template<typename T, typename G>
+    concept same_as = std::same_as<std::remove_reference_t<T>, std::remove_reference_t<G>>;
+
+    /**
+     * @brief Concept to check if we have a size function
      * 
      * @tparam T 
      */
-    template <typename T>
-    class multispan_base {};
+    template <class T, typename G>
+    concept is_span_like = requires(T a) {
+        // check if we have a size function
+        // a.size();
+        a.size();
+
+        // check if we have a operator[] and the 
+        // return matches the expected type
+        { a[0] } -> same_as<G>;
+    };
 }
 
 namespace klib {
-    /**
-     * @brief Returns if the template is a multispan a span with a specific type
-     * 
-     * @tparam T 
-     * @tparam G 
-     */
-    template <typename T, typename G>
-    concept is_span_type = (
-        std::is_same_v<std::span<std::remove_reference_t<T>>, G> || 
-        std::is_base_of<detail::multispan_base<T>, G>::value
-    );
-
-    /**
-     * @brief Returns if the template is a multispan a span with a specific type 
-     * (checks both for the normal type and the const type)
-     * 
-     * @tparam T 
-     * @tparam G 
-     */
-    template <typename T, typename G>
-    concept is_span_type_c = (
-        std::is_same_v<std::span<std::remove_reference_t<T>>, G> || 
-        std::is_same_v<std::span<const std::remove_reference_t<T>>, G> ||
-        std::is_base_of<detail::multispan_base<T>, G>::value || 
-        std::is_base_of<detail::multispan_base<const T>, G>::value
-    );
-
     /**
      * @brief Non owning wrapper to map two std::span in a single array
      * 
      * @tparam T 
      */
-    template <
-        typename T, 
-        typename G = std::span<T>, 
-        typename H = std::span<T>
-    > requires is_span_type<T, G> && is_span_type<T, H>
-    class multispan: public detail::multispan_base<T> {
+    template <typename T> 
+    class multispan {
     protected:
         // the two internal spans
-        G first;
-        H second;
+        std::span<T> _first;
+        std::span<T> _second;
 
     public:
         // member types (no iterators as it is not a continuous 
@@ -80,8 +65,24 @@ namespace klib {
          * @param first 
          * @param second 
          */
-        constexpr multispan(const G& first, const H& second):
-            first(first), second(second)
+        constexpr multispan(const std::span<T>& first, const std::span<T>& second) noexcept:
+            _first(first), _second(second)
+        {}
+
+        /**
+         * @brief Copy constructor for the multispan
+         * 
+         */
+        constexpr multispan(const multispan&) noexcept = default;
+
+        /**
+         * @brief Construct a multispan from a different multispan
+         * 
+         * @tparam G 
+         */
+        template <typename G>
+        constexpr multispan(const multispan<G>& other) noexcept:
+            _first(other.first()), _second(other.second())
         {}
 
         /**
@@ -92,12 +93,12 @@ namespace klib {
          */
         constexpr reference operator[](const uint32_t index) const {
             // check what pointer we should use
-            if (index > first.size()) {
-                return second[index - first.size()];
+            if (index > _first.size()) {
+                return _second[index - _first.size()];
             }
 
             // return the first pointer
-            return first[index];
+            return _first[index];
         }
 
         /**
@@ -106,7 +107,7 @@ namespace klib {
          * @return uint32_t 
          */
         constexpr uint32_t size() const {
-            return first.size() + second.size();
+            return _first.size() + _second.size();
         }
 
         /**
@@ -124,7 +125,30 @@ namespace klib {
          * @return constexpr uint32_t 
          */
         constexpr uint32_t size_bytes() const {
-            return first.size_bytes() + second.size_bytes();
+            return _first.size_bytes() + _second.size_bytes();
+        }
+
+    public:
+        /**
+         * @brief Get a reference to the first std::span
+         * 
+         * @details needed for the copy constructor
+         * 
+         * @return constexpr const std::span<T>& 
+         */
+        constexpr const std::span<T>& first() const {
+            return _first;
+        }
+
+        /**
+         * @brief Get a reference to the first std::span
+         * 
+         * @details needed for the copy constructor
+         * 
+         * @return constexpr const std::span<T>& 
+         */
+        constexpr const std::span<T>& second() const {
+            return _second;
         }
     };
 }

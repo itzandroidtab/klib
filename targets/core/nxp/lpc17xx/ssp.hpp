@@ -192,11 +192,8 @@ namespace klib::core::lpc17xx::io {
          * @param tx 
          * @param rx 
          */
-        template <
-            bool Async = false, typename T, 
-            typename G
-        >
-        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t, T, G>& rx) {
+        template <bool Async = false>
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper<Async>(tx, rx);
         }
 
@@ -206,14 +203,8 @@ namespace klib::core::lpc17xx::io {
          * @param tx 
          * @param rx 
          */
-        template <
-            bool Async = false, typename T, 
-            typename E, typename F
-        >
-        requires (
-            std::same_as<std::remove_cv_t<T>, uint8_t>
-        )
-        static void write_read(const multispan<T, E, F>& tx, const std::span<uint8_t>& rx) {
+        template <bool Async = false>
+        static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper<Async>(tx, rx);
         }
 
@@ -223,14 +214,8 @@ namespace klib::core::lpc17xx::io {
          * @param tx 
          * @param rx 
          */
-        template <
-            bool Async = false, typename T, typename E, 
-            typename F, typename G, typename H
-        >
-        requires (
-            std::same_as<std::remove_cv_t<T>, uint8_t>
-        ) 
-        static void write_read(const multispan<T, E, F>& tx, const multispan<uint8_t, G, H>& rx) {
+        template <bool Async = false>
+        static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper<Async>(tx, rx);
         }
 
@@ -249,14 +234,8 @@ namespace klib::core::lpc17xx::io {
          * 
          * @param data 
          */
-        template <
-            bool Async = false, typename T, 
-            typename E, typename F
-        >
-        requires (
-            std::same_as<std::remove_cv_t<T>, uint8_t>
-        )
-        static void write(const multispan<T, E, F>& data) {
+        template <bool Async = false>
+        static void write(const multispan<const uint8_t>& data) {
             return write_read_helper<Async>(data);
         }
 

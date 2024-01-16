@@ -230,8 +230,7 @@ namespace klib::lpc802::io {
          * @param tx 
          * @param rx 
          */
-        template <typename T, typename G>
-        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t, T, G>& rx) {
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper(tx, rx);
         }
 
@@ -241,13 +240,7 @@ namespace klib::lpc802::io {
          * @param tx 
          * @param rx 
          */
-        template <
-            typename T, typename E, typename F
-        >
-        requires (
-            std::same_as<std::remove_cv_t<T>, uint8_t>
-        )
-        static void write_read(const multispan<T, E, F>& tx, const std::span<uint8_t>& rx) {
+        static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper(tx, rx);
         }
 
@@ -257,14 +250,7 @@ namespace klib::lpc802::io {
          * @param tx 
          * @param rx 
          */
-        template <
-            typename T, typename E, typename F, 
-            typename G, typename H
-        >
-        requires (
-            std::same_as<std::remove_cv_t<T>, uint8_t>
-        ) 
-        static void write_read(const multispan<T, E, F>& tx, const multispan<uint8_t, G, H>& rx) {
+        static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper(tx, rx);
         }
 
@@ -282,13 +268,7 @@ namespace klib::lpc802::io {
          * 
          * @param data 
          */
-        template <
-            typename T, typename E, typename F
-        >
-        requires (
-            std::same_as<std::remove_cv_t<T>, uint8_t>
-        )
-        static void write(const multispan<T, E, F>& data) {
+        static void write(const multispan<const uint8_t>& data) {
             return write_helper(data);
         }
     };
