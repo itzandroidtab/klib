@@ -4,33 +4,6 @@
 #include <cstdint>
 #include <span>
 
-namespace klib::detail {
-    /**
-     * @brief Helper concept to check if two types match
-     * 
-     * @tparam T 
-     * @tparam G 
-     */
-    template<typename T, typename G>
-    concept same_as = std::same_as<std::remove_reference_t<T>, std::remove_reference_t<G>>;
-
-    /**
-     * @brief Concept to check if we have a size function
-     * 
-     * @tparam T 
-     */
-    template <class T, typename G>
-    concept is_span_like = requires(T a) {
-        // check if we have a size function
-        // a.size();
-        a.size();
-
-        // check if we have a operator[] and the 
-        // return matches the expected type
-        { a[0] } -> same_as<G>;
-    };
-}
-
 namespace klib {
     /**
      * @brief Non owning wrapper to map two std::span in a single array
