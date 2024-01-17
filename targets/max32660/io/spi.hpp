@@ -380,20 +380,15 @@ namespace klib::max32660::io {
             // enable the transmit fifo port
             setup_fifo<true, false>();
 
-            // get the amount of data to receive and transmit. The smaller 
-            // between the two must still write/read the data to clear the
-            // fifo
-            const uint32_t size = klib::max(tx.size(), rx.size());
-
             // set the amount of character we want to receive/write
-            Spi::port->CTRL1 = size;
+            Spi::port->CTRL1 = data.size();
 
             uint32_t transmitted = 0;
             bool started = false;
 
-            while ((size - transmitted) > 0) {
+            while ((data.size() - transmitted) > 0) {
                 // write the tx data
-                transmitted += write_fifo(data, size, transmitted);
+                transmitted += write_fifo(data, data.size(), transmitted);
 
                 // check if the transmission is already started
                 if (!started && transmitted) {
