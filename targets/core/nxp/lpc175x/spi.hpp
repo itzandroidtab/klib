@@ -4,8 +4,10 @@
 #include <cstdint>
 
 #include <klib/klib.hpp>
+#include <klib/multispan.hpp>
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
+#include <klib/math.hpp>
 
 #include <io/power.hpp>
 
@@ -42,6 +44,65 @@ namespace klib::core::lpc175x::io {
          */
         static bool is_done() {
             return (Spi::port->SR & (0x1 << 7));
+        }
+
+        /**
+         * @brief Helper function that writes and reads from the spi bus
+         * 
+         * @tparam T 
+         * @tparam G 
+         * @param tx 
+         * @param rx 
+         */
+        template <typename T, typename G>
+        static void write_read_helper(const T& tx, const G& rx) {
+            // get the amount of data to receive and transmit. To read more data
+            // we still need to write. Otherwise we will stall and wait endlessly
+            // on more data
+            const uint32_t size = klib::max(tx.size(), rx.size());
+
+            // write all the data to the fifo
+            for (uint32_t i = 0; i < size; i++) {
+                // write real or dummy data
+                if ((!tx.empty()) || (i < tx.size())) {
+                    Spi::port->DR = tx[i];
+                }
+                else {
+                    Spi::port->DR = 0x00;
+                }
+
+                // wait until the write is done
+                while (!is_done()) {
+                    // do nothing
+                }
+
+                // read the data from the bus
+                const uint32_t data = Spi::port->DR;
+
+                // store the data if we can
+                if ((!rx.empty()) && (i < rx.size())) {
+                    rx[i] = data;
+                }
+            }
+        }
+
+        /**
+         * @brief Helper that writes data to the spi port
+         * 
+         * @tparam T 
+         * @param data 
+         */
+        template <typename T>
+        static void write_helper(const T& data) {
+            for (uint32_t i = 0; i < data.size(); i++) {
+                // write the data
+                Spi::port->DR = data[i];
+
+                // wait until the write is done
+                while (!is_done()) {
+                    // do nothing
+                }
+            }
         }
 
     public:
@@ -94,55 +155,57 @@ namespace klib::core::lpc175x::io {
          * 
          * @param tx 
          * @param rx 
-         * @param size 
          */
-        static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
-            // check if we have a valid pointer to write
-            if (tx == nullptr) {
-                // write all the data to the fifo
-                for (uint32_t i = 0; i < size; i++) {
-                    // write dummy data
-                    Spi::port->DR = 0x00;
+        static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
 
-                    // wait until the write is done
-                    while (!is_done()) {
-                        // do nothing
-                    }
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
 
-                    rx[i] = Spi::port->DR;
-                }
-            }
-            else {
-                for (uint32_t i = 0; i < size; i++) {
-                    // write the data
-                    Spi::port->DR = tx[i];
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
 
-                    // wait until the write is done
-                    while (!is_done()) {
-                        // do nothing
-                    }
-
-                    rx[i] = Spi::port->DR;
-                }
-            }
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
         }
 
         /**
          * @brief Write to the spi bus
          * 
          * @param data 
-         * @param size 
          */
-        static void write(const uint8_t *const data, const uint16_t size) {
-            for (uint32_t i = 0; i < size; i++) {
-                // write the data
-                Spi::port->DR = data[i];
+        static void write(const std::span<const uint8_t>& data) {
+            return write_helper(data);
+        }
 
-                // wait until the write is done
-                while (!is_done()) {
-                    // do nothing
-                }
-            }
+        /**
+         * @brief Write data to the spi bus
+         * 
+         * @param data 
+         */
+        static void write(const multispan<const uint8_t>& data) {
+            return write_helper(data);
         }
     };
 }

@@ -368,8 +368,8 @@ namespace klib::usb::device {
             // send the configuration back to the host
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, &configuration, 
-                sizeof(configuration)
+                usb::endpoint_mode::in, 
+                {&configuration, sizeof(configuration)}
             );
 
             // check if something went wrong already

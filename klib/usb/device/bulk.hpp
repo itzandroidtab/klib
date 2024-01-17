@@ -197,7 +197,7 @@ namespace klib::usb::device {
 
             // start a read on the endpoint
             Usb::read(callback<Usb>, usb::get_endpoint(config.endpoint1.bEndpointAddress), 
-                usb::endpoint_mode::out, data, size
+                usb::endpoint_mode::out, {data, size}
             );
 
             // check if we should exit
@@ -246,7 +246,7 @@ namespace klib::usb::device {
 
             // start to the write to the endpoint
             if (!Usb::write(callback<Usb>, usb::get_endpoint(config.endpoint0.bEndpointAddress), 
-                usb::get_endpoint_mode(config.endpoint0.bEndpointAddress), data, size))
+                usb::get_endpoint_mode(config.endpoint0.bEndpointAddress), {data, size}))
             {
                 return false;
             }
@@ -446,8 +446,8 @@ namespace klib::usb::device {
             // send the configuration back to the host
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, &configuration, 
-                sizeof(configuration)
+                usb::endpoint_mode::in, 
+                {&configuration, sizeof(configuration)}
             );
 
             // check if something went wrong already

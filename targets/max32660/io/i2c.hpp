@@ -231,6 +231,142 @@ namespace klib::max32660::io {
             while (!(I2c::port->INT_FL0 & (0x1 << 6)));
         }
 
+        /**
+         * @brief Helper to read from a device on the i2c bus
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return state if read was successfull
+         */
+        template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<uint8_t>>
+        constexpr static bool read_helper(const uint8_t address, const T& data) {
+            // clear the interrupt status register
+            I2c::port->INT_FL0 = 0xffff;
+            I2c::port->INT_FL1 = 0x3;
+
+            // write the amount of bytes we want to receive in the RX_CTRL1 register
+            I2c::port->RX_CTRL1 = data.size();
+
+            // try to send the slave address
+            if (!send_slave_address<RepeatedStart>(address, true)) {
+                return false;
+            }
+
+            bool failed = false;
+            uint32_t index = 0;
+
+            // read the data
+            while (index < data.size()) {
+                // wait until we have data in the fifo or an error
+                while (!(I2c::port->INT_FL0 & ((0x1 << 4) | (0x1) | error_mask))) {
+                    // do nothing
+                }
+
+                // check if we have data 
+                if (I2c::port->INT_FL0 & ((0x1 << 4) | (0x1))) {
+                    // read the data in the fifo
+                    while ((index < data.size()) && !(I2c::port->STATUS & (0x1 << 1))) {
+                        // read the data from the fifo
+                        data[index] = I2c::port->FIFO;
+
+                        // increment the index
+                        index++;
+                    }
+
+                    // check if done is signaled
+                    if (I2c::port->INT_FL0 & 0x1) {
+                        // check if we got all the data
+                        if (index < data.size()) {
+                            // notify we have failed if we dont have enough
+                            failed = true;
+                        }
+
+                        // clear the done flag
+                        I2c::port->INT_FL0 = 0x1;
+
+                        break;
+                    }
+                    else {
+                        // clear the flag we have data
+                        I2c::port->INT_FL0 = (0x1 << 4);
+                    }
+                }
+                // check if we had a error
+                else {
+                    // send a stop when we have a error
+                    send_stop();
+
+                    // stop the loop. Notify we have failed
+                    return false;
+                }
+            }
+
+            if constexpr (SendStop) {
+                // send a stop
+                send_stop();
+            }
+            
+            // return the status
+            return !failed;
+        }
+
+        /**
+         * @brief Helper to write to a device on the i2c bus
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return state if write was successfull
+         */
+        template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<uint8_t>>
+        constexpr static bool write_helper(const uint8_t address, const T& data) {
+            // clear the interrupt status register
+            I2c::port->INT_FL0 = 0xffff;
+            I2c::port->INT_FL1 = 0x3;
+
+            // try to send the slave address
+            if (!send_slave_address<RepeatedStart>(address, false)) {
+                return false;
+            }
+
+            uint32_t index = 0;
+
+            // try to write as many bytes until the fifo is full
+            while (index < data.size()) {
+                // wait until we have a error or if we have space in the fifo
+                while (!(I2c::port->INT_FL0 & (0x1 << 5)) && !(I2c::port->INT_FL0 & error_mask)) {
+                    // do nothing
+                }
+
+                // check for errors
+                if (I2c::port->INT_FL0 & error_mask) {
+                    // send a stop
+                    send_stop();
+
+                    // return an error
+                    return false;
+                }
+                else {
+                    // write the data to the fifo
+                    I2c::port->FIFO = data[index];
+
+                    index++;
+                }
+            }
+
+            if constexpr (SendStop) {
+                // send a stop
+                send_stop();
+            }
+
+            return true;
+        }
+
     public:
         template <speed Speed = speed::fast>
         constexpr static void init() {
@@ -283,75 +419,23 @@ namespace klib::max32660::io {
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
-        constexpr static bool read(const uint8_t address, uint8_t* const data, const uint8_t size) {
-            // clear the interrupt status register
-            I2c::port->INT_FL0 = 0xffff;
-            I2c::port->INT_FL1 = 0x3;
+        constexpr static bool read(const uint8_t address, std::span<uint8_t>& data) {
+            return read_helper<SendStop, RepeatedStart>(address, data);
+        }
 
-            // write the amount of bytes we want to receive in the RX_CTRL1 register
-            I2c::port->RX_CTRL1 = size;
-
-            // try to send the slave address
-            if (!send_slave_address<RepeatedStart>(address, true)) {
-                return false;
-            }
-
-            bool failed = false;
-            uint32_t index = 0;
-
-            // read the data
-            while (index < size) {
-                // wait until we have data in the fifo or an error
-                while (!(I2c::port->INT_FL0 & ((0x1 << 4) | (0x1) | error_mask))) {
-                    // do nothing
-                }
-
-                // check if we have data 
-                if (I2c::port->INT_FL0 & ((0x1 << 4) | (0x1))) {
-                    // read the data in the fifo
-                    while (index < size && !(I2c::port->STATUS & (0x1 << 1))) {
-                        // read the data from the fifo
-                        data[index] = I2c::port->FIFO;
-
-                        // increment the index
-                        index++;
-                    }
-
-                    // check if done is signaled
-                    if (I2c::port->INT_FL0 & 0x1) {
-                        // check if we got all the data
-                        if (index < size) {
-                            // notify we have failed if we dont have enough
-                            failed = true;
-                        }
-
-                        // clear the done flag
-                        I2c::port->INT_FL0 = 0x1;
-
-                        break;
-                    }
-                    else {
-                        // clear the flag we have data
-                        I2c::port->INT_FL0 = (0x1 << 4);
-                    }
-                }
-                // check if we had a error
-                else {
-                    // send a stop when we have a error
-                    send_stop();
-
-                    // stop the loop. Notify we have failed
-                    return false;
-                }
-            }
-
-            if constexpr (SendStop) {
-                // send a stop
-                send_stop();
-            }
-            
-            // return the status
-            return !failed;
+        /**
+         * @brief Read from a device on the i2c bus
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return state if read was successfull
+         */
+        template <bool SendStop = true, bool RepeatedStart = false>
+        constexpr static bool read(const uint8_t address, multispan<uint8_t>& data) {
+            return read_helper<SendStop, RepeatedStart>(address, data);
         }
 
         /**
@@ -365,47 +449,23 @@ namespace klib::max32660::io {
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
-        constexpr static bool write(const uint8_t address, const uint8_t* const data, const uint32_t size) {
-            // clear the interrupt status register
-            I2c::port->INT_FL0 = 0xffff;
-            I2c::port->INT_FL1 = 0x3;
+        constexpr static bool write(const uint8_t address, std::span<const uint8_t>& data) {
+            return write_helper<SendStop, RepeatedStart>(address, data);
+        }
 
-            // try to send the slave address
-            if (!send_slave_address<RepeatedStart>(address, false)) {
-                return false;
-            }
-
-            uint32_t index = 0;
-
-            // try to write as many bytes until the fifo is full
-            while (index < size) {
-                // wait until we have a error or if we have space in the fifo
-                while (!(I2c::port->INT_FL0 & (0x1 << 5)) && !(I2c::port->INT_FL0 & error_mask)) {
-                    // do nothing
-                }
-
-                // check for errors
-                if (I2c::port->INT_FL0 & error_mask) {
-                    // send a stop
-                    send_stop();
-
-                    // return an error
-                    return false;
-                }
-                else {
-                    // write the data to the fifo
-                    I2c::port->FIFO = data[index];
-
-                    index++;
-                }
-            }
-
-            if constexpr (SendStop) {
-                // send a stop
-                send_stop();
-            }
-
-            return true;
+        /**
+         * @brief Write to a device on the i2c bus
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return state if read was successfull
+         */
+        template <bool SendStop = true, bool RepeatedStart = false>
+        constexpr static bool write(const uint8_t address, multispan<const uint8_t>& data) {
+            return write_helper<SendStop, RepeatedStart>(address, data);
         }
 
         /**

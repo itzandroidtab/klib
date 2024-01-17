@@ -248,10 +248,9 @@ namespace klib::usb::device {
                     // this. Data should also be static to make sure it
                     // is still allocated when the dma is sending it)
                     if (Usb::write(callback_handler<Usb>, klib::usb::usb::control_endpoint, 
-                        usb::endpoint_mode::in, const_cast<const uint8_t *>(
+                        usb::endpoint_mode::in, {const_cast<const uint8_t *>(
                             reinterpret_cast<const volatile uint8_t *>(&current_state)
-                        ), 
-                        sizeof(current_state)))
+                        ), sizeof(current_state)}))
                     {
                         // return we should wait on the ack from the write
                         return usb::handshake::wait;
@@ -308,7 +307,8 @@ namespace klib::usb::device {
 
                     // write the status to the host
                     if (Usb::write(callback_handler<Usb>, klib::usb::usb::control_endpoint, 
-                         usb::endpoint_mode::in, reinterpret_cast<const uint8_t *const>(&status), sizeof(status)))
+                         usb::endpoint_mode::in, {reinterpret_cast<const uint8_t *const>(&status), 
+                         sizeof(status)}))
                     {
                         // return we should wait on the ack from the write
                         return usb::handshake::wait;
@@ -375,7 +375,7 @@ namespace klib::usb::device {
 
                     // we have a non 0 length packet. Read the data
                     Usb::read(callback_handler<Usb>, klib::usb::usb::control_endpoint, 
-                        usb::endpoint_mode::in, buffer, length
+                        usb::endpoint_mode::in, {buffer, length}
                     );
 
                     // check if this is a new download
@@ -516,8 +516,8 @@ namespace klib::usb::device {
             // send the configuration back to the host
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, &configuration, 
-                sizeof(configuration)
+                usb::endpoint_mode::in, 
+                {&configuration, sizeof(configuration)}
             );
 
             // check if something went wrong already

@@ -1,6 +1,7 @@
 #ifndef KLIB_NXP_LPC17XX_SSP_HPP
 #define KLIB_NXP_LPC17XX_SSP_HPP
 
+#include <klib/multispan.hpp>
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
 
@@ -25,18 +26,23 @@ namespace klib::core::lpc17xx::io {
         /**
          * @brief Write size amount of data to the fifo buffer
          * 
+         * @tparam T 
          * @param data 
          * @param size 
          * @param transmitted 
          * @return uint16_t 
          */
-        static uint16_t write_fifo(const uint8_t *const data, const uint16_t size, const uint16_t transmitted) {
+        template <typename T>
+        static uint16_t write_fifo(const T& data, const uint16_t size, const uint16_t transmitted) {
             uint16_t t = 0;
 
-            // write as many bytes until the fifo is full
-            while ((Ssp::port->SR & (0x1 << 1)) && ((transmitted + t) < size)) {
-                // write dummy data if we have a nullptr
-                if (data == nullptr) {
+            // write as many bytes until the fifo is full (or until we have half 
+            // the rx fifo filled. This is so we do not miss any received data 
+            // when high ssp speeds are used)
+            while ((Ssp::port->SR & (0x1 << 1)) && ((transmitted + t) < size) && !(Ssp::port->RIS & (0x1 << 2))) {
+                // write dummy data if we dont have data or if we need 
+                // to send more data we have in the buffer
+                if (data.empty() || ((transmitted + t) >= data.size())) {
                     Ssp::port->DR = 0x00;
                 }
                 else {
@@ -53,12 +59,14 @@ namespace klib::core::lpc17xx::io {
         /**
          * @brief Read size amount of data from the fifo buffer
          * 
+         * @tparam T 
          * @param data 
          * @param size 
          * @param received 
          * @return uint16_t 
          */
-        static uint16_t read_fifo(uint8_t *const data, const uint16_t size, const uint16_t received) {
+        template <typename T>
+        static uint16_t read_fifo(const T& data, const uint16_t size, const uint16_t received) {
             uint16_t r = 0;
 
             // read as much data as we can
@@ -67,7 +75,7 @@ namespace klib::core::lpc17xx::io {
                 const uint16_t d = Ssp::port->DR;
 
                 // store the value if we do not have a nullptr
-                if (data != nullptr) {
+                if ((!data.empty()) && ((received + r) < data.size())) {
                     data[received + r] = d;
                 }
 
@@ -76,6 +84,43 @@ namespace klib::core::lpc17xx::io {
             }
 
             return r;
+        }
+
+        /**
+         * @brief Helper to write and read from the ssp bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <
+            bool Async = false, typename T, 
+            typename G
+        > 
+        static void write_read_helper(const T& tx, const G& rx) {
+            // amount of data received/transmitted
+            uint32_t transmitted = 0;
+            uint32_t received = 0;
+
+            // get the amount of data to receive and transmit. The smaller 
+            // between the two must still write/read the data to clear the
+            // fifo
+            const uint32_t size = klib::max(tx.size(), rx.size());
+
+            // write and read until we are done
+            while ((size - transmitted) > 0 || (size - received) > 0) {
+                // write the tx data
+                transmitted += write_fifo(tx, size, transmitted);
+
+                // read the rx data
+                received += read_fifo(rx, size, received);
+            }
+
+            // check if we should wait until completion
+            if constexpr (!Async) {
+                while (is_busy()) {
+                    // wait until we are done
+                }
+            }
         }
 
     public:
@@ -129,47 +174,69 @@ namespace klib::core::lpc17xx::io {
             Ssp::port->CR1 = 0x1 << 1;
         }
 
+
         /**
-         * @brief Write and read from the ssp bus
+         * @brief Write and read from the spi bus
          * 
          * @param tx 
          * @param rx 
-         * @param size 
          */
         template <bool Async = false>
-        static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
-            // amount of data received/transmitted
-            uint32_t transmitted = 0;
-            uint32_t received = 0;
-
-            // write and read until we are done
-            while ((size - transmitted) > 0 || (size - received) > 0) {
-                // write the tx data
-                transmitted += write_fifo(tx, size, transmitted);
-
-                // read the rx data
-                received += read_fifo(rx, size, received);
-            }
-
-            // check if we should wait until completion
-            if constexpr (!Async) {
-                while (is_busy()) {
-                    // wait until we are done
-                }
-            }
+        static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper<Async>(tx, rx);
         }
 
         /**
-         * @brief Write to the ssp bus
+         * @brief Write and read from the spi bus
          * 
-         * @warning not all data is written unless not busy anymore
-         * 
-         * @param data 
-         * @param size 
+         * @param tx 
+         * @param rx 
          */
         template <bool Async = false>
-        static void write(const uint8_t *const data, const uint16_t size) {
-            write_read<Async>(data, nullptr, size);
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper<Async>(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <bool Async = false>
+        static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper<Async>(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <bool Async = false>
+        static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper<Async>(tx, rx);
+        }
+
+        /**
+         * @brief Write to the spi bus
+         * 
+         * @param data 
+         */
+        template <bool Async = false>
+        static void write(const std::span<const uint8_t>& data) {
+            return write_read_helper<Async>(data, std::span<uint8_t>{});
+        }
+
+        /**
+         * @brief Write data to the spi bus
+         * 
+         * @param data 
+         */
+        template <bool Async = false>
+        static void write(const multispan<const uint8_t>& data) {
+            return write_read_helper<Async>(data, std::span<uint8_t>{});
         }
 
         /**

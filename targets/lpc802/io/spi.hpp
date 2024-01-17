@@ -2,6 +2,7 @@
 #define KLIB_LPC802_SPI_HPP
 
 #include <klib/io/bus/spi.hpp>
+#include <klib/multispan.hpp>
 
 #include "pins.hpp"
 #include "matrix.hpp"
@@ -55,53 +56,19 @@ namespace klib::lpc802::io {
         // check if we are in 8 bit mode
         static_assert(Bits == klib::io::spi::bits::bit_8, "Only 8 bit mode is currently supported");
 
-    public:
-        template <
-            typename Sck, typename Mosi, 
-            typename Miso, typename Cs,
-            klib::io::spi::mode Mode = klib::io::spi::mode::mode0,
-            uint32_t Frequency = 1'000'000
-        >
-        constexpr static void init() {
-            // enable the spi perihperal clock
-            clocks::enable<Spi>();
-
-            // configure the pins using the switch matrix
-            using matrix = matrix<periph::matrix0>;
-
-            // setup the matrix with the supplied pins
-            matrix::setup<Sck, matrix::flex_matrix::spi0_sck>();
-            matrix::setup<Mosi, matrix::flex_matrix::spi0_mosi>();
-            matrix::setup<Miso, matrix::flex_matrix::spi0_miso>();
-
-            // check if we should setup the cs
-            if constexpr (!ExternalCs) {
-                matrix::setup<Cs, matrix::flex_matrix::spi0_ssel0>();
-            }
-
-            // setup the spi clock
-            // TODO: make the clock selectable (currently set to Main clock)
-            SYSCON->SPI0CLKSEL = 1;
-
-            // set the spi configuration (master mode and spi mode)
-            Spi::port->CFG = (
-                (0x1 << 2) | 
-                (klib::io::spi::get_cpol<Mode>() << 5) |
-                (klib::io::spi::get_cpha<Mode>() << 4)
-            );
-
-            // enable the spi
-            Spi::port->CFG |= 0x1;
-        }
-
         /**
-         * @brief Write and read from the spi bus
+         * @brief Helper to write and read from the spi bus
          * 
+         * @tparam T 
+         * @tparam G 
          * @param tx 
          * @param rx 
-         * @param size 
          */
-        static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
+        template <typename T, typename G> 
+        static void write_read_helper(const T& tx, const G& rx) {
+            // get the size we should read/write
+            const auto size = klib::min(tx.size(), rx.size());
+
             // check if we need to write anything
             if (!size) {
                 // exit if we do not need to write anything
@@ -157,14 +124,15 @@ namespace klib::lpc802::io {
         }
 
         /**
-         * @brief Write to the spi bus
+         * @brief Helper to write to the spi bus
          * 
+         * @tparam T 
          * @param data 
-         * @param size 
          */
-        static void write(const uint8_t *const data, const uint16_t size) {
+        template <typename T>
+        static void write_helper(const T& data) {
             // check if we need to write anything
-            if (!size) {
+            if (!data.size()) {
                 // exit if we do not need to write anything
                 return;
             }
@@ -182,7 +150,7 @@ namespace klib::lpc802::io {
             }
 
             // write all the data to the hardware
-            for (uint32_t i = 1; i < size; i++) {
+            for (uint32_t i = 1; i < data.size(); i++) {
                 // wait until we can transmit
                 while (!(Spi::port->STAT & (0x1 << 1))) {
                     // wait until we are done writing the previous data
@@ -195,7 +163,7 @@ namespace klib::lpc802::io {
                 }
                 else {
                     // check if we are the last write in the data
-                    if (i + 1 >= size) {
+                    if (i + 1 >= data.size()) {
                         // set the end of transfer bit
                         Spi::port->TXDATCTL = data[i] | (0x1 << 20);
                     }
@@ -205,6 +173,103 @@ namespace klib::lpc802::io {
                     }
                 }
             }
+        }
+
+    public:
+        template <
+            typename Sck, typename Mosi, 
+            typename Miso, typename Cs,
+            klib::io::spi::mode Mode = klib::io::spi::mode::mode0,
+            uint32_t Frequency = 1'000'000
+        >
+        constexpr static void init() {
+            // enable the spi perihperal clock
+            clocks::enable<Spi>();
+
+            // configure the pins using the switch matrix
+            using matrix = matrix<periph::matrix0>;
+
+            // setup the matrix with the supplied pins
+            matrix::setup<Sck, matrix::flex_matrix::spi0_sck>();
+            matrix::setup<Mosi, matrix::flex_matrix::spi0_mosi>();
+            matrix::setup<Miso, matrix::flex_matrix::spi0_miso>();
+
+            // check if we should setup the cs
+            if constexpr (!ExternalCs) {
+                matrix::setup<Cs, matrix::flex_matrix::spi0_ssel0>();
+            }
+
+            // setup the spi clock
+            // TODO: make the clock selectable (currently set to Main clock)
+            SYSCON->SPI0CLKSEL = 1;
+
+            // set the spi configuration (master mode and spi mode)
+            Spi::port->CFG = (
+                (0x1 << 2) | 
+                (klib::io::spi::get_cpol<Mode>() << 5) |
+                (klib::io::spi::get_cpha<Mode>() << 4)
+            );
+
+            // enable the spi
+            Spi::port->CFG |= 0x1;
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
+
+        /**
+         * @brief Write to the spi bus
+         * 
+         * @param data 
+         */
+        static void write(const std::span<const uint8_t>& data) {
+            return write_helper(data);
+        }
+
+        /**
+         * @brief Write data to the spi bus
+         * 
+         * @param data 
+         */
+        static void write(const multispan<const uint8_t>& data) {
+            return write_helper(data);
         }
     };
 }

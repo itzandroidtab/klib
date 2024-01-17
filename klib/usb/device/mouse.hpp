@@ -411,8 +411,8 @@ namespace klib::usb::device {
             // send the configuration back to the host
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, &configuration, 
-                sizeof(configuration)
+                usb::endpoint_mode::in, 
+                {&configuration, sizeof(configuration)}
             );
 
             // check if something went wrong already
@@ -453,8 +453,8 @@ namespace klib::usb::device {
 
                 // write the inital report
                 if (Usb::write(hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f, 
-                    usb::endpoint_mode::in, reinterpret_cast<const uint8_t*>(&report_data), 
-                    sizeof(report_data))) 
+                    usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&report_data), 
+                    sizeof(report_data)})) 
                 {
                     // no issue for now ack
                     return usb::handshake::ack;
@@ -524,8 +524,8 @@ namespace klib::usb::device {
                     // write the data to the control endpoint
                     if (Usb::write(
                             nullptr, usb::control_endpoint, usb::endpoint_mode::in, 
-                            reinterpret_cast<const uint8_t*>(&report_data), 
-                            sizeof(report_data))) 
+                            {reinterpret_cast<const uint8_t*>(&report_data), 
+                            sizeof(report_data)})) 
                     {
                         // no issue for now ack
                         return usb::handshake::ack;
@@ -549,8 +549,8 @@ namespace klib::usb::device {
                         // write the data to the control endpoint
                         if (Usb::write(
                             nullptr, usb::control_endpoint, usb::endpoint_mode::in, 
-                            reinterpret_cast<const uint8_t*>(&report_data),
-                            sizeof(report_data))) 
+                            {reinterpret_cast<const uint8_t*>(&report_data),
+                            sizeof(report_data)})) 
                         {
                             // no issue for now ack
                             return usb::handshake::ack;
