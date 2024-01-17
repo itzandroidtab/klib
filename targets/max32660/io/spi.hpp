@@ -232,7 +232,8 @@ namespace klib::max32660::io {
          * @param transmitted 
          * @return uint16_t 
          */
-        static uint16_t write_fifo(const uint8_t *const data, const uint16_t size, const uint16_t transmitted) {
+        template <typename T>
+        static uint16_t write_fifo(const T& data, const uint16_t size, const uint16_t transmitted) {
             // get the amount of space available in the fifo
             const uint8_t available_bytes = (fifo_size - (Spi::port->DMA >> 8) & 0x7f);
 
@@ -250,16 +251,12 @@ namespace klib::max32660::io {
             }
 
             // check if we have a valid pointer to write
-            if (data == nullptr) {
-                // write all the data to the fifo
-                for (uint32_t i = 0; i < t; i++) {
-                    // write 1 byte at the time
+            for (uint32_t i = 0; i < t; i++) {
+                if (data.empty() || ((transmitted + i) >= data.size())) {
+                    // write zero instead of going out of bounds
                     Spi::port->DATA8[0] = 0x00;
                 }
-            }
-            else {
-                // write all the data to the fifo
-                for (uint32_t i = 0; i < t; i++) {
+                else {
                     // write 1 byte at the time
                     Spi::port->DATA8[0] = data[transmitted + i];
                 }
@@ -276,7 +273,8 @@ namespace klib::max32660::io {
          * @param received 
          * @return uint16_t 
          */
-        static uint16_t read_fifo(uint8_t *const data, const uint16_t size, const uint16_t received) {
+        template <typename T>
+        static uint16_t read_fifo(const T& data, const uint16_t size, const uint16_t received) {
             // get the amount of space available in the fifo
             const uint8_t available_bytes = ((Spi::port->DMA >> 24) & 0x7f);
 
@@ -296,7 +294,12 @@ namespace klib::max32660::io {
             // read from the fifo buffer
             for (uint32_t i = 0; i < t; i++) {
                 // read 1 byte at the time
-                data[received + i] = Spi::port->DATA8[0];
+                const uint8_t rx = Spi::port->DATA8[0];
+
+                // store the data if we have a valid buffer
+                if ((!data.empty()) && ((received + i) < data.size())) {
+                    data[received + i] = rx;
+                }
             }
 
             return t;
@@ -310,7 +313,97 @@ namespace klib::max32660::io {
          */
         static bool is_done() {
             return (Spi::port->INT_FL & (0x1 << 11));
-        } 
+        }
+
+        /**
+         * @brief Helper to write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        template <typename T, typename G> 
+        static void write_read_helper(const T& tx, const G& rx) {
+            // clear the fifo buffers
+            Spi::port->DMA |= (0x1 << 23) | (0x1 << 7);
+
+            // clear the master data transmission done flag
+            Spi::port->INT_FL = (0x1 << 11);
+
+            // enable the transmit fifo port
+            setup_fifo<true, true>();
+
+            // get the amount of data to receive and transmit. The smaller 
+            // between the two must still write/read the data to clear the
+            // fifo
+            const uint32_t size = klib::max(tx.size(), rx.size());
+
+            // set the amount of character we want to receive/write
+            Spi::port->CTRL1 = size;
+
+            // amount of data received/transmitted
+            uint32_t transmitted = 0;
+            uint32_t received = 0;
+
+            // flag if we have started the spi transmission
+            bool started = false;
+
+            while ((size - transmitted) > 0 || (size - received) > 0) {
+                // write the tx data
+                transmitted += write_fifo(tx, size, transmitted);
+
+                // read the rx data
+                received += read_fifo(rx, size, received);
+
+                // check if the transmission is already started
+                if (!started && (transmitted || received)) {
+                    // start the transmission
+                    Spi::port->CTRL0 |= (0x1 << 5);
+
+                    started = true;
+                }
+            }
+
+            // wait until we are done
+            while (!is_done()) {
+                // do nothing
+            }
+        }
+
+        template <typename T>
+        static void write_helper(const T& data) {
+            // clear the fifo buffers
+            Spi::port->DMA |= (0x1 << 23) | (0x1 << 7);
+
+            // clear the master data transmission done flag
+            Spi::port->INT_FL = (0x1 << 11);
+
+            // enable the transmit fifo port
+            setup_fifo<true, false>();
+
+            // set the amount of character we want to receive/write
+            Spi::port->CTRL1 = size;
+
+            uint32_t transmitted = 0;
+            bool started = false;
+
+            while ((size - transmitted) > 0) {
+                // write the tx data
+                transmitted += write_fifo(data, size, transmitted);
+
+                // check if the transmission is already started
+                if (!started && transmitted) {
+                    // start the transmission
+                    Spi::port->CTRL0 |= (0x1 << 5);
+
+                    started = true;
+                }
+            }
+
+            // wait until we are done
+            while (!is_done()) {
+                // do nothing
+            }
+        }
 
     public:
         template <
@@ -367,105 +460,57 @@ namespace klib::max32660::io {
          * 
          * @param tx 
          * @param rx 
-         * @param size 
          */
-        static void write_read(const uint8_t *const tx, uint8_t *const rx, const uint16_t size) {
-            // clear the fifo buffers
-            Spi::port->DMA |= (0x1 << 23) | (0x1 << 7);
+        static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
 
-            // clear the master data transmission done flag
-            Spi::port->INT_FL = (0x1 << 11);
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
 
-            // enable the transmit fifo port
-            setup_fifo<true, true>();
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
+        }
 
-            // set the amount of character we want to receive/write
-            Spi::port->CTRL1 = size;
-
-            // amount of data received/transmitted
-            uint32_t transmitted = 0;
-            uint32_t received = 0;
-
-            bool started = false;
-
-            while ((size - transmitted) > 0 || (size - received) > 0) {
-                // write the tx data
-                const uint16_t t = write_fifo(tx, size, transmitted);
-
-                // read the rx data
-                const uint16_t r = read_fifo(rx, size, received);
-
-                // check if we did something
-                if (!t && !r) {
-                    continue;
-                }
-
-                // check if the transmission is already started
-                if (!started) {
-                    // start the transmission
-                    Spi::port->CTRL0 |= (0x1 << 5);
-
-                    started = true;
-                }
-
-                // add the amount of data we have transmitted
-                transmitted += t;
-                received += r;
-            }
-
-            // wait until we are done
-            while (!is_done()) {
-                // do nothing
-            }
+        /**
+         * @brief Write and read from the spi bus
+         * 
+         * @param tx 
+         * @param rx 
+         */
+        static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper(tx, rx);
         }
 
         /**
          * @brief Write to the spi bus
          * 
          * @param data 
-         * @param size 
          */
-        static void write(const uint8_t *const data, const uint16_t size) {
-            // clear the fifo buffers
-            Spi::port->DMA |= (0x1 << 23) | (0x1 << 7);
+        static void write(const std::span<const uint8_t>& data) {
+            return write_helper(data);
+        }
 
-            // clear the master data transmission done flag
-            Spi::port->INT_FL = (0x1 << 11);
-
-            // enable the transmit fifo port
-            setup_fifo<true, false>();
-
-            // set the amount of character we want to receive/write
-            Spi::port->CTRL1 = size;
-
-            uint32_t transmitted = 0;
-            bool started = false;
-
-            while ((size - transmitted) > 0) {
-                // write the tx data
-                const uint16_t t = write_fifo(data, size, transmitted);
-
-                // check if we did something
-                if (!t) {
-                    continue;
-                }
-
-                // check if the transmission is already started
-                if (!started) {
-                    // start the transmission
-                    Spi::port->CTRL0 |= (0x1 << 5);
-
-                    started = true;
-                }
-
-                // add the amount of data we have transmitted
-                transmitted += t;
-            }
-
-            // wait until we are done
-            while (!is_done()) {
-                // do nothing
-            }
+        /**
+         * @brief Write data to the spi bus
+         * 
+         * @param data 
+         */
+        static void write(const multispan<const uint8_t>& data) {
+            return write_helper(data);
         }
     };
 
