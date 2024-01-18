@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <span>
+#include <array>
 
 namespace klib {
     /**
@@ -13,9 +14,11 @@ namespace klib {
     template <typename T> 
     class multispan {
     protected:
+        // amount of items in the buffer
+        constexpr static uint32_t Amount = 2;
+
         // the two internal spans
-        std::span<T> _first;
-        std::span<T> _second;
+        std::array<std::span<T>, Amount> storage;
 
     public:
         // member types (no iterators as it is not a continuous 
@@ -38,8 +41,9 @@ namespace klib {
          * @param first 
          * @param second 
          */
-        constexpr multispan(const std::span<T>& first, const std::span<T>& second) noexcept:
-            _first(first), _second(second)
+        template <typename... E> 
+        constexpr multispan(const std::span<T>& first, const std::span<T>& second):
+            storage{first, second}
         {}
 
         /**
@@ -55,7 +59,7 @@ namespace klib {
          */
         template <typename G>
         constexpr multispan(const multispan<G>& other) noexcept:
-            _first(other.first()), _second(other.second())
+            storage(other.store())
         {}
 
         /**
@@ -65,13 +69,21 @@ namespace klib {
          * @return constexpr T& 
          */
         constexpr reference operator[](const uint32_t index) const {
-            // check what pointer we should use
-            if (index > _first.size()) {
-                return _second[index - _first.size()];
+            uint32_t offset = 0;
+
+            // check where we need to point to
+            for (auto& s: storage) {
+                const auto x = index - offset;
+
+                if (x < s.size()) {
+                    return s[x];
+                }
+                
+                offset += s.size();
             }
 
-            // return the first pointer
-            return _first[index];
+            // we are out of bounds. This is undefined behaviour
+            return storage[Amount - 1].end();
         }
 
         /**
@@ -80,7 +92,13 @@ namespace klib {
          * @return uint32_t 
          */
         constexpr uint32_t size() const {
-            return _first.size() + _second.size();
+            uint32_t count = 0;
+
+            for (auto& s: storage) {
+                count += s.size();
+            }
+
+            return count;
         }
 
         /**
@@ -98,30 +116,25 @@ namespace klib {
          * @return constexpr uint32_t 
          */
         constexpr uint32_t size_bytes() const {
-            return _first.size_bytes() + _second.size_bytes();
+            uint32_t count = 0;
+
+            for (auto& s: storage) {
+                count += s.size_bytes();
+            }
+
+            return count;
         }
 
     public:
         /**
-         * @brief Get a reference to the first std::span
+         * @brief Get a reference to the storage
          * 
          * @details needed for the copy constructor
          * 
          * @return constexpr const std::span<T>& 
          */
-        constexpr const std::span<T>& first() const {
-            return _first;
-        }
-
-        /**
-         * @brief Get a reference to the first std::span
-         * 
-         * @details needed for the copy constructor
-         * 
-         * @return constexpr const std::span<T>& 
-         */
-        constexpr const std::span<T>& second() const {
-            return _second;
+        constexpr const std::array<std::span<T>, Amount>& store() const {
+            return storage;
         }
     };
 }
