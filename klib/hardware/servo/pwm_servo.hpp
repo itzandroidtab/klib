@@ -1,5 +1,5 @@
-#ifndef KLIB_SERVO_HPP
-#define KLIB_SERVO_HPP
+#ifndef KLIB_PWM_SERVO_HPP
+#define KLIB_PWM_SERVO_HPP
 
 #include <stdint.h>
 
@@ -8,7 +8,7 @@
 
 namespace klib::io {
     template<typename Pin, klib::time::us MinPulse = 500, klib::time::us MaxPulse = 2500>
-    class servo {
+    class pwm_servo {
     protected:
         /**
          * @brief Calculate the duty cycle needed for a specific position 
