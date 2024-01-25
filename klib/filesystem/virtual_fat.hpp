@@ -5,6 +5,8 @@
 #include <type_traits>
 #include <algorithm>
 
+#include <klib/string.hpp>
+
 namespace klib::filesystem::detail {
     /**
      * @brief fat file attributes
