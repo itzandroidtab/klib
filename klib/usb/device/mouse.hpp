@@ -225,8 +225,8 @@ namespace klib::usb::device {
 
             // send the report to the host
             Usb::write(hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f, 
-                usb::endpoint_mode::in, reinterpret_cast<const uint8_t*>(&report_data), 
-                sizeof(report_data)
+                usb::endpoint_mode::in, 
+                {reinterpret_cast<const uint8_t*>(&report_data), sizeof(report_data)}
             );
 
             if constexpr (!Async) {
