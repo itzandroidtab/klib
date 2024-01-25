@@ -9,6 +9,7 @@
 #include <klib/usb/hid/descriptor.hpp>
 
 namespace klib::usb::device {
+    template <uint32_t Endpoint = 6>
     class mouse_hid {
     protected:
         /**
@@ -144,7 +145,7 @@ namespace klib::usb::device {
                 .wDescriptorLength = sizeof(report)
             },
             {
-                .bEndpointAddress = 0x84,
+                .bEndpointAddress = 0x80 | Endpoint,
                 .bmAttributes = 0x03,
                 .wMaxPacketSize = 0x0040,
                 .bInterval = 0x01
