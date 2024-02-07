@@ -1,6 +1,8 @@
 #ifndef KLIB_ST7789_HPP
 #define KLIB_ST7789_HPP
 
+#include <span>
+
 #include <klib/delay.hpp>
 #include <klib/vector2.hpp>
 #include <klib/graphics/color.hpp>
