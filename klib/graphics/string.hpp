@@ -9,25 +9,13 @@
 #include "font.hpp"
 
 namespace klib::graphics {
-    template <typename F>
+    template <typename Font>
     class string {
     protected:
         // using for color
         using color = klib::graphics::color;
 
-        // the font the string uses to display text
-        const F& font;
-
     public:
-        /**
-         * @brief Construct a graphics string object
-         * 
-         * @param font 
-         */
-        string(const F& font):
-            font(font)
-        {}
-
         /**
          * @brief Draws a single character to the framebuffer
          * 
@@ -38,13 +26,13 @@ namespace klib::graphics {
          * @param background 
          */
         template <typename Fb>
-        void draw(Fb& framebuffer, const char ch, 
+        static void draw(Fb& framebuffer, const char ch, 
             const klib::vector2i& position = {}, 
             const color foreground = klib::graphics::black, 
-            const color background = klib::graphics::transparent) const         
+            const color background = klib::graphics::transparent)         
         {
             // get the bitmap of the character
-            const auto bitmap = font.get_character(ch);
+            const auto bitmap = Font::get_character(ch);
 
             // draw the bitmap at the target location
             bitmap.draw(framebuffer, position, foreground, background);
@@ -61,10 +49,10 @@ namespace klib::graphics {
          * @param background 
          */
         template <typename Fb>
-        void draw(Fb& framebuffer, const char* str, 
+        static void draw(Fb& framebuffer, const char* str, 
             const klib::vector2i& position = {}, 
             const color foreground = klib::graphics::black, 
-            const color background = klib::graphics::transparent) const 
+            const color background = klib::graphics::transparent) 
         {
             // make sure we have a valid string
             if (!str) {
@@ -75,7 +63,7 @@ namespace klib::graphics {
             for (uint32_t i = 0; str[i] != 0x00; i++) {
                 // draw every character
                 draw(
-                    framebuffer, str[i], position + klib::vector2i((font.width * i), 0), 
+                    framebuffer, str[i], position + klib::vector2i((Font::width * i), 0), 
                     foreground, background
                 );
             }

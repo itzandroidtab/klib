@@ -6,28 +6,19 @@
 #include "bitmap.hpp"
 
 namespace klib::graphics {
-    template <uint32_t Width, uint32_t Height>
-    class font {
-    public:
-        constexpr static uint32_t width = Width;
-        constexpr static uint32_t height = Height;
-
-    public:
-        /**
-         * @brief Get a character from the font
-         * 
-         * @param ch 
-         * @return mono_bitmap<width, height> 
-         */
-        constexpr mono_bitmap<width, height> get_character(const char ch) const;
-    };
+    class ascii_font_16x16;
 
     /**
-     * @brief Example 8x8 ascii font
+     * @brief 8x8 ascii font
      * 
      */
-    class ascii_font_8x8: public font<8, 8> {
+    class ascii_font_8x8 {
     public:
+        // width and height of the font
+        constexpr static uint32_t width = 8;
+        constexpr static uint32_t height = 8;
+
+    protected:
         constexpr static mono_bitmap<8, 8> characters[] = {
             {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // space
             {0x18, 0x3c, 0x3c, 0x18, 0x18, 0x00, 0x18, 0x00}, // !
@@ -126,13 +117,14 @@ namespace klib::graphics {
             {0x76, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // ~ 
         };
 
+    public:
         /**
          * @brief Get a character from the font
          * 
          * @param ch 
          * @return mono_bitmap<width, height> 
          */
-        constexpr mono_bitmap<8, 8> get_character(const char ch) const {
+        constexpr static mono_bitmap<8, 8> get_character(const char ch) {
             if (ch > (' ' + sizeof(characters) / sizeof(characters[0])) || ch < ' ') {
                 return characters[0];
             }
@@ -145,7 +137,12 @@ namespace klib::graphics {
      * @brief Example 8x8 ascii font
      * 
      */
-    class ascii_font_16x16: public font<16, 16> {
+    class ascii_font_16x16: private ascii_font_8x8 {
+    public:
+        // width and height of the font
+        constexpr static uint32_t width = 16;
+        constexpr static uint32_t height = 16;
+
     protected:
         /**
          * @brief Expand the lower nibble to 8 bits by 
@@ -195,7 +192,7 @@ namespace klib::graphics {
          * @param ch 
          * @return mono_bitmap<width, height> 
          */
-        constexpr mono_bitmap<16, 16> get_character(const char ch) const {
+        constexpr static mono_bitmap<16, 16> get_character(const char ch) {
             if (ch > (' ' + sizeof(ascii_font_8x8::characters) / sizeof(ascii_font_8x8::characters[0])) || ch < ' ') {
                 return convert(0);
             }
