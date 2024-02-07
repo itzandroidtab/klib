@@ -22,7 +22,7 @@ jobs:
         cpu: [atsam3x8e, lpc802, lpc1752, lpc1756, lpc1759, lpc1788, lpc55s66, max32625, max32660, stm32f103, stm32f407, stm32h723, tmpm373]
 
     steps:
-      - uses: actions/checkout
+      - uses: actions/checkout@v4
 
       - name: arm-none-eabi-gcc install
         uses: carlosperate/arm-none-eabi-gcc-action@v1.8.1
@@ -33,7 +33,7 @@ jobs:
         run: arm-none-eabi-gcc --version
 
       - name: getting arm headers
-        uses: actions/checkout
+        uses: actions/checkout@v4
         with:
           repository: ARM-software/CMSIS_5
           ref: 'develop'
