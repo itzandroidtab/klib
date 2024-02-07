@@ -8,6 +8,14 @@
 #include "color.hpp"
 
 namespace klib::graphics {
+    /**
+     * @brief Bitmap for colors. Colors with less than 8 bits use 8 bits
+     * for every pixel
+     * 
+     * @tparam Width 
+     * @tparam Height 
+     * @tparam Mode 
+     */
     template <uint32_t Width, uint32_t Height, mode Mode>
     class bitmap {
     protected:
@@ -108,6 +116,13 @@ namespace klib::graphics {
         }
     };
 
+    /**
+     * @brief Bitmap for mono images (1 bit per pixel). Uses optimisation to 
+     * reduce space. This adds overhead on runtime
+     * 
+     * @tparam Width 
+     * @tparam Height 
+     */
     template <uint32_t Width, uint32_t Height>
     class mono_bitmap {
     protected:
