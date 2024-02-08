@@ -121,6 +121,26 @@ namespace klib::string {
     }
 
     /**
+     * @brief Count the amount of characters before a null terminator 
+     * with a maximum size
+     * 
+     * @param str 
+     * @param size 
+     * @return constexpr uint32_t 
+     */
+    constexpr uint32_t strnlen(const char* str, const uint32_t size) {
+        uint32_t count = 0;
+
+        // count until the end of the string
+        while (*str != '\0' && count < size) {
+            count++;
+            str++;
+        }
+
+        return count;
+    }
+
+    /**
      * @brief Copy a c string to another c string
      * 
      * @param destination 
