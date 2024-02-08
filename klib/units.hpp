@@ -241,8 +241,26 @@ namespace klib::time {
     }
 
     template <typename T, typename G>
-    constexpr T operator+(const T lhs, const G rhs) requires is_time_unit<T> && is_time_unit<G> {
+    constexpr T& operator-=(T& lhs, const G rhs) requires is_time_unit<T> && is_time_unit<G> {
         // cast the rhs to the type on the left and substract
+        lhs.value -= static_cast<T>(rhs).value;
+
+        // return the result by reference
+        return lhs;
+    }
+
+    template <typename T, typename G>
+    constexpr T& operator+=(T& lhs, const G rhs) requires is_time_unit<T> && is_time_unit<G> {
+        // cast the rhs to the type on the left and add
+        lhs.value += static_cast<T>(rhs).value;
+
+        // return the result by reference
+        return lhs;
+    }
+
+    template <typename T, typename G>
+    constexpr T operator+(const T lhs, const G rhs) requires is_time_unit<T> && is_time_unit<G> {
+        // cast the rhs to the type on the left and add
         return lhs.value + static_cast<T>(rhs).value;
     }
 
