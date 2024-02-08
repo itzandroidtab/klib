@@ -4,9 +4,14 @@
 #include <cstdint>
 
 namespace klib {
-    enum class queue_optimization : bool {
-        READ = false,
-        WRITE = true
+    /**
+     * @brief Enum for specifying if the queue should use read 
+     * or write optimisation 
+     * 
+     */
+    enum class queue_optimization {
+        read,
+        write
     };
 
     /**
@@ -16,7 +21,7 @@ namespace klib {
      * @tparam MaxSize
      * @tparam Optimization
      */
-    template<typename T, uint32_t MaxSize, queue_optimization Optimization = queue_optimization::WRITE>
+    template<typename T, uint32_t MaxSize, queue_optimization Optimization = queue_optimization::write>
     class queue {
     protected:
         T buffer[MaxSize] = {};
@@ -30,7 +35,7 @@ namespace klib {
          * @param item
          */
         void push(const T &item) {
-            if constexpr (Optimization == queue_optimization::WRITE) {
+            if constexpr (Optimization == queue_optimization::write) {
                 buffer[index] = item;
             } 
             else {
@@ -48,7 +53,7 @@ namespace klib {
          * Pop an item from the queue.
          */
         void pop() {
-            if constexpr (Optimization == queue_optimization::WRITE) {
+            if constexpr (Optimization == queue_optimization::write) {
                 for (uint32_t i = 1; i < index; i++) {
                     buffer[i - 1] = buffer[i];
                 }
@@ -73,7 +78,7 @@ namespace klib {
          * Get the next in the queue.
          */
         T &front() {
-            if constexpr (Optimization == queue_optimization::WRITE) {
+            if constexpr (Optimization == queue_optimization::write) {
                 return buffer[0];
             } 
             else {
@@ -85,7 +90,7 @@ namespace klib {
          * Get the next in the queue.
          */
         T const &front() const {
-            if constexpr (Optimization == queue_optimization::WRITE) {
+            if constexpr (Optimization == queue_optimization::write) {
                 return buffer[0];
             } 
             else {
@@ -97,7 +102,7 @@ namespace klib {
          * Get the last item in the queue.
          */
         T &back() {
-            if constexpr (Optimization == queue_optimization::WRITE) {
+            if constexpr (Optimization == queue_optimization::write) {
                 return buffer[index - 1];
             } 
             else {
@@ -109,7 +114,7 @@ namespace klib {
          * Get the last item in the queue.
          */
         T const &back() const {
-            if constexpr (Optimization == queue_optimization::WRITE) {
+            if constexpr (Optimization == queue_optimization::write) {
                 return buffer[index - 1];
             } 
             else {

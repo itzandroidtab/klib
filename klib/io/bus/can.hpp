@@ -48,8 +48,8 @@ namespace klib::io::can {
     class helper {
     protected:
         // queues to store the data
-        static inline queue<can::frame, TxSize, queue_optimization::READ> transmit;
-        static inline queue<can::frame, RxSize, queue_optimization::WRITE> receive;
+        static inline queue<can::frame, TxSize, queue_optimization::read> transmit;
+        static inline queue<can::frame, RxSize, queue_optimization::write> receive;
 
         // flag if we are already transmitting
         static inline bool is_sending = false;
