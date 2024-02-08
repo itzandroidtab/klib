@@ -127,17 +127,20 @@ namespace klib::string {
      * @param source 
      * @return char* 
      */
-    constexpr char* strcpy(char* destination, const char* source) {
-        while (*source != '\0') {
-            *destination = *source;
+    constexpr char* strcpy(char *const destination, const char* source) {
+        char* ptr = destination; 
 
-            destination++;
+        while (*source != '\0') {
+            *ptr = *source;
+
+            ptr++;
             source++;
         }
 
         // add a null terminator after the string
-        *destination = '\0';
+        *ptr = '\0';
 
+        // return the start of the destination
         return destination;
     }
     
@@ -153,8 +156,9 @@ namespace klib::string {
         const uint32_t len = strlen(destination);
 
         // copy the source to the destination with the length offset
-        return strcpy(destination + len, source);
+        strcpy(destination + len, source);
 
+        // return the start of the destination
         return destination;
     }
 
