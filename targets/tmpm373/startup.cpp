@@ -5,6 +5,9 @@
 #include <klib/io/systick.hpp>
 #include <klib/io/core_clock.hpp>
 
+#include <io/system.hpp>
+#include <io/watchdog.hpp>
+
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__
     #pragma diag_suppress 1094
@@ -13,8 +16,17 @@
 void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::tmpm373;
 
-    // the internal clock frequency is 10Mhz
-    klib::io::clock::set(10'000'000);
+    // disable the watchdog while we setup the mcu. 
+    // The PLL setup takes too much time and causes
+    // a reset otherwise
+    using wdt = target::io::watchdog<target::io::periph::wdt0>;
+    wdt::disable();
+
+    // enable the PLL using the internal oscillator
+    target::io::system::clock::setup<
+        10'000'000,
+        target::io::system::clock::source::internal
+    >();
 
     // setup the irq handler before main is called. This 
     // moves the vector table to ram so it can be changed
