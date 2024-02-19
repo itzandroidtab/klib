@@ -420,7 +420,7 @@ namespace klib::max32660::io {
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
-        constexpr static bool read(const uint8_t address, std::span<uint8_t>& data) {
+        constexpr static bool read(const uint8_t address, const std::span<uint8_t>& data) {
             return read_helper<SendStop, RepeatedStart>(address, data);
         }
 
@@ -435,7 +435,7 @@ namespace klib::max32660::io {
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
-        constexpr static bool read(const uint8_t address, multispan<uint8_t>& data) {
+        constexpr static bool read(const uint8_t address, const multispan<uint8_t>& data) {
             return read_helper<SendStop, RepeatedStart>(address, data);
         }
 
@@ -450,7 +450,7 @@ namespace klib::max32660::io {
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
-        constexpr static bool write(const uint8_t address, std::span<const uint8_t>& data) {
+        constexpr static bool write(const uint8_t address, const std::span<const uint8_t>& data) {
             return write_helper<SendStop, RepeatedStart>(address, data);
         }
 
@@ -465,7 +465,7 @@ namespace klib::max32660::io {
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
-        constexpr static bool write(const uint8_t address, multispan<const uint8_t>& data) {
+        constexpr static bool write(const uint8_t address, const multispan<const uint8_t>& data) {
             return write_helper<SendStop, RepeatedStart>(address, data);
         }
 
