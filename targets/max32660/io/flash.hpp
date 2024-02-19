@@ -62,7 +62,7 @@ namespace klib::max32660::io {
          * @return true 
          * @return false 
          */
-        static bool write(const uint32_t address, const uint32_t value) {
+        static bool write_impl(const uint32_t address, const uint32_t value) {
             // wait until the flash is ready
             while (Flc::port->FLSH_CN & (0x1 << 24)) {
                 // do nothing
@@ -123,7 +123,7 @@ namespace klib::max32660::io {
             // write all the data we have
             for (uint32_t i = 0; i < data.size_bytes(); i += 4) {
                 // write in 4 byte chunks
-                const auto x = write(address + i, 
+                const auto x = write_impl(address + i, 
                     (data[i] << 24) | (data[i + 1] << 16) | 
                     (data[i + 2] << 8) | data[i + 1]
                 );
