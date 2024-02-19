@@ -88,7 +88,7 @@ namespace klib::hardware::display {
                 PinDC::template set<false>();
 
                 // write the command
-                Bus::write(reinterpret_cast<const uint8_t *>(&command), sizeof(cmd));
+                Bus::write({reinterpret_cast<const uint8_t *>(&command), sizeof(cmd)});
 
                 // only write the data if we have arguments
                 if (size) {
@@ -96,7 +96,7 @@ namespace klib::hardware::display {
                     PinDC::template set<true>();
 
                     // write the data of the command
-                    Bus::write(arguments, size);
+                    Bus::write({arguments, size});
                 }
             }
 
@@ -282,7 +282,7 @@ namespace klib::hardware::display {
 
             static void raw_write(const uint8_t *const data, const uint32_t size) {
                 // write the data of the command
-                Bus::write(data, size);
+                Bus::write({data, size});
             }
 
             static void end_write() {
