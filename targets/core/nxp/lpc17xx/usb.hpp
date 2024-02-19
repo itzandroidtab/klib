@@ -965,7 +965,7 @@ namespace klib::core::lpc17xx::io {
          * @return false 
          */
         static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
-                          const klib::usb::usb::endpoint_mode mode, const std::span<const uint8_t> data) 
+                          const klib::usb::usb::endpoint_mode mode, const std::span<const uint8_t>& data) 
         {
             
             // get the size we can write in a single transmission
@@ -1004,7 +1004,7 @@ namespace klib::core::lpc17xx::io {
          * @return false 
          */
         static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
-                         const klib::usb::usb::endpoint_mode mode, const std::span<uint8_t> data)
+                         const klib::usb::usb::endpoint_mode mode, const std::span<uint8_t>& data)
         {
             // call read with a fixed size
             return read(callback, endpoint, mode, data.data(), data.size(), data.size());

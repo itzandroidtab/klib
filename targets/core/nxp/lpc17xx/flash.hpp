@@ -210,7 +210,7 @@ namespace klib::core::lpc17xx::io {
          * @return success
          */
         template <typename T>
-        static bool write(const uint32_t address, const std::span<T> data) {
+        static bool write(const uint32_t address, const std::span<T>& data) {
             // get the sector number from the address
             const uint32_t start_sector = address_to_sector(address);
             const uint32_t end_sector = address_to_sector(address + data.size_bytes());
