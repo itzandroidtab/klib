@@ -6,6 +6,7 @@
 #include <max32660.hpp>
 
 #include <klib/io/core_clock.hpp>
+#include <klib/multispan.hpp>
 
 #include "clocks.hpp"
 #include "pins.hpp"

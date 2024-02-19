@@ -8,6 +8,7 @@
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/spi.hpp>
 #include <klib/math.hpp>
+#include <klib/multispan.hpp>
 
 #include "clocks.hpp"
 #include "pins.hpp"
