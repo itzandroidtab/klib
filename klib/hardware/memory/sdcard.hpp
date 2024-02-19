@@ -114,7 +114,7 @@ namespace klib::io {
 
         static void write_bus(const uint8_t *const data, const uint16_t size) {
             // write the command to the spi bus
-            Bus::write(data, size);
+            Bus::write({data, size});
         }
 
         template <typename T, typename = std::enable_if<!std::is_pointer_v<T>>>
@@ -137,7 +137,7 @@ namespace klib::io {
 
             // send the clock pulses to the device to force the
             // spi mode
-            Bus::write(buffer, sizeof(buffer));
+            Bus::write(buffer);
         }
     
         static uint8_t receive_response(uint16_t cycles = 10) {
@@ -147,10 +147,13 @@ namespace klib::io {
             // response byte
             uint8_t r1 = 0xff;
 
+            // make sure the in and out match in size
+            static_assert(sizeof(tx) == sizeof(r1));
+
             // try to read or wait for a timeout
             while ((r1 & 0x80) && cycles) {
                 // read a byte
-                Bus::write_read(&tx, &r1, sizeof(r1));
+                Bus::write_read({&tx, sizeof(tx)}, {&r1, sizeof(r1)});
 
                 // decrement the timeout
                 cycles--;
@@ -165,12 +168,15 @@ namespace klib::io {
             const uint8_t tx = 0xff;
 
             // clear the output response
-            uint8_t rx;
+            uint8_t rx = 0x00;
+
+            // make sure the in and out match in size
+            static_assert(sizeof(tx) == sizeof(rx));
 
             // try to read or wait for a timeout
             while (rx != 0xff && timeout) {
                 // read a byte
-                Bus::write_read(&tx, &rx, sizeof(tx));
+                Bus::write_read({&tx, sizeof(tx)}, {&rx, sizeof(rx)});
 
                 // decrement the timeout
                 timeout--;
@@ -218,10 +224,12 @@ namespace klib::io {
                 // r3/r7 trailing data
                 uint32_t r37 = 0x00;
 
+                // make sure the in and out match in size
+                static_assert(sizeof(tx) == sizeof(r37));
+
                 // read the data
-                Bus::write_read(tx, 
-                    reinterpret_cast<uint8_t*>(&r37),
-                    sizeof(tx)
+                Bus::write_read(
+                    tx, {reinterpret_cast<uint8_t*>(&r37), sizeof(r37)}
                 );
 
                 // return the response for r3/r7
@@ -301,25 +309,27 @@ namespace klib::io {
             const uint8_t tx[] = {0xff, 0xff};
             uint8_t crc[2]; 
 
+            // make sure the in and out match in size
+            static_assert(sizeof(tx) == sizeof(crc));
+
             // read the crc and discard it
-            Bus::write_read(tx, crc, sizeof(crc));
+            Bus::write_read(tx, crc);
         }
 
         static bool read_block(uint8_t *const data, uint32_t timeout = (200'000 / 20)) {
-            // create a array with all 0xff to transmit
-            uint8_t buffer[64];
+            // data to send while waiting
+            const uint8_t tx = 0xff;
 
-            // set the buffer to all 1's for the sd specification
-            for (uint32_t i = 0; i < sizeof(buffer); i++) {
-                buffer[i] = 0xff;
-            }
-
+            // prefill r1 to a response we are expecting
             uint8_t r1 = 0xff;
+
+            // make sure the in and out match in size
+            static_assert(sizeof(tx) == sizeof(r1));
 
             // try to read or wait for a timeout
             while (r1 == 0xff && timeout) {
-                // read a byte
-                Bus::write_read(buffer, &r1, sizeof(r1));
+                // read a byte (we only read 1 byte here)
+                Bus::write_read({&tx, sizeof(tx)}, {&r1, sizeof(r1)});
 
                 // decrement the timeout
                 timeout--;
@@ -329,9 +339,19 @@ namespace klib::io {
                 return false;
             }
 
+            // create a array with all 0xff to transmit
+            uint8_t buffer[64];
+
+            // set the buffer to all 1's for the sd specification
+            for (uint32_t i = 0; i < sizeof(buffer); i++) {
+                buffer[i] = 0xff;
+            }
+
             // read using the buffer size
-            for (uint32_t i = 0; i < (512 / sizeof(buffer)); i++) {
-                Bus::write_read(buffer, &data[i * sizeof(buffer)], sizeof(buffer));
+            for (uint32_t i = 0; i < (block_size / sizeof(buffer)); i++) {
+                Bus::write_read(
+                    buffer, {&data[i * sizeof(buffer)], sizeof(buffer)}
+                );
             }
 
             // read the crc and discard it
@@ -347,7 +367,7 @@ namespace klib::io {
             }
 
             // transmite the single block token
-            Bus::write(&token, sizeof(token));
+            Bus::write({&token, sizeof(token)});
 
             // check if we are sending a stop
             if (token == 0xfd) {
@@ -355,18 +375,21 @@ namespace klib::io {
             }
 
             // write the block to the card
-            Bus::write(data, 512);
+            Bus::write({data, block_size});
 
             // read the crc and discard it
             discard_crc();
 
             const uint8_t tx = 0xff;
             uint8_t rx = 0x00;
-            
+
+            // make sure the in and out match in size
+            static_assert(sizeof(tx) == sizeof(rx));
+
             // wait for the data response
             for (uint32_t i = 0; i < 64; i++) {
                 // read the data response
-                Bus::write_read(&tx, &rx, sizeof(rx));
+                Bus::write_read({&tx, sizeof(tx)}, {&rx, sizeof(rx)});
 
                 // check if the data is accepted
                 if ((rx & 0x1f) == 0x05) {
@@ -376,9 +399,12 @@ namespace klib::io {
 
             uint8_t r1 = 0x0;
 
+            // make sure the in and out match in size
+            static_assert(sizeof(tx) == sizeof(r1));
+
             // wait until the card is not busy anymore 
             while (r1 == 0) {
-                Bus::write_read(&tx, &r1, sizeof(r1));
+                Bus::write_read({&tx, sizeof(tx)}, {&r1, sizeof(r1)});
             }
 
             return (rx & 0x1f) == 0x05;
@@ -571,7 +597,7 @@ namespace klib::io {
                 }
 
                 // read a block from the card
-                if (!write_block(&data[i * 512], 0xfe)) {
+                if (!write_block(&data[i * block_size], 0xfe)) {
                     // clear the cs pin manually
                     Cs::template set<true>();
 
@@ -618,7 +644,7 @@ namespace klib::io {
                 }
 
                 // read a block from the card
-                if (!read_block(&data[i * 512])) {
+                if (!read_block(&data[i * block_size])) {
                     // clear the cs pin manually
                     Cs::template set<true>();
 
