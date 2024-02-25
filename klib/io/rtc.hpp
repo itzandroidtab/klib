@@ -17,6 +17,30 @@ namespace klib::io::rtc {
     );
 
     /**
+     * @brief Date time structure
+     * 
+     */
+    struct datetime {
+        // year, minimum is 1970 (as that is the epoch time)
+        uint16_t year;
+        
+        // month, range 1 - 12
+        uint8_t month;
+
+        // day of the month. range 1 - (28, 29, 30, 31)
+        uint8_t day;
+
+        // hour, range 0 - 23
+        uint8_t hours;
+
+        // minutes, range 0 - 59
+        uint8_t minutes;
+
+        // seconds, range 0 - 59
+        uint8_t seconds;
+    };
+
+    /**
      * @brief Convert seperate date fields to the epoch time
      * 
      * @param year 1970 - 4095
@@ -58,6 +82,74 @@ namespace klib::io::rtc {
 
         // convert the days with the hours, minutes and seconds to the epoch time
         return {(days * (60 * 60 * 24)) + (hours * (60 * 60)) + (minutes * 60) + seconds};
+    }
+
+    /**
+     * @brief Converts a epoch time to a datetime
+     * 
+     * @param time 
+     * @return datetime 
+     */
+    static datetime epoch_to_datetime(klib::time::s time) {
+        datetime ret = {};
+
+        // get the amount of days in the epoch time
+        uint32_t days = (time.value / (24 * 60 * 60));
+        uint32_t years = 1970;
+        
+        // add one to the days
+        days += 1;
+
+        // check all the years 
+        while (true) {
+            // check if the current year is a leap year
+            const uint32_t y = (
+                ((years & 0b11) == 0) ? 
+                klib::io::rtc::days_year + 1: klib::io::rtc::days_year
+            );
+
+            // check if the amount of days in the year
+            // fits in the amount of days we have left
+            if (days < y) {
+                break;
+            }
+
+            // increment the years
+            years++;
+            days -= y;
+        }
+
+        // set the year
+        ret.year = years;
+
+        uint32_t months = 1;
+
+        // get the amount of months
+        for (uint32_t i = 0; i < (sizeof(klib::io::rtc::month_days) / sizeof(klib::io::rtc::month_days[0])); i++) {
+            // check if we have more days than the 
+            // current month has
+            if (days < klib::io::rtc::month_days[i]) {
+                break;
+            }
+
+            // increment the months
+            months++;
+            days -= klib::io::rtc::month_days[i];
+        }
+
+        // set the month and the days
+        ret.month = months;
+        ret.day = days;
+
+        // get the seconds left over
+        const uint32_t seconds = time.value % (24 * 60 * 60);
+
+        // set the hours, minutes and seconds
+        ret.hours = seconds / (60 * 60);
+        ret.minutes = (seconds % (60 * 60)) / 60;
+        ret.seconds = seconds % 60;
+
+        return ret;
     }
 }
 
