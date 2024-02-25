@@ -11,6 +11,10 @@
 namespace klib::graphics {
     template <typename Font>
     class string {
+    public:
+        // using so the width and height are exported
+        using font = Font;
+
     protected:
         // using for color
         using color = klib::graphics::color;
