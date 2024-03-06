@@ -88,9 +88,6 @@ namespace klib::core::lpc175x::io {
             // 01-01-1970 was a thursday (3). Add that to our epoch
             // days to calculate the current day of the week
             Rtc::port->DOW = (days + 3) % 7;
-            
-            // add one to the days
-            days += 1;
 
             // check all the years 
             while (true) {
@@ -113,7 +110,7 @@ namespace klib::core::lpc175x::io {
 
             // set the year
             Rtc::port->YEAR = years;
-            Rtc::port->DOY = days;
+            Rtc::port->DOY = days + 1;
 
             uint32_t months = 1;
 
@@ -132,7 +129,7 @@ namespace klib::core::lpc175x::io {
 
             // set the month and the days
             Rtc::port->MONTH = months;
-            Rtc::port->DOM = days;
+            Rtc::port->DOM = days + 1;
 
             // get the seconds left over
             const uint32_t seconds = time.value % (24 * 60 * 60);

@@ -99,9 +99,6 @@ namespace klib::io::rtc {
         // get the amount of days in the epoch time
         uint32_t days = (time.value / (24 * 60 * 60));
         uint32_t years = 1970;
-        
-        // add one to the days
-        days += 1;
 
         // check all the years 
         while (true) {
@@ -142,7 +139,7 @@ namespace klib::io::rtc {
 
         // set the month and the days
         ret.month = months;
-        ret.day = days;
+        ret.day = days + 1;
 
         // get the seconds left over
         const uint32_t seconds = time.value % (24 * 60 * 60);
