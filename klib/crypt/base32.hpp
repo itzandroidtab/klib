@@ -88,8 +88,8 @@ namespace klib::crypt {
                 return false;
             }
 
-            // clear the output
-            std::fill_n(output, length, 0x00);
+            // clear the amount of bytes we are writing
+            std::fill_n(output, (((length * 5) + 7) / 8), 0x00);
 
             // flag for if we have detected a padding character
             bool padding_started = false;
