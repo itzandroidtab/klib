@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <algorithm>
+#include <span>
 
 #include <klib/string.hpp>
 
@@ -70,9 +71,10 @@ namespace klib::crypt {
          * @param input 
          * @param output
          * @param size 
-         * @return valid
+         * @return uint32_t amount of bytes written in 
+         * output (0 if invalid)
          */
-        constexpr static bool decode(const char *const input, uint8_t* output, const uint32_t size) {
+        constexpr static uint32_t decode(const char *const input, std::span<uint8_t> output) {
             // base32 is always 40 bit alligned. Every character is 5 bits.
             // this means if the size is not a multiply of 8 it is a invalid
             // base32 string
@@ -84,15 +86,18 @@ namespace klib::crypt {
             } 
 
             // check if the output size fits
-            if ((((length * 5) + 7) / 8) > size) {
+            if ((((length * 5) + 7) / 8) > output.size()) {
                 return false;
             }
 
             // clear the amount of bytes we are writing
-            std::fill_n(output, (((length * 5) + 7) / 8), 0x00);
+            std::fill_n(output.data(), (((length * 5) + 7) / 8), 0x00);
 
             // flag for if we have detected a padding character
             bool padding_started = false;
+
+            // amount of bytes processed
+            uint32_t processed = 0;
 
             // check if every character is a valid character. The last 
             // characters can be '=' instead of valid characters as this is
@@ -122,6 +127,9 @@ namespace klib::crypt {
                     continue;
                 }
 
+                // increment the amount of bytes we have processed
+                processed++;
+
                 // get the amount of bits before the current data
                 const uint32_t bits = i * bits_per_ch;
 
@@ -147,8 +155,11 @@ namespace klib::crypt {
                 }
             }
 
-            // return we updated the result sucessfully
-            return true;
+            // check how many bits are unused
+            const uint32_t unused = (processed * 5) % 8;
+
+            // return the amount of bytes written
+            return ((((processed * 5) - unused) + 7) / 8);
         }
     };
 }
