@@ -38,6 +38,9 @@ namespace klib::io::rtc {
 
         // seconds, range 0 - 59
         uint8_t seconds;
+
+        // generate a default == operator
+        bool operator==(datetime const&) const = default;
     };
 
     /**
