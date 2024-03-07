@@ -54,7 +54,7 @@ namespace klib::io::rtc {
      * @param seconds 0 - 59
      * @return klib::time::s 
      */
-    static klib::time::s datetime_to_epoch(const uint16_t year, const uint8_t month, const uint8_t day, 
+    constexpr static klib::time::s datetime_to_epoch(const uint16_t year, const uint8_t month, const uint8_t day, 
         const uint8_t hours, const uint8_t minutes, const uint8_t seconds) 
     {
         // get the amount of years that have passed
@@ -67,7 +67,7 @@ namespace klib::io::rtc {
         // the current year from the offset we are adding. Year
         // 1972 is the first leap year. (this is a very simple 
         // conversion that only works between years 1901 - 2099)
-        days += (passed + (2 - 1)) / 4; 
+        days += (passed + ((1970 & 0b11) - 1)) / 4;     
 
         // add the amount of days till the current month
         for (uint8_t m = 0; m < (month - 1); m++) {
@@ -95,20 +95,30 @@ namespace klib::io::rtc {
      * @param time 
      * @return datetime 
      */
-    static datetime epoch_to_datetime(klib::time::s time) {
+    constexpr static datetime epoch_to_datetime(klib::time::s time) {
         datetime ret = {};
 
         // get the amount of days in the epoch time
         uint32_t days = (time.value / (24 * 60 * 60));
-        uint32_t years = 1970;
 
-        // check all the years 
+        // calculate the amount of years that always fit in the 
+        // amount of days we got.
+        const uint32_t calculated_years = days / (klib::io::rtc::days_year + 1);
+
+        // calculate how many leap days are in these years
+        const uint32_t leap = ((calculated_years + ((1970 & 0b11) - 1)) / 4);
+
+        // set the starting year to the amount of years we guessed
+        uint32_t years = 1970 + calculated_years;
+
+        // remove the amount of days + the leap from the days
+        days -= leap;
+        days -= (calculated_years * klib::io::rtc::days_year);
+
+        // process the remainder
         while (true) {
-            // check if the current year is a leap year
-            const uint32_t y = (
-                ((years & 0b11) == 0) ? 
-                klib::io::rtc::days_year + 1: klib::io::rtc::days_year
-            );
+            // calculate the amount of days in the current year
+            const uint32_t y = klib::io::rtc::days_year + ((years & 0b11) == 0);
 
             // check if the amount of days in the year
             // fits in the amount of days we have left
