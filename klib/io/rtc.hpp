@@ -133,15 +133,19 @@ namespace klib::io::rtc {
 
         // get the amount of months
         for (uint32_t i = 0; i < (sizeof(klib::io::rtc::month_days) / sizeof(klib::io::rtc::month_days[0])); i++) {
+            // check if the current year is a leap year and we are checking 
+            // february (feb = 1, we used the same leap year check as above)
+            const bool leap_month = ((years & 0b11) == 0 && (i == 1));
+
             // check if we have more days than the 
             // current month has
-            if (days < klib::io::rtc::month_days[i]) {
+            if (days < (klib::io::rtc::month_days[i] + leap_month)) {
                 break;
             }
 
             // increment the months
             months++;
-            days -= klib::io::rtc::month_days[i];
+            days -= (klib::io::rtc::month_days[i] + leap_month);
         }
 
         // set the month and the days
