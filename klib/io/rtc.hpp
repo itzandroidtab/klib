@@ -57,22 +57,17 @@ namespace klib::io::rtc {
     static klib::time::s datetime_to_epoch(const uint16_t year, const uint8_t month, const uint8_t day, 
         const uint8_t hours, const uint8_t minutes, const uint8_t seconds) 
     {
-        uint32_t days = 0;
+        // get the amount of years that have passed
+        const uint32_t passed = (klib::max(year, 1970) - 1970);
 
-        // calculate the amount of days till the current year
-        for (uint16_t y = 1970; y < year; y++) {
-            // add all the months
-            days += days_year;
+        // calculate the amount of days in those years
+        uint32_t days = passed * days_year;
 
-            // check if the current year is a leap year (we do the same 
-            // thing as the hardware does by checking only the lowest 2 
-            // bits. This will work fine between 1901 - 2099 but will 
-            // fail at year 2100)
-            if ((y & 0b11) == 0) {
-                // add a day for a leap year
-                days++;
-            }
-        }
+        // add the amount of leap days in those years. We remove
+        // the current year from the offset we are adding. Year
+        // 1972 is the first leap year. (this is a very simple 
+        // conversion that only works between years 1901 - 2099)
+        days += (passed + (2 - 1)) / 4; 
 
         // add the amount of days till the current month
         for (uint8_t m = 0; m < (month - 1); m++) {
@@ -82,7 +77,7 @@ namespace klib::io::rtc {
 
         // check if the current year is a leap year and we are in/passed 
         // february (feb = 1, we used the same leap year check as above)
-        if ((year & 0b11) == 0 && (month > 2)) {
+        if (((year & 0b11) == 0) && (month > 2)) {
             // add a day for a leap year
             days++;
         }
