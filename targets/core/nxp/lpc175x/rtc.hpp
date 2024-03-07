@@ -81,63 +81,31 @@ namespace klib::core::lpc175x::io {
          * @param time 
          */
         static void set(const klib::time::s time) {
+            // convert the epoch to datetime
+            const auto datetime = klib::io::rtc::epoch_to_datetime(time);
+
             // get the amount of days in the epoch time
             uint32_t days = (time.value / (24 * 60 * 60));
-            uint32_t years = 1970;
 
             // 01-01-1970 was a thursday (3). Add that to our epoch
             // days to calculate the current day of the week
             Rtc::port->DOW = (days + 3) % 7;
 
-            // check all the years 
-            while (true) {
-                // check if the current year is a leap year
-                const uint32_t y = (
-                    ((years & 0b11) == 0) ? 
-                    klib::io::rtc::days_year + 1: klib::io::rtc::days_year
-                );
-
-                // check if the amount of days in the year
-                // fits in the amount of days we have left
-                if (days < y) {
-                    break;
-                }
-
-                // increment the years
-                years++;
-                days -= y;
-            }
+            // get the amount of leap years in the years that passed
+            const uint32_t leap = (((datetime.year - 1970) + ((1970 & 0b11) - 1)) / 4);
 
             // set the year
-            Rtc::port->YEAR = years;
-            Rtc::port->DOY = days + 1;
-
-            uint32_t months = 1;
-
-            // get the amount of months
-            for (uint32_t i = 0; i < (sizeof(klib::io::rtc::month_days) / sizeof(klib::io::rtc::month_days[0])); i++) {
-                // check if we have more days than the 
-                // current month has
-                if (days < klib::io::rtc::month_days[i]) {
-                    break;
-                }
-
-                // increment the months
-                months++;
-                days -= klib::io::rtc::month_days[i];
-            }
+            Rtc::port->YEAR = datetime.year;
+            Rtc::port->DOY = ((days - leap) - ((datetime.year - 1970) * klib::io::rtc::days_year)) + 1;
 
             // set the month and the days
-            Rtc::port->MONTH = months;
-            Rtc::port->DOM = days + 1;
-
-            // get the seconds left over
-            const uint32_t seconds = time.value % (24 * 60 * 60);
+            Rtc::port->MONTH = datetime.month;
+            Rtc::port->DOM = datetime.day;
 
             // set the hours, minutes and seconds
-            Rtc::port->HRS = seconds / (60 * 60);
-            Rtc::port->MIN = (seconds % (60 * 60)) / 60;
-            Rtc::port->SEC = seconds % 60;
+            Rtc::port->HRS = datetime.hours;
+            Rtc::port->MIN = datetime.minutes;
+            Rtc::port->SEC = datetime.seconds;
         }
     };
 }
