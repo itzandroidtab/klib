@@ -80,6 +80,13 @@ namespace klib::io::rtc {
             days += month_days[m];
         }
 
+        // check if the current year is a leap year and we are in/passed 
+        // february (feb = 1, we used the same leap year check as above)
+        if ((year & 0b11) == 0 && (month > 2)) {
+            // add a day for a leap year
+            days++;
+        }
+
         // add the days but remove 1 for the current day
         days += (static_cast<int8_t>(day) - 1);
 
