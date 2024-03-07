@@ -85,13 +85,13 @@ namespace klib::core::lpc175x::io {
             const auto datetime = klib::io::rtc::epoch_to_datetime(time);
 
             // get the amount of days in the epoch time
-            uint32_t days = (time.value / (24 * 60 * 60));
+            const uint32_t days = (time.value / (24 * 60 * 60));
 
             // 01-01-1970 was a thursday (3). Add that to our epoch
             // days to calculate the current day of the week
             Rtc::port->DOW = (days + 3) % 7;
 
-            // get the amount of leap years in the years that passed
+            // get the amount of leap days in the years that passed
             const uint32_t leap = (((datetime.year - 1970) + ((1970 & 0b11) - 1)) / 4);
 
             // set the year
