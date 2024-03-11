@@ -1,5 +1,5 @@
 # set minimum version of CMake.
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.22)
 
 # The Generic system name is used for embedded targets (targets without OS) in
 # CMake
