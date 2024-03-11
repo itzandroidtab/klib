@@ -22,4 +22,4 @@ build/
 .DS_Store
 
 # project main
-project/main.cpp
+project/*
