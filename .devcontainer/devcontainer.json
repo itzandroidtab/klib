@@ -1,5 +1,5 @@
 {
-    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "image": "mcr.microsoft.com/devcontainers/cpp:ubuntu-22.04",
     "features": {},
     "postCreateCommand": "chmod +x ./.devcontainer/postcreate.sh && ./.devcontainer/postcreate.sh"
 }
