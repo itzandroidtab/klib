@@ -1,6 +1,6 @@
 #include <cstdint>
 
-#include "lpc1759.hpp"
+#include "stm32f407.hpp"
 
 #include <klib/io/systick.hpp>
 #include <klib/io/core_clock.hpp>
@@ -12,17 +12,16 @@
 #endif
 
 void __attribute__((__constructor__(101))) __target_startup() {
-    namespace target = klib::lpc1759;
-    using clock = target::io::system::clock;
+    namespace target = klib::stm32f407;
 
-    // setup the flash wait state to 4 + 1 CPU clocks
-    target::io::system::flash::setup<4>();
+    if constexpr (TARGET_FPU_ENABLED) {
+        // using to make the access easier to the coprocessor
+        using coprocessor = klib::arm::coprocessor;
 
-    // setup the clock to 120Mhz (in this example we are using a 12Mhz 
-    // oscillator)
-    // (((19 + 1) * 2 * 12Mhz) / (0 + 1) = 480Mhz) / (3 + 1) = 120Mhz
-    clock::set_main<clock::source::main, 120'000'000, 19, 0, 3>();
-    // clock::set_main<clock::source::internal, 96'000'000, 47, 0, 3>();
+        // enable the floating point coprocessors
+        coprocessor::set<10>(coprocessor::access::full, &SCB->CPACR);
+        coprocessor::set<11>(coprocessor::access::full, &SCB->CPACR);
+    }
 
     // setup the irq handler before main is called. This 
     // moves the vector table to ram so it can be changed

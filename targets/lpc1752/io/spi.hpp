@@ -5,6 +5,8 @@
 
 #include <targets/core/nxp/lpc175x/spi.hpp>
 
+#include "pins.hpp"
+
 namespace klib::lpc1752::io::periph::detail::spi {
     enum class mode {
         miso,

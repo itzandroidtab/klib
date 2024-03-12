@@ -8,7 +8,57 @@
 #include "math.hpp"
 #include "lookuptable.hpp"
 
+namespace klib::detail {
+    /**
+     * @brief Available irq types. Flash irq types 
+     * have different requirements for initialization
+     * that should be done by the user
+     * 
+     */
+    enum class type {
+        ram,
+        flash
+    };
+}
+
 namespace klib {
+    /**
+     * @brief Irq boot helper. Will initialize any ram irq handler
+     * 
+     */
+    class boot_helper {
+    public:
+        /**
+         * @brief Returns if the irq handler is in ram
+         * 
+         * @tparam Irq 
+         * @return true 
+         * @return false 
+         */
+        template <typename Irq>
+        constexpr static bool in_ram() {
+            // check if we have a ram handler
+            return Irq::type == klib::detail::type::ram;
+        } 
+
+        /**
+         * @brief Init the ram handler if we have one
+         * 
+         * @tparam Irq 
+         * @tparam Systick 
+         */
+        template <typename Irq>
+        static void init() {
+            // check if we have a ram handler
+            constexpr bool ram = in_ram<Irq>();
+
+            // call init only when we have a ram handler
+            if constexpr (ram) {
+                Irq::init();
+            }
+        }
+    };
+
     /**
      * @brief IRQ handler that relocates the vector table.
      * 
@@ -25,6 +75,9 @@ namespace klib {
     public:
         // using for the array of callbacks
         using interrupt_callback = void (*)();
+
+        // the irq type
+        constexpr static detail::type type = detail::type::ram;
 
         /**
          * @brief Available arm vector entries
@@ -177,6 +230,9 @@ namespace klib {
         // using for the array of callbacks
         using interrupt_callback = void (*)();
 
+        // the irq type
+        constexpr static detail::type type = detail::type::flash;
+
         // amount of interrupts
         constexpr static uint16_t irq_count = IrqCount;
 
@@ -287,6 +343,9 @@ namespace klib {
     public:
         // hook function prototype
         using hook_function = void(*)(uint32_t);
+
+        // the irq type
+        constexpr static detail::type type = detail::type::ram;
 
         // using for the array of callbacks
         using interrupt_callback = irq_ram<CpuId, IrqCount, Alignment>::interrupt_callback;
