@@ -4,7 +4,8 @@
 
 #include <klib/io/systick.hpp>
 #include <klib/io/core_clock.hpp>
-#include <io/system.hpp>
+
+#include <coprocessor/coprocessor.hpp>
 
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__
