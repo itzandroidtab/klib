@@ -41,3 +41,8 @@ for i in ./klib-svd/*.svd; do
     ./svdconv $i --suppress-warnings --generate=header -o ../klib/targets/$target/ || true
     sed -i '/#include "system_/d' ../klib/targets/$target/$target.h
 done
+
+cd ../klib/
+
+echo "Copying example settings.json"
+cp .vscode/settings.json.example .vscode/settings.json
