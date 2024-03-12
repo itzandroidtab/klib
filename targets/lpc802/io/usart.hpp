@@ -6,27 +6,6 @@
 #include "pins.hpp"
 #include "matrix.hpp"
 
-namespace klib::lpc802::io::periph::detail::usart {
-    enum class mode {
-        miso,
-        mosi,
-        sck,
-        cs0
-    };
-
-    template <typename Pin, mode Type, typename Periph>
-    struct usart {
-        // pin of the peripheral
-        using pin = Pin;
-
-        // type of the pin
-        constexpr static mode type = Type;
-
-        // alternate function
-        using periph = Periph;
-    };
-}
-
 namespace klib::lpc802::io::periph {
     /**
      * @brief Struct stores information about the usart0 
@@ -45,6 +24,13 @@ namespace klib::lpc802::io::periph {
 
         // port to the usart peripheral.
         static inline USART_Type *const port = USART0;
+
+        // available pin modes on the flex matrix
+        constexpr static auto tx = matrix<periph::matrix0>::flex_matrix::uart0_tx;
+        constexpr static auto rx = matrix<periph::matrix0>::flex_matrix::uart0_rx;
+        constexpr static auto rts = matrix<periph::matrix0>::flex_matrix::uart0_rts;
+        constexpr static auto cts = matrix<periph::matrix0>::flex_matrix::uart0_cts;
+        constexpr static auto sclk = matrix<periph::matrix0>::flex_matrix::uart0_sclk;
     };
 
     /**
@@ -64,6 +50,11 @@ namespace klib::lpc802::io::periph {
 
         // port to the usart peripheral.
         static inline USART1_Type *const port = USART1;
+
+        // available pin modes on the flex matrix
+        constexpr static auto tx = matrix<periph::matrix0>::flex_matrix::uart1_tx;
+        constexpr static auto rx = matrix<periph::matrix0>::flex_matrix::uart1_rx;
+        constexpr static auto sclk = matrix<periph::matrix0>::flex_matrix::uart1_sclk;
     };    
 }
 
@@ -100,8 +91,8 @@ namespace klib::lpc802::io {
             using matrix = matrix<periph::matrix0>;
 
             // setup the matrix with the supplied pins
-            matrix::setup<Txd, matrix::flex_matrix::uart0_tx>();
-            matrix::setup<Rxd, matrix::flex_matrix::uart0_rx>();
+            matrix::setup<Txd, Usart::tx>();
+            matrix::setup<Rxd, Usart::rx>();
 
             // set the clock
             if constexpr (Usart::id == 0) {
