@@ -119,13 +119,13 @@ namespace klib::usb::device {
         };
 
         // manufacturer string descriptor
-        const __attribute__((alligned(4))) static inline auto manufacturer = string_descriptor("KLIB");
+        const __attribute__((aligned(4))) static inline auto manufacturer = string_descriptor("KLIB");
 
         // product string descriptor
         const __attribute__((aligned(4))) static inline auto product = string_descriptor("KLIB Mass Storage");
 
         // serial number string descriptor
-        const __attribute__((aligned(4))) static inline auto serial = string_descriptor("000000001337");
+        const __attribute__((aligned(4))) static inline auto serial = string_descriptor("00001337");
 
         // configuration value. Value is set in the set config function
         static inline uint8_t configuration = 0x00;

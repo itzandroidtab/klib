@@ -157,7 +157,7 @@ namespace klib::usb::device {
         };
 
         // manufacturer string descriptor
-        const __attribute__((alligned(4))) static inline auto manufacturer = string_descriptor("KLIB");
+        const __attribute__((aligned(4))) static inline auto manufacturer = string_descriptor("KLIB");
 
         // product string descriptor
         const __attribute__((aligned(4))) static inline auto product = string_descriptor("KLIB Keyboard");

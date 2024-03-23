@@ -26,7 +26,7 @@ namespace klib::usb::device {
         };
 
         // buffer for the firmware (data we are reading
-        // should be 4 byte alligned as some devices requre 
+        // should be 4 byte aligned as some devices requre 
         // this.
         static __attribute__((aligned(4))) inline uint8_t buffer[TransferSize] = {};
 
@@ -111,7 +111,7 @@ namespace klib::usb::device {
         };
 
         // manufacturer string descriptor
-        const __attribute__((alligned(4))) static inline auto manufacturer = string_descriptor("KLIB");
+        const __attribute__((aligned(4))) static inline auto manufacturer = string_descriptor("KLIB");
 
         // product string descriptor
         const __attribute__((aligned(4))) static inline auto product = string_descriptor("KLIB DFU");
@@ -244,7 +244,7 @@ namespace klib::usb::device {
                     // data = state
 
                     // write the status to the host (data we are writing
-                    // should be 4 byte alligned as some devices requre 
+                    // should be 4 byte aligned as some devices requre 
                     // this. Data should also be static to make sure it
                     // is still allocated when the dma is sending it)
                     if (Usb::write(callback_handler<Usb>, klib::usb::usb::control_endpoint, 
@@ -292,7 +292,7 @@ namespace klib::usb::device {
                     }
 
                     // create the status payload. Data needs to be 4 
-                    // byte alligned on some devices. So always allign it.
+                    // byte aligned on some devices. So always allign it.
                     // Data needs to be static to make sure it is still
                     // allocated when the dma is sending it.
                     alignas(4) static klib::usb::dfu::status status;

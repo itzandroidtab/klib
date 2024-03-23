@@ -52,7 +52,7 @@ namespace klib::max32625::io::detail::usb {
     };
 
     /**
-     * @brief Struct for storing all the endpoints. Needs to be 512 byte alligned for the max32625
+     * @brief Struct for storing all the endpoints. Needs to be 512 byte aligned for the max32625
      * 
      */
     template <uint32_t EndpointAmount>
@@ -698,7 +698,7 @@ namespace klib::max32625::io {
             // reset the usb peripheral
             reset();
 
-            // set the endpoint descriptor location. Needs to be 512 byte alligned
+            // set the endpoint descriptor location. Needs to be 512 byte aligned
             port->EP_BASE = reinterpret_cast<uint32_t>(&descriptor);
 
             // register the irq handler

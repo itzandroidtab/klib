@@ -42,7 +42,7 @@ namespace klib::allocator::detail {
             bool in_use;
         };
 
-        // make sure the chunk is alligned on 4 bytes
+        // make sure the chunk is the expected size
         static_assert(sizeof(chunk) == 16, "Chunk size should be 16 bytes");
 
         void add_new_chunk(chunk& ch, chunk *const previous, const uint32_t size = 0) const {
@@ -151,11 +151,6 @@ namespace klib::allocator::detail {
         }
 
         void* allocate(const uint32_t size) noexcept {
-            // check if the allocation fits
-            if ((end_address + size + sizeof(chunk)) >= (start_address + heap_size)) {
-                return nullptr;
-            }
-
             // do not allocate when size is 0
             if (!size) {
                 return nullptr;
@@ -168,6 +163,12 @@ namespace klib::allocator::detail {
             chunk *ch = reinterpret_cast<chunk*>(start_address);
 
             while (true) {
+                // make sure the structure is still valid
+                if (ch->magic_header != 0xdeadbeef) {
+                    // allocator structure is broken. Exit
+                    return nullptr;
+                }
+
                 // check if a chunk is in use
                 if (ch->in_use) {
                     // go to the next chunk
@@ -202,6 +203,17 @@ namespace klib::allocator::detail {
                 // size is 0 so that means last item in currently allocated memory
                 // and we could not fit in any space
                 if (ch->size == 0) {
+                    // check if we can allocate behind the current chunk 
+                    // 
+                    // chunk + sizeof(chunk) + chunk.size (= 0) = end of 
+                    // current chunk. End of chunk + sizeof(chunk) + size 
+                    // needs to fit before we allocate
+                    if ((reinterpret_cast<uint32_t>(ch) + (sizeof(chunk) * 2) + size) >= 
+                        (start_address + heap_size)) 
+                    {
+                        return nullptr;
+                    }
+
                     // change the size to the allocated size
                     ch->size = allocate_size;
                     ch->in_use = true;

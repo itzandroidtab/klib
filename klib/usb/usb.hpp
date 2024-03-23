@@ -150,7 +150,7 @@ namespace klib::usb {
             }
 
             // get status response (2 bytes). Data needs to be 4 
-            // byte alligned on some devices. So always allign it.
+            // byte aligned on some devices. So always allign it.
             // Data needs to be static to make sure it is still
             // allocated when the dma is sending it.
             alignas(4) static uint8_t response[2];

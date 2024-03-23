@@ -11,7 +11,7 @@ namespace klib::io {
 
     public:
         /**
-         * @brief Get the core clock speed of the cpu
+         * @brief Get the core clock speed of the cpu in Hz
          * 
          */
         static uint32_t get() {

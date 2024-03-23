@@ -75,13 +75,13 @@ namespace klib::crypt {
          * output (0 if invalid)
          */
         constexpr static uint32_t decode(const char *const input, std::span<uint8_t> output) {
-            // base32 is always 40 bit alligned. Every character is 5 bits.
+            // base32 is always 40 bit aligned. Every character is 5 bits.
             // this means if the size is not a multiply of 8 it is a invalid
             // base32 string
             const uint32_t length = klib::string::strlen(input);
 
             // check the length
-            if ((length % 8) != 0) {
+            if (((length % 8) != 0) || (!length)) {
                 return false;
             } 
 

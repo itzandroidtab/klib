@@ -186,7 +186,7 @@ namespace klib {
      * @return
      */
     template <typename T>
-    constexpr T pow(const T base, const int_fast32_t exponent) {
+    constexpr T pow(const T base, const uint32_t exponent) {
         if (exponent == 0) [[unlikely]] {
             return 1;
         }

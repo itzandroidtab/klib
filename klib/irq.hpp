@@ -64,7 +64,7 @@ namespace klib {
      * 
      * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
      * default arm interrupts). For more interrupts the amount should be aligned to the next
-     * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
+     * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
      * 
      * @tparam CpuId 
      * @tparam IrqCount 
@@ -218,7 +218,7 @@ namespace klib {
      * 
      * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
      * default arm interrupts). For more interrupts the amount should be aligned to the next
-     * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
+     * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
      * 
      * @tparam CpuId 
      * @tparam IrqCount 
@@ -332,7 +332,7 @@ namespace klib {
      * 
      * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
      * default arm interrupts). For more interrupts the amount should be aligned to the next
-     * power of 2. E.g. 44 should get alligned by 64 words (256 bytes).
+     * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
      * 
      * @tparam CpuId 
      * @tparam IrqCount 
