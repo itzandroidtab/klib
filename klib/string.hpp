@@ -281,8 +281,17 @@ namespace klib::string::detail {
         return 0;
     }
 
-    template <base B = _default_base, typename T = int>
+    template <
+        base B = _default_base, 
+        typename T = int, 
+        typename = std::enable_if_t<std::is_integral_v<T>>
+    >
     constexpr uint32_t count_chars(T value) {
+        // special case for 0
+        if (value == 0) {
+            return 1;
+        }
+
         uint32_t chars = 0;
 
         // check if the value is signed
