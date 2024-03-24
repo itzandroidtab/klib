@@ -319,7 +319,7 @@ namespace klib::hardware::display {
 
             static void raw_write(const uint8_t *const data, const uint32_t size) {
                 // write the data of the command
-                Bus::write(data, size);
+                Bus::write({data, size});
             }
 
             static void end_write() {
