@@ -83,4 +83,4 @@ void __default_handler() {
 }
 
 // called when a vft entry is not yet filled in
-void __cxa_pure_virtual() {}
+void __attribute__((weak)) __cxa_pure_virtual() {}
