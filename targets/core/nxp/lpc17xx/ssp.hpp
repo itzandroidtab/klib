@@ -163,6 +163,10 @@ namespace klib::core::lpc17xx::io {
                 klib::io::clock::get() / static_cast<uint32_t>(Frequency)
             );
             
+            // disable the DMA
+            dma_enable<false, false>();
+            dma_enable<false, true>();
+
             // set all the settings in the CR0 register
             Ssp::port->CR0 = (
                 convert_bits<Bits>() | 
