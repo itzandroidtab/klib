@@ -10,6 +10,17 @@
 namespace klib {
     template <typename T, uint32_t Size>
     class dynamic_array {
+    public:
+        // usings for the iterator
+        using difference_type         = std::ptrdiff_t;
+        using value_type              = T;
+        using pointer                 = value_type*;
+        using const_pointer           = const value_type*;
+        using reference               = value_type&;
+        using const_reference         = const value_type&;
+        using iterator                = pointer;
+        using const_iterator          = const_pointer;
+
     protected:
         T store[Size] = {};
         uint32_t index = 0;
@@ -27,6 +38,17 @@ namespace klib {
             for (uint32_t i = this->index; i != pos - 1; --i) {
                 store[i + 1] = store[i];
             }
+        }
+
+        /**
+         * @brief Get the index of the iterator
+         * 
+         * @tparam G
+         * @return constexpr uint32_t 
+         */
+        template <typename G>
+        constexpr uint32_t get_index(const G &it) {
+            return it - begin();
         }
 
     public:
@@ -107,428 +129,13 @@ namespace klib {
         }
 
         /**
-         * A random access iterator for the dynamic array;
-         * used for for-ranges or standard algorithms.
-         */
-        class random_access_iterator {
-        protected:
-            dynamic_array<T, Size> *subject;
-            uint32_t at;
-
-            // Allow access to the 'at' member
-            friend dynamic_array;
-
-        public:
-            using difference_type = std::ptrdiff_t;
-            using value_type = T;
-            using pointer = value_type *;
-            using const_pointer = value_type const *;
-            using reference = value_type &;
-            using iterator_category = std::random_access_iterator_tag;
-
-            constexpr random_access_iterator(dynamic_array<T, Size> &subject)
-                    : subject(&subject), at(0) {}
-
-            constexpr random_access_iterator(dynamic_array<T, Size> &subject, uint32_t start)
-                    : subject(&subject), at(start) { }
-
-            constexpr random_access_iterator(const random_access_iterator &rhs)
-                    : subject(rhs.subject), at(rhs.at) {}
-
-            constexpr random_access_iterator(random_access_iterator &&rhs) noexcept = default;
-
-            constexpr random_access_iterator &operator=(const random_access_iterator &rhs) {
-                subject = rhs.subject;
-                at = rhs.at;
-
-                return *this;
-            }
-
-            constexpr random_access_iterator &operator=(random_access_iterator &&rhs) noexcept = default;
-
-            /**
-             * a == b
-             *
-             * @param rhs
-             * @return
-             */
-            constexpr bool operator==(const random_access_iterator &rhs) const {
-                return at == rhs.at && subject == rhs.subject;
-            }
-
-            /**
-             * a != b
-             *
-             * @param rhs
-             * @return
-             */
-            constexpr bool operator!=(const random_access_iterator &rhs) {
-                return !operator==(rhs);
-            }
-
-            constexpr reference operator*() {
-                return (*subject).at(at);
-            }
-
-            constexpr value_type operator*() const {
-                return (*subject).at(at);
-            }
-
-            constexpr pointer operator->() {
-                return &(*subject).at(at);
-            }
-
-            constexpr const_pointer operator->() const {
-                return &(*subject).at(at);
-            }
-
-            /**
-             * Pre-increment.
-             *
-             * @return
-             */
-            constexpr random_access_iterator &operator++() {
-                at++;
-                return *this;
-            }
-
-            /**
-             * Post increment.
-             *
-             * @return
-             */
-            constexpr const random_access_iterator operator++(int) {
-                random_access_iterator temp(*this);
-                operator++();
-                return temp;
-            }
-
-            constexpr random_access_iterator &operator--() {
-                at--;
-                return *this;
-            }
-
-            constexpr const random_access_iterator operator--(int) {
-                random_access_iterator temp(*this);
-                operator--();
-                return temp;
-            }
-
-            /**
-             * a + n
-             *
-             * @param n
-             * @return
-             */
-            constexpr random_access_iterator operator+(const uint32_t n) const {
-                return random_access_iterator(subject, at + n);
-            }
-
-            /**
-             * n + a
-             *
-             * @param n
-             * @param it
-             * @return
-             */
-            constexpr friend random_access_iterator operator+(const uint32_t n, const random_access_iterator &it) {
-                return it + n;
-            }
-
-            /**
-             * a - n
-             *
-             * @param n
-             * @return
-             */
-            constexpr random_access_iterator operator-(const uint32_t n) const {
-                return random_access_iterator(subject, at - n);
-            }
-
-            /**
-             * a - b
-             *
-             * @param other
-             * @return
-             */
-            constexpr random_access_iterator operator-(const random_access_iterator &other) const {
-                return random_access_iterator(subject, at - other.at);
-            }
-
-            /**
-             * a < b
-             *
-             * @param other
-             * @return
-             */
-            constexpr random_access_iterator operator<(const random_access_iterator &other) const {
-                return at < other.at;
-            }
-
-            /**
-             * a > b
-             *
-             * @param other
-             * @return
-             */
-            constexpr random_access_iterator operator>(const random_access_iterator &other) const {
-                return at > other.at;
-            }
-
-            /**
-             * a <= b
-             *
-             * @param other
-             * @return
-             */
-            constexpr random_access_iterator operator<=(const random_access_iterator &other) const {
-                return operator<(other) || operator==(other);
-            }
-
-            /**
-             * a >= b
-             *
-             * @param other
-             * @return
-             */
-            constexpr random_access_iterator operator>=(const random_access_iterator &other) const {
-                return operator>(other) || operator==(other);
-            }
-
-            /**
-             * a += n
-             *
-             * @param n
-             * @return
-             */
-            constexpr random_access_iterator operator+=(const uint32_t n) {
-                at += n;
-                return *this;
-            }
-
-            /**
-             * a -= n
-             *
-             * @param n
-             * @return
-             */
-            constexpr random_access_iterator operator-=(const uint32_t n) {
-                at -= n;
-                return *this;
-            }
-
-            /**
-             * a[n]
-             *
-             * @param n
-             * @return
-             */
-            constexpr reference operator[](const uint32_t n) {
-                return subject[n];
-            }
-        };
-
-        class const_random_access_iterator {
-        protected:
-            const dynamic_array<T, Size> *subject;
-            uint32_t at;
-
-            // Allow access to the 'at' member
-            friend dynamic_array;
-
-        public:
-            using difference_type = std::ptrdiff_t;
-            using value_type = T;
-            using pointer = value_type *;
-            using const_pointer = value_type const *;
-            using reference = value_type &;
-            using iterator_category = std::random_access_iterator_tag;
-
-            constexpr const_random_access_iterator(const dynamic_array<T, Size> &subject)
-                : subject(&subject), at(0) {}
-
-            constexpr const_random_access_iterator(const dynamic_array<T, Size> &subject, uint32_t start)
-                : subject(&subject), at(start) {}
-
-            constexpr const_random_access_iterator(const const_random_access_iterator &rhs)
-                : subject(rhs.subject), at(rhs.at) {}
-
-            constexpr const_random_access_iterator &operator=(const const_random_access_iterator &rhs) = default;
-
-            constexpr const_random_access_iterator &operator=(const_random_access_iterator &&rhs) noexcept = default;
-
-            /**
-             * a == b
-             *
-             * @param rhs
-             * @return
-             */
-            constexpr bool operator==(const const_random_access_iterator &rhs) const {
-                return at == rhs.at && subject == rhs.subject;
-            }
-
-            /**
-             * a != b
-             *
-             * @param rhs
-             * @return
-             */
-            constexpr bool operator!=(const const_random_access_iterator &rhs) {
-                return !operator==(rhs);
-            }
-
-            constexpr value_type operator*() const {
-                return subject->at(at);
-            }
-
-            constexpr const_pointer operator->() const {
-                return &subject->at(at);
-            }
-
-            /**
-             * Pre-increment.
-             *
-             * @return
-             */
-            constexpr const_random_access_iterator &operator++() {
-                at++;
-                return *this;
-            }
-
-            /**
-             * Post increment.
-             *
-             * @return
-             */
-            constexpr const const_random_access_iterator operator++(int) {
-                const_random_access_iterator temp(*this);
-                operator++();
-                return temp;
-            }
-
-            constexpr const_random_access_iterator &operator--() {
-                at--;
-                return *this;
-            }
-
-            constexpr const const_random_access_iterator operator--(int) {
-                const_random_access_iterator temp(*this);
-                operator--();
-                return temp;
-            }
-
-            /**
-             * a + n
-             *
-             * @param n
-             * @return
-             */
-            constexpr const_random_access_iterator operator+(const uint32_t n) const {
-                return const_random_access_iterator(subject, at + n);
-            }
-
-            /**
-             * n + a
-             *
-             * @param n
-             * @param it
-             * @return
-             */
-            constexpr friend const_random_access_iterator operator+(const uint32_t n, const const_random_access_iterator &it) {
-                return it + n;
-            }
-
-            /**
-             * a - n
-             *
-             * @param n
-             * @return
-             */
-            constexpr const_random_access_iterator operator-(const uint32_t n) const {
-                return const_random_access_iterator(subject, at - n);
-            }
-
-            /**
-             * a - b
-             *
-             * @param other
-             * @return
-             */
-            constexpr const_random_access_iterator operator-(const const_random_access_iterator &other) const {
-                return const_random_access_iterator(subject, at - other.at);
-            }
-
-            /**
-             * a < b
-             *
-             * @param other
-             * @return
-             */
-            constexpr const_random_access_iterator operator<(const const_random_access_iterator &other) const {
-                return at < other.at;
-            }
-
-            /**
-             * a > b
-             *
-             * @param other
-             * @return
-             */
-            constexpr const_random_access_iterator operator>(const const_random_access_iterator &other) const {
-                return at > other.at;
-            }
-
-            /**
-             * a <= b
-             *
-             * @param other
-             * @return
-             */
-            constexpr const_random_access_iterator operator<=(const const_random_access_iterator &other) const {
-                return operator<(other) || operator==(other);
-            }
-
-            /**
-             * a >= b
-             *
-             * @param other
-             * @return
-             */
-            constexpr const_random_access_iterator operator>=(const const_random_access_iterator &other) const {
-                return operator>(other) || operator==(other);
-            }
-
-            /**
-             * a += n
-             *
-             * @param n
-             * @return
-             */
-            constexpr const_random_access_iterator operator+=(const uint32_t n) {
-                at += n;
-                return *this;
-            }
-
-            /**
-             * a -= n
-             *
-             * @param n
-             * @return
-             */
-            constexpr const_random_access_iterator operator-=(const uint32_t n) {
-                at -= n;
-                return *this;
-            }
-        };
-
-        /**
          * Get a reference to the element at the given index.
          * This does not do bounds checking.
          *
          * @param n
          * @return
          */
-        T &at(uint32_t n) {
+        reference at(uint32_t n) {
            return store[n];
         }
 
@@ -539,7 +146,7 @@ namespace klib {
          * @param n
          * @return
          */
-        T const &at(uint32_t n) const {
+        const_reference at(uint32_t n) const {
             return store[n];
         }
 
@@ -550,7 +157,7 @@ namespace klib {
          *
          * @return
          */
-        constexpr T &front() {
+        constexpr reference front() {
             return store[0];
         }
 
@@ -561,7 +168,7 @@ namespace klib {
          *
          * @return
          */
-        constexpr const T &front() const {
+        constexpr const_reference front() const {
             return store[0];
         }
 
@@ -572,7 +179,7 @@ namespace klib {
          *
          * @return
          */
-        constexpr T &back() {
+        constexpr reference back() {
             return store[index - 1];
         }
 
@@ -583,7 +190,7 @@ namespace klib {
          *
          * @return
          */
-        constexpr const T &back() const {
+        constexpr const_reference back() const {
             return store[index - 1];
         }
 
@@ -593,7 +200,7 @@ namespace klib {
          *
          * @return
          */
-        constexpr T *data() {
+        constexpr pointer data() {
             return store;
         }
 
@@ -603,7 +210,7 @@ namespace klib {
          *
          * @return
          */
-        constexpr const T *data() const {
+        constexpr const_pointer data() const {
             return store;
         }
 
@@ -662,91 +269,6 @@ namespace klib {
             index = 0;
         }
 
-        // Reduce visual noise with these aliases
-        using iterator = random_access_iterator;
-        using const_iterator = const_random_access_iterator;
-
-        /**
-         * Insert a single element.
-         *
-         * @param it
-         * @param value
-         * @return
-         */
-        constexpr iterator insert(const_iterator &it, const T &value) {
-            free_position(it.at);
-            store[it.at] = value;
-            index++;
-
-            return iterator(it);
-        }
-
-        /**
-         * Insert the given value n types, starting
-         * at iterator it.
-         *
-         * @param it
-         * @param n
-         * @param value
-         * @return
-         */
-        constexpr iterator insert(const_iterator &it, uint32_t n, const T &value) {
-            for (uint32_t i = 0; i < n; i++) {
-                insert(it + i, value);
-            }
-
-            return it;
-        }
-
-        /**
-         * Insert a range of values from the input iterator,
-         * starting at the given iterator.
-         *
-         * @tparam InputIterator
-         * @param it
-         * @param first
-         * @param last
-         * @return
-         */
-        template <typename InputIterator>
-        constexpr iterator insert(const_iterator &it, InputIterator first, InputIterator last) {
-            uint32_t i = 0;
-
-            for (auto iit = first; iit != last; ++i, ++iit) {
-                insert(it + i, iit);
-            }
-
-            return it;
-        }
-
-        /**
-         * Insert a single element by move at
-         * the given position.
-         *
-         * @param it
-         * @param value
-         * @return
-         */
-        constexpr iterator insert(const_iterator &it, T &&value) {
-            insert(it, std::move(value));
-
-            return it;
-        }
-
-        /**
-         * Insert a range of values from an initializer list,
-         * starting at the given position.
-         *
-         * @param it
-         * @param list
-         * @return
-         */
-        constexpr iterator insert(const_iterator &it, std::initializer_list<T> list) {
-            insert(it, list.begin(), list.end());
-
-            return it;
-        }
-
         /**
          * Emplace an element at the given position.
          *
@@ -757,7 +279,7 @@ namespace klib {
         template <typename ...Args>
         constexpr void emplace(const uint32_t pos, Args &&... args) {
             free_position(pos);
-            store[pos] = T(std::forward<Args>(args)...);
+            store[pos] = T{std::forward<Args>(args)...};
             index++;
         }
 
@@ -769,60 +291,20 @@ namespace klib {
          * @param args
          */
         template <typename ...Args>
-        constexpr void emplace(const_iterator &it, Args &&... args) {
-            emplace(it.at, std::forward<Args>(args)...);
+        constexpr void emplace(const const_iterator &it, Args &&... args) {
+            emplace(get_index(it), std::forward<Args>(args)...);
         }
 
         /**
-         * Erase an element at the given position.
+         * Emplace an element at the given position.
          *
+         * @tparam Args
          * @param pos
+         * @param args
          */
-        constexpr void erase(const_iterator &it) {
-            if (it.at == this->index - 1) {
-                this->index--;
-                return;
-            }
-
-            // We don't set the data to zero; all items from the given
-            // index on will be shifted one left in the array, overwriting the index to
-            // remove. This makes removals expensive in the front of the array but prevents
-            // fragmentation.
-            for (uint32_t i = it.at; i < this->index - 1; ++i) {
-                store[i] = store[i + 1];
-            }
-
-            this->index--;
-        }
-
-        /**
-         * Erase a range of elements.
-         *
-         * @param start
-         * @param end
-         */
-        constexpr void erase(const_iterator &start, const_iterator &end) {
-            for (auto it = start; it != end; ++it) {
-                erase(it);
-            }
-        }
-
-        /**
-         * Replace the contents of the array with
-         * the values from the iterator.
-         * Old values are destroyed.
-         *
-         * @tparam InputIterator
-         * @param first
-         * @param last
-         */
-        template <typename InputIterator>
-        constexpr void assign(InputIterator first, InputIterator last) {
-            clear();
-
-            for (auto it = first; it != last; ++it) {
-                push_back(it);
-            }
+        template <typename ...Args>
+        constexpr void emplace(const iterator &it, Args &&... args) {
+            emplace(get_index(it), std::forward<Args>(args)...);
         }
 
         /**
@@ -833,7 +315,7 @@ namespace klib {
          * @param n
          * @param val
          */
-        constexpr void assign(uint32_t n, const T &val) {
+        constexpr void assign(uint32_t n, const_reference val) {
             clear();
 
             for (uint32_t i = 0; i < n; i++) {
@@ -858,7 +340,7 @@ namespace klib {
          *
          * @param entry
          */
-        constexpr void push_back(const T &entry) {
+        constexpr void push_back(const_reference entry) {
             store[index++] = entry;
         }
 
@@ -881,7 +363,8 @@ namespace klib {
          */
         template <typename ...Args>
         constexpr void emplace_back(Args &&... args) {
-            store[index++] = T(std::forward<Args>(args)...);
+            store[index] = T{std::forward<Args>(args)...};
+            index++;
         }
 
         /**
@@ -910,10 +393,8 @@ namespace klib {
          * @param second
          */
         constexpr friend void swap(dynamic_array &first, dynamic_array &second) {
-            using std::swap;
-
-            swap(first.store, second.store);
-            swap(first.index, second.index);
+            std::swap(first.store, second.store);
+            std::swap(first.index, second.index);
         }
 
         /**
@@ -923,7 +404,7 @@ namespace klib {
          * @param index
          * @return
          */
-        constexpr T &operator[](const uint32_t index) {
+        constexpr reference operator[](const uint32_t index) {
             return store[index];
         }
 
@@ -935,7 +416,7 @@ namespace klib {
          * @param val
          * @return
          */
-        constexpr void set(const uint32_t index, const T &val) {
+        constexpr void set(const uint32_t index, const_reference val) {
             store[index] = val;
         }
 
@@ -963,43 +444,98 @@ namespace klib {
         }
 
         /**
-         * Get an iterator to the start
-         * of the array.
-         *
-         * @return
+         * @brief Return a iterator to the 
+         * start of the dynamic array
+         * 
+         * @return constexpr iterator 
          */
-        constexpr iterator begin() {
-            return iterator(*this);
+        constexpr iterator begin() noexcept {
+            return iterator(data());
         }
 
         /**
-         * Get a constant iterator to the start
-         * of the array.
-         *
-         * @return
+         * @brief Return a iterator to the 
+         * start of the dynamic array
+         * 
+         * @return constexpr iterator 
          */
-        constexpr const_iterator begin() const {
-            return const_iterator(*this);
+        constexpr const_iterator begin() const noexcept {
+            return const_iterator(data());
         }
 
         /**
-         * Get an iterator to the end
-         * of the array.
-         *
-         * @return
+         * @brief Returns a const iterator
+         * to the start of the dynamic array
+         * 
+         * @return constexpr const_iterator 
          */
-        constexpr iterator end() {
-            return iterator(*this, index);
+        constexpr const_iterator cbegin() const noexcept {
+            return const_iterator(data());
         }
 
         /**
-         * Get a constant iterator to the end
-         * of the array.
-         *
-         * @return
+         * @brief Returns a iterator to the 
+         * end of the dynamic array
+         * 
+         * @return constexpr iterator 
          */
-        constexpr const_iterator end() const {
-            return const_iterator(*this, index);
+        constexpr iterator end() noexcept {
+            return iterator(data() + index);
+        }
+
+        /**
+         * @brief Returns a const iterator to 
+         * the end of the dynamic array
+         * 
+         * @return constexpr iterator 
+         */
+        constexpr const_iterator end() const noexcept {
+            return const_iterator(data());
+        }
+
+        /**
+         * Erase an element at the given position.
+         *
+         * @param pos
+         */
+        constexpr void erase(const iterator &it) {
+            // We don't set the data to zero; all items from the given
+            // index on will be shifted one left in the array, overwriting the index to
+            // remove. This makes removals expensive in the front of the array but prevents
+            // fragmentation.
+            for (iterator i = it; i != end(); ++i) {
+                (*i) = *(i + 1);
+            }
+
+            this->index--;
+        }
+
+        /**
+         * Erase an element at the given position.
+         *
+         * @warning Calling this function with a
+         * wrong iterator causes undefined behaviour
+         * 
+         * @param pos
+         */
+        constexpr void erase(const const_iterator &it) {
+            // get a iterator from the const iterator
+            iterator i = begin() + get_index(it);
+
+            // erase using the normal iterator
+            erase(i);
+        }
+
+        /**
+         * Erase a range of elements.
+         *
+         * @param start
+         * @param end
+         */
+        constexpr void erase(const_iterator &start, const_iterator &end) {
+            for (auto it = start; it != end; ++it) {
+                erase(it);
+            }
         }
     };
 }
