@@ -490,7 +490,7 @@ namespace klib {
          * @return constexpr iterator 
          */
         constexpr const_iterator end() const noexcept {
-            return const_iterator(data());
+            return const_iterator(data() + index);
         }
 
         /**
@@ -503,7 +503,7 @@ namespace klib {
             // index on will be shifted one left in the array, overwriting the index to
             // remove. This makes removals expensive in the front of the array but prevents
             // fragmentation.
-            for (iterator i = it; i != end(); ++i) {
+            for (iterator i = it; i < end(); ++i) {
                 (*i) = *(i + 1);
             }
 
@@ -533,7 +533,7 @@ namespace klib {
          * @param end
          */
         constexpr void erase(const_iterator &start, const_iterator &end) {
-            for (auto it = start; it != end; ++it) {
+            for (auto it = start; it < end; ++it) {
                 erase(it);
             }
         }
