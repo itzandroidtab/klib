@@ -6,8 +6,6 @@
 #include "bitmap.hpp"
 
 namespace klib::graphics {
-    class ascii_font_16x16;
-
     /**
      * @brief 8x8 ascii font
      * 
