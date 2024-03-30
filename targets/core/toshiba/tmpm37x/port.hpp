@@ -101,7 +101,7 @@ namespace klib::core::tmpm37x::io {
                 Pin::port::port->PUP |= detail::pins::mask<Pin>;
             }
             else {
-                Pin::port::port->PUP &= detail::pins::mask<Pin>;
+                Pin::port::port->PUP &= (~detail::pins::mask<Pin>);
             }
         }
 
@@ -111,7 +111,7 @@ namespace klib::core::tmpm37x::io {
                 Pin::port::port->PDN |= detail::pins::mask<Pin>;
             }
             else {
-                Pin::port::port->PDN &= detail::pins::mask<Pin>;
+                Pin::port::port->PDN &= (~detail::pins::mask<Pin>);
             }
         }        
     };
