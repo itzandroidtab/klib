@@ -3,7 +3,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 
     # example for including the startup.cpp
-    # ${CMAKE_SOURCE_DIR}/targets/${TARGET_CPU}/startup.cpp
+    # ${CMAKE_SOURCE_DIR}/targets/chip/${TARGET_CPU}/startup.cpp
 )
 
 set(HEADERS)
