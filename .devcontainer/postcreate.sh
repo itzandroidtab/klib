@@ -38,8 +38,8 @@ for i in ./klib-svd/*.svd; do
     [ -f "$i" ] || break
 
     target=$(basename ${i%.*})
-    ./svdconv $i --suppress-warnings --generate=header -o ../klib/targets/$target/ || true
-    sed -i '/#include "system_/d' ../klib/targets/$target/$target.h
+    ./svdconv $i --suppress-warnings --generate=header -o ../klib/targets/chip/$target/ || true
+    sed -i '/#include "system_/d' ../klib/targets/chip/$target/$target.h
 done
 
 cd ../klib/
