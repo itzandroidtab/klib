@@ -1,0 +1,46 @@
+#ifndef KLIB_ATSAM4S2B_PORT_HPP
+#define KLIB_ATSAM4S2B_PORT_HPP
+
+#include <cstdint>
+#include <cstddef>
+
+#include <targets/core/atmel/atsam4s/port.hpp>
+
+// global peripherals, not affected by chip package
+namespace klib::atsam4s2b::io::periph {
+    struct gpio0 {
+        // peripheral id (e.g gpio0, gpio1)
+        constexpr static uint32_t id = 0;
+
+        // interrupt id (including the arm vector table)
+        constexpr static uint32_t interrupt_id = 27;
+
+        // port to the gpio hardware
+        static inline PIOA_Type *const port = PIOA;
+    };
+
+    struct gpio1 {
+        // peripheral id (e.g gpio0, gpio1)
+        constexpr static uint32_t id = 1;
+
+        // interrupt id (including the arm vector table)
+        constexpr static uint32_t interrupt_id = 28;
+
+        // port to the gpio hardware
+        static inline PIOB_Type *const port = PIOB;
+    };
+}
+
+namespace klib::atsam4s2b::io::detail::pins {
+    using namespace klib::core::atsam4s::io::detail::pins;
+}
+
+namespace klib::atsam4s2b::io {
+    template <typename Pin>
+    using pin_in = klib::core::atsam4s::io::pin_in<Pin>;
+
+    template <typename Pin>
+    using pin_out = klib::core::atsam4s::io::pin_out<Pin>;
+}
+
+#endif

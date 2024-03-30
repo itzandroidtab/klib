@@ -1,0 +1,169 @@
+#ifndef KLIB_ATMEL_ATSAM4S_PORT_HPP
+#define KLIB_ATMEL_ATSAM4S_PORT_HPP
+
+#include <cstdint>
+
+#include <klib/klib.hpp>
+
+namespace klib::core::atsam4s::io::detail::alternate {
+    // alternate functions for all the gpio
+    // default function (view reference manual for 
+    // default functions for every pin)
+    struct none {};
+
+    // alternate function 1
+    struct func_1 {};
+
+    // alternate function 2
+    struct func_2 {};
+
+    // alternate function 3
+    struct func_3 {};
+
+    // alternate function 4
+    struct func_4 {};
+}
+
+namespace klib::core::atsam4s::io::detail::pins {
+    // get the pin mask of a pin number
+    template <typename Pin>
+    constexpr uint32_t mask = 1U << Pin::number;
+
+    /**
+     * @brief Disable the write protect on a specific port
+     * 
+     */
+    template <typename Port>
+    static void disable_write_protect() {
+        // disable the pio write protection
+        Port::port->WPMR = (0x50494f << 8);
+    }
+
+    /**
+     * @brief Helper function to set a pin to a specific peripheral
+     * 
+     * @tparam Pin 
+     * @tparam Periph 
+     */
+    template <typename Pin, typename Periph>    
+    static void set_peripheral() {
+        // disable the write protection on the port
+        disable_write_protect<typename Pin::port>();
+
+        // set the 2 function registers based on what alternate 
+        // function we want
+        if constexpr (std::is_same_v<Periph, io::detail::alternate::none>) {
+            // enable control using the PIO. Disables peripheral 
+            // control of the pin
+            Pin::port::port->PER |= mask<Pin>;
+        }
+        else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_1>) {
+            // disable control using the PIO. Enables peripheral 
+            // control of the pin
+            Pin::port::port->PDR |= mask<Pin>;
+
+            // setup alternate function 1
+            Pin::port::port->ABCDSR[0] &= ~mask<Pin>;
+            Pin::port::port->ABCDSR[1] &= ~mask<Pin>;
+        }
+        else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_2>) {
+            // disable control using the PIO. Enables peripheral 
+            // control of the pin
+            Pin::port::port->PDR |= mask<Pin>;
+
+            // setup alternate function 2
+            Pin::port::port->ABCDSR[0] |= mask<Pin>;
+            Pin::port::port->ABCDSR[1] &= ~mask<Pin>;
+        }
+        else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_3>) {
+            // disable control using the PIO. Enables peripheral 
+            // control of the pin
+            Pin::port::port->PDR |= mask<Pin>;
+
+            // setup alternate function 3
+            Pin::port::port->ABCDSR[0] &= ~mask<Pin>;
+            Pin::port::port->ABCDSR[1] |= mask<Pin>;
+        }
+        else {
+            // disable control using the PIO. Enables peripheral 
+            // control of the pin
+            Pin::port::port->PDR |= mask<Pin>;
+
+            //  setup alternate function 4
+            Pin::port::port->ABCDSR[0] |= mask<Pin>;
+            Pin::port::port->ABCDSR[1] |= mask<Pin>;
+        }
+    }
+}
+
+namespace klib::core::atsam4s::io {
+    template <typename Pin>
+    class pin_in {
+    public:
+        constexpr static void init() {
+            // clear all the alternate functions
+            detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
+
+            // disable the output on the pin
+            Pin::port::port->ODR |= detail::pins::mask<Pin>;
+        }
+
+        constexpr static bool get() {
+            // get the status of the pin
+            return Pin::port::port->PDSR & detail::pins::mask<Pin>;
+        }
+
+        template <bool Val>
+        constexpr static void pullup_enable() {
+            if constexpr (Val) {
+                Pin::port::port->PUER |= detail::pins::mask<Pin>;
+            }
+            else {
+                Pin::port::port->PUDR |= detail::pins::mask<Pin>;
+            }
+        }
+
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            if constexpr (Val) {
+                Pin::port::port->PPDER |= detail::pins::mask<Pin>;
+            }
+            else {
+                Pin::port::port->PPDDR |= detail::pins::mask<Pin>;
+            }
+        }        
+    };
+ 
+    template <typename Pin>
+    class pin_out {
+    public:
+        constexpr static void init() {
+            // clear all the alternate functions
+            detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
+
+            // enable the gpio output
+            Pin::port::port->OER |= detail::pins::mask<Pin>;
+        }
+
+        template <bool Val>
+        constexpr static void set() {
+            if constexpr (Val) {
+                Pin::port::port->SODR |= detail::pins::mask<Pin>;
+            }
+            else {
+                Pin::port::port->CODR |= detail::pins::mask<Pin>;
+            }
+        }
+
+        constexpr static void set(const bool val) {
+            if (val) {
+                Pin::port::port->SODR |= detail::pins::mask<Pin>;
+            }
+            else {
+                Pin::port::port->CODR |= detail::pins::mask<Pin>;
+            }
+        }
+    };
+}
+
+#endif
