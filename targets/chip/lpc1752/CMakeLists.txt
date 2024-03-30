@@ -1,7 +1,7 @@
 # export our linkerscript
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
-# set the atsam3x8e cpu options as a seperate target so the driver layer can link agains klib
+# set the lpc1752 cpu options as a seperate target so the driver layer can link agains klib
 add_library (target_cpu_options INTERFACE)
 
 # alias projectname::target_cpu_options to target_cpu_options
@@ -9,10 +9,6 @@ add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
 
 # include the arm directory for all the cmsis files
 target_include_directories(target_cpu_options INTERFACE ${CMAKE_SOURCE_DIR}/targets/arm/)
-
-if (DEFINED TARGET_FPU_ENABLED)
-    message(FATAL_ERROR "Target does not have a FPU")
-endif()
 
 # set the cpu options for the compiler
 target_compile_options(target_cpu_options INTERFACE "-march=armv7-m")
@@ -34,9 +30,9 @@ target_compile_options(target_cpu_options INTERFACE "-fno-exceptions")
 target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-tables")
 
 
-# cpu atsam3x8e target drivers 
+# cpu lpc1752 target drivers 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../arm/vector_table/cortex-m3.cpp
 )
 
 set(HEADERS_PRIVATE 
@@ -44,8 +40,7 @@ set(HEADERS_PRIVATE
 )
 
 set(HEADERS_PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/rstc.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/watchdog.hpp
+
 )
 
 # add the target_cpu library

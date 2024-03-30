@@ -45,7 +45,7 @@ if (DEFINED TARGET_CPU)
     message("Building for target: ${TARGET_CPU}")
 
     # add the target directory
-    add_subdirectory(${CMAKE_SOURCE_DIR}/targets/${TARGET_CPU})
+    add_subdirectory(${CMAKE_SOURCE_DIR}/targets/chip/${TARGET_CPU})
 
     # check if we have board with names for the pins
     if (DEFINED TARGET_BOARD)

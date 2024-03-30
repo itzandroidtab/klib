@@ -1,7 +1,7 @@
 # export our linkerscript
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
-# set the lpc1756 cpu options as a seperate target so the driver layer can link agains klib
+# set the stm32f407 cpu options as a seperate target so the driver layer can link agains klib
 add_library (target_cpu_options INTERFACE)
 
 # alias projectname::target_cpu_options to target_cpu_options
@@ -11,14 +11,20 @@ add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
 target_include_directories(target_cpu_options INTERFACE ${CMAKE_SOURCE_DIR}/targets/arm/)
 
 # set the cpu options for the compiler
-target_compile_options(target_cpu_options INTERFACE "-march=armv7-m")
-target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m3")
+target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m4")
 target_compile_options(target_cpu_options INTERFACE "-mthumb")
+if (DEFINED TARGET_FPU_ENABLED)
+    target_compile_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
+    target_compile_options(target_cpu_options INTERFACE "-mfpu=fpv4-sp-d16")
+endif()
 
 # set the cpu options for the linker
-target_link_options(target_cpu_options INTERFACE "-march=armv7-m")
-target_link_options(target_cpu_options INTERFACE "-mcpu=cortex-m3")
+target_link_options(target_cpu_options INTERFACE "-mcpu=cortex-m4")
 target_link_options(target_cpu_options INTERFACE "-mthumb")
+if (DEFINED TARGET_FPU_ENABLED)
+    target_link_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
+    target_link_options(target_cpu_options INTERFACE "-mfpu=fpv4-sp-d16")
+endif()
 
 # other compiler settings
 target_compile_options(target_cpu_options INTERFACE "-Wno-attributes")
@@ -30,9 +36,9 @@ target_compile_options(target_cpu_options INTERFACE "-fno-exceptions")
 target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-tables")
 
 
-# cpu lpc1756 target drivers 
+# cpu stm32f407 target drivers 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../arm/vector_table/cortex-m4.cpp
 )
 
 set(HEADERS_PRIVATE 
@@ -50,7 +56,7 @@ add_library (target_cpu OBJECT
     ${HEADERS_PRIVATE}
 )
 
-# alias projectname::target to klib
+# alias projectname::target to target_cpu
 add_library(${PROJECT_NAME}::target_cpu ALIAS target_cpu)
 
 # enable C++20 support for the library
@@ -61,7 +67,7 @@ get_filename_component(TARGET_CPU_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 set(TARGET_CPU ${TARGET_CPU_FOLDER} PARENT_SCOPE)
 target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=${TARGET_CPU}")
 
-# add target specific compile options
+# other compile options
 target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile>)
 
 # link to klib and target_cpu_options

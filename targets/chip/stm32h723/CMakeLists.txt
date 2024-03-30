@@ -1,7 +1,7 @@
 # export our linkerscript
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
-# set the stm32f407 cpu options as a seperate target so the driver layer can link agains klib
+# set the stm32h723 cpu options as a seperate target so the driver layer can link agains klib
 add_library (target_cpu_options INTERFACE)
 
 # alias projectname::target_cpu_options to target_cpu_options
@@ -11,7 +11,7 @@ add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
 target_include_directories(target_cpu_options INTERFACE ${CMAKE_SOURCE_DIR}/targets/arm/)
 
 # set the cpu options for the compiler
-target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m4")
+target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m7")
 target_compile_options(target_cpu_options INTERFACE "-mthumb")
 if (DEFINED TARGET_FPU_ENABLED)
     target_compile_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
@@ -19,7 +19,7 @@ if (DEFINED TARGET_FPU_ENABLED)
 endif()
 
 # set the cpu options for the linker
-target_link_options(target_cpu_options INTERFACE "-mcpu=cortex-m4")
+target_link_options(target_cpu_options INTERFACE "-mcpu=cortex-m7")
 target_link_options(target_cpu_options INTERFACE "-mthumb")
 if (DEFINED TARGET_FPU_ENABLED)
     target_link_options(target_cpu_options INTERFACE "-mfloat-abi=hard")
@@ -36,27 +36,25 @@ target_compile_options(target_cpu_options INTERFACE "-fno-exceptions")
 target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-tables")
 
 
-# cpu stm32f407 target drivers 
+# cpu stm32h723 target drivers 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m4.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../arm/vector_table/cortex-m7.cpp
 )
 
 set(HEADERS_PRIVATE 
-
 )
 
 set(HEADERS_PUBLIC 
-
 )
 
-# add the target_cpu library
-add_library (target_cpu OBJECT 
+# add the library
+add_library (target_cpu OBJECT
     ${SOURCES}
     ${HEADERS_PUBLIC}
     ${HEADERS_PRIVATE}
 )
 
-# alias projectname::target to target_cpu
+# alias projectname::target to klib
 add_library(${PROJECT_NAME}::target_cpu ALIAS target_cpu)
 
 # enable C++20 support for the library
@@ -67,7 +65,7 @@ get_filename_component(TARGET_CPU_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 set(TARGET_CPU ${TARGET_CPU_FOLDER} PARENT_SCOPE)
 target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=${TARGET_CPU}")
 
-# other compile options
+# add target specific compile options
 target_compile_options(target_cpu PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile>)
 
 # link to klib and target_cpu_options

@@ -1,7 +1,7 @@
 # export our linkerscript
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
-# set the lpc802 cpu options as a seperate target so the driver layer can link agains klib
+# set the stm32f103 cpu options as a seperate target so the driver layer can link agains klib
 add_library (target_cpu_options INTERFACE)
 
 # alias projectname::target_cpu_options to target_cpu_options
@@ -11,13 +11,13 @@ add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
 target_include_directories(target_cpu_options INTERFACE ${CMAKE_SOURCE_DIR}/targets/arm/)
 
 # set the cpu options for the compiler
-target_compile_options(target_cpu_options INTERFACE "-march=armv6-m")
-target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m0")
+target_compile_options(target_cpu_options INTERFACE "-march=armv7-m")
+target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m3")
 target_compile_options(target_cpu_options INTERFACE "-mthumb")
 
 # set the cpu options for the linker
-target_link_options(target_cpu_options INTERFACE "-march=armv6-m")
-target_link_options(target_cpu_options INTERFACE "-mcpu=cortex-m0")
+target_link_options(target_cpu_options INTERFACE "-march=armv7-m")
+target_link_options(target_cpu_options INTERFACE "-mcpu=cortex-m3")
 target_link_options(target_cpu_options INTERFACE "-mthumb")
 
 # other compiler settings
@@ -30,9 +30,9 @@ target_compile_options(target_cpu_options INTERFACE "-fno-exceptions")
 target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-tables")
 
 
-# cpu lpc802 target drivers 
+# cpu stm32f103 target drivers 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/../arm/vector_table/cortex-m0.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../arm/vector_table/cortex-m3.cpp
 )
 
 set(HEADERS_PRIVATE 
