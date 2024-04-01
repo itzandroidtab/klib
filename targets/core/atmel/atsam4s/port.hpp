@@ -5,6 +5,8 @@
 
 #include <klib/klib.hpp>
 
+#include <io/power.hpp>
+
 namespace klib::core::atsam4s::io::detail::alternate {
     // alternate functions for all the gpio
     // default function (view reference manual for 
@@ -101,6 +103,9 @@ namespace klib::core::atsam4s::io {
     class pin_in {
     public:
         constexpr static void init() {
+            // enable the power for the pio
+            target::io::power_control::enable<typename Pin::port>();
+
             // clear all the alternate functions
             detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
 
@@ -138,6 +143,9 @@ namespace klib::core::atsam4s::io {
     class pin_out {
     public:
         constexpr static void init() {
+            // enable the power for the pio
+            target::io::power_control::enable<typename Pin::port>();
+
             // clear all the alternate functions
             detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
 
