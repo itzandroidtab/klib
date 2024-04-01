@@ -410,8 +410,8 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
     };
 
     struct ph3 {
-        // P1.8
-        using port = io::periph::gpio1;
+        // P0.8
+        using port = io::periph::gpio0;
 
         // bit number in port
         constexpr static uint32_t number = 8;
