@@ -3,6 +3,7 @@
 #include <atsam4s2b.hpp>
 
 #include <klib/io/systick.hpp>
+#include <klib/io/core_clock.hpp>
 
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__
@@ -11,6 +12,10 @@
 
 void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::atsam4s2b;
+
+    // TODO: add clock setup here
+    // the default clock speed is 4mhz
+    klib::io::clock::set(4'000'000);
 
     // setup the irq handler before main is called. This 
     // moves the vector table to ram so it can be changed
