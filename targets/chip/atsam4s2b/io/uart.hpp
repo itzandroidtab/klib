@@ -5,6 +5,8 @@
 
 #include <atsam4s2b.hpp>
 
+#include "pins.hpp"
+
 namespace klib::atsam4s2b::io::periph::detail::uart {
     enum class mode {
         txd,
