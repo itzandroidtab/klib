@@ -7,7 +7,7 @@
 
 namespace klib::lpc1788 {
     // irq for the lpc1788
-    using irq = klib::KLIB_IRQ<0, 16 + 40>;
+    using irq = klib::irq::KLIB_IRQ<0, 16 + 40>;
 
     /**
      * @brief Get the current cpu id

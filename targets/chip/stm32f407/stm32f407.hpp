@@ -7,7 +7,7 @@
 
 namespace klib::stm32f407 {
     // irq for the stm32f407
-    using irq = klib::KLIB_IRQ<0, 16 + 72>;
+    using irq = klib::irq::KLIB_IRQ<0, 16 + 72>;
 
     /**
      * @brief Get the current cpu id

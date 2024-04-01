@@ -7,7 +7,7 @@
 
 namespace klib::stm32f103 {
     // irq for the stm32f103
-    using irq = klib::KLIB_IRQ<0, 16 + 68>;
+    using irq = klib::irq::KLIB_IRQ<0, 16 + 68>;
 
     /**
      * @brief Get the current cpu id

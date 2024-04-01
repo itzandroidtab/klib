@@ -7,7 +7,7 @@
 
 namespace klib::max32660 {
     // irq for the max32660
-    using irq = klib::KLIB_IRQ<0, 16 + 54>;
+    using irq = klib::irq::KLIB_IRQ<0, 16 + 54>;
 
     /**
      * @brief Get the current cpu id

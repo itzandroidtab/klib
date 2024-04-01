@@ -8,7 +8,7 @@
 #include "math.hpp"
 #include "lookuptable.hpp"
 
-namespace klib::detail {
+namespace klib::irq::detail {
     /**
      * @brief Available irq types. Flash irq types 
      * have different requirements for initialization
@@ -21,7 +21,7 @@ namespace klib::detail {
     };
 }
 
-namespace klib {
+namespace klib::irq {
     /**
      * @brief Irq boot helper. Will initialize any ram irq handler
      * 
@@ -38,7 +38,7 @@ namespace klib {
         template <typename Irq>
         constexpr static bool in_ram() {
             // check if we have a ram handler
-            return Irq::type == klib::detail::type::ram;
+            return Irq::type == klib::irq::detail::type::ram;
         } 
 
         /**

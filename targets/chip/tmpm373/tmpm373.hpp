@@ -7,7 +7,7 @@
 
 namespace klib::tmpm373 {
     // irq for the tmpm373 (see page 86 of the datasheet for the interrupt list)
-    using irq = klib::KLIB_IRQ<0, 16 + 77>;
+    using irq = klib::irq::KLIB_IRQ<0, 16 + 77>;
 
     /**
      * @brief Get the current cpu id
