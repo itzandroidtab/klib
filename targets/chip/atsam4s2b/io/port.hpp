@@ -12,6 +12,9 @@ namespace klib::atsam4s2b::io::periph {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 0;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 11;
+        
         // interrupt id (including the arm vector table)
         constexpr static uint32_t interrupt_id = 27;
 
@@ -22,6 +25,9 @@ namespace klib::atsam4s2b::io::periph {
     struct gpio1 {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 1;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 12;
 
         // interrupt id (including the arm vector table)
         constexpr static uint32_t interrupt_id = 28;
