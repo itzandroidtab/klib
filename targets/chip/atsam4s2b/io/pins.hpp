@@ -53,58 +53,6 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         // ADVREF
     };
 
-    struct pa9 {
-        // P0.1
-        using port = io::periph::gpio0;
-
-        // bit number in port
-        constexpr static uint32_t number = 1;
-    };
-
-    struct pa10 {
-        // JTAGSEL
-    };
-
-    struct pa11 {
-        // P1.10
-        using port = io::periph::gpio1;
-
-        // bit number in port
-        constexpr static uint32_t number = 10;
-    };
-
-    struct pa12 {
-        // P1.11
-        using port = io::periph::gpio1;
-
-        // bit number in port
-        constexpr static uint32_t number = 11;
-    };
-
-    struct pa13 {
-        // P1.13
-        using port = io::periph::gpio1;
-
-        // bit number in port
-        constexpr static uint32_t number = 13;
-    };
-
-    struct pa14 {
-        // VDDPLL
-    };
-
-    struct pa15 {
-        // P1.14
-        using port = io::periph::gpio1;
-
-        // bit number in port
-        constexpr static uint32_t number = 14;
-    };
-
-    struct pa16 {
-        // GNDANA
-    };
-
     struct pb1 {
         // P0.1
         using port = io::periph::gpio0;
