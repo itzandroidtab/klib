@@ -57,7 +57,7 @@ namespace klib::hardware::memory {
             };
 
             // write the command
-            Bus::write(command, sizeof(command));
+            Bus::write(command);
 
             // clear the chip select
             Cs::template set<true>();
@@ -86,12 +86,12 @@ namespace klib::hardware::memory {
             };
 
             // write the command to fast read
-            Bus::write(command, sizeof(command));
+            Bus::write(command);
 
             uint8_t status = 0x00;
 
             // write the data we want to write
-            Bus::write_read(nullptr, &status, sizeof(status));
+            Bus::write_read({}, {&status, sizeof(status)});
 
             // clear the chip select
             Cs::template set<true>();
@@ -124,7 +124,7 @@ namespace klib::hardware::memory {
             };
 
             // write the command
-            Bus::write(command_enable, sizeof(command_enable));
+            Bus::write(command_enable);
 
             // clear the chip select
             Cs::template set<true>();
@@ -137,7 +137,7 @@ namespace klib::hardware::memory {
             };
 
             // write the reset command
-            Bus::write(command, sizeof(command));
+            Bus::write(command);
 
             // clear the chip select
             Cs::template set<true>();
@@ -164,7 +164,7 @@ namespace klib::hardware::memory {
             };
 
             // write the command to set the write status
-            Bus::write(command, sizeof(command));
+            Bus::write(command);
 
             // clear the chip select
             Cs::template set<true>();
@@ -217,10 +217,10 @@ namespace klib::hardware::memory {
             };
 
             // write the command to fast read
-            Bus::write(command, sizeof(command));
+            Bus::write(command);
 
             // write the data we want to write
-            Bus::write_read(nullptr, data, size);
+            Bus::write_read({}, {data, size});
 
             // clear the chip select
             Cs::template set<true>();
@@ -248,10 +248,10 @@ namespace klib::hardware::memory {
             };
 
             // write the command and address
-            Bus::write(command, sizeof(command));
+            Bus::write(command);
 
             // write the data
-            Bus::write(data, size);
+            Bus::write({data, size});
 
             // clear the chip select
             Cs::template set<true>();
@@ -279,7 +279,7 @@ namespace klib::hardware::memory {
             };
 
             // write the command
-            Bus::write(command, sizeof(command));
+            Bus::write(command);
 
             // clear the chip select
             Cs::template set<true>();
@@ -303,7 +303,7 @@ namespace klib::hardware::memory {
             };
 
             // write the command
-            Bus::write(command, sizeof(command));
+            Bus::write(command);
 
             // clear the chip select
             Cs::template set<true>();
