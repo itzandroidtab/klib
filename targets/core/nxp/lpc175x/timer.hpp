@@ -50,7 +50,7 @@ namespace klib::core::lpc175x::io::detail::timer {
             const uint32_t status = Timer::port->IR;
 
             // clear the whole interrupt register
-            Timer::port->IR = status & 0b11111;
+            Timer::port->IR = status & 0b111111;
 
             // run the callback if provided
             if (callback) {
