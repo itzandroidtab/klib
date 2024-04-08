@@ -150,25 +150,25 @@ namespace klib::core::atsam4s::io {
             detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
 
             // enable the gpio output
-            Pin::port::port->OER |= detail::pins::mask<Pin>;
+            Pin::port::port->OER = detail::pins::mask<Pin>;
         }
 
         template <bool Val>
         constexpr static void set() {
             if constexpr (Val) {
-                Pin::port::port->SODR |= detail::pins::mask<Pin>;
+                Pin::port::port->SODR = detail::pins::mask<Pin>;
             }
             else {
-                Pin::port::port->CODR |= detail::pins::mask<Pin>;
+                Pin::port::port->CODR = detail::pins::mask<Pin>;
             }
         }
 
         constexpr static void set(const bool val) {
             if (val) {
-                Pin::port::port->SODR |= detail::pins::mask<Pin>;
+                Pin::port::port->SODR = detail::pins::mask<Pin>;
             }
             else {
-                Pin::port::port->CODR |= detail::pins::mask<Pin>;
+                Pin::port::port->CODR = detail::pins::mask<Pin>;
             }
         }
     };
