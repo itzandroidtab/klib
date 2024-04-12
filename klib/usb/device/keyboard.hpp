@@ -602,7 +602,9 @@ namespace klib::usb::device {
                 // configure the endpoint for our report data
                 Usb::configure(
                     usb::get_endpoint(config.endpoint.bEndpointAddress), 
-                    usb::endpoint_mode::in, sizeof(report_data)
+                    usb::endpoint_mode::in,
+                    usb::get_transfer_type(config.endpoint.bmAttributes), 
+                    sizeof(report_data)
                 );
 
                 // store the configuration value

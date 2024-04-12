@@ -397,11 +397,13 @@ namespace klib::usb::device {
                 Usb::configure(
                     usb::get_endpoint(InEndpoint),
                     usb::get_endpoint_mode(InEndpoint), 
+                    usb::get_transfer_type(config.endpoint0.bmAttributes), 
                     config.endpoint0.wMaxPacketSize
                 );
                 Usb::configure(
                     usb::get_endpoint(OutEndpoint),
                     usb::get_endpoint_mode(OutEndpoint), 
+                    usb::get_transfer_type(config.endpoint1.bmAttributes), 
                     config.endpoint1.wMaxPacketSize
                 );
 

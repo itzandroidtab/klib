@@ -116,6 +116,16 @@ namespace klib::usb {
         }
 
         /**
+         * @brief Get the transfer type of a endpoint
+         * 
+         * @param raw 
+         * @return constexpr descriptor::transfer_type 
+         */
+        constexpr static descriptor::transfer_type get_transfer_type(const uint8_t raw) {
+            return static_cast<descriptor::transfer_type>(raw & 0x3);
+        }
+
+        /**
          * @brief Get the endpoint from a raw field
          * 
          * @param raw 

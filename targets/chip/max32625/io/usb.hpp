@@ -754,9 +754,13 @@ namespace klib::max32625::io {
          * 
          * @param endpoint 
          * @param mode 
+         * @param type 
          * @param size 
          */
-        static void configure(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, const uint32_t size) {
+        static void configure(
+            const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, 
+            const klib::usb::descriptor::transfer_type type, const uint32_t size) 
+        {
             // get the endpoint pointer
             auto *const ep = get_endpoint_ptr(endpoint);
 

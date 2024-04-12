@@ -439,7 +439,9 @@ namespace klib::usb::device {
             if (packet.wValue == config.configuration.bConfigurationValue) {
                 // configure the endpoint for our report data
                 Usb::configure(
-                    config.endpoint.bEndpointAddress & 0x0f, usb::endpoint_mode::in, 
+                    config.endpoint.bEndpointAddress & 0x0f, 
+                    usb::endpoint_mode::in, 
+                    usb::get_transfer_type(config.endpoint1.bmAttributes), 
                     sizeof(report_data)
                 );
 

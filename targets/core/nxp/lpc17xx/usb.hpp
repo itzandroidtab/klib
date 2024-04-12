@@ -771,9 +771,13 @@ namespace klib::core::lpc17xx::io {
          * 
          * @param endpoint 
          * @param mode 
+         * @param type
          * @param size 
          */
-        static void configure(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, const uint32_t size) {
+        static void configure(
+            const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, 
+            const klib::usb::descriptor::transfer_type type, const uint32_t size) 
+        {
             // get the physical endpoint number
             const uint32_t ep = (endpoint << 1) | endpoint_mode_to_raw(mode);
 
