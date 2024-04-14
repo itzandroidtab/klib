@@ -5,6 +5,8 @@
 #include <klib/io/systick.hpp>
 #include <klib/io/core_clock.hpp>
 
+#include <io/system.hpp>
+
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__
     #pragma diag_suppress 1094
@@ -12,10 +14,15 @@
 
 void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::atsam4s2b;
+    using clock = target::io::system::clock;
 
-    // TODO: add clock setup here
-    // the default clock speed is 4mhz
-    klib::io::clock::set(4'000'000);
+    // setup the flash wait state to 5 + 1 CPU clocks
+    target::io::system::flash::setup<5>();
+
+    // setup the clock to 120Mhz (in this example we are using a 12Mhz 
+    // oscillator)
+    // (((12Mhz * 20) = 240Mhz) / 2) = 120Mhz
+    clock::set_main<clock::source::main, clock::pll::plla, 120'000'000, 20, 2>();
 
     // setup the irq handler before main is called. This 
     // moves the vector table to ram so it can be changed
