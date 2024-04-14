@@ -206,7 +206,7 @@ namespace klib::core::lpc17xx::io {
          * @param mode 
          * @return uint8_t 
          */
-        static bool endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode) {
+        constexpr static bool endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode) {
             switch (mode) {
                 case klib::usb::usb::endpoint_mode::out:
                     return false;
@@ -339,7 +339,7 @@ namespace klib::core::lpc17xx::io {
                 // read 4 bytes at the time
                 const uint32_t value = Usb::port->RXDATA;
 
-                // write into the buffer 4 bytes at the time
+                // read into the buffer 4 bytes at the time
                 *reinterpret_cast<uint32_t*>(&data[i]) = value;
             }
 
