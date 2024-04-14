@@ -410,6 +410,32 @@ namespace klib::core::atsam4s::io {
             Usb::port->FADDR = (address & 0x7f) | (0x1 << 8);
         }
 
+        static void reset_impl(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
+            // get the endpoint mask
+            const uint8_t ep = (0x1 << endpoint);
+
+            // reset the endpoint
+            Usb::port->RST_EP |= ep;
+
+            // wait until the bit is set
+            while (!(Usb::port->RST_EP & ep)) {
+                // do nothing
+            }
+
+            // clear the endpoint reset bit
+            Usb::port->RST_EP &= ~ep;
+        }
+
+        constexpr static uint8_t get_endpoint_bank_count(const uint8_t endpoint) {
+            // return the amount of banks for the endpoint
+            if ((endpoint == 0) || (endpoint == 3)) {
+                return 1;
+            }
+            else {
+                return 2;
+            }
+        }
+
     public:
         /**
          * @brief Interrupt handler for the usb driver
@@ -632,19 +658,8 @@ namespace klib::core::atsam4s::io {
          * @param mode
          */
         static void reset(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            // get the endpoint mask
-            const uint8_t ep = (0x1 << endpoint);
-
-            // reset the endpoint
-            Usb::port->RST_EP |= ep;
-
-            // wait until the bit is set
-            while (!(Usb::port->RST_EP & ep)) {
-                // do nothing
-            }
-
-            // clear the endpoint reset bit
-            Usb::port->RST_EP &= ~ep;
+            // call the reset implementation
+            reset_impl(endpoint, mode);
 
             // get the callback
             const auto callback = state[endpoint].callback;
@@ -733,7 +748,11 @@ namespace klib::core::atsam4s::io {
                 return;
             }
 
-            // TODO: implement this
+            // clear the stall and the stall send bit
+            Usb::port->CSR[endpoint] &= ~((0x1 << 5) | (0x1 << 3));
+
+            // reset the endpoint
+            reset_impl(endpoint, mode);
 
             // get the callback
             const auto callback = state[endpoint].callback;
@@ -757,9 +776,7 @@ namespace klib::core::atsam4s::io {
          */
         static bool is_stalled(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // return the stalled endpoint flag
-
-            // TODO: implement this
-            return false;
+            return Usb::port->CSR[endpoint] & ((0x1 << 5) | (0x1 << 3));;
         }
 
         /**
@@ -840,7 +857,25 @@ namespace klib::core::atsam4s::io {
                          const klib::usb::usb::endpoint_mode mode, uint8_t *const data, 
                          const uint32_t min_size, const uint32_t max_size) 
         {
-            // TODO: implement this
+            // set the endpoint callback
+            state[endpoint].callback = callback;
+            state[endpoint].data = data;
+            
+            // set the endpoint data
+            state[endpoint].requested_size = min_size;
+            state[endpoint].max_requested_size = max_size;
+            state[endpoint].transferred_size = 0;
+
+            // mark the endpoint as busy
+            state[endpoint].is_busy = true;
+            
+            // check if we already received data while we were not reading
+            if (state[endpoint].interrupt_pending) {
+                // clear the pending interrupt flag
+                state[endpoint].interrupt_pending = false;
+
+                // TODO: trigger the interrupt again
+            }
 
             // notify everything is correct
             return true;
@@ -865,7 +900,56 @@ namespace klib::core::atsam4s::io {
          * @param mode 
          */
         static void cancel(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            // TODO: implement this
+            // disable the endpoint interrupt while we modify the fifo
+            const bool irq_enabled = Usb::port->IMR & (0x1 << endpoint);
+            
+            if (irq_enabled) {
+                Usb::port->IDR = (0x1 << endpoint);
+            }
+
+            // check for a in or out
+            if (mode == klib::usb::usb::endpoint_mode::out) {
+                // clear both banks
+                Usb::port->CSR[endpoint] &= ~((0x1 << 1) | (0x1 << 6));
+            }
+            else {
+                // check if we have a packet ready
+                if (Usb::port->CSR[endpoint] & (0x1 << 4)) {
+                    if (get_endpoint_bank_count(endpoint) > 1) {
+                        // clear the packet ready flag for the other bank
+                        Usb::port->CSR[endpoint] &= ~(0x1 << 4);
+
+                        // wait until it is cleared
+                        while (Usb::port->CSR[endpoint] & (0x1 << 4)) {
+                            // do nothing
+                        }
+
+                        // set the packet ready flag for the other bank
+                        Usb::port->CSR[endpoint] &= ~(0x1 << 4);
+
+                        // wait until it is set
+                        while (!Usb::port->CSR[endpoint] & (0x1 << 4)) {
+                            // do nothing
+                        } 
+                    }
+
+                    // clear the packet ready flag
+                    Usb::port->CSR[endpoint] &= ~(0x1 << 4);
+                }
+
+                // clear the flag we have transmitted a packet to 
+                // prevent us from entering the entry in the 
+                // interrupt
+                Usb::port->CSR[endpoint] &= ~(0x1);
+            }
+            
+            // enable the interrupts again if they were on
+            if (irq_enabled) {
+                Usb::port->IER = (0x1 << endpoint);
+            }
+
+            // reset the endpoint
+            reset_impl(endpoint, mode);
 
             // get the callback
             const auto callback = state[endpoint].callback;
