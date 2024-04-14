@@ -316,31 +316,47 @@ namespace klib::core::atsam4s::io {
                 // set the flag we have a out interrupt pending
                 state[endpoint].interrupt_pending = true;
 
+                // disable the endpoint interrupt to prevent 
+                // continuous triggers on the endpoint
+                Usb::port->IDR = (0x1 << endpoint);
+
+                // do not read anything
                 return;
             }
 
-            // receive more data
-            state[endpoint].transferred_size += read_impl(
-                endpoint, klib::usb::usb::endpoint_mode::out, 
-                (state[endpoint].data + state[endpoint].transferred_size),
-                state[endpoint].max_requested_size - state[endpoint].transferred_size
-            );
+            // check both banks if the endpoint supports dual banks
+            for (uint32_t i = 0; i < get_endpoint_bank_count(endpoint); i++) {
+                // check if the current bank has data
+                if (!(Usb::port->CSR[endpoint] & (0x1 << (1 + (i * 5))))) {
+                    continue;
+                }
 
-            // check if we are done
-            if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
-                // we are done. clear the flag and call the callback
-                const auto callback = state[endpoint].callback;
+                // receive more data
+                state[endpoint].transferred_size += read_impl(
+                    endpoint, klib::usb::usb::endpoint_mode::out, 
+                    (state[endpoint].data + state[endpoint].transferred_size),
+                    state[endpoint].max_requested_size - state[endpoint].transferred_size
+                );
 
-                // clear the state
-                clear_endpoint_state(endpoint);
+                // clear the flag to notify we have read the data
+                Usb::port->CSR[endpoint] = Usb::port->CSR[endpoint] & ~(0x1 << (1 + (i * 5)));
 
-                // check for any callbacks
-                if (callback) {
-                    // call the callback
-                    callback(
-                        endpoint, klib::usb::usb::endpoint_mode::out, 
-                        klib::usb::usb::error::no_error
-                    );
+                // check if we are done
+                if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
+                    // we are done. clear the flag and call the callback
+                    const auto callback = state[endpoint].callback;
+
+                    // clear the state
+                    clear_endpoint_state(endpoint);
+
+                    // check for any callbacks
+                    if (callback) {
+                        // call the callback
+                        callback(
+                            endpoint, klib::usb::usb::endpoint_mode::out, 
+                            klib::usb::usb::error::no_error
+                        );
+                    }
                 }
             }
         }
@@ -368,10 +384,11 @@ namespace klib::core::atsam4s::io {
 
                 // check for a control endpoint 
                 if ((mode == endpoint_mode::control) && (value & (0x1 << 2))) {
-                    klib::cout << "Setup" << klib::endl;
-
                     // we have a setup packet handle it
                     setup_packet(endpoint, mode, count);
+
+                    // clear the flag to notify we have read the data
+                    Usb::port->CSR[endpoint] = Usb::port->CSR[endpoint] & ~(0x1 << 1);
                 }
                 else if (value & 0x1) {
                     // clear the flag we have transmitted a packet
@@ -381,11 +398,14 @@ namespace klib::core::atsam4s::io {
                     endpoint_in_callback(endpoint);
                 }
                 else if (value & ((0x1 << 1) | (0x1 << 6))) {
-                    // call the out callback
-                    endpoint_out_callback(endpoint);
-
-                    // clear the flag to notify we have read the data
-                    Usb::port->CSR[endpoint] = Usb::port->CSR[endpoint] & ~(0x1 << 1);
+                    if ((mode == endpoint_mode::control) && ((value >> 7) & 0x1)) {
+                        // do nothing if we are here in a control + in direction
+                        Usb::port->CSR[endpoint] = Usb::port->CSR[endpoint] & ~(0x1 << 1);
+                    }
+                    else {
+                        // call the out callback
+                        endpoint_out_callback(endpoint);
+                    }
                 }
                 else if (value & (0x1 << 3)) {
                     // for isochronous it is a crc error flag. For the others it
@@ -459,8 +479,6 @@ namespace klib::core::atsam4s::io {
 
             // check what kind of interrupt we have
             if (masked_status & (0x1 << 12)) {
-                klib::cout << klib::hex << "Reset" << klib::endl;
-
                 // reset event. Reset the usb driver
                 reset();
 
@@ -874,7 +892,9 @@ namespace klib::core::atsam4s::io {
                 // clear the pending interrupt flag
                 state[endpoint].interrupt_pending = false;
 
-                // TODO: trigger the interrupt again
+                // process the data we already received by forcing a interrupt
+                // on the endpoint we are reading
+                Usb::port->IER = (0x1 << endpoint);
             }
 
             // notify everything is correct
