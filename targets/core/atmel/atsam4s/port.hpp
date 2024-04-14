@@ -121,20 +121,20 @@ namespace klib::core::atsam4s::io {
         template <bool Val>
         constexpr static void pullup_enable() {
             if constexpr (Val) {
-                Pin::port::port->PUER |= detail::pins::mask<Pin>;
+                Pin::port::port->PUER = detail::pins::mask<Pin>;
             }
             else {
-                Pin::port::port->PUDR |= detail::pins::mask<Pin>;
+                Pin::port::port->PUDR = detail::pins::mask<Pin>;
             }
         }
 
         template <bool Val>
         constexpr static void pulldown_enable() {
             if constexpr (Val) {
-                Pin::port::port->PPDER |= detail::pins::mask<Pin>;
+                Pin::port::port->PPDER = detail::pins::mask<Pin>;
             }
             else {
-                Pin::port::port->PPDDR |= detail::pins::mask<Pin>;
+                Pin::port::port->PPDDR = detail::pins::mask<Pin>;
             }
         }        
     };
