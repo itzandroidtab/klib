@@ -101,7 +101,7 @@ namespace klib::core::atsam4s::io {
         static inline volatile detail::usb::state state[endpoint_count] = {};
 
         // address to change to if not zero.
-        static inline uint8_t device_address = 0;
+        static inline volatile uint8_t device_address = 0;
 
         /**
          * @brief Endpoint modes the hardware supports
