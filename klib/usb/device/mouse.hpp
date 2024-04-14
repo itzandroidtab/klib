@@ -441,7 +441,7 @@ namespace klib::usb::device {
                 Usb::configure(
                     config.endpoint.bEndpointAddress & 0x0f, 
                     usb::endpoint_mode::in, 
-                    usb::get_transfer_type(config.endpoint1.bmAttributes), 
+                    usb::get_transfer_type(config.endpoint.bmAttributes), 
                     sizeof(report_data)
                 );
 
