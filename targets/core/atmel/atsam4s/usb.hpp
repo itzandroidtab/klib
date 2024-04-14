@@ -471,8 +471,6 @@ namespace klib::core::atsam4s::io {
             // create the masked status
             const uint32_t masked_status = status & mask;
 
-            // klib::cout << klib::hex << "S: " << status << ", M: " << mask << klib::endl;
-
             // clear the interrupt status so we dont miss any
             // interrupts while the user code is running
             Usb::port->ICR = masked_status;
@@ -501,8 +499,6 @@ namespace klib::core::atsam4s::io {
 
             // check if we have any endpoint interrupts
             if (masked_status & 0xff) {
-                // klib::cout << klib::hex << "EP: " << masked_status << klib::endl;
-
                 // handle the data irq
                 data_irq_handler(masked_status & 0xff);
             }
