@@ -541,6 +541,9 @@ namespace klib::core::atsam4s::io {
          */
         template <bool UsbConnect = true, bool NakIrq = false>
         static void init() {
+            // enable the clock to the usb peripheral
+            PMC->PMC_SCER = (0x1 << 7);
+
             // enable the usb power
             target::io::power_control::enable<Usb>();
 

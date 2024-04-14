@@ -323,21 +323,28 @@ namespace klib::core::atsam4s::io::system {
             }
         }
 
+        /**
+         * @brief Set the master cpu clock. 
+         * 
+         * @tparam Source 
+         * @tparam Pll 
+         * @tparam OscillatorFreq 
+         * @tparam Multiplier 
+         * @tparam Div 
+         */
         template <
-            source Source, pll Pll, uint32_t Freq, 
+            source Source, pll Pll, uint32_t OscillatorFreq = 0, 
             uint16_t Multiplier = 0, uint32_t Div = 0
         >
         static void set_main() {
             // disable the write protection
             PMC->PMC_WPMR = (0x504d43 << 8);   
 
-            // notify klib what freqency we are running
-            klib::io::clock::set(Freq);
-
             // enable the source we want to use
             enable<Source>();
 
-            // switch to the slow or main clock
+            // switch to the slow or main clock before we touch 
+            // any of the pll settings
             switch_master_clock<
                 (Source == source::rtc) ? 
                 master_clock_source::slow : 
@@ -361,12 +368,40 @@ namespace klib::core::atsam4s::io::system {
                     master_clock_source::plla : 
                     master_clock_source::pllb
                 >();
+
+                // notify klib what freqency we are running
+                klib::io::clock::set((OscillatorFreq * Multiplier) / Div);
+            }
+            else {
+                // notify klib what freqency we are running
+                klib::io::clock::set(OscillatorFreq);
             }
         }
 
-        template <uint32_t ExtCrystalFreq, uint8_t PreDivider = 0x1>
+        /**
+         * @brief Configure the USB clock
+         * 
+         * @tparam Pll 
+         * @tparam OscillatorFreq 
+         */
+        template <pll Pll, uint32_t OscillatorFreq, uint16_t Multiplier = 8, uint8_t Div = 2, uint8_t UsbDiv = 1>
         static void set_usb() {
-            // TODO: usb setup
+            // make sure we hava pll
+            static_assert(
+                Pll != pll::none, "Usb needs a pll as a source"
+            );
+
+            // make sure the output frequency is correct
+            static_assert(
+                (48'000'000 % (((OscillatorFreq * Multiplier) / Div) / (UsbDiv & 0xf))) == 0,
+                "Invalid external crystal frequency"
+            );
+
+            // calculate the required multiplier
+            setup<Pll, Multiplier, Div>();
+
+            // change the USB to the requested pll
+            PMC->PMC_USB = (Pll == pll::pllb) | (((UsbDiv & 0xf) - 1) << 8);
         }
     };
 }
