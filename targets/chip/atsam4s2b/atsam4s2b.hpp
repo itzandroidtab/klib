@@ -7,7 +7,7 @@
 
 namespace klib::atsam4s2b {
     // irq for the atsam4s2b
-    using irq = klib::irq::KLIB_IRQ<0, 16 + 34>;
+    using irq = klib::irq::KLIB_IRQ<0, 16 + 35>;
 
     /**
      * @brief Get the current cpu id
