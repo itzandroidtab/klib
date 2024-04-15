@@ -386,9 +386,6 @@ namespace klib::core::atsam4s::io {
                 if ((mode == endpoint_mode::control) && (value & (0x1 << 2))) {
                     // we have a setup packet handle it
                     setup_packet(endpoint, mode, count);
-
-                    // clear the flag to notify we have read the data
-                    Usb::port->CSR[endpoint] = Usb::port->CSR[endpoint] & ~(0x1 << 1);
                 }
                 else if (value & 0x1) {
                     // clear the flag we have transmitted a packet
