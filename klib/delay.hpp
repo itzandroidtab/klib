@@ -82,7 +82,7 @@ namespace klib::detail {
             // if we dont have low power sleep enabled we will just busy loop
             if constexpr (LowPowerSleep) {
                 // let the cpu sleep until we have a interrupt
-                asm("WFE");
+                asm volatile("WFE");
             }
         }
 
