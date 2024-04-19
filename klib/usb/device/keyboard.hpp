@@ -709,9 +709,6 @@ namespace klib::usb::device {
                         return usb::handshake::stall;
                     }
                     else {
-                        // send 0 to the host
-                        const uint8_t idle = 0;
-
                         // write the data to the control endpoint
                         if (Usb::write(nullptr, usb::control_endpoint, usb::endpoint_mode::in, 
                             report_data)) 
