@@ -609,7 +609,7 @@ namespace klib::core::lpc17xx::io {
             Usb::port->DEVINTCLR = masked_status;
 
             // check for a status interrupt
-            if (masked_status & (0x1 << 4)) {
+            if (masked_status & (0x1 << 3)) {
                 // we have a device status interrupt
                 device_status_irq();
             }
