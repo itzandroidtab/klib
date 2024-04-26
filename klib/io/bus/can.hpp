@@ -61,6 +61,11 @@ namespace klib::io::can {
         // flag if the queue is empty
         static inline volatile bool is_empty = true;
 
+        /**
+         * @brief Receive handler. Needs to be called when a frame
+         * is received to store it in the queue
+         * 
+         */
         static void receive_handler() {
             // read the frame to empty the buffer on 
             // the hardware
@@ -79,6 +84,12 @@ namespace klib::io::can {
             is_empty = false;
         }
 
+        /**
+         * @brief Transmit handler. Writes new frames to the can 
+         * bus. Needs to be called after the hardware is done 
+         * transmitted a message
+         * 
+         */
         static void transmit_handler() {
             // check if we have any frames left to send
             if (transmit.empty()) {
@@ -112,8 +123,7 @@ namespace klib::io::can {
         }
 
         /**
-         * @brief Returns if we have data available. This function 
-         * is non blocking
+         * @brief Returns if we have data available.
          * 
          * @return true 
          * @return false 
@@ -144,7 +154,7 @@ namespace klib::io::can {
 
         /**
          * @brief Function that returns if we have space in the 
-         * transmit queue. Function is non blocking
+         * transmit queue.
          * 
          * @return true 
          * @return false 
@@ -182,6 +192,25 @@ namespace klib::io::can {
             if (!is_sending && !Can::is_busy()) {
                 // call the handler to write the data to the hardware 
                 transmit_handler();
+            }
+        }
+
+        /**
+         * @brief Get the current size of the buffers.
+         * 
+         * @warning These buffers can be changed in a interrupts. There is
+         * no interrupt safety
+         * 
+         * @tparam Receive 
+         * @return uint32_t 
+         */
+        template <bool Receive = true>
+        static uint32_t size() {
+            if (Receive) {
+                return receive.size();
+            }
+            else {
+                return transmit.size();
             }
         }
     };
