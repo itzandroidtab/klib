@@ -120,6 +120,21 @@ namespace klib::core::atsam4s::io::system {
             rtc = 2,
         };
 
+        /**
+         * @brief Availalble prescalers for the master clock
+         * 
+         */
+        enum class prescaler {
+            div_1 = 0x0,
+            div_2 = 0x1,
+            div_4 = 0x2,
+            div_8 = 0x3,
+            div_16 = 0x4,
+            div_32 = 0x5,
+            div_64 = 0x6,
+            div_3 = 0x7,
+        };
+
     protected:
         /**
          * @brief Helper function to check if a source is enabled
@@ -183,10 +198,12 @@ namespace klib::core::atsam4s::io::system {
          * 
          * @tparam source 
          */
-        template <master_clock_source Source>
+        template <master_clock_source Source, prescaler Prescaler>
         static void switch_master_clock() {
-            // clear the processor clock prescaler
-            PMC->PMC_MCKR = (PMC->PMC_MCKR & ~(0x7 << 4));
+            // clear the processor clock prescaler and set the new one
+            PMC->PMC_MCKR = (
+                (PMC->PMC_MCKR & ~(0x7 << 4)) | (static_cast<uint32_t>(Prescaler) << 4)
+            );
 
             // wait until the master clock output is stable
             while (!(PMC->PMC_SR & (0x1 << 3))) {
@@ -258,6 +275,16 @@ namespace klib::core::atsam4s::io::system {
                 // disable the crystal
                 crystal::enable<false>();
             }
+        }
+
+        template <prescaler Prescaler>
+        static uint8_t get_divider() {
+            // special case for div 3
+            if (Prescaler == prescaler::div_3) {
+                return 3;
+            }
+
+            return klib::exp2(static_cast<uint32_t>(Prescaler));
         }
 
     public:
@@ -334,7 +361,8 @@ namespace klib::core::atsam4s::io::system {
          */
         template <
             source Source, pll Pll, uint32_t OscillatorFreq = 0, 
-            uint16_t Multiplier = 0, uint32_t Div = 0
+            uint16_t Multiplier = 0, uint32_t Div = 0, 
+            prescaler Prescaler = prescaler::div_1
         >
         static void set_main() {
             // disable the write protection
@@ -346,9 +374,11 @@ namespace klib::core::atsam4s::io::system {
             // switch to the slow or main clock before we touch 
             // any of the pll settings
             switch_master_clock<
-                (Source == source::rtc) ? 
-                master_clock_source::slow : 
-                master_clock_source::main
+                (
+                    (Source == source::rtc) ? 
+                    master_clock_source::slow : master_clock_source::main
+                ), 
+                Prescaler
             >();
 
             // check if we need to configure a pll
@@ -364,17 +394,19 @@ namespace klib::core::atsam4s::io::system {
 
                 // switch to the pll
                 switch_master_clock<
-                    (Pll == pll::plla) ? 
-                    master_clock_source::plla : 
-                    master_clock_source::pllb
+                    (
+                        (Pll == pll::plla) ? 
+                        master_clock_source::plla : master_clock_source::pllb
+                    ),
+                    Prescaler
                 >();
 
                 // notify klib what freqency we are running
-                klib::io::clock::set((OscillatorFreq * Multiplier) / Div);
+                klib::io::clock::set(((OscillatorFreq * Multiplier) / Div) / get_divider<Prescaler>());
             }
             else {
                 // notify klib what freqency we are running
-                klib::io::clock::set(OscillatorFreq);
+                klib::io::clock::set(OscillatorFreq / get_divider<Prescaler>());
             }
         }
 
