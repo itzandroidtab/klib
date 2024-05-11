@@ -175,19 +175,51 @@ namespace klib::io {
         /**
          * @brief Get the runtime of the cpu in milliseconds
          * 
+         * @note when using ns we uint64_t for the conversions 
+         * this might increase code size on certain micro's.
+         * Due to the internal usage of uint32_t the ns counter
+         * overflows every 4.29 seconds. 
+         * 
+         * To get the best accuracy the conversion should be done
+         * after the fact. This function does the conversion 
+         * every time it is called. This can cause overhead. Use
+         * get_counter for the raw value that the systick 
+         * provides (uses around 75 clock cycles for this call on
+         * a cortex-m4 with time units ns)
+         * 
          * @tparam T 
          * @return T 
          */
         template <typename T = time::ms>
         static T get_runtime() requires time::is_time_unit<T> {
             // check what time unit the callee wants
-            if constexpr (std::is_same_v<T, time::us> || std::is_same_v<T, time::ns>) {
+            if constexpr (std::is_same_v<T, time::us>) {
+                // get the current counter
+                const uint32_t value = get_counter();
+
                 // return the higher precision conversion (as the counter
                 // counts down we have to invert the result of the micro
                 // second calculation)
                 return (
                     static_cast<time::us>(time::ms{runtime.value}) + 
-                    (time::us{999} - time::us{(get_counter() * 1'000) / port->load})
+                    (time::us{999} - time::us{(value * 1'000) / port->load})
+                );
+            }
+            else if constexpr (std::is_same_v<T, time::ns>) {
+                // get the current counter
+                const uint32_t value = get_counter();
+
+                // return the even higher precision conversion. (as the 
+                // counter counts down we have to invert the result of 
+                // the nano second calculation). This uses uint64_t and
+                // might be slow on some hardware
+                return (
+                    static_cast<time::ns>(time::ms{runtime.value}) + 
+                    time::ns{999'999} - time::ns{
+                        static_cast<uint32_t>(
+                            (static_cast<uint64_t>(value) * 1'000'000) / port->load
+                        )
+                    }
                 );
             }
             else {
