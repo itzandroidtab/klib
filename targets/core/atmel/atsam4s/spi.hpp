@@ -65,17 +65,21 @@ namespace klib::core::atsam4s::io {
         /**
          * @brief Helper function that writes and reads from the spi bus
          * 
+         * @tparam Read
          * @tparam T 
          * @tparam G 
          * @param tx 
          * @param rx 
          */
-        template <typename T, typename G>
+        template <bool Read, typename T, typename G>
         static void write_read_helper(const T& tx, const G& rx) {
             // get the amount of data to receive and transmit. To read more data
             // we still need to write. Otherwise we will stall and wait endlessly
             // on more data
             const uint32_t size = klib::max(tx.size(), rx.size());
+
+            // the chip select used in the current transmission
+            constexpr uint32_t cs = ((~(1 << get_chipselect_id()) & 0xf) << 16);
 
             // write all the data to the fifo
             for (uint32_t i = 0; i < size; i++) {
@@ -83,7 +87,7 @@ namespace klib::core::atsam4s::io {
                 // and the flag if it is the last transfer
                 const uint32_t value = (
                     (((!tx.empty()) || (i < tx.size())) ? tx[i] : 0x00) | 
-                    (((i + 1) == size) << 24) | ((~(1 << get_chipselect_id()) & 0xf) << 16)
+                    (((i + 1) == size) << 24) | cs
                 );
 
                 // wait until we can write 
@@ -94,17 +98,26 @@ namespace klib::core::atsam4s::io {
                 // write the data
                 Spi::port->TDR = value;
 
-                // wait until the write and read is done
-                while ((Spi::port->SR & 0x3) != 0x3) {
+                // wait until the write is done
+                while ((!Spi::port->SR & (0x1 << 1))) {
                     // do nothing
                 }
 
-                // read the data from the bus
-                const uint32_t data = Spi::port->RDR;
+                // check if we need to read the data in
+                // the register
+                if constexpr (Read) {
+                    // wait until we have data in the receive register
+                    while ((!Spi::port->SR & 0x1)) {
+                        // do nothing
+                    }
 
-                // store the data if we can
-                if ((!rx.empty()) && (i < rx.size())) {
-                    rx[i] = data;
+                    // read the data from the bus
+                    const uint32_t data = Spi::port->RDR;
+
+                    // store the data if we can
+                    if ((!rx.empty()) && (i < rx.size())) {
+                        rx[i] = data;
+                    }
                 }
             }
         }
@@ -170,7 +183,7 @@ namespace klib::core::atsam4s::io {
          * @param rx 
          */
         static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
-            return write_read_helper(tx, rx);
+            return write_read_helper<true>(tx, rx);
         }
 
         /**
@@ -180,7 +193,7 @@ namespace klib::core::atsam4s::io {
          * @param rx 
          */
         static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
-            return write_read_helper(tx, rx);
+            return write_read_helper<true>(tx, rx);
         }
 
         /**
@@ -190,7 +203,7 @@ namespace klib::core::atsam4s::io {
          * @param rx 
          */
         static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
-            return write_read_helper(tx, rx);
+            return write_read_helper<true>(tx, rx);
         }
 
         /**
@@ -200,7 +213,7 @@ namespace klib::core::atsam4s::io {
          * @param rx 
          */
         static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
-            return write_read_helper(tx, rx);
+            return write_read_helper<true>(tx, rx);
         }
 
         /**
@@ -209,7 +222,7 @@ namespace klib::core::atsam4s::io {
          * @param data 
          */
         static void write(const std::span<const uint8_t>& data) {
-            return write_read_helper(data, std::span<uint8_t>{});
+            return write_read_helper<false>(data, std::span<uint8_t>{});
         }
 
         /**
@@ -218,7 +231,7 @@ namespace klib::core::atsam4s::io {
          * @param data 
          */
         static void write(const multispan<const uint8_t>& data) {
-            return write_read_helper(data, std::span<uint8_t>{});
+            return write_read_helper<false>(data, std::span<uint8_t>{});
         }
     };
 }
