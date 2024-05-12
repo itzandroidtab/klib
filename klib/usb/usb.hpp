@@ -56,7 +56,6 @@ namespace klib::usb {
          */
         enum class handshake {
             ack,
-            nak, 
             stall,
             wait
         };
