@@ -47,12 +47,6 @@ if (DEFINED TARGET_CPU)
     # add the target directory
     add_subdirectory(${CMAKE_SOURCE_DIR}/targets/chip/${TARGET_CPU})
 
-    # check if we have board with names for the pins
-    if (DEFINED TARGET_BOARD)
-        message("Building for target board: ${TARGET_BOARD}")
-        target_compile_definitions(target_cpu PUBLIC "TARGET_BOARD=${TARGET_BOARD}")
-    endif()
-
     # check if the user configured the fpu
     if (DEFINED TARGET_FPU_ENABLED)
         message("FPU is ${TARGET_FPU_ENABLED} for target: ${TARGET_CPU}")

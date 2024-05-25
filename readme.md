@@ -21,21 +21,13 @@ cmake -B ./build -DTARGET_CPU=max32660
 ```
 This configures the project for the specific target cpu. To change to a different target, the project has to be reconfigured.
 
-### Selecting board 
-To make it easier to use the pins of a specific development board a target board can be selected. To include a board another option needs to be added to the commandline. 
-
-(e.g. To configure cmake for the max32660 evsys board, run the following command)
-```sh
-cmake -B ./build -DTARGET_CPU=max32660 -DTARGET_BOARD=evsys
-```
-
 #### Setup VSCode
 (When using vscode with the cmake plugin the following can be added to the `settings.json` to configure cmake for the max32660 evsys board)
 ```json
 {
+    "target_cpu": "max32660",
     "cmake.configureArgs": [
-        "-DTARGET_CPU=max32660",
-        "-DTARGET_BOARD=evsys"
+        "-DTARGET_CPU=max32660"
     ],
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
 }
@@ -52,8 +44,6 @@ int main() {
     return 0;
 }
 ```
-When a specific board is not found within a target cpu this include will give a error the file `boards/TARGET_BOARD/pins.hpp` cannot be found.
-
 
 ---
 
