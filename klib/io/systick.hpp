@@ -63,7 +63,7 @@ namespace klib::io {
             }
 
             // register our handler
-            Irq::template register_irq<Irq::arm_vector::systick>(isr_handler);
+            Irq::template register_irq<Irq::arm_vector::systick>(irq_handler);
 
             // setup the clock source and enable 
             // the systick interrupt
@@ -233,7 +233,7 @@ namespace klib::io {
          * @brief Interrupt handler. Should not be called by the user
          * 
          */
-        static void isr_handler() {
+        static void irq_handler() {
             // clear the interrupt flag by reading 
             // the systick control register
             (void) port->ctrl;
