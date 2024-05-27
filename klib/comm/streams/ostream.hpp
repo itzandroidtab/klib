@@ -61,7 +61,7 @@ namespace klib {
         template<klib::base, bool, uint32_t> class OutputStream, 
         klib::base B, bool Boolalpha, uint32_t Digits
     >
-    const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, char c) {
+    const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, const char c) {
         str.putc(c);
 
         return str;
@@ -81,7 +81,7 @@ namespace klib {
         template<klib::base, bool, uint32_t> class OutputStream, 
         klib::base B, bool Boolalpha, uint32_t Digits
     >
-    const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, const char *s) {
+    const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, const char *const s) {
         for (const char *p = s; *p != '\0'; p++) {
             str << *p;
         }
@@ -109,7 +109,7 @@ namespace klib {
             std::is_integral_v<T> && (sizeof(T) <= 8)
         >
     >
-    const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, T v) {
+    const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, const T v) {
         // buffer to store the conversion (max of 8 characters per byte + 3 for 
         // the prefix and null-termintator)
         char buf[(sizeof(T) * 8) + sizeof("  ")] = {};
@@ -140,7 +140,7 @@ namespace klib {
         typename T,
         typename = std::enable_if_t<std::is_floating_point_v<T>>
     >
-    const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, T v) {
+    const OutputStream<B, Boolalpha, Digits> &operator<<(const OutputStream<B, Boolalpha, Digits> &str, const T v) {
         // buffer to store the conversion (max of digits after the comma + 8 characters
         // per byte + 3 for the prefix and null-termintator)
         char buf[Digits + (sizeof(T) * 8) + sizeof("  ")] = {};
@@ -260,7 +260,7 @@ namespace klib {
         template<klib::base, bool, uint32_t> class OutputStream, 
         klib::base B, bool Boolalpha, uint32_t Digits
     >
-    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, _dec) {
+    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, const _dec) {
         return typename OutputStream<B, Boolalpha, Digits>::template instance<base::DEC, OutputStream<B, Boolalpha, Digits>::boolalpha, OutputStream<B, Boolalpha, Digits>::digits>();
     }
 
@@ -275,7 +275,7 @@ namespace klib {
         template<klib::base, bool, uint32_t> class OutputStream, 
         klib::base B, bool Boolalpha, uint32_t Digits
     >
-    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, _oct) {
+    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, const _oct) {
         return typename OutputStream<B, Boolalpha, Digits>::template instance<base::OCT, OutputStream<B, Boolalpha, Digits>::boolalpha, OutputStream<B, Boolalpha, Digits>::digits>();
     }
 
@@ -290,7 +290,7 @@ namespace klib {
         template<klib::base, bool, uint32_t> class OutputStream, 
         klib::base B, bool Boolalpha, uint32_t Digits
     >
-    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, _bin) {
+    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, const _bin) {
         return typename OutputStream<B, Boolalpha, Digits>::template instance<base::BIN, OutputStream<B, Boolalpha, Digits>::boolalpha, OutputStream<B, Boolalpha, Digits>::digits>();
     }
 
@@ -305,7 +305,7 @@ namespace klib {
         template<klib::base, bool, uint32_t> class OutputStream, 
         klib::base B, bool Boolalpha, uint32_t Digits
     >
-    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, _boolalpha) {
+    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, const _boolalpha) {
         return typename OutputStream<B, Boolalpha, Digits>::template instance<OutputStream<B, Boolalpha, Digits>::base, true, OutputStream<B, Boolalpha, Digits>::digits>();
     }
 
@@ -320,7 +320,7 @@ namespace klib {
         template<klib::base, bool, uint32_t> class OutputStream, 
         klib::base B, bool Boolalpha, uint32_t Digits
     >
-    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, _noboolalpha) {
+    auto operator<<(const OutputStream<B, Boolalpha, Digits>&, const _noboolalpha) {
         return typename OutputStream<B, Boolalpha, Digits>::template instance<OutputStream<B, Boolalpha, Digits>::base, false, OutputStream<B, Boolalpha, Digits>::digits>();
     }
 

@@ -29,7 +29,7 @@ namespace klib::angle {
         uint16_t value;
 
         constexpr degree(): value(0) {}
-        constexpr degree(uint16_t deg): value(deg) {}
+        constexpr degree(const uint16_t deg): value(deg) {}
     };
 }
 
@@ -62,7 +62,7 @@ namespace klib::time {
         uint32_t value;
 
         constexpr ns(): value(0) {}
-        constexpr ns(uint32_t ns): value(ns) {}
+        constexpr ns(const uint32_t ns): value(ns) {}
         constexpr operator us() const;
         constexpr operator ms() const;
         constexpr operator s() const;
@@ -72,7 +72,7 @@ namespace klib::time {
         uint32_t value;
 
         constexpr us(): value(0) {}
-        constexpr us(uint32_t us): value(us) {}
+        constexpr us(const uint32_t us): value(us) {}
         constexpr operator ns() const;
         constexpr operator ms() const;
         constexpr operator s() const;
@@ -82,7 +82,7 @@ namespace klib::time {
         uint32_t value;
 
         constexpr ms(): value(0) {}
-        constexpr ms(uint32_t ms): value(ms) {}
+        constexpr ms(const uint32_t ms): value(ms) {}
         constexpr operator ns() const;
         constexpr operator us() const;
         constexpr operator s() const;
@@ -92,7 +92,7 @@ namespace klib::time {
         uint32_t value;
 
         constexpr s(): value(0) {}
-        constexpr s(uint32_t s): value(s) {}
+        constexpr s(const uint32_t s): value(s) {}
         constexpr operator ns() const;
         constexpr operator us() const;
         constexpr operator ms() const;

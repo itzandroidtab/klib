@@ -970,7 +970,7 @@ namespace klib::filesystem {
          * @param data 
          * @param sectors 
          */
-        static void read(uint32_t sector, uint8_t *const data, uint32_t sectors) {
+        static void read(const uint32_t sector, uint8_t *const data, uint32_t sectors) {
             read_write_impl<true>(sector, data, sectors);
         }
 

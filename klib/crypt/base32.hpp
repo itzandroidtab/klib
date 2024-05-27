@@ -74,7 +74,7 @@ namespace klib::crypt {
          * @return uint32_t amount of bytes written in 
          * output (0 if invalid)
          */
-        constexpr static uint32_t decode(const char *const input, std::span<uint8_t> output) {
+        constexpr static uint32_t decode(const char *const input, const std::span<uint8_t> output) {
             // base32 is always 40 bit aligned. Every character is 5 bits.
             // this means if the size is not a multiply of 8 it is a invalid
             // base32 string

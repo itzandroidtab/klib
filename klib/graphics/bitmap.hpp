@@ -139,7 +139,7 @@ namespace klib::graphics {
          * @param position
          * @return bool set or unset
          */
-        constexpr bool get_pixel(const klib::vector2u position) const {
+        constexpr bool get_pixel(const klib::vector2u& position) const {
             // calculate the main part of the index
             const uint32_t t = (position.y * Width + position.x);
 

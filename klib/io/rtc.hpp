@@ -95,7 +95,7 @@ namespace klib::io::rtc {
      * @param time 
      * @return datetime 
      */
-    constexpr static datetime epoch_to_datetime(klib::time::s time) {
+    constexpr static datetime epoch_to_datetime(const klib::time::s time) {
         datetime ret = {};
 
         // get the amount of days in the epoch time

@@ -75,7 +75,7 @@ namespace klib::graphics {
             // not used in the direct framebuffer
         }
 
-        constexpr void set_pixel(const klib::vector2u position, const color_type raw) {
+        constexpr void set_pixel(const klib::vector2u &position, const color_type raw) {
             // limit the input to the display size
             const auto pos = klib::vector2u(
                 StartX + klib::min(position.x, width - 1), 
@@ -172,7 +172,7 @@ namespace klib::graphics {
             }
         }
 
-        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
+        constexpr void set_pixel(const klib::vector2u &position, const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
                 return;
@@ -395,7 +395,7 @@ namespace klib::graphics {
          * @param position 
          * @param raw 
          */
-        constexpr void set_pixel(const klib::vector2u position, const color_type raw) {
+        constexpr void set_pixel(const klib::vector2u &position, const color_type raw) {
             // set the pixel in the native format. The native format on most 
             // displays as follows: MSB -> LSB
             // as we are storing in little endian format we need to convert
@@ -456,7 +456,7 @@ namespace klib::graphics {
          * @param position 
          * @param col 
          */
-        constexpr void set_pixel(const klib::vector2u position, const klib::graphics::color &col) {
+        constexpr void set_pixel(const klib::vector2u &position, const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
             if (col.transparant) {
                 return;
