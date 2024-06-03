@@ -14,7 +14,7 @@ namespace klib::usb::hid {
      */
     struct descriptor {
         // size of the descriptor
-        uint8_t bLength = sizeof(descriptor);
+        const uint8_t bLength = sizeof(descriptor);
 
         // descriptor type
         uint8_t bDescriptorType;

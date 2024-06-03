@@ -11,15 +11,15 @@
 
 namespace klib::usb::dfu {
     /**
-     * @brief DFU functinoal descriptor
+     * @brief DFU functional descriptor
      * 
      */
     struct functional {
         // size of the descriptor
-        uint8_t bLength = sizeof(functional);
+        const uint8_t bLength = sizeof(functional);
 
         // descriptor type (DFU FUNCTIONAL)
-        uint8_t bDescriptorType = 0x21;
+        const uint8_t bDescriptorType = 0x21;
 
         // DFU attributes
         // b[0] = download capable

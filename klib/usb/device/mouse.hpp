@@ -146,7 +146,7 @@ namespace klib::usb::device {
             },
             {
                 .bEndpointAddress = 0x80 | Endpoint,
-                .bmAttributes = 0x03,
+                .bmAttributes = static_cast<uint8_t>(klib::usb::descriptor::transfer_type::interrupt),
                 .wMaxPacketSize = 0x0040,
                 .bInterval = 0x01
             }
@@ -277,7 +277,11 @@ namespace klib::usb::device {
          */
         template <typename Usb>
         static void init() {
-
+            // make sure the endpoint supports interrupt endpoints
+            Usb::template is_valid_endpoint<
+                Endpoint, 
+                klib::usb::descriptor::transfer_type::interrupt
+            >();
         }
 
         /**

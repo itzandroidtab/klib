@@ -8,11 +8,11 @@
 #include <klib/usb/msc/bulk_only_transfer.hpp>
 
 namespace klib::usb::device {
-    template <typename Memory, uint8_t InEndpoint = 0x82, uint8_t OutEndpoint = 0x05>
+    template <typename Memory, uint8_t InEndpoint = 0x02, uint8_t OutEndpoint = 0x05>
     class mass_storage {
     protected:
-        // mass storage bot handler
-        using bot = msc::bot::handler<Memory, InEndpoint, OutEndpoint>;
+        // mass storage bot handler (set the in endpoint bit)
+        using bot = msc::bot::handler<Memory, (0x80 | InEndpoint), OutEndpoint>;
 
         /**
          * @brief Enum with the string descriptor indexes
@@ -90,14 +90,14 @@ namespace klib::usb::device {
                 .iInterface = 0x00,
             },
             {
-                .bEndpointAddress = InEndpoint,
-                .bmAttributes = 0x02,
+                .bEndpointAddress = 0x80 | InEndpoint,
+                .bmAttributes = static_cast<uint8_t>(klib::usb::descriptor::transfer_type::bulk),
                 .wMaxPacketSize = 0x0040,
                 .bInterval = 0x00
             },
             {
                 .bEndpointAddress = OutEndpoint,
-                .bmAttributes = 0x02,
+                .bmAttributes = static_cast<uint8_t>(klib::usb::descriptor::transfer_type::bulk),
                 .wMaxPacketSize = 0x0040,
                 .bInterval = 0x00
             }
@@ -395,14 +395,14 @@ namespace klib::usb::device {
             if (packet.wValue == config.configuration.bConfigurationValue) {
                 // configure the endpoints
                 Usb::configure(
-                    usb::get_endpoint(InEndpoint),
-                    usb::get_endpoint_mode(InEndpoint), 
+                    usb::get_endpoint(config.endpoint0.bEndpointAddress),
+                    usb::get_endpoint_mode(config.endpoint0.bEndpointAddress), 
                     usb::get_transfer_type(config.endpoint0.bmAttributes), 
                     config.endpoint0.wMaxPacketSize
                 );
                 Usb::configure(
-                    usb::get_endpoint(OutEndpoint),
-                    usb::get_endpoint_mode(OutEndpoint), 
+                    usb::get_endpoint(config.endpoint1.bEndpointAddress),
+                    usb::get_endpoint_mode(config.endpoint1.bEndpointAddress), 
                     usb::get_transfer_type(config.endpoint1.bmAttributes), 
                     config.endpoint1.wMaxPacketSize
                 );
@@ -427,14 +427,14 @@ namespace klib::usb::device {
                 if (configuration) {
                     // reset the endpoint
                     Usb::reset(
-                        usb::get_endpoint(InEndpoint),
-                        usb::get_endpoint_mode(InEndpoint)
+                        usb::get_endpoint(config.endpoint0.bEndpointAddress),
+                        usb::get_endpoint_mode(config.endpoint0.bEndpointAddress)
                     );
 
                     // reset the endpoint
                     Usb::reset(
-                        usb::get_endpoint(OutEndpoint),
-                        usb::get_endpoint_mode(OutEndpoint)
+                        usb::get_endpoint(config.endpoint1.bEndpointAddress),
+                        usb::get_endpoint_mode(config.endpoint1.bEndpointAddress)
                     );
                 }
 

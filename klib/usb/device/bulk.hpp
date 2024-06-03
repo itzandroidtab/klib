@@ -8,6 +8,7 @@
 #include <klib/usb/descriptor.hpp>
 
 namespace klib::usb::device {
+    template <uint8_t InEndpoint = 0x2, uint8_t OutEndpoint = 0x05>
     class bulk {
     public:
         // using for the array of callbacks
@@ -90,14 +91,14 @@ namespace klib::usb::device {
                 .iInterface = 0x00
             },
             {
-                .bEndpointAddress = 0x82,
-                .bmAttributes = 0x02,
+                .bEndpointAddress = 0x80 | InEndpoint,
+                .bmAttributes = static_cast<uint8_t>(klib::usb::descriptor::transfer_type::bulk),
                 .wMaxPacketSize = 0x0040,
                 .bInterval = 0x01
             },
             {
-                .bEndpointAddress = 0x05,
-                .bmAttributes = 0x02,
+                .bEndpointAddress = OutEndpoint,
+                .bmAttributes = static_cast<uint8_t>(klib::usb::descriptor::transfer_type::bulk),
                 .wMaxPacketSize = 0x0040,
                 .bInterval = 0x01
             }
@@ -320,6 +321,18 @@ namespace klib::usb::device {
             // init all the variables to default
             configuration = 0x00;
             remote_wakeup = false;
+
+            // make sure the endpoints support bulk
+            // endpoints
+            Usb::template is_valid_endpoint<
+                InEndpoint, 
+                klib::usb::descriptor::transfer_type::bulk
+            >();
+
+            Usb::template is_valid_endpoint<
+                OutEndpoint, 
+                klib::usb::descriptor::transfer_type::bulk
+            >();
         }
 
         /**
