@@ -484,7 +484,7 @@ namespace klib::max32625::io {
                     const auto callback = state[ep].callback;
 
                     // get the amount of data we have transferred
-                    const auto transferred = state[endpoint].transferred_size;
+                    const auto transferred = state[ep].transferred_size;
 
                     // clear the state of the endpoint. (we clear it first as the 
                     // callback may reissue a request)
@@ -532,7 +532,7 @@ namespace klib::max32625::io {
                         const auto callback = state[ep].callback;
 
                         // get the amount of data we have transferred
-                        const auto transferred = state[endpoint].transferred_size;
+                        const auto transferred = state[ep].transferred_size;
 
                         // clear the state of the endpoint
                         clear_endpoint_state(ep);
@@ -606,7 +606,7 @@ namespace klib::max32625::io {
                     const auto callback = state[ep].callback;
 
                     // get the amount of data we have transferred
-                    const auto transferred = state[endpoint].transferred_size;
+                    const auto transferred = state[ep].transferred_size;
 
                     // clear the state of the endpoint
                     clear_endpoint_state(ep);

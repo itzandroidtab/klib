@@ -516,7 +516,7 @@ namespace klib::core::lpc17xx::io {
                         const auto callback = state[ep].callback;
 
                         // get the amount of data we have transferred
-                        const auto transferred = state[endpoint].transferred_size;
+                        const auto transferred = state[ep].transferred_size;
 
                         // check if the callback is valid
                         if (callback) {
@@ -555,7 +555,7 @@ namespace klib::core::lpc17xx::io {
                     const auto callback = state[i].callback;
 
                     // get the amount of data we have transferred
-                    const auto transferred = state[endpoint].transferred_size;
+                    const auto transferred = state[i].transferred_size;
 
                     // clear the state
                     clear_endpoint_state(i);
