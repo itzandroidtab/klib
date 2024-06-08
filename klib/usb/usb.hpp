@@ -63,8 +63,12 @@ namespace klib::usb {
         /**
          * @brief Callback function. Called after a read/write is completed
          * 
+         * @param endpoint
+         * @param mode
+         * @param error_code
+         * @param transferred
          */
-        using usb_callback = void (*)(const uint8_t endpoint, const endpoint_mode mode, const error error_code);
+        using usb_callback = void (*)(const uint8_t endpoint, const endpoint_mode mode, const error error_code, const uint32_t transferred);
 
         /**
          * @brief Helper function to get the direction of a packet
@@ -497,7 +501,6 @@ namespace klib::usb {
             }
         }
 
-    public:
         template <typename Usb>
         static handshake handle_standard_packet(const setup_packet &packet) {
             // get the current request
@@ -533,6 +536,14 @@ namespace klib::usb {
             }
         }
 
+    public:
+        /**
+         * @brief Handle the provided setup packet. Will forward the request to
+         * either the driver or the device
+         * 
+         * @tparam Usb 
+         * @param packet 
+         */
         template <typename Usb>
         static void handle_setup_packet(const setup_packet &packet) {
             // ge the request type from the packet
@@ -605,8 +616,17 @@ namespace klib::usb {
             }
         }
 
+        /**
+         * @brief Helper callback to ack or stall a endpoint after the transfer is done
+         * 
+         * @tparam Usb 
+         * @param endpoint 
+         * @param mode 
+         * @param error_code 
+         * @param transferred 
+         */
         template <typename Usb>
-        static void status_callback(const uint8_t endpoint, const endpoint_mode mode, const error error_code) {
+        static void status_callback(const uint8_t endpoint, const endpoint_mode mode, const error error_code, const uint32_t transferred) {
             // check if we have a nak. If we have do nothing
             if (error_code == error::nak) {
                 // do nothing

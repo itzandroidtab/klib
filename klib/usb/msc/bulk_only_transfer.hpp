@@ -124,7 +124,7 @@ namespace klib::usb::msc::bot {
         }
 
         template <typename Usb, state State>
-        static void callback_handler(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code) {
+        static void callback_handler(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
             // check what we should do
             switch (error_code) {
                 case usb::error::stall:

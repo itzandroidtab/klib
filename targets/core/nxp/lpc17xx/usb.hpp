@@ -394,6 +394,9 @@ namespace klib::core::lpc17xx::io {
                 // we are done. clear the flag and call the callback
                 const auto callback = state[endpoint].callback;
 
+                // get the amount of data we have transferred
+                const auto transferred = state[endpoint].transferred_size;
+
                 // clear the state
                 clear_endpoint_state(endpoint);
 
@@ -402,7 +405,7 @@ namespace klib::core::lpc17xx::io {
                     // call the callback
                     callback(
                         endpoint, klib::usb::usb::endpoint_mode::in, 
-                        klib::usb::usb::error::no_error
+                        klib::usb::usb::error::no_error, transferred
                     );
                 }
             }
@@ -447,6 +450,9 @@ namespace klib::core::lpc17xx::io {
                 // we are done. clear the flag and call the callback
                 const auto callback = state[endpoint].callback;
 
+                // get the amount of data we have transferred
+                const auto transferred = state[endpoint].transferred_size;
+
                 // clear the state
                 clear_endpoint_state(endpoint);
 
@@ -455,7 +461,7 @@ namespace klib::core::lpc17xx::io {
                     // call the callback
                     callback(
                         endpoint, klib::usb::usb::endpoint_mode::out, 
-                        klib::usb::usb::error::no_error
+                        klib::usb::usb::error::no_error, transferred
                     );
                 }
             }
@@ -509,10 +515,13 @@ namespace klib::core::lpc17xx::io {
                         // get the callback
                         const auto callback = state[ep].callback;
 
+                        // get the amount of data we have transferred
+                        const auto transferred = state[endpoint].transferred_size;
+
                         // check if the callback is valid
                         if (callback) {
                             // call the callback
-                            callback(ep, mode, klib::usb::usb::error::nak);
+                            callback(ep, mode, klib::usb::usb::error::nak, transferred);
                         }
                     }
                     else {
@@ -542,14 +551,18 @@ namespace klib::core::lpc17xx::io {
 
                 // call all the callbacks with a error
                 for (uint32_t i = 0; i < endpoint_count; i++) {
+                    // get the callback
                     const auto callback = state[i].callback;
+
+                    // get the amount of data we have transferred
+                    const auto transferred = state[endpoint].transferred_size;
 
                     // clear the state
                     clear_endpoint_state(i);
 
                     if (callback) {
                         // call with a reset. Endpoint mode as in but we do not know what it is
-                        callback(i, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::reset);
+                        callback(i, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::reset, transferred);
                     }
                 }
             }
@@ -838,6 +851,9 @@ namespace klib::core::lpc17xx::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
@@ -845,7 +861,7 @@ namespace klib::core::lpc17xx::io {
                 // send a error to the callback. Do not care about the 
                 // return value as we are always clearing the endpoint
                 // in a reset event
-                callback(endpoint, mode, klib::usb::usb::error::reset);
+                callback(endpoint, mode, klib::usb::usb::error::reset, transferred);
             }
         }
 
@@ -904,12 +920,15 @@ namespace klib::core::lpc17xx::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
             if (callback) {
                 // send a error to the callback
-                callback(endpoint, mode, klib::usb::usb::error::stall);
+                callback(endpoint, mode, klib::usb::usb::error::stall, transferred);
             }
         }
 
@@ -934,12 +953,15 @@ namespace klib::core::lpc17xx::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
             if (callback) {
                 // send a error to the callback
-                callback(endpoint, mode, klib::usb::usb::error::un_stall);
+                callback(endpoint, mode, klib::usb::usb::error::un_stall, transferred);
             }
         }
 
@@ -1083,13 +1105,16 @@ namespace klib::core::lpc17xx::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
             // check if the callback is valid
             if (callback) {
                 // call the callback
-                callback(endpoint, mode, klib::usb::usb::error::cancel);
+                callback(endpoint, mode, klib::usb::usb::error::cancel, transferred);
             }
         }
     };

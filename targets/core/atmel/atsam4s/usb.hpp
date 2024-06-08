@@ -278,6 +278,9 @@ namespace klib::core::atsam4s::io {
                 // we are done. clear the flag and call the callback
                 const auto callback = state[endpoint].callback;
 
+                // get the amount of data we have transferred
+                const auto transferred = state[endpoint].transferred_size;
+
                 // clear the state
                 clear_endpoint_state(endpoint);
 
@@ -286,7 +289,7 @@ namespace klib::core::atsam4s::io {
                     // call the callback
                     callback(
                         endpoint, klib::usb::usb::endpoint_mode::in, 
-                        klib::usb::usb::error::no_error
+                        klib::usb::usb::error::no_error, transferred
                     );
                 }
             }
@@ -346,6 +349,9 @@ namespace klib::core::atsam4s::io {
                     // we are done. clear the flag and call the callback
                     const auto callback = state[endpoint].callback;
 
+                    // get the amount of data we have transferred
+                    const auto transferred = state[endpoint].transferred_size;
+
                     // clear the state
                     clear_endpoint_state(endpoint);
 
@@ -354,7 +360,7 @@ namespace klib::core::atsam4s::io {
                         // call the callback
                         callback(
                             endpoint, klib::usb::usb::endpoint_mode::out, 
-                            klib::usb::usb::error::no_error
+                            klib::usb::usb::error::no_error, transferred
                         );
                     }
                 }
@@ -486,7 +492,7 @@ namespace klib::core::atsam4s::io {
 
                     if (callback) {
                         // call with a reset. Endpoint mode as in but we do not know what it is
-                        callback(i, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::reset);
+                        callback(i, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::reset, 0);
                     }
                 }
 
@@ -678,6 +684,9 @@ namespace klib::core::atsam4s::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
@@ -685,7 +694,7 @@ namespace klib::core::atsam4s::io {
                 // send a error to the callback. Do not care about the 
                 // return value as we are always clearing the endpoint
                 // in a reset event
-                callback(endpoint, mode, klib::usb::usb::error::reset);
+                callback(endpoint, mode, klib::usb::usb::error::reset, transferred);
             }
         }
 
@@ -740,12 +749,15 @@ namespace klib::core::atsam4s::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
             if (callback) {
                 // send a error to the callback
-                callback(endpoint, mode, klib::usb::usb::error::stall);
+                callback(endpoint, mode, klib::usb::usb::error::stall, transferred);
             }
         }
 
@@ -771,12 +783,15 @@ namespace klib::core::atsam4s::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
             if (callback) {
                 // send a error to the callback
-                callback(endpoint, mode, klib::usb::usb::error::un_stall);
+                callback(endpoint, mode, klib::usb::usb::error::un_stall, transferred);
             }
         }
 
@@ -970,13 +985,16 @@ namespace klib::core::atsam4s::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
             // check if the callback is valid
             if (callback) {
                 // call the callback
-                callback(endpoint, mode, klib::usb::usb::error::cancel);
+                callback(endpoint, mode, klib::usb::usb::error::cancel, transferred);
             }
         }
     };

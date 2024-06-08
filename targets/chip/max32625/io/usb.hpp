@@ -483,6 +483,9 @@ namespace klib::max32625::io {
                     // get the callback
                     const auto callback = state[ep].callback;
 
+                    // get the amount of data we have transferred
+                    const auto transferred = state[endpoint].transferred_size;
+
                     // clear the state of the endpoint. (we clear it first as the 
                     // callback may reissue a request)
                     clear_endpoint_state(ep);
@@ -490,7 +493,7 @@ namespace klib::max32625::io {
                     // must have sent the ZLP, mark done
                     if (callback) {
                         // call the callback
-                        callback(ep, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::no_error);
+                        callback(ep, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::no_error, transferred);
                     }
 
                     // skip the remainder
@@ -528,6 +531,9 @@ namespace klib::max32625::io {
                         // get the callback
                         const auto callback = state[ep].callback;
 
+                        // get the amount of data we have transferred
+                        const auto transferred = state[endpoint].transferred_size;
+
                         // clear the state of the endpoint
                         clear_endpoint_state(ep);
 
@@ -536,7 +542,7 @@ namespace klib::max32625::io {
                             // send we are done. Do not care about the return value
                             // as we are always clearing the endpoint after the 
                             // transaction is done
-                            callback(ep, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::no_error);
+                            callback(ep, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::no_error, transferred);
                         }
                     }
                 }
@@ -599,6 +605,9 @@ namespace klib::max32625::io {
                     // get the callback
                     const auto callback = state[ep].callback;
 
+                    // get the amount of data we have transferred
+                    const auto transferred = state[endpoint].transferred_size;
+
                     // clear the state of the endpoint
                     clear_endpoint_state(ep);
 
@@ -606,7 +615,7 @@ namespace klib::max32625::io {
                         // send we are done. Do not care about the return value
                         // as we are always clearing the endpoint after the 
                         // transaction is done
-                        callback(ep, klib::usb::usb::endpoint_mode::out, klib::usb::usb::error::no_error);
+                        callback(ep, klib::usb::usb::endpoint_mode::out, klib::usb::usb::error::no_error, transferred);
                     }
                 }
                 else {
@@ -815,12 +824,15 @@ namespace klib::max32625::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
             if (callback) {
                 // send a error to the callback
-                callback(endpoint, mode, klib::usb::usb::error::stall);
+                callback(endpoint, mode, klib::usb::usb::error::stall, transferred);
             }
         }
 
@@ -853,12 +865,15 @@ namespace klib::max32625::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
             if (callback) {
                 // send a error to the callback
-                callback(endpoint, mode, klib::usb::usb::error::un_stall);
+                callback(endpoint, mode, klib::usb::usb::error::un_stall, transferred);
             }
 
             // ack the endpoint
@@ -900,6 +915,9 @@ namespace klib::max32625::io {
             // get the callback
             const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
             // clear the state of the endpoint
             clear_endpoint_state(endpoint);
 
@@ -907,7 +925,7 @@ namespace klib::max32625::io {
                 // send a error to the callback. Do not care about the 
                 // return value as we are always clearing the endpoint
                 // in a reset event
-                callback(endpoint, mode, klib::usb::usb::error::reset);
+                callback(endpoint, mode, klib::usb::usb::error::reset, transferred);
             }
         }
 
