@@ -92,11 +92,11 @@ namespace klib {
         }
 
         /**
-         * @brief Reset (empty) the ringbuffer.
+         * @brief clear the ringbuffer.
          *
          * @return
          */
-        constexpr void reset() {
+        constexpr void clear() {
             head = 0;
             tail = 0;
         }
