@@ -138,7 +138,7 @@ namespace klib::usb::device {
          * @param error_code 
          */
         template <typename Usb>
-        static void callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code) {
+        static void callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
             // only continue if we do not have any errors
             if (error_code != usb::error::no_error) {
                 // we have a error
