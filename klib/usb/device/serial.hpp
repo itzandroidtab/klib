@@ -314,7 +314,9 @@ namespace klib::usb::device {
         /**
          * @brief Returns data read into the receive buffer
          * 
-         * @warning undefined behaviour when no data in ringbuffer
+         * @warning the USB interrupt should be suppressed while
+         * this function called. Undefined behaviour when no data
+         * in ringbuffer and this function is called
          * 
          * @return uint8_t 
          */
