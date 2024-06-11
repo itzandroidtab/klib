@@ -19,6 +19,7 @@ namespace klib {
 
         size_t head = 0;
         size_t tail = 0;
+        size_t used = 0;
 
         /**
          * @brief Goto the index at which a item can be stored.
@@ -30,6 +31,10 @@ namespace klib {
             if (full()) {
                 // increment the tail
                 tail = (tail + 1) % MaxSize;
+            }
+            else {
+                // add to the used count    
+                used++;
             }
 
             // increment the head
@@ -63,7 +68,7 @@ namespace klib {
          * @param args 
          */
         template<typename ...Args>
-        constexpr T& emplace(Args&& ...args) {
+        constexpr void emplace(Args&& ...args) {
             // store the data in the buffer
             buffer[head] = T(std::forward<Args>(args)...);
 
@@ -87,6 +92,9 @@ namespace klib {
             // move the tail
             tail = (tail + 1) % MaxSize;
 
+            // decrement the amount of items we have
+            used--;
+
             // return the item
             return item;
         }
@@ -99,6 +107,7 @@ namespace klib {
         constexpr void clear() {
             head = 0;
             tail = 0;
+            used = 0;
         }
 
         /**
@@ -127,7 +136,7 @@ namespace klib {
          * @return
          */
         constexpr bool empty() const {
-            return head == tail;
+            return !used;
         }
 
         /**
@@ -136,7 +145,7 @@ namespace klib {
          * @return
          */
         constexpr bool full() const {
-            return ((head + 1) % MaxSize) == tail;
+            return used == MaxSize;
         }
 
         /**
@@ -145,12 +154,7 @@ namespace klib {
          * @return
          */
         constexpr size_t size() const {
-            if (head > tail) {
-                return head - tail;
-            }
-            else {
-                return MaxSize + head - tail;
-            }
+            return used;
         }
 
         /**
