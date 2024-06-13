@@ -38,8 +38,7 @@ namespace klib::usb::device {
         };
 
         // TODO: change these sizes to the max enpoint size
-        // tx and rx buffers used for transmitting and receiving
-        static inline uint8_t tx_buffer[64] = {};
+        // rx buffer used for receiving
         static inline uint8_t rx_buffer[64] = {};
 
         // Push the current pack to the stack and set the pack to 1
@@ -158,7 +157,7 @@ namespace klib::usb::device {
             {
                 .bEndpointAddress = 0x80 | InEndpoint,
                 .bmAttributes = static_cast<uint8_t>(klib::usb::descriptor::transfer_type::bulk),
-                .wMaxPacketSize = sizeof(tx_buffer),
+                .wMaxPacketSize = 0x40,
                 .bInterval = 0x00
             }
         };
