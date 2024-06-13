@@ -181,14 +181,12 @@ namespace klib::usb::device {
         static inline uint8_t configuration = 0x00;
 
         // temporary storage 
-        static inline klib::ringbuffer<uint8_t, TxSize> transmit = {};
         static inline klib::ringbuffer<uint8_t, RxSize> receive = {};
 
         // buffer to receive commands
         static inline uint8_t command_buffer[64] = {};
 
         static inline volatile bool is_transmitting = false;
-        static inline volatile bool transmit_buffer_full = false;
         static inline volatile bool has_received_data = false;
 
         // the current command we are processing
@@ -238,30 +236,8 @@ namespace klib::usb::device {
                 return;
             }
 
-            // check what we need to do
-            if (!transmit.empty()) {
-                // copy the maximum amount we can transfer in one go
-                const auto size = klib::min(transmit.size(), sizeof(tx_buffer));
-
-                // copy the data into the transmit buffer
-                for (uint32_t i = 0; i < size; i++) {
-                    tx_buffer[i] = transmit.copy_and_pop();
-                }
-
-                // mark the buffer is not full
-                transmit_buffer_full = false;
-
-                // write the data
-                Usb::write(transmit_callback_handler<Usb>, 
-                    usb::get_endpoint(config.endpoint2.bEndpointAddress), 
-                    usb::get_endpoint_mode(config.endpoint2.bEndpointAddress),
-                    {tx_buffer, size}
-                );
-            }
-            else {
-                // mark we are not transmitting anymore
-                is_transmitting = false;
-            }
+            // mark we are not transmitting anymore
+            is_transmitting = false;
         }
 
         /**
@@ -336,8 +312,7 @@ namespace klib::usb::device {
 
         /**
          * @brief Function that returns if the transmitting side is 
-         * busy. If this function returns false it means we will 
-         * overwrite anything that is currently being transmitted
+         * busy.
          * 
          * @return true 
          * @return false 
@@ -360,37 +335,20 @@ namespace klib::usb::device {
             // the current index in the data
             uint32_t index = 0;
 
-            while (index < data.size_bytes()) {
-                // wait until the buffer is not full anymore
-                while (transmit_buffer_full) {
-                    // wait and do nothing
-                }
-
-                // add until the buffer is full
-                while ((!transmit.full()) && (index < data.size())) {
-                    // add the data to  the transmit buffer
-                    transmit.push(data[index++]);
-                }
-
-                // mark the buffer is full
-                if (transmit.full()) {
-                    transmit_buffer_full = true;
-                }
-
-                // check if we are transmitting already
-                if (!is_transmitting) {
-                    // mark we are transmitting
-                    is_transmitting = true;
-
-                    // call the callback handler manually to start the
-                    // interrupts
-                    transmit_callback_handler<Usb>(
-                        usb::get_endpoint(config.endpoint2.bEndpointAddress),
-                        usb::get_endpoint_mode(config.endpoint2.bEndpointAddress),
-                        usb::error::no_error, 0
-                    );
-                }
+            // wait until we are not busy anymore
+            while (is_busy()) {
+                // do nothing
             }
+
+            // set the flag we are transmitting
+            is_transmitting = true;
+
+            // write the data
+            Usb::write(transmit_callback_handler<Usb>, 
+                usb::get_endpoint(config.endpoint2.bEndpointAddress), 
+                usb::get_endpoint_mode(config.endpoint2.bEndpointAddress),
+                data
+            );
 
             // check if we should wait until the full transfer is done
             if constexpr (Async) {
