@@ -322,10 +322,10 @@ namespace klib::usb::device {
         }
 
         /**
-         * @brief Write data to the serial buffer. If more than the
-         * buffer size is provided this will block until data can
-         * be written (does not care about the async flag in that
-         * case)
+         * @brief Write data to the serial buffer. Waits until data
+         * can be written using the USB driver. Buffer needs to be 
+         * available until transfer is done (can be checked using 
+         * 'is_busy()')
          * 
          * @tparam Async 
          * @param data 

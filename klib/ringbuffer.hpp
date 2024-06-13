@@ -136,7 +136,7 @@ namespace klib {
          * @return
          */
         constexpr bool empty() const {
-            return !used;
+            return !size();
         }
 
         /**
@@ -145,7 +145,7 @@ namespace klib {
          * @return
          */
         constexpr bool full() const {
-            return used == MaxSize;
+            return size() >= max_size();
         }
 
         /**
