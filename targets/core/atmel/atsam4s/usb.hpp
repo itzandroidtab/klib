@@ -275,6 +275,25 @@ namespace klib::core::atsam4s::io {
 
             // check if we are done
             if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
+                // check if we need to send a zlp first before we call the 
+                // callback. We use the requested size to mark if we need to
+                // do this
+                if (state[endpoint].requested_size != 0) {
+                    // check if we need to send a zlp
+                    if ((state[endpoint].transferred_size % state[endpoint].max_size) == 0) {
+                        // clear the requested size to prevent us sending a zlp again
+                        state[endpoint].requested_size = 0;
+
+                        // write the zero length packet
+                        write_impl(
+                            endpoint, klib::usb::usb::endpoint_mode::in, 
+                            nullptr, 0
+                        );
+
+                        return;
+                    }
+                }
+
                 // we are done. clear the flag and call the callback
                 const auto callback = state[endpoint].callback;
 
@@ -294,21 +313,34 @@ namespace klib::core::atsam4s::io {
                 }
             }
             else {
-                // get the maximum size we can transmit
-                const uint32_t s = klib::min(
-                    (state[endpoint].requested_size - state[endpoint].transferred_size),
-                    state[endpoint].max_size
-                );
-
-                // check if we are done
-                if (s) {
-                    write_impl(
-                        endpoint, klib::usb::usb::endpoint_mode::in, 
-                        (state[endpoint].data + state[endpoint].transferred_size), s
+                // check both banks if the endpoint supports dual banks
+                for (uint32_t i = 0; i < get_endpoint_bank_count(endpoint); i++) {
+                    // get the offset we need to use for the data
+                    const uint32_t offset = state[endpoint].transferred_size;
+                    
+                    // get the maximum size we can transmit
+                    const uint32_t s = klib::min(
+                        (state[endpoint].requested_size - offset),
+                        state[endpoint].max_size
                     );
 
-                    // update the amount we have transferred
-                    state[endpoint].transferred_size += s;
+                    // check if we are done
+                    if (s) {
+                        // update the amount we have transferred
+                        state[endpoint].transferred_size += s;
+
+                        // write the data to the usb hardware
+                        write_impl(
+                            endpoint, klib::usb::usb::endpoint_mode::in, 
+                            (state[endpoint].data + offset), s
+                        );
+                    }
+
+                    // check if we need to write to bank 1
+                    if (s < state[endpoint].max_size) {
+                        // nothing to write at bank 1 exit
+                        break;
+                    }
                 }
             }            
         }
@@ -334,12 +366,15 @@ namespace klib::core::atsam4s::io {
                     continue;
                 }
 
+                // get the offset we are into the transfer
+                const auto offset = state[endpoint].transferred_size;
+
                 // receive more data
-                state[endpoint].transferred_size += read_impl(
+                state[endpoint].transferred_size = (offset + read_impl(
                     endpoint, klib::usb::usb::endpoint_mode::out, 
-                    (state[endpoint].data + state[endpoint].transferred_size),
-                    state[endpoint].max_requested_size - state[endpoint].transferred_size
-                );
+                    (state[endpoint].data + offset),
+                    state[endpoint].max_requested_size - offset
+                ));
 
                 // clear the flag to notify we have read the data
                 Usb::port->CSR[endpoint] = Usb::port->CSR[endpoint] & ~(0x1 << (1 + (i * 5)));
@@ -823,9 +858,6 @@ namespace klib::core::atsam4s::io {
         static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
                           const klib::usb::usb::endpoint_mode mode, const std::span<const uint8_t>& data) 
         {
-            // get the size we can write in a single transmission
-            const uint32_t s = klib::min(data.size(), state[endpoint].max_size);
-
             // set the endpoint callback and mark the endpoint as busy
             state[endpoint].is_busy = true;
             state[endpoint].callback = callback;
@@ -837,10 +869,31 @@ namespace klib::core::atsam4s::io {
             
             // set the endpoint data
             state[endpoint].requested_size = data.size();
-            state[endpoint].transferred_size = s;
+            state[endpoint].transferred_size = 0;
 
-            // call the write implementation
-            write_impl(endpoint, mode, data.data(), s);
+            // write to both banks if the endpoint supports dual banks
+            for (uint32_t i = 0; i < get_endpoint_bank_count(endpoint); i++) {
+                // get the offset we need to use for the data
+                const uint32_t offset = state[endpoint].transferred_size;
+
+                // get the size we can write in a single transmission
+                const uint32_t s = klib::min(
+                    data.size() - offset, 
+                    state[endpoint].max_size
+                );
+
+                // update the amount of bytes we transferred
+                state[endpoint].transferred_size = offset + s;
+
+                // call the write implementation
+                write_impl(endpoint, mode, data.data() + offset, s);
+
+                // check if we need to write to bank 1
+                if (s < state[endpoint].max_size) {
+                    // nothing to write at bank 1 exit
+                    break;
+                }
+            }
 
             // notify everything is correct
             return true;
