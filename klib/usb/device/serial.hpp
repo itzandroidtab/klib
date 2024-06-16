@@ -185,6 +185,10 @@ namespace klib::usb::device {
         // buffer to receive commands
         static inline uint8_t command_buffer[64] = {};
 
+        // flag if we need to send a zlp after the data
+        static inline volatile bool send_zlp = false;
+
+        // flags if we are currently transmitting and or have received data
         static inline volatile bool is_transmitting = false;
         static inline volatile bool has_received_data = false;
 
@@ -232,6 +236,24 @@ namespace klib::usb::device {
             
             // check if we are configured
             if (!configuration) {
+                return;
+            }
+
+            // check if we need to send a zero length packet before we are
+            // done sending the current request
+            if (send_zlp) {
+                // clear the flag we need to send a zero length packet
+                send_zlp = false;
+
+                // send a zero length packet
+                Usb::write(transmit_callback_handler<Usb>, 
+                    usb::get_endpoint(config.endpoint2.bEndpointAddress), 
+                    usb::get_endpoint_mode(config.endpoint2.bEndpointAddress),
+                    {}
+                );
+
+                // wait until we have called this callback again before 
+                // we clear the is_transmitting flag
                 return;
             }
 
@@ -341,6 +363,12 @@ namespace klib::usb::device {
 
             // set the flag we are transmitting
             is_transmitting = true;
+
+            // check if we need to send a zlp
+            if ((data.size() % 0x40) == 0) {
+                // mark we need to send a zlp
+                send_zlp = true;
+            }
 
             // write the data
             Usb::write(transmit_callback_handler<Usb>, 
