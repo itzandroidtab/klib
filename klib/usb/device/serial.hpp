@@ -11,7 +11,7 @@
 #include <klib/usb/cdc/descriptor.hpp>
 
 namespace klib::usb::device {
-    template <uint8_t CmdEndpoint = 1, uint8_t OutEndpoint = 2, uint8_t InEndpoint = 3, uint32_t TxSize = 64, uint32_t RxSize = 64>
+    template <uint8_t CmdEndpoint = 1, uint8_t OutEndpoint = 2, uint8_t InEndpoint = 3, uint32_t RxSize = 128>
     class serial {
     protected:
         /**
@@ -137,7 +137,7 @@ namespace klib::usb::device {
                 .bEndpointAddress = 0x80 | CmdEndpoint,
                 .bmAttributes = static_cast<uint8_t>(klib::usb::descriptor::transfer_type::interrupt),
                 .wMaxPacketSize = 0x0008,
-                .bInterval = 0x10
+                .bInterval = 0x0a
             },
             {
                 .bInterfaceNumber = 0x01,
