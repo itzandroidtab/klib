@@ -162,7 +162,7 @@ namespace klib::core::atsam4s::io {
 
             // configure endpoint 0 so we can receive
             // a setup packet (also enable it)
-            Usb::port->CSR[0] = (
+            Usb::port->CSR[klib::usb::usb::control_endpoint] = (
                 (0x1 << 15) | transfer_type_to_raw(
                     klib::usb::usb::endpoint_mode::control,
                     klib::usb::descriptor::transfer_type::control
@@ -181,8 +181,11 @@ namespace klib::core::atsam4s::io {
         static void write_impl(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, 
                                const uint8_t* data, const uint32_t size) 
         {
+            // convert the current mode to a klib endpoint mode
+            const auto m = static_cast<endpoint_mode>((Usb::port->CSR[endpoint] >> 8) & 0x7);
+
             // set the endpoint direction for control endpoints
-            if (!((Usb::port->CSR[endpoint] >> 8) & 0x7)) {
+            if (raw_to_endpoint_mode(m) == klib::usb::usb::endpoint_mode::control) {
                 // enable the DATA in for the control endpoint
                 Usb::port->CSR[endpoint] |= (0x1 << 7);
             }
@@ -275,25 +278,6 @@ namespace klib::core::atsam4s::io {
 
             // check if we are done
             if (state[endpoint].transferred_size >= state[endpoint].requested_size) {
-                // check if we need to send a zlp first before we call the 
-                // callback. We use the requested size to mark if we need to
-                // do this
-                if (state[endpoint].requested_size != 0) {
-                    // check if we need to send a zlp
-                    if ((state[endpoint].transferred_size % state[endpoint].max_size) == 0) {
-                        // clear the requested size to prevent us sending a zlp again
-                        state[endpoint].requested_size = 0;
-
-                        // write the zero length packet
-                        write_impl(
-                            endpoint, klib::usb::usb::endpoint_mode::in, 
-                            nullptr, 0
-                        );
-
-                        return;
-                    }
-                }
-
                 // we are done. clear the flag and call the callback
                 const auto callback = state[endpoint].callback;
 
@@ -313,34 +297,21 @@ namespace klib::core::atsam4s::io {
                 }
             }
             else {
-                // check both banks if the endpoint supports dual banks
-                for (uint32_t i = 0; i < get_endpoint_bank_count(endpoint); i++) {
-                    // get the offset we need to use for the data
-                    const uint32_t offset = state[endpoint].transferred_size;
-                    
-                    // get the maximum size we can transmit
-                    const uint32_t s = klib::min(
-                        (state[endpoint].requested_size - offset),
-                        state[endpoint].max_size
+                // get the maximum size we can transmit
+                const uint32_t s = klib::min(
+                    (state[endpoint].requested_size - state[endpoint].transferred_size),
+                    state[endpoint].max_size
+                );
+
+                // check if we are done
+                if (s) {
+                    write_impl(
+                        endpoint, klib::usb::usb::endpoint_mode::in, 
+                        (state[endpoint].data + state[endpoint].transferred_size), s
                     );
 
-                    // check if we are done
-                    if (s) {
-                        // update the amount we have transferred
-                        state[endpoint].transferred_size += s;
-
-                        // write the data to the usb hardware
-                        write_impl(
-                            endpoint, klib::usb::usb::endpoint_mode::in, 
-                            (state[endpoint].data + offset), s
-                        );
-                    }
-
-                    // check if we need to write to bank 1
-                    if (s < state[endpoint].max_size) {
-                        // nothing to write at bank 1 exit
-                        break;
-                    }
+                    // update the amount we have transferred
+                    state[endpoint].transferred_size += s;
                 }
             }            
         }
@@ -858,6 +829,9 @@ namespace klib::core::atsam4s::io {
         static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
                           const klib::usb::usb::endpoint_mode mode, const std::span<const uint8_t>& data) 
         {
+            // get the size we can write in a single transmission
+            const uint32_t s = klib::min(data.size(), state[endpoint].max_size);
+
             // set the endpoint callback and mark the endpoint as busy
             state[endpoint].is_busy = true;
             state[endpoint].callback = callback;
@@ -869,31 +843,10 @@ namespace klib::core::atsam4s::io {
             
             // set the endpoint data
             state[endpoint].requested_size = data.size();
-            state[endpoint].transferred_size = 0;
+            state[endpoint].transferred_size = s;
 
-            // write to both banks if the endpoint supports dual banks
-            for (uint32_t i = 0; i < get_endpoint_bank_count(endpoint); i++) {
-                // get the offset we need to use for the data
-                const uint32_t offset = state[endpoint].transferred_size;
-
-                // get the size we can write in a single transmission
-                const uint32_t s = klib::min(
-                    data.size() - offset, 
-                    state[endpoint].max_size
-                );
-
-                // update the amount of bytes we transferred
-                state[endpoint].transferred_size = offset + s;
-
-                // call the write implementation
-                write_impl(endpoint, mode, data.data() + offset, s);
-
-                // check if we need to write to bank 1
-                if (s < state[endpoint].max_size) {
-                    // nothing to write at bank 1 exit
-                    break;
-                }
-            }
+            // call the write implementation
+            write_impl(endpoint, mode, data.data(), s);
 
             // notify everything is correct
             return true;
