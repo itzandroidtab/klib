@@ -291,7 +291,7 @@ namespace klib::filesystem::detail {
         // amount of bits in the cluster
         constexpr static uint32_t bits = 32;
 
-        enum : uint32_t{
+        enum : uint32_t {
             free = 0x0000000,
             allocated = 0x0000002,
             reverved0 = ClusterCount + 1,
@@ -824,9 +824,10 @@ namespace klib::filesystem {
             };
 
             // set the drive name in the directory
-            for (uint32_t i = 0; i < sizeof(directory[0].name) && i < klib::string::strlen(drive_name); i++) {
-                directory[0].name[i] = drive_name[i];
-            }
+            klib::string::strncpy(
+                reinterpret_cast<char*>(directory[0].name), drive_name, 
+                klib::min(sizeof(directory[0].name), klib::string::strlen(drive_name))
+            );
 
             uint32_t current = 0;
 
@@ -924,16 +925,19 @@ namespace klib::filesystem {
             };
 
             // set the drive name in the directory
-            for (uint32_t i = 0; i < sizeof(entry.name) && i < klib::string::strlen(file_name); i++) {
-                entry.name[i] = file_name[i];
-            }
+            klib::string::strncpy(
+                reinterpret_cast<char*>(entry.name), file_name, 
+                klib::min(sizeof(entry.name), klib::string::strlen(file_name))
+            );
 
+            // set the callbacks for the file
             virtual_media[directory_index] = {
                 .read = read,
                 .write = write,
                 .sector_count = clusters * sectors_per_cluster
             };
 
+            // increment the amount of files we have
             directory_index++;
         }
 
