@@ -163,6 +163,35 @@ namespace klib::string {
         // return the start of the destination
         return destination;
     }
+
+    /**
+     * @brief Copy a c string to another c string with a maximum length
+     * 
+     * @param destination 
+     * @param source 
+     * @param max_size 
+     * @return char* 
+     */
+    constexpr char* strncpy(char *const destination, const char* source, const uint32_t max_size) {
+        char* ptr = destination; 
+
+        for (uint32_t i = 0; (i < max_size) && (*source != '\0'); i++) {
+            *ptr = *source;
+
+            ptr++;
+            source++;
+        }
+
+        // do not add a null terminator if the source is longer 
+        // than max_size
+        if ((ptr - destination) < max_size) {
+            // add a null terminator after the string
+            *ptr = '\0';
+        }
+
+        // return the start of the destination
+        return destination;
+    }
     
     /**
      * @brief Cat a string to the end of another string
