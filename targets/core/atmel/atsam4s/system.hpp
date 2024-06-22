@@ -4,6 +4,8 @@
 #include <klib/klib.hpp>
 #include <klib/io/core_clock.hpp>
 
+#include <io/power.hpp>
+
 namespace klib::core::atsam4s::io::system {
     class flash {
     public:
@@ -277,6 +279,12 @@ namespace klib::core::atsam4s::io::system {
             }
         }
 
+        /**
+         * @brief Get the divider for the prescaler
+         * 
+         * @tparam Prescaler 
+         * @return uint8_t 
+         */
         template <prescaler Prescaler>
         static uint8_t get_divider() {
             // special case for div 3
@@ -285,42 +293,6 @@ namespace klib::core::atsam4s::io::system {
             }
 
             return klib::exp2(static_cast<uint32_t>(Prescaler));
-        }
-
-    public:
-        /**
-         * @brief Set the internal rc frequency
-         * 
-         * @tparam Freq 
-         */
-        template <uint32_t Freq>
-        static void set_internal_rc() {
-            // make sure we have a valid frequency
-            static_assert(
-                (Freq == 4'000'000) || (Freq == 8'000'000) || (Freq == 12'000'000),
-                "Invalid internal rc frequency, supported are 4/8/12 mhz"
-            );
-
-            // check if the internal_rc is enabled
-            if (!internal_rc::is_enabled()) {
-                // enable the internal rc
-                internal_rc::enable<true>();
-
-                // wait until it has started
-                while (!(PMC->PMC_SR & (0x1 << 17))) {
-                    // do nothing
-                }
-            }
-
-            // change to the requested frequency
-            internal_rc::change_frequency<
-                static_cast<internal_rc::frequency>((Freq / 4'000'000) - 1)
-            >();
-
-            // wait until the internal rc has stabalized
-            while (!(PMC->PMC_SR & (0x1 << 17))) {
-                // do nothing
-            }
         }
 
         /**
@@ -350,6 +322,48 @@ namespace klib::core::atsam4s::io::system {
             }
         }
 
+    public:
+        /**
+         * @brief Set the internal rc frequency
+         * 
+         * @tparam Freq 
+         */
+        template <uint32_t Freq>
+        static void set_internal_rc() {
+            // make sure we have a valid frequency
+            static_assert(
+                (Freq == 4'000'000) || (Freq == 8'000'000) || (Freq == 12'000'000),
+                "Invalid internal rc frequency, supported are 4/8/12 mhz"
+            );
+
+            // disable the write protect on the PMC
+            target::io::power_control::write_protect<false>();
+
+            // check if the internal_rc is enabled
+            if (!internal_rc::is_enabled()) {
+                // enable the internal rc
+                internal_rc::enable<true>();
+
+                // wait until it has started
+                while (!(PMC->PMC_SR & (0x1 << 17))) {
+                    // do nothing
+                }
+            }
+
+            // change to the requested frequency
+            internal_rc::change_frequency<
+                static_cast<internal_rc::frequency>((Freq / 4'000'000) - 1)
+            >();
+
+            // enable the write protect again
+            target::io::power_control::write_protect<true>();
+
+            // wait until the internal rc has stabalized
+            while (!(PMC->PMC_SR & (0x1 << 17))) {
+                // do nothing
+            }
+        }
+
         /**
          * @brief Set the master cpu clock. 
          * 
@@ -365,8 +379,8 @@ namespace klib::core::atsam4s::io::system {
             prescaler Prescaler = prescaler::div_1
         >
         static void set_main() {
-            // disable the write protection
-            PMC->PMC_WPMR = (0x504d43 << 8);   
+            // disable the write protect on the PMC
+            target::io::power_control::write_protect<false>();
 
             // enable the source we want to use
             enable<Source>();
@@ -408,6 +422,9 @@ namespace klib::core::atsam4s::io::system {
                 // notify klib what freqency we are running
                 klib::io::clock::set(OscillatorFreq / get_divider<Prescaler>());
             }
+
+            // enable the write protect again
+            target::io::power_control::write_protect<true>();
         }
 
         /**
@@ -429,11 +446,17 @@ namespace klib::core::atsam4s::io::system {
                 "Invalid external crystal frequency"
             );
 
+            // disable the write protect on the PMC
+            target::io::power_control::write_protect<false>();
+
             // calculate the required multiplier
             setup<Pll, Multiplier, Div>();
 
             // change the USB to the requested pll
             PMC->PMC_USB = (Pll == pll::pllb) | (((UsbDiv & 0xf) - 1) << 8);
+
+            // enable the write protect again
+            target::io::power_control::write_protect<true>();
         }
     };
 }

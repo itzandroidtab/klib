@@ -5,16 +5,6 @@
 
 namespace klib::core::atsam4s::io {
     class power_control {
-    protected:
-        /**
-         * @brief Disable the write protect on the PMC
-         * 
-         */
-        static void disable_write_protect() {
-            // disable the PMC write protection
-            PMC->PMC_WPMR = (0x504D43 << 8);
-        }
-
     public:
         /**
          * @brief Enable the clock on the peripheral
@@ -24,7 +14,7 @@ namespace klib::core::atsam4s::io {
         template <typename P> 
         static void enable() {
             // disable the write protect
-            disable_write_protect();
+            write_protect<false>();
 
             // set the bit to enable the clock on the peripheral
             if constexpr (P::clock_id < 32) {
@@ -33,6 +23,9 @@ namespace klib::core::atsam4s::io {
             else {
                 PMC->PMC_PCER1 = (0x1 << (P::clock_id - 32));
             }
+
+            // enable the write protect again
+            write_protect<true>();
         }
 
         /**
@@ -43,7 +36,7 @@ namespace klib::core::atsam4s::io {
         template <typename P> 
         static void disable() {
             // disable the write protect
-            disable_write_protect();
+            write_protect<false>();
 
             // set the bit to enable the clock on the peripheral
             if constexpr (P::clock_id < 32) {
@@ -52,6 +45,9 @@ namespace klib::core::atsam4s::io {
             else {
                 PMC->PMC_PCDR1 = (0x1 << (P::clock_id - 32));
             }
+
+            // enable the write protect again
+            write_protect<true>();
         }
 
         /**
@@ -70,6 +66,16 @@ namespace klib::core::atsam4s::io {
             else {
                 return PMC->PMC_PCSR1 & (0x1 << (P::clock_id - 32));
             }
+        }
+
+        /**
+         * @brief Disables/enables the write protect on the PMC
+         * 
+         */
+        template <bool Enable>
+        static void write_protect() {
+            // disable the PMC write protection
+            PMC->PMC_WPMR = (0x504D43 << 8) | Enable;
         }
     };
 }
