@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <atsam4s2b.hpp>
+#include <targets/core/atmel/atsam4s/i2c.hpp>
 
 #include "pins.hpp"
 
@@ -60,6 +60,11 @@ namespace klib::atsam4s2b::io::periph::wlcsp_64 {
         using sda = detail::i2c::i2c<pins::package::wlcsp_64::ph1, detail::i2c::mode::sda, core::atsam4s::io::detail::alternate::func_1>;
         using scl = detail::i2c::i2c<pins::package::wlcsp_64::pa1, detail::i2c::mode::scl, core::atsam4s::io::detail::alternate::func_1>;
     };
+}
+
+namespace klib::atsam4s2b::io {
+    template <typename I2c>
+    using i2c = core::atsam4s::io::i2c<I2c>;
 }
 
 #endif

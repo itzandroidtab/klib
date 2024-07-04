@@ -1,0 +1,205 @@
+#ifndef KLIB_ATMEL_ATSAM4S_I2C_HPP
+#define KLIB_ATMEL_ATSAM4S_I2C_HPP
+
+#include <klib/klib.hpp>
+#include <klib/multispan.hpp>
+#include <klib/io/bus/i2c.hpp>
+#include <klib/io/core_clock.hpp>
+
+#include <io/power.hpp>
+
+namespace klib::core::atsam4s::io {
+    template <typename I2c>
+    class i2c {
+    protected:
+        /**
+         * @brief Set the address with read/write mode
+         * 
+         * @tparam Read 
+         * @param address 
+         */
+        template <bool Read>
+        constexpr static void read_write_set_address(const uint8_t address) {
+            // set the address we want to write to
+            I2c::port->MMR = ((address & 0x7f) << 16) | (Read << 12);
+        }
+
+        /**
+         * @brief Wait until some bits are set in the status register
+         * 
+         * @param bits 
+         * @return constexpr uint32_t 
+         */
+        constexpr static uint32_t wait_for_status(const uint32_t bits) {
+            // check for valid bits
+            if (!bits) {
+                return 0x00;
+            }
+
+            // loop until we have a match
+            while (true) {
+                // read the status (this can clear some bits)
+                const uint32_t status = I2c::port->SR;
+
+                // check if we have one of the bits set
+                if (status & bits) {
+                    return status;
+                }
+            }
+        }
+
+        /**
+         * @brief Internal write implementation
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return true 
+         * @return false 
+         */
+        template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<const uint8_t>>
+        constexpr static bool write_impl(const uint8_t address, const T& data) {
+            // hardware does not writes with less than 1 byte
+            if (!data.size()) {
+                // return we could not transmit the data
+                return false;
+            }
+
+            // set the address we want to write to
+            read_write_set_address<false>(address);
+
+            // start the transaction (also set the end flag
+            // if we have less or equal than 1 byte)
+            I2c::port->CR = 0x1 | (data.size() <= 1 ? (0x1 << 1) : 0x00);
+
+            // wait until we can write into the transmit holding register
+            const uint32_t s = wait_for_status((0x1 << 8) | (0x1 << 2));
+
+            // check if we have a nack
+            if (s & (0x1 << 8)) {
+                return false;
+            }
+
+            // transfer all the data
+            for (uint32_t i = 0; i < data.size(); i++) {
+                // write the data into the transfer hold register
+                I2c::port->THR = data[i];
+
+                // wait on either a empty transmit hold register or a nack
+                const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 2));
+
+                // check if we are done transmitting or
+                // we have a nack
+                if (status & (0x1 << 8)) {
+                    // return a error
+                    return false;
+                }
+            }
+
+            // do not send the stop again if less or equal to 1 byte
+            if (data.size() > 1) {
+                // mark we are done transmitting (by setting the stop bit)
+                I2c::port->CR = (0x1 << 1);
+            }
+
+            // mask to check for
+            constexpr uint32_t mask = (0x1 << 8) | 0x1;
+
+            // wait until we are done with the transaction
+            return (wait_for_status(mask) & mask) == 0x1;
+        }
+
+    public:
+        template <klib::io::i2c::speed Speed = klib::io::i2c::speed::fast>
+        constexpr static void init() {
+            // enable the clocks on the i2c peripheral
+            target::io::power_control::enable<I2c>();
+
+            // calculate the amount of ticks a clock pulse takes
+            uint32_t ticks = klib::io::clock::get() / static_cast<uint32_t>(Speed);
+
+            // setup the clock waveform
+            I2c::port->CWGR = ((ticks / 2) << 8) | (ticks / 2);
+
+            // enable master mode
+            I2c::port->CR = (0x1 << 2) | (0x1 << 5);
+
+            // configure the gpio pins
+            io::detail::pins::set_peripheral<typename I2c::sda::pin, typename I2c::sda::periph>();
+            io::detail::pins::set_peripheral<typename I2c::scl::pin, typename I2c::scl::periph>();
+        }  
+
+        /**
+         * @brief Read from a device on the i2c bus
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return state if read was successfull
+         */
+        template <bool SendStop = true, bool RepeatedStart = false>
+        constexpr static bool read(const uint8_t address, const std::span<uint8_t>& data) {
+            return false;
+        }
+
+        /**
+         * @brief Read from a device on the i2c bus
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return state if read was successfull
+         */
+        template <bool SendStop = true, bool RepeatedStart = false>
+        constexpr static bool read(const uint8_t address, const multispan<uint8_t>& data) {
+            return false;
+        }
+
+        /**
+         * @brief Write to a device on the i2c bus
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return state if read was successfull
+         */
+        template <bool SendStop = true, bool RepeatedStart = false>
+        constexpr static bool write(const uint8_t address, const std::span<const uint8_t>& data) {
+            return write_impl<SendStop, RepeatedStart>(address, data);
+        }
+
+        /**
+         * @brief Write to a device on the i2c bus
+         * 
+         * @tparam SendStop 
+         * @tparam RepeatedStart 
+         * @param address 
+         * @param data 
+         * @param size 
+         * @return state if read was successfull
+         */
+        template <bool SendStop = true, bool RepeatedStart = false>
+        constexpr static bool write(const uint8_t address, const multispan<const uint8_t>& data) {
+            return write_impl<SendStop, RepeatedStart>(address, data);
+        }
+
+        /**
+         * @brief Stop a transmission that has been started did 
+         * not send a stop
+         * 
+         */
+        constexpr static void stop() {
+
+        }
+    };
+}
+
+#endif
