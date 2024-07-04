@@ -99,7 +99,7 @@ namespace klib::core::atsam4s::io {
                 Spi::port->TDR = value;
 
                 // wait until the write is done
-                while ((!Spi::port->SR & (0x1 << 1))) {
+                while (!(Spi::port->SR & (0x1 << 1))) {
                     // do nothing
                 }
 
@@ -157,7 +157,7 @@ namespace klib::core::atsam4s::io {
 
             // get the divider for the current frequency. Minimum is 1 and max is 0xff
             const auto bit_rate = klib::max(
-                1, klib::min(0xff, 
+                0x1, klib::min(0xff, 
                     static_cast<uint32_t>(
                         klib::io::clock::get() / static_cast<uint32_t>(Frequency)
                     )
