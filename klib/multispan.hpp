@@ -83,7 +83,7 @@ namespace klib {
             }
 
             // we are out of bounds. This is undefined behaviour
-            return storage[Amount - 1].end();
+            return *storage[Amount - 1].end();
         }
 
         /**
