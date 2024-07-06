@@ -550,7 +550,7 @@ namespace klib::filesystem {
          */
         static void read_mbr(const uint32_t offset, uint8_t *const data, const uint32_t sectors) {
             // the mbr is only 1 sector
-            if (offset != 0) {
+            if (offset != 0 || !sectors) {
                 // do nothing with the other sectors
                 return;
             }
@@ -646,7 +646,7 @@ namespace klib::filesystem {
          */
         static void write_directory_structure(const uint32_t offset, const uint8_t *const data, const uint32_t sectors) {
             // check if it is trying to write outside of the fat directory array
-            if (((offset * sector_size) + (sectors * sector_size)) > sizeof(directory)) {
+            if ((!sectors) || (((offset * sector_size) + (sectors * sector_size)) > sizeof(directory))) {
                 // it is trying to write outside the directory structure exit
                 return;
             }
