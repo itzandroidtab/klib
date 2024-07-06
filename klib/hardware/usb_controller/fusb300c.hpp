@@ -68,7 +68,7 @@ namespace klib::hardware::usb_controller {
          */
         static bool write_reg(const reg command, const uint8_t data) {
             // write using the other write
-            return write_reg(command, {data, sizeof(data)});
+            return write_reg(command, {&data, sizeof(data)});
         }  
 
         /**
@@ -108,6 +108,37 @@ namespace klib::hardware::usb_controller {
             }
         }
 
+        static bool init_impl() {
+            uint8_t buffer;
+
+            // check if we have a device attached
+            if (!read_reg(reg::device_id, {&buffer, sizeof(buffer)})) {
+                return false;
+            }
+            
+            // reset the fusb300c
+            if (!write_reg(reg::swreset, 0x01)) {
+                return false;
+            }
+
+            // enable measurement on the cc1/cc2 switches
+            if (!write_reg(reg::switches, 0x0f)) {
+                return false;
+            }
+
+            // enable vbus measurement (0.84v threshold)
+            if (!write_reg(reg::measure, (0x1 << 6) | 0b000001)) {
+                return false;
+            }
+
+            // enable power (needed for the CC1/CC2 measurement)
+            if (!write_reg(reg::power, 0x07)) {
+                return false;
+            }
+
+            return true;
+        }
+
     public:
         /**
          * @brief Init the fusb300c
@@ -117,14 +148,15 @@ namespace klib::hardware::usb_controller {
          * @return status 
          */
         static bool init() {
-            uint8_t buffer;
-
-            // check if we have a device attached
-            if (!read_reg(reg::device_id, {&buffer, sizeof(buffer)})) {
+            // init the fusb300c
+            if (!init_impl()) {
                 return false;
             }
-            
-            // init the fusb300c
+
+            // enable the interrupt mask (disable all interrupts)
+            if (!write_reg(reg::contorl, (0x1 << 5))) {
+                return false;
+            }
 
             return true;
         }
@@ -140,7 +172,12 @@ namespace klib::hardware::usb_controller {
         template <typename IrqPin>
         static bool init(const interrupt_callback callback = nullptr) {
             // init the driver
-            if (!init()) {
+            if (!init_impl()) {
+                return false;
+            }
+
+            // disable the interrupt mask (enable all interrupts)
+            if (!write_reg(reg::contorl, 0x00)) {
                 return false;
             }
 
@@ -155,7 +192,7 @@ namespace klib::hardware::usb_controller {
         }
 
         /**
-         * @brief Read if 
+         * @brief Read if vbus is above the defined threshold
          * 
          * @return true 
          * @return false 
