@@ -111,6 +111,49 @@ namespace klib::core::atsam4s::io {
             return (wait_for_status(mask) & mask) == 0x1;
         }
 
+        template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<const uint8_t>>
+        constexpr static bool read_impl(const uint8_t address, const T& data) {
+            // hardware does not writes with less than 1 byte
+            if (!data.size()) {
+                // return we could not transmit the data
+                return false;
+            }
+
+            // set the address we want to read from
+            read_write_set_address<true>(address);
+
+            // start the transaction (also set the end flag
+            // if we have less or equal than 1 byte)
+            I2c::port->CR = 0x1 | (data.size() <= 1 ? (0x1 << 1) : 0x00);
+
+            // read all the data
+            for (uint32_t i = 0; i < data.size(); i++) {
+                // wait until a nack or we have received data
+                const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 1));
+
+                // check if we have a nack or data
+                if (status & (0x1 << 8)) {
+                    // return a error
+                    return false;
+                }
+
+                // read the data into the array
+                data[i] = I2c::port->RHR & 0xff;
+
+                // check if we need to send the stop condition
+                if ((data.size() > 1) && ((i + 1) >= data.size())) {
+                    // mark the next byte is the last
+                    I2c::port->CR = (0x1 << 1);
+                }
+            }
+
+            // mask to check for
+            constexpr uint32_t mask = (0x1 << 8) | 0x1;
+
+            // wait until we are done with the transaction
+            return (wait_for_status(mask) & mask) == 0x1;
+        }
+
     public:
         template <klib::io::i2c::speed Speed = klib::io::i2c::speed::fast>
         constexpr static void init() {
@@ -143,7 +186,7 @@ namespace klib::core::atsam4s::io {
          */
         template <bool SendStop = true, bool RepeatedStart = false>
         constexpr static bool read(const uint8_t address, const std::span<uint8_t>& data) {
-            return false;
+            return read_impl<SendStop, RepeatedStart>(address, data);
         }
 
         /**
@@ -158,7 +201,7 @@ namespace klib::core::atsam4s::io {
          */
         template <bool SendStop = true, bool RepeatedStart = false>
         constexpr static bool read(const uint8_t address, const multispan<uint8_t>& data) {
-            return false;
+            return read_impl<SendStop, RepeatedStart>(address, data);
         }
 
         /**
