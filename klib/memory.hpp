@@ -130,7 +130,7 @@ namespace klib::allocator::detail {
             // check if the previous header is also free
             if (current_chunk.previous != nullptr && !current_chunk.previous->in_use) {
                 // check if we are the last chunk
-                if (current_chunk.size = 0) {
+                if (current_chunk.size == 0) {
                     // clear the size of the previous chunk to mark
                     // it as the new last chunk
                     current_chunk.previous->size = 0;
@@ -143,6 +143,9 @@ namespace klib::allocator::detail {
                     // the size of the chunk) so we point to the next
                     // chunk
                     current_chunk.previous->size += sizeof(chunk) + current_chunk.size;
+
+                    // change the pointer for the next item
+                    next_chunk.previous = current_chunk.previous;
                 }
             }
 
