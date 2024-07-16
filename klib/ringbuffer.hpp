@@ -2,6 +2,7 @@
 #define KLIB_RINGBUFFER_HPP
 
 #include <cstdint>
+#include <utility>
 
 namespace klib {
     /**
