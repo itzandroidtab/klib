@@ -52,15 +52,10 @@ namespace klib::io {
         static volatile inline time::ms runtime = 0;
 
         template <typename Irq, bool ExternalClockSource = false>
-        static void init_impl(const interrupt_callback& irq) {
+        static void init_impl() {
             // clear the systick value
             port->value = 0;
 
-            // only register the callback when enabled
-            if constexpr (Callback) {
-                // register the callback
-                callback = irq;
-            }
 
             // register our handler
             Irq::template register_irq<Irq::arm_vector::systick>(irq_handler);
@@ -81,12 +76,12 @@ namespace klib::io {
          * @param clock 
          */
         template <typename Irq, bool ExternalClockSource = false>
-        static void init(const uint32_t clock, const interrupt_callback& irq = nullptr) {
+        static void init(const uint32_t clock) {
             // calculate the interval for 1khz
             port->load = (clock / 1'000) - 1;
 
             // init the systick
-            init_impl<Irq, ExternalClockSource>(irq);
+            init_impl<Irq, ExternalClockSource>();
         }
 
         /**
@@ -98,9 +93,9 @@ namespace klib::io {
          * @param irq 
          */
         template <typename Irq, bool ExternalClockSource = false>
-        static void init(const interrupt_callback& irq = nullptr) {
+        static void init() {
             // init the systick
-            init<Irq, ExternalClockSource>(klib::io::clock::get(), irq);
+            init<Irq, ExternalClockSource>(klib::io::clock::get());
         }
 
         /**
@@ -112,12 +107,12 @@ namespace klib::io {
          * @param irq 
          */
         template <typename Irq, bool ExternalClockSource = false>
-        static void init_with_calibration(const uint32_t calibration, const interrupt_callback& irq = nullptr) {
+        static void init_with_calibration(const uint32_t calibration) {
             // calculate the interval for 1khz
             port->load = calibration;
 
             // init the systick
-            init_impl<Irq, ExternalClockSource>(irq);
+            init_impl<Irq, ExternalClockSource>();
         }
 
         /**
@@ -129,12 +124,12 @@ namespace klib::io {
          * @tparam ExternalClockSource 
          */
         template <typename Irq, bool ExternalClockSource = false>
-        static void init_with_default_calibration(const interrupt_callback& irq = nullptr) {
+        static void init_with_default_calibration() {
             // divide the 100hz by 10 to get the interval for 1khz
             port->load = (port->calibration / 10);
 
             // init the systick
-            init_impl<Irq, ExternalClockSource>(irq);
+            init_impl<Irq, ExternalClockSource>();
         }
 
         /**
@@ -225,6 +220,19 @@ namespace klib::io {
             else {
                 // use the ms runtime value if not us or ns
                 return {runtime.value};
+            }
+        }
+
+        /**
+         * @brief Register a callback after the init sequence
+         * 
+         * @param irq 
+         */
+        static void set_callback(const interrupt_callback& irq = nullptr) {
+            // only register the callback when enabled
+            if constexpr (Callback) {
+                // register the callback
+                callback = irq;
             }
         }
 
