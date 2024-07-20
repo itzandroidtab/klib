@@ -308,7 +308,7 @@ void* operator new[](const size_t size) noexcept {
 }
 
 /**
- * @brief Delete size amount of memory
+ * @brief Delete memory the pointer points to
  * 
  * @param size 
  * @return void* 
@@ -324,6 +324,26 @@ void operator delete(void *const ptr) noexcept {
  * @return void* 
  */
 void operator delete[](void *const ptr) noexcept {
+    return klib::allocator::allocator.free(ptr);
+}
+
+/**
+ * @brief Delete memory pointer points to
+ * 
+ * @param ptr 
+ * @param size (not used)
+ */
+void operator delete(void *const ptr, size_t size) noexcept {
+    return klib::allocator::allocator.free(ptr);
+}
+
+/**
+ * @brief Delete a raay amount of memory
+ * 
+ * @param ptr 
+ * @param size (not used)
+ */
+void operator delete[](void *const ptr, size_t size) noexcept {
     return klib::allocator::allocator.free(ptr);
 }
 
