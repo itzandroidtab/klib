@@ -56,23 +56,6 @@ namespace klib::atsam4s2b::io::periph::wlcsp_64 {
             detail::timer::timer<pins::package::wlcsp_64::pe4, detail::timer::mode::tiob, core::atsam4s::io::detail::alternate::func_2, 2>
         >;
     };
-
-    struct tc1 {
-        // peripheral id (e.g tc0, tc1)
-        constexpr static uint32_t id = 1;
-
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = (26 + 16);
-
-        // power bit position
-        constexpr static uint32_t clock_id = 26;
-
-        // port to the timer hardware
-        static inline TC0_Type *const port = TC1;
-
-        // available channels in the timer
-        constexpr static uint32_t max_channels = 3;
-    };
 }
 
 namespace klib::atsam4s2b::io {

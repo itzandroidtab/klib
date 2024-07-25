@@ -128,7 +128,7 @@ namespace klib::core::atsam4s::io::detail::timer {
                 target::irq::register_irq<Timer::interrupt_id + Channel>(isr_handler);
 
                 // enable the interrupt
-                target::enable_irq<Timer::interrupt_id>();          
+                target::enable_irq<Timer::interrupt_id + Channel>();          
 
                 // enable the correct compare status based on the 
                 // match register used
