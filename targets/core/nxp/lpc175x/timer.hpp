@@ -183,7 +183,7 @@ namespace klib::core::lpc175x::io {
         typename Pin, typename Pwm, uint8_t Channel, 
         uint32_t Frequency, uint8_t Bits
     >
-    class pwm_timer: public detail::timer::base_timer<Pwm, 0, detail::timer::mode::continuous> {
+    class pin_timer: public detail::timer::base_timer<Pwm, 0, detail::timer::mode::continuous> {
     protected:
         // make sure the channel is valid
         static_assert(Channel < Pwm::max_pwm_channels, "Pwm only supports 7 channels");

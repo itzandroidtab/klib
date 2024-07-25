@@ -122,7 +122,7 @@ namespace klib::lpc1759::io {
         typename Pin, typename Pwm, uint8_t Channel, 
         uint32_t Frequency, uint8_t Bits
     >
-    using pwm_timer = core::lpc175x::io::pwm_timer<Pin, Pwm, Channel, Frequency, Bits>;
+    using pin_timer = core::lpc175x::io::pin_timer<Pin, Pwm, Channel, Frequency, Bits>;
 }
 
 #endif
