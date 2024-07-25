@@ -103,7 +103,7 @@ namespace klib::core::atsam4s::io::detail::timer {
             target::io::power_control::enable<tc_clock<Timer::clock_id + Channel>>();
 
             // disable write protection
-            Timer::port->WPMR = (0x54494D << 2);
+            Timer::port->WPMR = (0x54494D << 8);
 
             // disable the channel
             disable();
