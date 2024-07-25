@@ -5,6 +5,7 @@
 
 #include <klib/klib.hpp>
 #include <klib/io/core_clock.hpp>
+#include <klib/io/peripheral.hpp>
 #include <klib/math.hpp>
 
 #include <io/power.hpp>
@@ -23,14 +24,14 @@ namespace klib::core::atsam4s::io::detail::timer {
     };
 
     /**
-     * @brief Supported edge selection
+     * @brief Different compare effects
      * 
      */
-    enum class edge {
+    enum class compare_effect {
         none = 0x00,
-        falling = 0x01,
-        rising = 0x02,
-        dual_edge = 0x03
+        set = 0x01,
+        clear = 0x02,
+        toggle = 0x03,
     };
 
     /**
@@ -97,7 +98,7 @@ namespace klib::core::atsam4s::io::detail::timer {
          * @param irq 
          * @param frequency 
          */
-        static void init_impl(const interrupt_callback& irq, const uint32_t frequency, const edge tioa, const edge tiob) {
+        static void init_impl(const interrupt_callback& irq, const uint32_t frequency) {
             // enable power to the timer peripheral
             target::io::power_control::enable<tc_clock<Timer::clock_id + Channel>>();
 
@@ -111,7 +112,7 @@ namespace klib::core::atsam4s::io::detail::timer {
             // configure the other parameters based on if we are in one_shot mode
             const uint32_t value = (
                 ((klib::log2(Div) / 2) & 0x7) | ((Mode == mode::one_shot) << 6) | ((Mode == mode::one_shot) << 7) | 
-                (0b10 << 13) | (0x1 << 15) | (static_cast<uint32_t>(tioa) << 16) | (static_cast<uint32_t>(tiob) << 18)
+                (0b10 << 13) | (0x1 << 15)
             );
 
             Timer::port->CH[Channel].CMR = value;
@@ -221,7 +222,7 @@ namespace klib::core::atsam4s::io {
             // init the base timer
             detail::timer::base_timer<
                 Timer, Channel, Match, detail::timer::mode::continuous, Div
-            >::init_impl(irq, frequency, detail::timer::edge::none, detail::timer::edge::none);
+            >::init_impl(irq, frequency);
         }
     };
 
@@ -231,7 +232,7 @@ namespace klib::core::atsam4s::io {
      * @tparam Timer 
      */
     template <typename Timer, uint32_t Channel, uint32_t Match = 2, uint32_t Div = 2>
-    class oneshot_timer: public detail::timer::base_timer<Timer, Channel, Match, detail::timer::mode::one_shot, Div> {
+    class oneshot_timer: public detail::timer::base_timer<Timer, Channel, 2, detail::timer::mode::one_shot, Div> {
     protected:
         // make sure the correct match register is used. For one shot we need to
         // turn off the channel. This can only be done when match register 2 is 
@@ -252,8 +253,163 @@ namespace klib::core::atsam4s::io {
             // init the base timer
             detail::timer::base_timer<
                 Timer, Channel, Match, detail::timer::mode::one_shot, Div
-            >::init_impl(irq, frequency, detail::timer::edge::none, detail::timer::edge::none);
+            >::init_impl(irq, frequency);
         }
+    };
+
+    /**
+     * @brief Pin that uses a timer to toggle the output.
+     * 
+     * @warning When disabling the timer the output of the gpio is not changed.
+     */
+    template <
+        typename Pin, typename Timer, uint32_t Frequency, 
+        uint8_t Bits, uint32_t Div = 2, 
+        typename PPin = std::tuple_element<klib::io::peripheral::get_index<Pin, typename Timer::tc_pins>(), typename Timer::tc_pins>::type
+    >
+    class pin_timer: public detail::timer::base_timer<Timer, PPin::channel, 2, detail::timer::mode::continuous, Div> {
+    protected:
+        // make sure we have a valid match register
+        static_assert(static_cast<uint32_t>(PPin::type) < 2, "Timer only has 2 match registers available for PWM mode");
+
+        // check if the amount of bits is valid
+        static_assert(Bits >= 1 && Bits <= 16, "Amount of bits must be >= 1 && <= 16");
+
+        // make sure the frequency is valid
+        static_assert(Frequency != 0, "Timer frequency cannot be 0");
+
+        // multiplier for the frequency
+        constexpr static uint32_t multiplier = (klib::exp2(Bits) - 1);
+
+        /**
+         * @brief Calculate the stepsize used in the set functions
+         * 
+         * @return uint32_t 
+         */
+        template <bool FloatingPoint = true>
+        static auto calculate_stepsize() {
+            // calculate the maximum compare value
+            const auto cmp = ((klib::io::clock::get() / Div) / Frequency) + 1;
+
+            if constexpr (FloatingPoint) {
+                // calculate the step size
+                return klib::max(static_cast<float>(cmp) / multiplier, 1.f);
+            }
+            else {
+                // calculate the step size
+                return klib::max(cmp / multiplier, 1);
+            }
+        }
+
+        static auto dutycycle_impl(const uint32_t value) {
+            // get a pointer to the first register
+            volatile uint32_t* reg = &(Timer::port->CH[PPin::channel].RA);
+
+            // check if we need to disable the output or 
+            // reenable it
+            if (!value) {
+                // disable the output to get a low level
+                set<false>();
+            }
+            else if (!reg[static_cast<uint32_t>(PPin::type)]) {
+                // reenable the pin when the pin was disabled
+                set<true>();
+            }
+
+            // set the correct match register
+            reg[static_cast<uint32_t>(PPin::type)] = value;
+        }
+
+    public:
+        static void init() {
+            // enable the power for the pio
+            target::io::power_control::enable<typename Pin::port>();
+
+            // init the base timer
+            detail::timer::base_timer<
+                Timer, PPin::channel, 2, detail::timer::mode::continuous, Div
+            >::init_impl(nullptr, Frequency);
+
+            // modify the channel CMR register to match the current pin
+            Timer::port->CH[PPin::channel].CMR |= (
+                // change to XC0 to allow TIOB as output. Note we do not have the
+                // external event enabled.
+                (0b01 << 10) |
+                // TIOA
+                (static_cast<uint32_t>(detail::timer::compare_effect::clear) << 16) |
+                (static_cast<uint32_t>(detail::timer::compare_effect::set) << 18) |
+                // TIOB
+                (static_cast<uint32_t>(detail::timer::compare_effect::clear) << 24) |
+                (static_cast<uint32_t>(detail::timer::compare_effect::set) << 26)
+            );
+        }
+
+        /**
+         * @brief Set the dutycycle of the Pwm pin
+         * 
+         * @tparam Dutycycle 
+         */
+        template <uint16_t Dutycycle>
+        static void dutycycle() {
+            // calculate the step size
+            const uint32_t value = calculate_stepsize() * (Dutycycle & multiplier);
+
+            // set the dutycycle
+            dutycycle_impl(value);
+        }
+
+        /**
+         * @brief Set the dutycycle of the timer pin
+         * 
+         * @param dutycycle
+         */
+        static void dutycycle(uint16_t dutycycle) {
+            // calculate the step size
+            const uint32_t value = calculate_stepsize() * (dutycycle & multiplier);
+
+            // set the dutycycle
+            dutycycle_impl(value);
+        }
+
+        /**
+         * @brief Enable or disable output.
+         * 
+         * @tparam Value 
+         */
+        template <bool Value>
+        static void set() {
+            // clear or set the pin to the peripheral
+            if constexpr (Value) {
+                io::detail::pins::set_peripheral<Pin, typename PPin::periph>();
+            }
+            else {
+                // change the mode to a output pin
+                pin_out<Pin>::init();
+
+                // set the pin to output a low
+                pin_out<Pin>::template set<false>();
+            }
+        }
+
+        /**
+         * @brief Enable or disable output.
+         * 
+         * @param value 
+         */
+        static void set(bool value) {
+            // clear or set the pin to the peripheral
+            if (value) {
+                io::detail::pins::set_peripheral<Pin, typename PPin::periph>();
+            }
+            else {
+                // change the mode to a output pin
+                pin_out<Pin>::init();
+
+                // set the pin to output a low
+                pin_out<Pin>::template set<false>();
+            }
+        }
+
     };
 }
 
