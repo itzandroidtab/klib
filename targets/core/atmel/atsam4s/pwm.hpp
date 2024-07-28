@@ -16,7 +16,7 @@
 namespace klib::core::atsam4s::io::detail::pwm {
     /**
      * @brief Available pwm clock sources
-     * 
+     *
      */
     enum class pwm_clock {
         clka = 0,
@@ -26,7 +26,7 @@ namespace klib::core::atsam4s::io::detail::pwm {
 
     /**
      * @brief Available prescalers for PWM
-     * 
+     *
      */
     enum class pwm_prescaler {
         mck = 0,
@@ -46,7 +46,7 @@ namespace klib::core::atsam4s::io::detail::pwm {
 
     /**
      * @brief Helper struct for calculating the pwm clock
-     * 
+     *
      */
     struct pwm_clock_data {
         // the main prescaler
@@ -58,13 +58,13 @@ namespace klib::core::atsam4s::io::detail::pwm {
 
     /**
      * @brief Check if the divider is a prescale divider
-     * 
-     * @param div 
-     * @return true 
-     * @return false 
+     *
+     * @param div
+     * @return true
+     * @return false
      */
     constexpr static bool is_prescale_divider(const uint32_t div) {
-        // check if we have a divider that matches a prescaler. If 
+        // check if we have a divider that matches a prescaler. If
         // we have a match we dont have to use a additional clock
         for (uint8_t i = 0; i < static_cast<uint32_t>(pwm_prescaler::clka); i++) {
             if (klib::exp2(i) == div) {
@@ -76,11 +76,11 @@ namespace klib::core::atsam4s::io::detail::pwm {
 
     /**
      * @brief Calculate the best divider for the Frequency with the amount of bits
-     * 
-     * @tparam Frequency 
-     * @tparam Bits 
-     * @tparam MckOnly 
-     * @return pwm_clock_data 
+     *
+     * @tparam Frequency
+     * @tparam Bits
+     * @tparam MckOnly
+     * @return pwm_clock_data
      */
     template <uint32_t Frequency, uint8_t Bits, bool MckOnly>
     static pwm_clock_data calculate_divider() {
@@ -104,7 +104,7 @@ namespace klib::core::atsam4s::io::detail::pwm {
 
             // check if we only want to use the Mck
             if constexpr (MckOnly) {
-                // we only want the Mck. Wait until we have 
+                // we only want the Mck. Wait until we have
                 if (div > 1) {
                     continue;
                 }
@@ -125,15 +125,15 @@ namespace klib::core::atsam4s::io::detail::pwm {
             break;
         }
 
-        // check if the divider is a multiplier. In this case 
+        // check if the divider is a multiplier. In this case
         // we dont need a additional clock
         if (is_prescale_divider(divider)) {
             // calculate the divider
             const uint32_t div = klib::log2(divider);
 
-            // check if we are in range with the divider. If we 
-            // are out of range we still need to use a additional 
-            // clock 
+            // check if we are in range with the divider. If we
+            // are out of range we still need to use a additional
+            // clock
             if (div + static_cast<uint32_t>(prescaler) <= static_cast<uint32_t>(pwm_prescaler::clka)) {
                 // we are in range. Return the new prescaler
                 return {
@@ -150,12 +150,12 @@ namespace klib::core::atsam4s::io::detail::pwm {
 namespace klib::core::atsam4s::io {
     /**
      * @brief Pin that uses a pwm to toggle the output.
-     * 
+     *
      * @warning When disabling the pwm the output of the gpio is not changed.
      */
     template <
-        typename Pin, typename Pwm, uint32_t Frequency, 
-        uint8_t Bits = 12, detail::pwm::pwm_clock UseClock = detail::pwm::pwm_clock::mck,
+        typename Pin, typename Pwm, uint32_t Frequency, uint8_t Bits = 12, 
+        detail::pwm::pwm_clock UseClock = detail::pwm::pwm_clock::mck,
         typename PPin = std::tuple_element<klib::io::peripheral::get_index<Pin, typename Pwm::pwm_pins>(), typename Pwm::pwm_pins>::type
     >
     class pwm {
@@ -206,7 +206,7 @@ namespace klib::core::atsam4s::io {
                     // get the index to the additional clock
                     const uint8_t index = static_cast<uint8_t>(UseClock);
 
-                    // configure the clock with the provided value (clear previous value 
+                    // configure the clock with the provided value (clear previous value
                     // and set the new value)
                     Pwm::port->CLK = (
                         (clk & (~(0xffff << (16 * index)))) | 
@@ -218,7 +218,7 @@ namespace klib::core::atsam4s::io {
                         static_cast<uint32_t>(detail::pwm::pwm_prescaler::clka) + 
                         static_cast<uint32_t>(UseClock)
                     );
-                }                
+                }
             }
 
             // set the sync mode
@@ -230,7 +230,7 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Disable the pwm
-         * 
+         *
          * @warning disables the whole channel
          */
         static void disable() {
@@ -240,7 +240,7 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Enable the pwm
-         * 
+         *
          * @warning enables the whole channel
          */
         static void enable() {
@@ -250,12 +250,12 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Set the dutycycle of the Pwm pin
-         * 
-         * @tparam Dutycycle 
+         *
+         * @tparam Dutycycle
          */
         template <uint16_t Dutycycle>
         static void dutycycle() {
-            // check if we need to disable the output or 
+            // check if we need to disable the output or
             // reenable it
             if constexpr (!Dutycycle) {
                 // disable the output to get a low level
@@ -273,11 +273,11 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Set the dutycycle of the pwm pin
-         * 
+         *
          * @param dutycycle
          */
         static void dutycycle(uint16_t dutycycle) {
-            // check if we need to disable the output or 
+            // check if we need to disable the output or
             // reenable it
             if (!dutycycle) {
                 // disable the output to get a low level
@@ -295,8 +295,8 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Enable or disable output.
-         * 
-         * @tparam Value 
+         *
+         * @tparam Value
          */
         template <bool Value>
         static void set() {
@@ -315,8 +315,8 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Enable or disable output.
-         * 
-         * @param value 
+         *
+         * @param value
          */
         static void set(bool value) {
             // clear or set the pin to the peripheral
@@ -331,7 +331,6 @@ namespace klib::core::atsam4s::io {
                 pin_out<Pin>::template set<false>();
             }
         }
-
     };
 }
 
