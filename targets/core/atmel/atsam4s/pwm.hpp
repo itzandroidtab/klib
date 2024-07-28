@@ -63,7 +63,7 @@ namespace klib::core::atsam4s::io::detail::pwm {
      * @return true 
      * @return false 
      */
-    constexpr static bool is_prescale_divider(uint32_t div) {
+    constexpr static bool is_prescale_divider(const uint32_t div) {
         // check if we have a divider that matches a prescaler. If 
         // we have a match we dont have to use a additional clock
         for (uint8_t i = 0; i < static_cast<uint32_t>(pwm_prescaler::clka); i++) {
@@ -100,7 +100,7 @@ namespace klib::core::atsam4s::io::detail::pwm {
         // calculate the best clock divider
         for (uint8_t i = 0; i < static_cast<uint32_t>(pwm_prescaler::clka); i++) {
             // calculate the divider with the current prescale
-            uint32_t div = ((clock / Frequency) / klib::exp2(i));
+            const uint32_t div = ((clock / Frequency) / klib::exp2(i));
 
             // check if we only want to use the Mck
             if constexpr (MckOnly) {
@@ -125,10 +125,21 @@ namespace klib::core::atsam4s::io::detail::pwm {
             break;
         }
 
-        // check if the divider is a multiplier
+        // check if the divider is a multiplier. In this case 
+        // we dont need a additional clock
         if (is_prescale_divider(divider)) {
-            // return the divider as the prescale
-            return {static_cast<pwm_prescaler>(klib::log2(divider)), 0x00};
+            // calculate the divider
+            const uint32_t div = klib::log2(divider);
+
+            // check if we are in range with the divider. If we 
+            // are out of range we still need to use a additional 
+            // clock 
+            if (div + static_cast<uint32_t>(prescaler) <= static_cast<uint32_t>(pwm_prescaler::clka)) {
+                // we are in range. Return the new prescaler
+                return {
+                    static_cast<pwm_prescaler>(static_cast<uint32_t>(prescaler) + div), 0
+                };
+            }
         }
 
         // return the prescaler + divider
@@ -182,7 +193,7 @@ namespace klib::core::atsam4s::io {
                 Pwm::port->CH[PPin::channel].CMR = static_cast<uint32_t>(clock.prescaler);
             }
             else {
-                // check if we realy need to use a special clock
+                // check if we realy need to use a additional clock
                 if (clock.divider <= 1) {
                     // no we dont. Use the prescale only
                     Pwm::port->CH[PPin::channel].CMR = static_cast<uint32_t>(clock.prescaler);
