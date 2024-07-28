@@ -268,6 +268,10 @@ namespace klib::core::atsam4s::io {
         typename PPin = std::tuple_element<klib::io::peripheral::get_index<Pin, typename Timer::tc_pins>(), typename Timer::tc_pins>::type
     >
     class pin_timer: public detail::timer::base_timer<Timer, PPin::channel, 2, detail::timer::mode::continuous, Div> {
+    public:
+        // export the frequency
+        constexpr static uint32_t frequency = Frequency;
+
     protected:
         // make sure we have a valid match register
         static_assert(static_cast<uint32_t>(PPin::type) < 2, "Timer only has 2 match registers available for PWM mode");

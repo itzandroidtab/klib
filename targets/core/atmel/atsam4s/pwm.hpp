@@ -148,6 +148,10 @@ namespace klib::core::atsam4s::io {
         typename PPin = std::tuple_element<klib::io::peripheral::get_index<Pin, typename Pwm::pwm_pins>(), typename Pwm::pwm_pins>::type
     >
     class pwm {
+    public:
+        // export the frequency
+        constexpr static uint32_t frequency = Frequency;
+
     protected:
         // make sure we have a valid match register
         static_assert(static_cast<uint32_t>(PPin::channel) < Pwm::max_pwm_channels, "Pwm only has 4 channels");
