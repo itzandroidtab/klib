@@ -31,11 +31,12 @@ else()
 endif()
 
 # add the library
-add_library (klib OBJECT
+add_library(klib OBJECT
     ${SOURCES}
     ${HEADERS_PUBLIC}
     ${HEADERS_PRIVATE}
 )
+set_target_properties(klib PROPERTIES FOLDER "klib")
 
 # alias projectname::klib to klib
 add_library(${PROJECT_NAME}::klib ALIAS klib)

@@ -1,6 +1,9 @@
 # set minimum version of CMake.
 cmake_minimum_required(VERSION 3.22)
 
+# enable the folder property for the whole project
+set_property(GLOBAL PROPERTY USE_FOLDERS TRUE)
+
 # The Generic system name is used for embedded targets (targets without OS) in
 # CMake
 set(CMAKE_SYSTEM_NAME Generic)

@@ -2,7 +2,8 @@
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
 # set the lpc802 cpu options as a seperate target so the driver layer can link agains klib
-add_library (target_cpu_options INTERFACE)
+add_library(target_cpu_options INTERFACE)
+set_target_properties(target_cpu_options PROPERTIES FOLDER "klib")
 
 # alias projectname::target_cpu_options to target_cpu_options
 add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
@@ -44,13 +45,14 @@ set(HEADERS_PUBLIC
 )
 
 # add the target_cpu library
-add_library (target_cpu OBJECT 
+add_library(target_cpu OBJECT 
     ${SOURCES}
     ${HEADERS_PUBLIC}
     ${HEADERS_PRIVATE}
 )
+set_target_properties(target_cpu PROPERTIES FOLDER "klib")
 
-# alias projectname::target to klib
+# alias projectname::target_cpu to target_cpu
 add_library(${PROJECT_NAME}::target_cpu ALIAS target_cpu)
 
 # enable C++20 support for the library
