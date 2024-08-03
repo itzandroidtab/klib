@@ -1,6 +1,7 @@
 #ifndef KLIB_RINGBUFFER_HPP
 #define KLIB_RINGBUFFER_HPP
 
+#include <cstdlib>
 #include <cstdint>
 #include <utility>
 
