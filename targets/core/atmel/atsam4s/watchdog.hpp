@@ -42,8 +42,8 @@ namespace klib::core::atsam4s::io {
         static void init() {
             // setup the parameters of the watchdog
             Wdt::port->MR = (
-                (Period & 0xffff) | (Irq << 12) | (WdtRst << 13) | (RstCPU << 14) | 
-                ((Period & 0xffff) << 16) | (0x1 << 28) | (IdleHalt << 29)
+                (Period & 0xfff) | (Irq << 12) | (WdtRst << 13) | (RstCPU << 14) | 
+                ((Period & 0xfff) << 16) | (0x1 << 28) | (IdleHalt << 29)
             );
         }
     };
