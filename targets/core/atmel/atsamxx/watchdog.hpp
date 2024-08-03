@@ -1,11 +1,11 @@
-#ifndef KLIB_ATSAM4S_WATCHDOG_HPP
-#define KLIB_ATSAM4S_WATCHDOG_HPP
+#ifndef KLIB_ATSAMXX_WATCHDOG_HPP
+#define KLIB_ATSAMXX_WATCHDOG_HPP
 
 #include <cstdint>
 
 #include <klib/klib.hpp>
 
-namespace klib::core::atsam4s::io {
+namespace klib::core::atsamxx::io {
     template <typename Wdt>
     class watchdog {
     public:

@@ -1,13 +1,13 @@
-#ifndef KLIB_ATSAM4S2B_WATCHDOG_HPP
-#define KLIB_ATSAM4S2B_WATCHDOG_HPP
+#ifndef KLIB_ATSAM3X8E_WATCHDOG_HPP
+#define KLIB_ATSAM3X8E_WATCHDOG_HPP
 
 #include <cstdint>
 
-#include <atsam4s2b.hpp>
+#include <atsam3x8e.hpp>
 
 #include <targets/core/atmel/atsamxx/watchdog.hpp>
 
-namespace klib::atsam4s2b::io::periph {
+namespace klib::atsam3x8e::io::periph {
     struct wdt0 {
         // peripheral id (e.g wdt0, wdt1)
         constexpr static uint32_t id = 0;
@@ -20,7 +20,7 @@ namespace klib::atsam4s2b::io::periph {
     };
 }
 
-namespace klib::atsam4s2b::io {
+namespace klib::atsam3x8e::io {
     template <typename Wdt>
     using watchdog = core::atsamxx::io::watchdog<Wdt>;
 }
