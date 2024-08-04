@@ -8,8 +8,8 @@
 namespace klib::graphics {
     /**
      * @brief 3 channel color struct
-     * 
-     * @tparam T 
+     *
+     * @tparam T
      */
     struct color {
         // red color
@@ -31,7 +31,7 @@ namespace klib::graphics {
 
     [[maybe_unused]]
     constexpr color black = {0x00, 0x00, 0x00, false};
-    
+
     [[maybe_unused]]
     constexpr color grey = {0xa0, 0xa0, 0xa0, false};
 
@@ -54,7 +54,7 @@ namespace klib::graphics {
 namespace klib::graphics {
     /**
      * @brief Different display modes. Not all modes are supported for all displays
-     * 
+     *
      */
     enum class mode {
         mono,
@@ -141,7 +141,7 @@ namespace klib::graphics::detail {
         // amount of bits used in type
         constexpr static uint32_t bits = 16;
     };
-    
+
     // specialization for rgb666
     template <>
     struct pixel_conversion<mode::rgb666> {
@@ -161,18 +161,18 @@ namespace klib::graphics::detail {
     };
 
     /**
-     * @brief Generic Conversion from a klib color to a display mode. Transparant 
+     * @brief Generic Conversion from a klib color to a display mode. Transparant
      * pixels are not handled in this conversion
-     * 
-     * @tparam Mode 
-     * @param col 
+     *
+     * @tparam Mode
+     * @param col
      * @return pixel_conversion<Mode>::type
      */
     template <mode Mode>
     constexpr pixel_conversion<Mode>::type color_to_raw(const klib::graphics::color &col) {
         // convert from klib color to the raw pixel format
         if constexpr (Mode == mode::mono) {
-            return col.red || col.green || col.blue; 
+            return col.red || col.green || col.blue;
         }
         else if constexpr (Mode == mode::rgb222) {
             return ((col.red >> 6) << 4) | ((col.green >> 6) << 2) | (col.blue >> 6);
@@ -282,7 +282,7 @@ namespace klib::graphics::detail {
     constexpr pixel_conversion<Output>::type raw_to_raw(const typename pixel_conversion<Input>::type raw) {
         // convert from klib color to the raw pixel format
         if constexpr (Input == mode::mono) {
-            // convert the input to either white or black. Let the compiler convert 
+            // convert the input to either white or black. Let the compiler convert
             // it to the correct type
             return (raw ? static_cast<pixel_conversion<Input>::type>(
                 0xffffff & (klib::exp2(pixel_conversion<Input>::bits) - 1)) : 0x0);

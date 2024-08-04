@@ -5,9 +5,9 @@
 
 namespace klib {
     /**
-     * @brief Enum for specifying if the queue should use read 
-     * or write optimisation 
-     * 
+     * @brief Enum for specifying if the queue should use read
+     * or write optimisation
+     *
      */
     enum class queue_optimization {
         read,
@@ -37,7 +37,7 @@ namespace klib {
         void push(const T &item) {
             if constexpr (Optimization == queue_optimization::write) {
                 buffer[index] = item;
-            } 
+            }
             else {
                 for (uint32_t i = index; i != 0; i--) {
                     buffer[i] = buffer[i - 1];
@@ -80,7 +80,7 @@ namespace klib {
         T &front() {
             if constexpr (Optimization == queue_optimization::write) {
                 return buffer[0];
-            } 
+            }
             else {
                 return buffer[index - 1];
             }
@@ -92,7 +92,7 @@ namespace klib {
         T const &front() const {
             if constexpr (Optimization == queue_optimization::write) {
                 return buffer[0];
-            } 
+            }
             else {
                 return buffer[index - 1];
             }
@@ -104,7 +104,7 @@ namespace klib {
         T &back() {
             if constexpr (Optimization == queue_optimization::write) {
                 return buffer[index - 1];
-            } 
+            }
             else {
                 return buffer[0];
             }
@@ -116,7 +116,7 @@ namespace klib {
         T const &back() const {
             if constexpr (Optimization == queue_optimization::write) {
                 return buffer[index - 1];
-            } 
+            }
             else {
                 return buffer[0];
             }
@@ -150,11 +150,11 @@ namespace klib {
         }
 
         /**
-         * Clears the queue  
+         * Clears the queue
          *
-         * @brief Clears the queue 
+         * @brief Clears the queue
          * @details Clears the queue by setting the index to zero
-         * @return 
+         * @return
          */
         void clear() {
             index = 0;
@@ -172,8 +172,8 @@ namespace klib {
         /**
          * Is this queue write optimized or
          * read optimized?
-         * 
-         * @return constexpr queue_optimization 
+         *
+         * @return constexpr queue_optimization
          */
         constexpr queue_optimization optimized_for() const {
             return Optimization;

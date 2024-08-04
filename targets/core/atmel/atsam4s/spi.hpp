@@ -13,7 +13,7 @@
 
 namespace klib::core::atsam4s::io::detail::spi {
     // we define the modes here. This is so we can
-    // use the chip select start as a index 
+    // use the chip select start as a index
     enum class mode {
         miso = 0,
         mosi = 1,
@@ -27,12 +27,12 @@ namespace klib::core::atsam4s::io {
     class spi {
     protected:
         /**
-         * @brief Convert the bits per transmission to the format 
-         * the hardware expects. This changes 8 -> 0 and 9 -> 1 
+         * @brief Convert the bits per transmission to the format
+         * the hardware expects. This changes 8 -> 0 and 9 -> 1
          * etc
-         * 
-         * @tparam Bits 
-         * @return constexpr uint8_t 
+         *
+         * @tparam Bits
+         * @return constexpr uint8_t
          */
         template <klib::io::spi::bits Bits>
         constexpr static uint8_t convert_bits() {
@@ -48,13 +48,13 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Get the chipselect for the current chip select
-         * 
-         * @return constexpr uint32_t 
+         *
+         * @return constexpr uint32_t
          */
-        constexpr static uint32_t get_chipselect_id() {   
+        constexpr static uint32_t get_chipselect_id() {
             // make sure we have a valid configuration for the chip select
             static_assert(
-                (static_cast<uint8_t>(Spi::cs0::type) >= static_cast<uint8_t>(detail::spi::mode::cs_start)), 
+                (static_cast<uint8_t>(Spi::cs0::type) >= static_cast<uint8_t>(detail::spi::mode::cs_start)),
                 "invalid chip select configuration"
             );
 
@@ -64,12 +64,12 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Helper function that writes and reads from the spi bus
-         * 
+         *
          * @tparam Read
-         * @tparam T 
-         * @tparam G 
-         * @param tx 
-         * @param rx 
+         * @tparam T
+         * @tparam G
+         * @param tx
+         * @param rx
          */
         template <bool Read, typename T, typename G>
         static void write_read_helper(const T& tx, const G& rx) {
@@ -86,11 +86,11 @@ namespace klib::core::atsam4s::io {
                 // write real or dummy data, set the chip select
                 // and the flag if it is the last transfer
                 const uint32_t value = (
-                    (((!tx.empty()) || (i < tx.size())) ? tx[i] : 0x00) | 
+                    (((!tx.empty()) || (i < tx.size())) ? tx[i] : 0x00) |
                     (((i + 1) == size) << 24) | cs
                 );
 
-                // wait until we can write 
+                // wait until we can write
                 while (!(Spi::port->SR & (0x1 << 9))) {
                     // do nothing
                 }
@@ -157,7 +157,7 @@ namespace klib::core::atsam4s::io {
 
             // get the divider for the current frequency. Minimum is 1 and max is 0xff
             const auto bit_rate = klib::max(
-                0x1, klib::min(0xff, 
+                0x1, klib::min(0xff,
                     static_cast<uint32_t>(
                         klib::io::clock::get() / static_cast<uint32_t>(Frequency)
                     )
@@ -166,7 +166,7 @@ namespace klib::core::atsam4s::io {
 
             // set the configuration for the correct chip select
             Spi::port->CSR[get_chipselect_id()] = (
-                (klib::io::spi::get_cpol<Mode>()) | 
+                (klib::io::spi::get_cpol<Mode>()) |
                 ((!klib::io::spi::get_cpha<Mode>()) << 1) |
                 (0x1 << 3) | (convert_bits<Bits>() << 4) |
                 (bit_rate << 8)
@@ -178,9 +178,9 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper<true>(tx, rx);
@@ -188,9 +188,9 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper<true>(tx, rx);
@@ -198,9 +198,9 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper<true>(tx, rx);
@@ -208,9 +208,9 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper<true>(tx, rx);
@@ -218,8 +218,8 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Write to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         static void write(const std::span<const uint8_t>& data) {
             return write_read_helper<false>(data, std::span<uint8_t>{});
@@ -227,8 +227,8 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Write data to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         static void write(const multispan<const uint8_t>& data) {
             return write_read_helper<false>(data, std::span<uint8_t>{});

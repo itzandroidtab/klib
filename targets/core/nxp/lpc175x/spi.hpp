@@ -38,9 +38,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Returns if the transaction is done
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_done() {
             return (Spi::port->SR & (0x1 << 7));
@@ -48,11 +48,11 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Helper function that writes and reads from the spi bus
-         * 
-         * @tparam T 
-         * @tparam G 
-         * @param tx 
-         * @param rx 
+         *
+         * @tparam T
+         * @tparam G
+         * @param tx
+         * @param rx
          */
         template <typename T, typename G>
         static void write_read_helper(const T& tx, const G& rx) {
@@ -88,9 +88,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Helper that writes data to the spi port
-         * 
-         * @tparam T 
-         * @param data 
+         *
+         * @tparam T
+         * @param data
          */
         template <typename T>
         static void write_helper(const T& data) {
@@ -129,7 +129,7 @@ namespace klib::core::lpc175x::io {
                 io::detail::pins::set_peripheral<typename Spi::cs0::pin, typename Spi::cs0::periph>();
             }
 
-            // set the frequency (minimum should be 8. After testing it 
+            // set the frequency (minimum should be 8. After testing it
             // looks like 2 is also working. Value below 8 might not
             // work as the datasheet implies). The last bit does not stick.
             // (e.g 5 -> 4)
@@ -137,12 +137,12 @@ namespace klib::core::lpc175x::io {
                 klib::io::clock::get() / static_cast<uint32_t>(Frequency)
             );
 
-            // set the control register. Set the amount of bits per transfer, set 
+            // set the control register. Set the amount of bits per transfer, set
             // the cpha and cpol and enable master mode
             Spi::port->CR = (
                 (0x1 << 1) | (convert_bits<Bits>() << 8) |
                 (klib::io::spi::get_cpha<Mode>() << 3) |
-                (klib::io::spi::get_cpol<Mode>() << 4) | 
+                (klib::io::spi::get_cpol<Mode>() << 4) |
                 (0x1 << 5)
             );
 
@@ -152,9 +152,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -162,9 +162,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -172,9 +172,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -182,9 +182,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -192,8 +192,8 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Write to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         static void write(const std::span<const uint8_t>& data) {
             return write_helper(data);
@@ -201,8 +201,8 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Write data to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         static void write(const multispan<const uint8_t>& data) {
             return write_helper(data);

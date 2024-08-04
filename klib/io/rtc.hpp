@@ -18,12 +18,12 @@ namespace klib::io::rtc {
 
     /**
      * @brief Date time structure
-     * 
+     *
      */
     struct datetime {
         // year, minimum is 1970 (as that is the epoch time)
         uint16_t year;
-        
+
         // month, range 1 - 12
         uint8_t month;
 
@@ -45,17 +45,17 @@ namespace klib::io::rtc {
 
     /**
      * @brief Convert seperate date fields to the epoch time
-     * 
+     *
      * @param year 1970 - 4095
      * @param month 1 - 12
      * @param day 1 - (28, 29, 30, 31)
      * @param hours 0 - 23
      * @param minutes 0 - 59
      * @param seconds 0 - 59
-     * @return klib::time::s 
+     * @return klib::time::s
      */
-    constexpr static klib::time::s datetime_to_epoch(const uint16_t year, const uint8_t month, const uint8_t day, 
-        const uint8_t hours, const uint8_t minutes, const uint8_t seconds) 
+    constexpr static klib::time::s datetime_to_epoch(const uint16_t year, const uint8_t month, const uint8_t day,
+        const uint8_t hours, const uint8_t minutes, const uint8_t seconds)
     {
         // get the amount of years that have passed
         const uint32_t passed = (klib::max(year, 1970) - 1970);
@@ -65,9 +65,9 @@ namespace klib::io::rtc {
 
         // add the amount of leap days in those years. We remove
         // the current year from the offset we are adding. Year
-        // 1972 is the first leap year. (this is a very simple 
+        // 1972 is the first leap year. (this is a very simple
         // conversion that only works between years 1901 - 2099)
-        days += (passed + ((1970 & 0b11) - 1)) / 4;     
+        days += (passed + ((1970 & 0b11) - 1)) / 4;
 
         // add the amount of days till the current month
         for (uint8_t m = 0; m < (month - 1); m++) {
@@ -75,7 +75,7 @@ namespace klib::io::rtc {
             days += month_days[m];
         }
 
-        // check if the current year is a leap year and we are in/passed 
+        // check if the current year is a leap year and we are in/passed
         // february (feb = 1, we used the same leap year check as above)
         if (((year & 0b11) == 0) && (month > 2)) {
             // add a day for a leap year
@@ -91,9 +91,9 @@ namespace klib::io::rtc {
 
     /**
      * @brief Converts a epoch time to a datetime
-     * 
-     * @param time 
-     * @return datetime 
+     *
+     * @param time
+     * @return datetime
      */
     constexpr static datetime epoch_to_datetime(const klib::time::s time) {
         datetime ret = {};
@@ -101,7 +101,7 @@ namespace klib::io::rtc {
         // get the amount of days in the epoch time
         uint32_t days = (time.value / (24 * 60 * 60));
 
-        // calculate the amount of years that always fit in the 
+        // calculate the amount of years that always fit in the
         // amount of days we got.
         const uint32_t calculated_years = days / (klib::io::rtc::days_year + 1);
 
@@ -138,11 +138,11 @@ namespace klib::io::rtc {
 
         // get the amount of months
         for (uint32_t i = 0; i < (sizeof(klib::io::rtc::month_days) / sizeof(klib::io::rtc::month_days[0])); i++) {
-            // check if the current year is a leap year and we are checking 
+            // check if the current year is a leap year and we are checking
             // february (feb = 1, we used the same leap year check as above)
             const bool leap_month = ((years & 0b11) == 0 && (i == 1));
 
-            // check if we have more days than the 
+            // check if we have more days than the
             // current month has
             if (days < (klib::io::rtc::month_days[i] + leap_month)) {
                 break;

@@ -8,9 +8,9 @@
 
 namespace klib::lpc802::io::periph {
     /**
-     * @brief Struct stores information about the usart0 
+     * @brief Struct stores information about the usart0
      * hardware.
-     * 
+     *
      */
     struct usart0 {
         // peripheral id (e.g usart0, usart1)
@@ -36,7 +36,7 @@ namespace klib::lpc802::io::periph {
     /**
      * @brief Struct stores information about the usart1
      * hardware.
-     * 
+     *
      */
     struct usart1 {
         // peripheral id (e.g usart0, usart1)
@@ -55,7 +55,7 @@ namespace klib::lpc802::io::periph {
         constexpr static auto tx = matrix<periph::matrix0>::flex_matrix::uart1_tx;
         constexpr static auto rx = matrix<periph::matrix0>::flex_matrix::uart1_rx;
         constexpr static auto sclk = matrix<periph::matrix0>::flex_matrix::uart1_sclk;
-    };    
+    };
 }
 
 namespace klib::lpc802::io {
@@ -72,7 +72,7 @@ namespace klib::lpc802::io {
 
     public:
         template <
-            typename Txd, typename Rxd, 
+            typename Txd, typename Rxd,
             uint32_t Baudrate = 115'200
         >
         constexpr static void init(const interrupt_callback& transmit = nullptr, const interrupt_callback& receive = nullptr) {
@@ -110,7 +110,7 @@ namespace klib::lpc802::io {
             // set the baud rate
             Usart::port->BRG = ((klib::io::clock::get() >> 4) / Baudrate) - 1;
 
-            // register the interrupt handler when we have a 
+            // register the interrupt handler when we have a
             // callback registered
             if (receive != nullptr || transmit != nullptr) {
                 // register the interrupt for the current peripheral
@@ -120,20 +120,20 @@ namespace klib::lpc802::io {
                 enable_irq<Usart::interrupt_id>();
             }
 
-            // enable the interrupt bits for receiving data and 
+            // enable the interrupt bits for receiving data and
             // when the transmit buffer is empty based on the
             // interrupt callbacks
             Usart::port->INTENSET = (
-                ((receive != nullptr) ? 0x1 : 0x0) | 
+                ((receive != nullptr) ? 0x1 : 0x0) |
                 ((transmit != nullptr) ? (0x1 << 2) : 0x0)
             );
         }
 
         /**
          * @brief Returns if we have data available.
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool has_data() {
             // check both RBS bits in the status register
@@ -141,12 +141,12 @@ namespace klib::lpc802::io {
         }
 
         /**
-         * @brief Function that returns if the transmitting side is 
-         * busy. If this function returns false it means we will 
+         * @brief Function that returns if the transmitting side is
+         * busy. If this function returns false it means we will
          * overwrite anything that is currently being transmitted
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_busy() {
             // return if the transmitter idle status is set
@@ -154,10 +154,10 @@ namespace klib::lpc802::io {
         }
 
         /**
-         * @brief Write a frame to the bus. If no data can be written 
+         * @brief Write a frame to the bus. If no data can be written
          * the previous data might be lost
-         * 
-         * @param frame 
+         *
+         * @param frame
          */
         template <bool Async = false>
         static void write(const uint16_t data) {
@@ -179,7 +179,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Read the data that is in the rx register
-         * 
+         *
          * @return uint16_t
          */
         static uint16_t read() {
@@ -194,8 +194,8 @@ namespace klib::lpc802::io {
     public:
         /**
          * @brief Interrupt handler. Should not be called by the user
-         * 
-         */    
+         *
+         */
         static void irq_handler() {
             // get the status register
             const uint32_t status = Usart::port->STAT;
@@ -207,7 +207,7 @@ namespace klib::lpc802::io {
             const uint32_t masked_status = status & mask;
 
             // clear the register
-            Usart::port->INTENCLR = masked_status;   
+            Usart::port->INTENCLR = masked_status;
 
             // check if we have received data
             if (masked_status & 0x1 && receive_callback != nullptr) {
@@ -219,7 +219,7 @@ namespace klib::lpc802::io {
             if (masked_status & (0x1 << 2) && transmit_callback != nullptr) {
                 // we can transmit more data. Call the callback
                 transmit_callback();
-            }         
+            }
         }
     };
 }

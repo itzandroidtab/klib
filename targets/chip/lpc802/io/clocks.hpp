@@ -8,10 +8,10 @@ namespace klib::lpc802 {
     public:
         /**
          * @brief Enable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P> 
+        template <typename P>
         static void enable() {
             // set the bit to enable the clock on the peripheral
             SYSCON->SYSAHBCLKCTRL0 |= (1 << P::clock_id);
@@ -31,10 +31,10 @@ namespace klib::lpc802 {
 
         /**
          * @brief Disable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P> 
+        template <typename P>
         static void disable() {
             // clear the bit to Disable the clock on the peripheral
             SYSCON->SYSAHBCLKCTRL0 &= ~(1 << P::clock_id);
@@ -53,13 +53,13 @@ namespace klib::lpc802 {
         }
 
         /**
-         * @brief Get the clock status of a peripheral 
-         * 
-         * @tparam P 
-         * @return true 
-         * @return false 
+         * @brief Get the clock status of a peripheral
+         *
+         * @tparam P
+         * @return true
+         * @return false
          */
-        template <typename P> 
+        template <typename P>
         static bool status() {
             // return the value of the clock id in the register (1 = enabled, 0 = disabled)
             return (SYSCON->SYSAHBCLKCTRL0 & (1 << P::clock_id));

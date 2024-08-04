@@ -9,26 +9,26 @@
 
 namespace klib::graphics {
     /**
-     * @brief Direct framebuffer. Implements framebuffer without buffer 
+     * @brief Direct framebuffer. Implements framebuffer without buffer
      * and directly writes to the display.
-     * 
-     * Autoincrement causes a cursor to update to the next pixel. This removes 
-     * the need to update the cursor for every pixel update. Should be disabled 
+     *
+     * Autoincrement causes a cursor to update to the next pixel. This removes
+     * the need to update the cursor for every pixel update. Should be disabled
      * when the display does not support it.
-     * 
+     *
      * Autoincrement direction should be in the x axis to the positive direction
-     * 
-     * @tparam Display 
+     *
+     * @tparam Display
      * @tparam AutoIncrement
-     * @tparam StartX 
-     * @tparam StartY 
-     * @tparam EndX 
-     * @tparam EndY 
+     * @tparam StartX
+     * @tparam StartY
+     * @tparam EndX
+     * @tparam EndY
      */
     template <
-        typename Display, bool AutoIncrement = true, 
-        uint32_t StartX = 0, uint32_t StartY = 0, 
-        uint32_t EndX = Display::width, 
+        typename Display, bool AutoIncrement = true,
+        uint32_t StartX = 0, uint32_t StartY = 0,
+        uint32_t EndX = Display::width,
         uint32_t EndY = Display::height,
         std::endian Endian = std::endian::native
     >
@@ -43,7 +43,7 @@ namespace klib::graphics {
     protected:
         // cache for the where the cursor is located
         klib::vector2u cursor;
-    
+
         // make sure the input is valid
         static_assert(EndX <= Display::width, "Framebuffer EndX cannot be bigger than the display width");
         static_assert(EndY <= Display::height, "Framebuffer EndY cannot be bigger than the display height");
@@ -78,7 +78,7 @@ namespace klib::graphics {
         constexpr void set_pixel(const klib::vector2u &position, const color_type raw) {
             // limit the input to the display size
             const auto pos = klib::vector2u(
-                StartX + klib::min(position.x, width - 1), 
+                StartX + klib::min(position.x, width - 1),
                 StartY + klib::min(position.y, height - 1)
             );
 
@@ -118,19 +118,19 @@ namespace klib::graphics {
                 // place to store the stream data
                 color_type native = 0;
 
-                // convert the data to a stream we can send. See 
+                // convert the data to a stream we can send. See
                 // framebuffer::set_pixel for more information about
                 // the conversion from raw to native mode
                 if constexpr (
-                    (color_mode::bits / 8 == sizeof(uint8_t)) && 
-                    ((color_mode::bits % 8) == 0)) 
+                    (color_mode::bits / 8 == sizeof(uint8_t)) &&
+                    ((color_mode::bits % 8) == 0))
                 {
                     // nothing to do for 1 byte color modes
                     native = raw;
                 }
                 else if constexpr (
                     ((color_mode::bits % 8) == 0) && (
-                    color_mode::bits / 8 == sizeof(uint16_t) || 
+                    color_mode::bits / 8 == sizeof(uint16_t) ||
                     color_mode::bits / 8 == sizeof(uint32_t) ||
                     color_mode::bits / 8 == sizeof(uint64_t)))
                 {
@@ -145,7 +145,7 @@ namespace klib::graphics {
                         native |= (
                             ((raw >> (((bytes - 1) * 8) - (i * 8))) & 0xff) << (i * 8)
                         );
-                    }   
+                    }
                 }
 
                 // write the raw data to the screen
@@ -177,7 +177,7 @@ namespace klib::graphics {
             if (col.transparant) {
                 return;
             }
-            
+
             // convert using the display conversion function
             const auto raw = graphics::detail::color_to_raw<mode>(col);
 
@@ -210,26 +210,26 @@ namespace klib::graphics {
     };
 
     /**
-     * @brief Framebuffer. Buffers data before it is flushed to the display. 
-     * Converts the the color mode from the framebuffer to the display color 
-     * mode. The speed is decreased when using a different color mode than 
+     * @brief Framebuffer. Buffers data before it is flushed to the display.
+     * Converts the the color mode from the framebuffer to the display color
+     * mode. The speed is decreased when using a different color mode than
      * the display color mode.
-     * 
-     * @details Makes use of the feature to automaticly increment the cursor 
-     * of the display after pixel data is written. This allows the spi bus to 
+     *
+     * @details Makes use of the feature to automaticly increment the cursor
+     * of the display after pixel data is written. This allows the spi bus to
      * only transmit pixel data without other data in between.
-     * 
-     * @tparam Display 
-     * @tparam Mode 
-     * @tparam StartX 
-     * @tparam StartY 
-     * @tparam EndX 
-     * @tparam EndY 
+     *
+     * @tparam Display
+     * @tparam Mode
+     * @tparam StartX
+     * @tparam StartY
+     * @tparam EndX
+     * @tparam EndY
      */
     template <
         typename Display, graphics::mode Mode,
-        uint32_t StartX = 0, uint32_t StartY = 0, 
-        uint32_t EndX = Display::width, 
+        uint32_t StartX = 0, uint32_t StartY = 0,
+        uint32_t EndX = Display::width,
         uint32_t EndY = Display::height,
         std::endian Endian = std::endian::native
     >
@@ -265,24 +265,24 @@ namespace klib::graphics {
         static_assert(color_mode::bits > 0, "Framebuffer only supports modes with at least 1 bit");
         static_assert(color_mode::bits <= 32, "Framebuffer only supports modes a maximum of 32 bits");
 
-        // if the amount of bits is not a modulo of 8. We only support 
-        // native mode. If not in native mode we only support output 
+        // if the amount of bits is not a modulo of 8. We only support
+        // native mode. If not in native mode we only support output
         // formats that have a modulo of 8. If we do not block this we
         // will write empty data in the remainder of the data in the pixel
         static_assert(
-            (native_mode && ((graphics::detail::pixel_conversion<Display::mode>::bits % 8) != 0)) || 
-            ((graphics::detail::pixel_conversion<Display::mode>::bits % 8) == 0), 
+            (native_mode && ((graphics::detail::pixel_conversion<Display::mode>::bits % 8) != 0)) ||
+            ((graphics::detail::pixel_conversion<Display::mode>::bits % 8) == 0),
             "Framebuffer does not support this output mode for the input mode"
         );
 
         /**
          * @brief Flush implementation for the framebuffer
-         * 
+         *
          */
         void flush_impl() const {
             // write using the mode we have
             if constexpr (native_mode) {
-                // we should be able to write the native stream 
+                // we should be able to write the native stream
                 // to the display
                 Display::raw_write(buffer, sizeof(buffer));
             }
@@ -292,7 +292,7 @@ namespace klib::graphics {
                 // get the amount of bytes needed for the pixel
                 constexpr uint32_t step = ((mode_bits + 7) / 8);
 
-                // we need to convert all the colors by getting all the data 
+                // we need to convert all the colors by getting all the data
                 // first. We need to shift to get all the data
                 for (uint32_t i = 0; i < (width * height); i++) {
                     // place to store the raw data
@@ -334,7 +334,7 @@ namespace klib::graphics {
                         }
                     }
 
-                    // we are not in native mode. Convert the color to the 
+                    // we are not in native mode. Convert the color to the
                     // display color
                     const klib::graphics::color col = (
                         graphics::detail::raw_to_color<Mode>(buffer_raw)
@@ -355,14 +355,14 @@ namespace klib::graphics {
                     // write the data to the display
                     Display::raw_write(data, step);
                 }
-            }            
+            }
         }
 
     public:
         /**
-         * @brief Init the framebuffer. Not used in 
+         * @brief Init the framebuffer. Not used in
          * the buffered framebuffer
-         * 
+         *
          */
         constexpr void init() const {
             // do nothing
@@ -370,12 +370,12 @@ namespace klib::graphics {
 
         /**
          * @brief Flush the buffer to the display
-         * 
+         *
          */
         constexpr void flush() const {
             // set the cursor to the start of the display
             Display::set_cursor(
-                klib::vector2u{StartX, StartY}, 
+                klib::vector2u{StartX, StartY},
                 klib::vector2u{EndX - 1, EndY - 1}
             );
 
@@ -390,13 +390,13 @@ namespace klib::graphics {
         }
 
         /**
-         * @brief Set a pixel in the framebuffer (raw pixel data). 
-         * 
-         * @param position 
-         * @param raw 
+         * @brief Set a pixel in the framebuffer (raw pixel data).
+         *
+         * @param position
+         * @param raw
          */
         constexpr void set_pixel(const klib::vector2u &position, const color_type raw) {
-            // set the pixel in the native format. The native format on most 
+            // set the pixel in the native format. The native format on most
             // displays as follows: MSB -> LSB
             // as we are storing in little endian format we need to convert
             // the data to the correct stream format.
@@ -411,7 +411,7 @@ namespace klib::graphics {
                 // index to store the data
                 const auto index = ((position.y * width) + position.x) * bytes;
 
-                // store the data in big endian format. We do this so we can send 
+                // store the data in big endian format. We do this so we can send
                 // the data directly to the display in the native format
                 for (uint32_t i = 0; i < bytes; i++) {
                     // check how we need to write the data
@@ -452,9 +452,9 @@ namespace klib::graphics {
 
         /**
          * @brief Set a pixel in the framebuffer (klib color)
-         * 
-         * @param position 
-         * @param col 
+         *
+         * @param position
+         * @param col
          */
         constexpr void set_pixel(const klib::vector2u &position, const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
@@ -468,8 +468,8 @@ namespace klib::graphics {
 
         /**
          * @brief Clear the framebuffer with the specified color (raw pixel data)
-         * 
-         * @param raw 
+         *
+         * @param raw
          */
         constexpr void clear(const color_type raw) {
             // write the data to every pixel
@@ -482,8 +482,8 @@ namespace klib::graphics {
 
         /**
          * @brief Clear the framebuffer with the specified color (klib color)
-         * 
-         * @param raw 
+         *
+         * @param raw
          */
         constexpr void clear(const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is

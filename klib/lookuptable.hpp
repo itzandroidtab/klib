@@ -6,9 +6,9 @@
 namespace klib {
     /**
      * @brief Lookuptable with a size and a type
-     * 
-     * @tparam N 
-     * @tparam T 
+     *
+     * @tparam N
+     * @tparam T
      */
     template <uint32_t N, typename T>
     class lookuptable {
@@ -31,7 +31,7 @@ namespace klib {
 
             constexpr const T *const begin() const {
                 return table;
-            } 
+            }
     };
 }
 

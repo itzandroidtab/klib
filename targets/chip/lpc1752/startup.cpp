@@ -18,18 +18,18 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // setup the flash wait state to 4 + 1 CPU clocks
     target::io::system::flash::setup<4>();
 
-    // setup the clock to 96Mhz (in this example we are using a 12Mhz 
+    // setup the clock to 96Mhz (in this example we are using a 12Mhz
     // oscillator)
     // (((15 + 1) * 2 * 12Mhz) / (0 + 1) = 384Mhz) / (3 + 1) = 96Mhz
     clock::set_main<clock::source::main, 96'000'000, 15, 0, 3>();
     // clock::set_main<clock::source::internal, 96'000'000, 47, 0, 3>();
 
-    // setup the irq handler before main is called. This 
+    // setup the irq handler before main is called. This
     // moves the vector table to ram so it can be changed
-    // at runtime. When no interrupts are used this 
+    // at runtime. When no interrupts are used this
     // function call can be removed. By default interrupts
     // are mapped to a function that halts the whole cpu.
-    // this call does nothing when a flash handler is 
+    // this call does nothing when a flash handler is
     // configured
     klib::irq::boot_helper::init<target::irq>();
 

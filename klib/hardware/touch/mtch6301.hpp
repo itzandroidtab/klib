@@ -4,23 +4,23 @@
 #include <klib/math.hpp>
 #include <klib/delay.hpp>
 
-namespace klib::hardware::touch {   
+namespace klib::hardware::touch {
     template <typename Bus, typename IrqPin, typename RstPin>
     class mtch6301 {
     public:
         /**
          * @brief Touch packet received from the mtch6301
-         * 
+         *
          */
         struct touch_packet {
             // touch id (0 - 9)
             uint8_t touch_id:4;
-            
+
             // pen state
             // 0xb0 = pen up
             // 0xb1 = pen down
             bool pen;
-            
+
             // x coordinate
             uint16_t x:12;
 
@@ -29,11 +29,11 @@ namespace klib::hardware::touch {
 
             /**
              * @brief Construct a new touch packet from seperate values
-             * 
-             * @param touch_id 
-             * @param pen 
-             * @param x 
-             * @param y 
+             *
+             * @param touch_id
+             * @param pen
+             * @param x
+             * @param y
              */
             constexpr touch_packet(uint8_t touch_id, bool pen, uint16_t x, uint16_t y):
                 touch_id(touch_id), pen(pen), x(x), y(y)
@@ -41,19 +41,19 @@ namespace klib::hardware::touch {
 
             /**
              * @brief Construct a new touch packet from a single uint64_t
-             * 
-             * @param packet 
+             *
+             * @param packet
              */
             constexpr touch_packet(const uint64_t packet):
-                touch_packet((packet >> 3) & 0xf, packet & 0x1, 
+                touch_packet((packet >> 3) & 0xf, packet & 0x1,
                             ((packet >> 8) & 0x7f) | ((packet >> 16) & 0x1f),
                             ((packet >> 24) & 0x7f) | ((packet >> 32) & 0x1f))
-            {}        
+            {}
         };
 
         /**
          * @brief Gesture packet received from the mtch6301
-         * 
+         *
          */
         struct gesture_packet {
             // touch id (0 - 9)
@@ -61,7 +61,7 @@ namespace klib::hardware::touch {
 
             /**
              * @brief Available gestures
-             * 
+             *
              */
             enum class gest: uint8_t {
                 single_tap = 0x10,
@@ -82,9 +82,9 @@ namespace klib::hardware::touch {
 
             /**
              * @brief Construct a new gesture packet from seperate values
-             * 
-             * @param touch_id 
-             * @param gesture 
+             *
+             * @param touch_id
+             * @param gesture
              */
             gesture_packet(uint8_t touch_id, gest gesture):
                 touch_id(touch_id), gesture(gesture)
@@ -92,17 +92,17 @@ namespace klib::hardware::touch {
 
             /**
              * @brief Construct a new gesture packet object
-             * 
-             * @param packet 
+             *
+             * @param packet
              */
             gesture_packet(uint16_t packet):
-                gesture_packet((packet >> 3) & 0xf, static_cast<gest>((packet >> 8) & 0x7f)) 
+                gesture_packet((packet >> 3) & 0xf, static_cast<gest>((packet >> 8) & 0x7f))
             {}
         };
 
         /**
          * @brief Orientation of the sensor. see page 10 for more information
-         * 
+         *
          */
         struct sensor_orientation {
             // swap
@@ -122,8 +122,8 @@ namespace klib::hardware::touch {
 
             /**
              * @brief Get the orientation as a uint8_t
-             * 
-             * @return uint8_t 
+             *
+             * @return uint8_t
              */
             constexpr uint8_t get() {
                 return swap << 2 | tx_flip << 1 | rx_flip;
@@ -131,10 +131,10 @@ namespace klib::hardware::touch {
 
             /**
              * @brief Construct a new sensor orientation object from bools
-             * 
-             * @param swap 
-             * @param tx_flip 
-             * @param rx_flip 
+             *
+             * @param swap
+             * @param tx_flip
+             * @param rx_flip
              */
             constexpr sensor_orientation(bool swap = false, bool tx_flip = false, bool rx_flip = false):
                 swap(swap), tx_flip(tx_flip), rx_flip(rx_flip)
@@ -142,12 +142,12 @@ namespace klib::hardware::touch {
 
             /**
              * @brief Construct a new sensor orientation object from a uint8_t
-             * 
-             * @param orientation 
+             *
+             * @param orientation
              */
             constexpr sensor_orientation(uint8_t orientation):
-                sensor_orientation(orientation & (1 << 2), 
-                                orientation & (1 << 1), 
+                sensor_orientation(orientation & (1 << 2),
+                                orientation & (1 << 1),
                                 orientation & 0x1)
             {}
         };
@@ -167,7 +167,7 @@ namespace klib::hardware::touch {
 
         /**
          * @brief Avaliable responses for a command
-         * 
+         *
          */
         enum class res: uint8_t {
             success = 0x0,
@@ -180,7 +180,7 @@ namespace klib::hardware::touch {
 
         /**
          * @brief Command set
-         * 
+         *
          */
         enum class cmd: uint8_t {
             enable_touch = 0x0,
@@ -197,10 +197,10 @@ namespace klib::hardware::touch {
 
         // rx/tx scaling coefficients. see page 8 for more information
         constexpr static uint16_t coefficent[] = {
-            0x5555, 0x5555, 0x5555, 0x4000, 
-            0x3333, 0x2aaa, 0x2493, 0x2000, 
-            0x1c71, 0x1999, 0x1745, 0x1555, 
-            0x13b1, 0x1249, 0x1111, 0x1000, 
+            0x5555, 0x5555, 0x5555, 0x4000,
+            0x3333, 0x2aaa, 0x2493, 0x2000,
+            0x1c71, 0x1999, 0x1745, 0x1555,
+            0x13b1, 0x1249, 0x1111, 0x1000,
             0x0f0f, 0x0e38
         };
 
@@ -212,13 +212,13 @@ namespace klib::hardware::touch {
         // tx pin map for custom sensors. see page 8 for more information
         constexpr static uint8_t tx_pinmap[] = {
             13, 6, 3, 2, 4, 30, 29, 28, 7, 14, 15, 16, 5, 8, 34, 33, 32, 31
-        };  
+        };
 
         /**
          * @brief function to write commands to the i2c bus. length of the data is calculated automaticly
-         * 
-         * @tparam Args 
-         * @param args 
+         *
+         * @tparam Args
+         * @param args
          */
         template <typename... Args>
         void write_command(Args &&... args) {
@@ -231,8 +231,8 @@ namespace klib::hardware::touch {
 
         /**
          * @brief enable or disable the touch input
-         * 
-         * @param enabled 
+         *
+         * @param enabled
          */
         void enable_touch(bool enabled) {
             // enable/disable the touch based on the input
@@ -241,7 +241,7 @@ namespace klib::hardware::touch {
 
         /**
          * @brief instruct the sensor controller to scan for new sensor baseline immediately
-         * 
+         *
          */
         void scan_baseline() {
             // send the scan baseline command
@@ -251,9 +251,9 @@ namespace klib::hardware::touch {
         // general functions
         /**
          * @brief Set the amount of active rx and tx channels
-         * 
-         * @param rx 
-         * @param tx 
+         *
+         * @param rx
+         * @param tx
          */
         void set_active_channels(uint8_t rx, uint8_t tx) {
             // set the amount of rx channels
@@ -276,20 +276,20 @@ namespace klib::hardware::touch {
         // sensor map functions
         /**
          * @brief Set the rx pinmap of the controller
-         * 
-         * @tparam Args 
-         * @param args 
+         *
+         * @tparam Args
+         * @param args
          */
         template <typename... Args>
         void set_rx_pinmap(Args &&... args) {
-            // limit the input to length 13 
+            // limit the input to length 13
             static_assert((sizeof...(Args) <= 13), "To many arguments for the rx pinmap");
 
             // create an array with the arguments
             const uint8_t data[] = {
                 static_cast<const uint8_t>(rx_pinmap[args])...
             };
-    
+
             // send the rx pinmap to the controller on byte index 0x01, byte offset (0x0 - 0xc)
             for (uint8_t i = 0; i < sizeof(data); i++) {
                 write_command(cmd::write_register, 0x01, i, data[i]);
@@ -298,20 +298,20 @@ namespace klib::hardware::touch {
 
         /**
          * @brief Set the tx pinmap of the controller
-         * 
-         * @tparam Args 
-         * @param args 
+         *
+         * @tparam Args
+         * @param args
          */
         template <typename... Args>
         void set_tx_pinmap(Args &&... args) {
-            // limit the input to length 18 
+            // limit the input to length 18
             static_assert((sizeof...(Args) <= 18), "To many arguments for the tx pinmap");
 
             // create an array with the arguments
             const uint8_t data[] = {
                 static_cast<const uint8_t>(rx_pinmap[args])...
             };
-    
+
             // send the tx pinmap to the controller on byte index 0x02, byte offset (0x0 - 0xc)
             for (uint8_t i = 0; i < sizeof(data); i++) {
                 write_command(cmd::write_register, 0x02, i, data[i]);
@@ -320,75 +320,75 @@ namespace klib::hardware::touch {
 
 
 
-        // decoding functions 
+        // decoding functions
         /**
          * @brief Set the sensor orientation
-         * 
-         * @param orientation 
+         *
+         * @param orientation
          */
         void set_sensor_orientation(sensor_orientation &orientation) {
-            // write the orientation register at byte index 0x30, byte offset 0x0 
+            // write the orientation register at byte index 0x30, byte offset 0x0
             write_command(cmd::write_register, 0x30, 0x0, orientation.get());
         }
 
         /**
          * @brief Set the number of averages to use to get the touch coordinates
-         * 
-         * @param averages 
+         *
+         * @param averages
          */
         void set_averaging(uint8_t averages) {
-            // write the average register at byte index 0x30, byte offset 0x1 
-            write_command(cmd::write_register, 0x30, 0x1, averages & 0xf);        
+            // write the average register at byte index 0x30, byte offset 0x1
+            write_command(cmd::write_register, 0x30, 0x1, averages & 0xf);
         }
 
         /**
-         * @brief Set the minimum distance allowed between two touch locations before 
+         * @brief Set the minimum distance allowed between two touch locations before
          * suppressing the weaker touch location
-         * 
-         * @param distance 
+         *
+         * @param distance
          */
         void set_minimum_touch_distance(uint8_t distance) {
-            // write the minimum touch distance register at byte index 0x30, byte offset 0x4 
+            // write the minimum touch distance register at byte index 0x30, byte offset 0x4
             write_command(cmd::write_register, 0x30, 0x4, distance);
         }
 
         /**
          * @brief Set the number of scans before an up/down pen packet is notifyed
-         * 
+         *
          * @warning input needs to be limited in range 0 - 10. no internal checks are performed
-         * 
-         * @param up_timer 
-         * @param down_timer 
+         *
+         * @param up_timer
+         * @param down_timer
          */
         void set_pen(uint8_t up_timer, uint8_t down_timer) {
             // write the pen down register at byte index 0x30, byte offset 0x5
-            write_command(cmd::write_register, 0x30, 0x5, down_timer & 0xf);        
+            write_command(cmd::write_register, 0x30, 0x5, down_timer & 0xf);
 
             // write the pen up register at byte index 0x30, byte offset 0x6
-            write_command(cmd::write_register, 0x30, 0x6, up_timer & 0xf);    
+            write_command(cmd::write_register, 0x30, 0x6, up_timer & 0xf);
         }
 
         /**
          * @brief Set the max amount of touch points
-         * 
-         * @param max_points 
+         *
+         * @param max_points
          */
         void set_max_touch_points(uint8_t max_points) {
             // set the max amount of touch points before they are suppressed
             // write the suppresion register at byte index 0x30, byte offset 0x7
             write_command(cmd::write_register, 0x30, 0x7, max_points);
         }
-        
+
 
 
         // gesture functions
         /**
          * @brief Set the minimum swipe distance before the gesture is recognized
-         * 
+         *
          * @warning value needs to stay in range 10 - 255. no internal checks are performed
-         * 
-         * @param rx_swipe 
-         * @param tx_swipe 
+         *
+         * @param rx_swipe
+         * @param tx_swipe
          */
         void set_swipe_length(uint8_t rx_swipe, uint8_t tx_swipe) {
             // write the rx swipe length register at byte index 0x50, byte offset 0x0
@@ -403,8 +403,8 @@ namespace klib::hardware::touch {
         // configuration functions
         /**
          * @brief Set the sleep timeout object
-         * 
-         * @param timeout 
+         *
+         * @param timeout
          */
         void set_sleep_timeout(uint32_t timeout) {
             // write all the timeout registers with the timeout value
@@ -416,10 +416,10 @@ namespace klib::hardware::touch {
 
         /**
          * @brief enable/disable the messages from the mtch6301
-         * 
-         * @param touch 
-         * @param gesture 
-         * @param status 
+         *
+         * @param touch
+         * @param gesture
+         * @param status
          */
         void setup_messages(bool touch, bool gesture, bool status) {
             // enable/disable the touch input packets
@@ -438,15 +438,15 @@ namespace klib::hardware::touch {
     public:
         /**
          * @brief Construct a mtch6301 object
-         * 
+         *
          * @param touch_callback callback function when a touch packet arrives
          * @param address address of the mtch6301 on the bus
          * @param rx_channels amount of rx channels
          * @param tx_channels amount of tx channels
          */
         mtch6301(const interrupt_callback touch_callback = nullptr,
-                 const uint8_t address = 0x25, 
-                 const uint8_t rx_channels = 6, 
+                 const uint8_t address = 0x25,
+                 const uint8_t rx_channels = 6,
                  const uint8_t tx_channels = 6)
         :
             address(address), touch_callback(touch_callback)
@@ -493,17 +493,17 @@ namespace klib::hardware::touch {
             setup_messages(true, false, false);
 
             // scan the baseline
-            scan_baseline();        
+            scan_baseline();
 
             // enable the touch input
-            enable_touch(true);   
+            enable_touch(true);
         }
 
         /**
-         * @brief IRQ handler to call when the mtch6301 interrupt pin gets triggered. 
+         * @brief IRQ handler to call when the mtch6301 interrupt pin gets triggered.
          * User needs to call this function periodically or use a falling interrupt
          * on the irq pin.
-         * 
+         *
          */
         void irq_handler() {
             // variable to store the data
@@ -528,15 +528,15 @@ namespace klib::hardware::touch {
             }
 
             // check if we received a touch or gesture packet
-            bool packet_type = buffer[0] & (1 << 2); 
+            bool packet_type = buffer[0] & (1 << 2);
 
             // check if we need to call the callback
             if (touch_callback && (packet_type == 0)) {
                 // copy the buffer to a uint64_t
-                const uint64_t data = static_cast<uint64_t>(buffer[0]) | 
-                                static_cast<uint64_t>(buffer[1]) << 8 | 
-                                static_cast<uint64_t>(buffer[2]) << 16 | 
-                                static_cast<uint64_t>(buffer[3]) << 24 | 
+                const uint64_t data = static_cast<uint64_t>(buffer[0]) |
+                                static_cast<uint64_t>(buffer[1]) << 8 |
+                                static_cast<uint64_t>(buffer[2]) << 16 |
+                                static_cast<uint64_t>(buffer[3]) << 24 |
                                 static_cast<uint64_t>(buffer[4]) << 32;
 
                 // create a touch packet
@@ -546,7 +546,7 @@ namespace klib::hardware::touch {
                 touch_callback(t);
             }
 
-            // TODO: gesture packets      
+            // TODO: gesture packets
         }
     };
 }

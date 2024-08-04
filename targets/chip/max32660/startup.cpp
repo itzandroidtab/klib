@@ -27,7 +27,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
         // enable the floating point coprocessors
         coprocessor::set<10>(coprocessor::access::full, &SCB->CPACR);
         coprocessor::set<11>(coprocessor::access::full, &SCB->CPACR);
-        
+
         // enable the fpu (should be on by default)
         target::io::system::control::enable_fpu<true>();
     }
@@ -35,12 +35,12 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // flush the cache to start in a known state
     target::io::system::control::flush_cache();
 
-    // setup the irq handler before main is called. This 
+    // setup the irq handler before main is called. This
     // moves the vector table to ram so it can be changed
-    // at runtime. When no interrupts are used this 
+    // at runtime. When no interrupts are used this
     // function call can be removed. By default interrupts
     // are mapped to a function that halts the whole cpu.
-    // this call does nothing when a flash handler is 
+    // this call does nothing when a flash handler is
     // configured
     klib::irq::boot_helper::init<target::irq>();
 

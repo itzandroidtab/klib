@@ -9,7 +9,7 @@
 
 namespace klib::max32660::io::detail::alternate {
     // alternate functions for all the gpio
-    // default function (view reference manual for 
+    // default function (view reference manual for
     // default functions for every pin)
     struct none {};
 
@@ -55,11 +55,11 @@ namespace klib::max32660::io::detail::pins {
 
     /**
      * @brief Helper function to set a pin to a specific peripheral
-     * 
-     * @tparam Pin 
-     * @tparam Periph 
+     *
+     * @tparam Pin
+     * @tparam Periph
      */
-    template <typename Pin, typename Periph>    
+    template <typename Pin, typename Periph>
     static void set_peripheral() {
         // set the 3 function registers
         if constexpr (std::is_same_v<Periph, io::detail::alternate::func_1>) {
@@ -92,8 +92,8 @@ namespace klib::max32660::io::detail::pins {
 namespace klib::max32660::io {
     /**
      * @brief Interrupt handler for a port. Uses irq helper to handle the interrupts
-     * 
-     * @tparam Port 
+     *
+     * @tparam Port
      */
     template <typename Port>
     class port_interrupt {
@@ -105,7 +105,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Interrupt handler
-         * 
+         *
          */
         static void irq_handler() {
             // get the interrupt status from the port
@@ -127,7 +127,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Init the port interrupt
-         * 
+         *
          */
         static void init() {
             // register our handler
@@ -139,9 +139,9 @@ namespace klib::max32660::io {
 
         /**
          * @brief Register a interrupt for a specific pin
-         * 
-         * @tparam Pin 
-         * @param callback 
+         *
+         * @tparam Pin
+         * @param callback
          */
         template <typename Pin>
         static void register_irq(irq_helper::interrupt_callback callback) {
@@ -154,8 +154,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Unregister a interrupt for a specific pin
-         * 
-         * @tparam Pin 
+         *
+         * @tparam Pin
          */
         template <typename Pin>
         static void unregister_irq() {
@@ -203,7 +203,7 @@ namespace klib::max32660::io {
             }
             else {
                 Pin::port::port->PAD_CFG1 &= ~detail::pins::mask<Pin>;
-            }            
+            }
         }
     };
 
@@ -416,14 +416,14 @@ namespace klib::max32660::io {
     public:
         /**
          * @brief Using for the interrupt callback used in the pin irq
-         * 
+         *
          */
         using interrupt_callback = port_interrupt<typename Pin::port>::interrupt_callback;
-        
+
     protected:
         /**
          * @brief Trigger modes
-         * 
+         *
          */
         enum class trigger {
             level = 0,
@@ -513,20 +513,20 @@ namespace klib::max32660::io {
 
         // make sure we dont have any more input as the register width
         static_assert(
-            (sizeof...(Pins) <= 32) && (sizeof...(Pins) > 0), 
+            (sizeof...(Pins) <= 32) && (sizeof...(Pins) > 0),
             "Port_in needs at least 1 pin and at max 32 pins"
         );
 
         // check if all the ports are the same
         static_assert(
-            ((std::is_same_v<typename Pins::port, typename pin<0>::port>) && ...), 
+            ((std::is_same_v<typename Pins::port, typename pin<0>::port>) && ...),
             "Port_in only works with pins in the same pio port"
         );
 
         /**
-         * @brief Map the raw input data to the input pins of the type. Data is 
+         * @brief Map the raw input data to the input pins of the type. Data is
          * arranged by order of input data. Last item in input pins is lsb.
-         * 
+         *
          * @tparam Index
          * @param raw
          * @return uint32_t
@@ -536,7 +536,7 @@ namespace klib::max32660::io {
             if constexpr (Index + 1 < sizeof...(Pins)) {
                 // recursively get the get input bit and map to input pin using msb
                 return (
-                    (((raw >> pin<(sizeof...(Pins) - 1) - Index>::number) & 0x1) << Index) | 
+                    (((raw >> pin<(sizeof...(Pins) - 1) - Index>::number) & 0x1) << Index) |
                     map_to_pin_order<Index + 1>(raw)
                 );
             }
@@ -550,9 +550,9 @@ namespace klib::max32660::io {
 
         /**
          * @brief Create a pin mask of all the input pins in the current type
-         * 
-         * @tparam Index 
-         * @return uint32_t 
+         *
+         * @tparam Index
+         * @return uint32_t
          */
         template <uint32_t Index = 0>
         constexpr static uint32_t create_pin_mask() {
@@ -570,7 +570,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Init all the pins in the type
-         * 
+         *
          */
         constexpr static void init() {
             // init all the pins
@@ -579,8 +579,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Get all the pins mapped to the input order
-         * 
-         * @return constexpr uint32_t 
+         *
+         * @return constexpr uint32_t
          * @tparam Raw
          */
         template <bool Raw = false>
@@ -604,8 +604,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Enable/Disable pullups on all pins
-         * 
-         * @tparam Val 
+         *
+         * @tparam Val
          */
         template <bool Val>
         constexpr static void pullup_enable() {
@@ -614,8 +614,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Enable/Disable pulldowns for all all pins
-         * 
-         * @tparam Val 
+         *
+         * @tparam Val
          */
         template <bool Val>
         constexpr static void pulldown_enable() {
@@ -640,19 +640,19 @@ namespace klib::max32660::io {
 
         // make sure we dont have any more input as the register width
         static_assert(
-            sizeof...(Pins) <= 32 && sizeof...(Pins) > 0, 
+            sizeof...(Pins) <= 32 && sizeof...(Pins) > 0,
             "port_out needs at least 1 pin and at max 32 pins"
         );
 
         // check if all the ports are the same
         static_assert(
-            ((std::is_same_v<typename Pins::port, typename pin<0>::port>) && ...), 
+            ((std::is_same_v<typename Pins::port, typename pin<0>::port>) && ...),
             "port_out only works with pins in the same pio port"
         );
 
         /**
          * @brief Map the ordered input data to the order of the pio.
-         * 
+         *
          * @tparam Index
          * @param raw
          * @return uint32_t
@@ -663,7 +663,7 @@ namespace klib::max32660::io {
             if constexpr (Index + 1 < sizeof...(Pins)) {
                 // recursively get the get input bit and map to input pin using msb
                 return (
-                    (((mask >> Index) & 0x1) << pin<(sizeof...(Pins) - 1) - Index>::number) | 
+                    (((mask >> Index) & 0x1) << pin<(sizeof...(Pins) - 1) - Index>::number) |
                     map_to_pio_order<Index + 1>(mask)
                 );
             }
@@ -677,9 +677,9 @@ namespace klib::max32660::io {
 
         /**
          * @brief Create a pin mask of all the output pins in the current type
-         * 
-         * @tparam Index 
-         * @return uint32_t 
+         *
+         * @tparam Index
+         * @return uint32_t
          */
         template <uint32_t Index = 0>
         constexpr static uint32_t create_pin_mask() {
@@ -693,22 +693,22 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write directly to the pio
-         * 
-         * @param positive_mask 
-         * @param negative_mask 
+         *
+         * @param positive_mask
+         * @param negative_mask
          */
         constexpr static void set_pio(const uint32_t positive_mask, const uint32_t negative_mask) {
             // set the pins
-            pin<0>::port->OUT_SET = positive_mask;                
+            pin<0>::port->OUT_SET = positive_mask;
             // clear the pins
             pin<0>::port->OUT_CLR = negative_mask;
         }
-        
+
         /**
          * @brief Write directly to the pio
-         * 
-         * @tparam PosMask 
-         * @tparam NegMask 
+         *
+         * @tparam PosMask
+         * @tparam NegMask
          */
         template <uint32_t PosMask, uint32_t NegMask>
         constexpr static void set_pio() {
@@ -718,7 +718,7 @@ namespace klib::max32660::io {
                 pin<0>::port->OUT_SET = PosMask;
             }
 
-            if constexpr (NegMask) {                   
+            if constexpr (NegMask) {
                 // clear the pins
                 pin<0>::port->OUT_CLR = NegMask;
             }
@@ -730,7 +730,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Init all the pins in the type
-         * 
+         *
          */
         constexpr static void init() {
             // init all the pins
@@ -739,18 +739,18 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write data ordered by pin order to the pins
-         * 
-         * @details Set data in a port of pins. When not using raw values the 
+         *
+         * @details Set data in a port of pins. When not using raw values the
          * input is mapped to the order of the pins using msb.
-         * 
-         * @tparam IsRaw 
-         * @param val 
+         *
+         * @tparam IsRaw
+         * @param val
          */
         template <bool IsRaw = false>
         constexpr static void set(const uint32_t val) {
             // create a pin mask
             constexpr uint32_t mask = create_pin_mask();
-            
+
             // check if we need to remap the input to raw data
             if constexpr (IsRaw) {
                 // data is already raw data. Use the pinmask and map to output
@@ -775,12 +775,12 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write data ordered by pin order to the pins
-         * 
-         * @details Set data in a port of pins. When not using raw values the 
+         *
+         * @details Set data in a port of pins. When not using raw values the
          * input is mapped to the order of the pins using msb.
-         * 
-         * @tparam Val 
-         * @tparam IsRaw 
+         *
+         * @tparam Val
+         * @tparam IsRaw
          */
         template <uint32_t Val, bool IsRaw = false>
         constexpr static void set() {

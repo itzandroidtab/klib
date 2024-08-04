@@ -25,22 +25,22 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Write size amount of data to the fifo buffer
-         * 
-         * @tparam T 
-         * @param data 
-         * @param size 
-         * @param transmitted 
-         * @return uint16_t 
+         *
+         * @tparam T
+         * @param data
+         * @param size
+         * @param transmitted
+         * @return uint16_t
          */
         template <typename T>
         static uint16_t write_fifo(const T& data, const uint16_t size, const uint16_t transmitted) {
             uint16_t t = 0;
 
-            // write as many bytes until the fifo is full (or until we have half 
-            // the rx fifo filled. This is so we do not miss any received data 
+            // write as many bytes until the fifo is full (or until we have half
+            // the rx fifo filled. This is so we do not miss any received data
             // when high ssp speeds are used)
             while ((Ssp::port->SR & (0x1 << 1)) && ((transmitted + t) < size) && !(Ssp::port->RIS & (0x1 << 2))) {
-                // write dummy data if we dont have data or if we need 
+                // write dummy data if we dont have data or if we need
                 // to send more data we have in the buffer
                 if (data.empty() || ((transmitted + t) >= data.size())) {
                     Ssp::port->DR = 0x00;
@@ -58,12 +58,12 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Read size amount of data from the fifo buffer
-         * 
-         * @tparam T 
-         * @param data 
-         * @param size 
-         * @param received 
-         * @return uint16_t 
+         *
+         * @tparam T
+         * @param data
+         * @param size
+         * @param received
+         * @return uint16_t
          */
         template <typename T>
         static uint16_t read_fifo(const T& data, const uint16_t size, const uint16_t received) {
@@ -88,20 +88,20 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Helper to write and read from the ssp bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         template <
-            bool Async = false, typename T, 
+            bool Async = false, typename T,
             typename G
-        > 
+        >
         static void write_read_helper(const T& tx, const G& rx) {
             // amount of data received/transmitted
             uint32_t transmitted = 0;
             uint32_t received = 0;
 
-            // get the amount of data to receive and transmit. The smaller 
+            // get the amount of data to receive and transmit. The smaller
             // between the two must still write/read the data to clear the
             // fifo
             const uint32_t size = klib::max(tx.size(), rx.size());
@@ -153,23 +153,23 @@ namespace klib::core::lpc17xx::io {
             if constexpr (!ExternalCs) {
                 target::io::detail::pins::set_peripheral<typename Ssp::cs0::pin, typename Ssp::cs0::periph>();
             }
-            
-            // setup the clock for the ssp. Value should be between 2 - 254. 
+
+            // setup the clock for the ssp. Value should be between 2 - 254.
             // Note: to get lower frequencies. the SCR in CR0 can be used to
             // decrease the clock even further. (PCLK / (CPSDVSR * [SCR + 1]))
-            // As most of the time higher speeds is better, SCR is not used at 
+            // As most of the time higher speeds is better, SCR is not used at
             // the moment (last bit ofthe CPSR does not stick. e.g 0x1 -> 0x0)
             Ssp::port->CPSR = static_cast<uint8_t>(
                 klib::io::clock::get() / static_cast<uint32_t>(Frequency)
             );
-            
+
             // disable the DMA
             dma_enable<false, false>();
             dma_enable<false, true>();
 
             // set all the settings in the CR0 register
             Ssp::port->CR0 = (
-                convert_bits<Bits>() | 
+                convert_bits<Bits>() |
                 (klib::io::spi::get_cpha<Mode>() << 6) |
                 (klib::io::spi::get_cpol<Mode>() << 7)
             );
@@ -181,9 +181,9 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         template <bool Async = false>
         static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
@@ -192,9 +192,9 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         template <bool Async = false>
         static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
@@ -203,9 +203,9 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         template <bool Async = false>
         static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
@@ -214,9 +214,9 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         template <bool Async = false>
         static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
@@ -225,8 +225,8 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Write to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         template <bool Async = false>
         static void write(const std::span<const uint8_t>& data) {
@@ -235,8 +235,8 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Write data to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         template <bool Async = false>
         static void write(const multispan<const uint8_t>& data) {
@@ -244,25 +244,25 @@ namespace klib::core::lpc17xx::io {
         }
 
         /**
-         * @brief Returns if the current ssp port is busy. (transmitting/receiving data 
+         * @brief Returns if the current ssp port is busy. (transmitting/receiving data
          * or TX fifo is not empty)
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_busy() {
             return Ssp::port->SR & (0x1 << 4);
         }
 
         /**
-         * @brief Clear any data left in the rx fifo. This functions 
+         * @brief Clear any data left in the rx fifo. This functions
          * should be used before starting a dma transfer.
-         * 
+         *
          */
         static void clear_rx_fifo() {
             // discard anything that is left in the fifo
             while (Ssp::port->SR & (0x1 << 2)) {
-                // discard the old data to make place for 
+                // discard the old data to make place for
                 // the new data
                 (void)Ssp::port->DR;
             }
@@ -271,16 +271,16 @@ namespace klib::core::lpc17xx::io {
     public:
         /**
          * @brief Section for the DMA controller. Returns information for the transfer.
-         * 
-         * @note two dma channels are required. One for reading and one for writing (or 
+         *
+         * @note two dma channels are required. One for reading and one for writing (or
          * the user can poll/write the other interface in user code)
-         * 
+         *
          */
 
         /**
          * @brief Returns the dma channel connection id
-         * 
-         * @return uint16_t 
+         *
+         * @return uint16_t
          */
         template <bool Read>
         constexpr static uint16_t dma_id() {
@@ -290,9 +290,9 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Enable/Disable the dma for the ssp read/write.
-         * 
-         * @tparam Enable 
-         * @tparam Read 
+         *
+         * @tparam Enable
+         * @tparam Read
          */
         template <bool Enable, bool Read>
         static void dma_enable() {
@@ -301,9 +301,9 @@ namespace klib::core::lpc17xx::io {
         }
 
         /**
-         * @brief Returns the address where the dma controller should read/write from. 
-         * 
-         * @return uint32_t* const 
+         * @brief Returns the address where the dma controller should read/write from.
+         *
+         * @return uint32_t* const
          */
         template <bool Read>
         static volatile uint32_t *const dma_data() {
@@ -313,8 +313,8 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Returns the read/write burst size of the ssp
-         * 
-         * @return uint32_t* const 
+         *
+         * @return uint32_t* const
          */
         template <bool Read>
         constexpr static uint32_t dma_burst_size() {
@@ -324,8 +324,8 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Returns the read/write transfer width of the ssp
-         * 
-         * @return uint32_t* const 
+         *
+         * @return uint32_t* const
          */
         template <bool Read>
         static uint32_t dma_width() {
@@ -335,8 +335,8 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Returns the read/write transfer width of the ssp
-         * 
-         * @return uint32_t* const 
+         *
+         * @return uint32_t* const
          */
         template <bool Read>
         constexpr static bool dma_increment() {

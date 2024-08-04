@@ -8,10 +8,10 @@
 namespace klib::hardware::usb_controller {
     /**
      * @brief Driver for the fusb300c
-     * 
-     * @tparam Bus 
-     * @tparam IrqPin 
-     * @tparam Address 
+     *
+     * @tparam Bus
+     * @tparam IrqPin
+     * @tparam Address
      */
     template <typename Bus, uint8_t Address = 0x22>
     class fusb300c {
@@ -25,7 +25,7 @@ namespace klib::hardware::usb_controller {
 
         /**
          * @brief All the registers available on the fusb300c
-         * 
+         *
          */
         enum class reg: uint8_t {
             device_id = 0x01,
@@ -43,40 +43,40 @@ namespace klib::hardware::usb_controller {
 
         /**
          * @brief Write a register with data
-         * 
-         * @param command 
-         * @param data 
-         * @return status 
+         *
+         * @param command
+         * @param data
+         * @return status
          */
         static bool write_reg(const reg command, const std::span<const uint8_t> data) {
             // create a multispan to send
             klib::multispan<const uint8_t> buffer = {
-                {reinterpret_cast<const uint8_t*>(&command), sizeof(command)}, 
+                {reinterpret_cast<const uint8_t*>(&command), sizeof(command)},
                 data
             };
 
             // write the buffer to the fusb300c
             return Bus::write(Address, buffer);
-        }  
+        }
 
         /**
          * @brief Write one byte to a register
-         * 
-         * @param command 
-         * @param data 
-         * @return status 
+         *
+         * @param command
+         * @param data
+         * @return status
          */
         static bool write_reg(const reg command, const uint8_t data) {
             // write using the other write
             return write_reg(command, {&data, sizeof(data)});
-        }  
+        }
 
         /**
          * @brief read multiple bytes from a register
-         * 
-         * @param command 
-         * @param data 
-         * @return status 
+         *
+         * @param command
+         * @param data
+         * @return status
          */
         static bool read_reg(const reg command, std::span<uint8_t> data) {
             // write the register we want to read
@@ -86,13 +86,13 @@ namespace klib::hardware::usb_controller {
 
             // start a read
             return Bus::read(Address, data);
-        }  
+        }
 
         /**
          * @brief Interrupt handler. Calls the specific function
-         * that handles the interrupt request using the irq 
+         * that handles the interrupt request using the irq
          * helper
-         * 
+         *
          */
         static void irq_handler() {
             uint8_t status;
@@ -115,7 +115,7 @@ namespace klib::hardware::usb_controller {
             if (!read_reg(reg::device_id, {&buffer, sizeof(buffer)})) {
                 return false;
             }
-            
+
             // reset the fusb300c
             if (!write_reg(reg::swreset, 0x01)) {
                 return false;
@@ -142,10 +142,10 @@ namespace klib::hardware::usb_controller {
     public:
         /**
          * @brief Init the fusb300c
-         * 
-         * @tparam IrqPin 
+         *
+         * @tparam IrqPin
          * @param callback
-         * @return status 
+         * @return status
          */
         static bool init() {
             // init the fusb300c
@@ -163,11 +163,11 @@ namespace klib::hardware::usb_controller {
 
         /**
          * @brief Init and register our callback on the irq pin
-         * 
-         * @tparam IrqPin 
-         * @param callback 
-         * @return true 
-         * @return false 
+         *
+         * @tparam IrqPin
+         * @param callback
+         * @return true
+         * @return false
          */
         template <typename IrqPin>
         static bool init(const interrupt_callback callback = nullptr) {
@@ -193,9 +193,9 @@ namespace klib::hardware::usb_controller {
 
         /**
          * @brief Read if vbus is above the defined threshold
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool has_vbus() {
             uint8_t buffer;

@@ -30,9 +30,9 @@ namespace klib::lpc802::io::periph::detail::spi {
 
 namespace klib::lpc802::io::periph {
     /**
-     * @brief Struct stores information about the spi0 
+     * @brief Struct stores information about the spi0
      * hardware.
-     * 
+     *
      */
     struct spi0 {
         // peripheral id (e.g spi0, spi1)
@@ -58,13 +58,13 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Helper to write and read from the spi bus
-         * 
-         * @tparam T 
-         * @tparam G 
-         * @param tx 
-         * @param rx 
+         *
+         * @tparam T
+         * @tparam G
+         * @param tx
+         * @param rx
          */
-        template <typename T, typename G> 
+        template <typename T, typename G>
         static void write_read_helper(const T& tx, const G& rx) {
             // get the size we should read/write
             const auto size = klib::min(tx.size(), rx.size());
@@ -77,7 +77,7 @@ namespace klib::lpc802::io {
 
             // write and set the control parameters (ignore the received data and set the length)
             Spi::port->TXDATCTL = (
-                tx[0] | ((!ExternalCs) << 16) | 
+                tx[0] | ((!ExternalCs) << 16) |
                 ((static_cast<uint32_t>(Bits) - 1) << 24)
             );
 
@@ -125,9 +125,9 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Helper to write to the spi bus
-         * 
-         * @tparam T 
-         * @param data 
+         *
+         * @tparam T
+         * @param data
          */
         template <typename T>
         static void write_helper(const T& data) {
@@ -139,7 +139,7 @@ namespace klib::lpc802::io {
 
             // write and set the control parameters (ignore the received data and set the length)
             Spi::port->TXDATCTL = (
-                data[0] | ((!ExternalCs) << 16) | 
+                data[0] | ((!ExternalCs) << 16) |
                 (0x1 << 22) | ((static_cast<uint32_t>(Bits) - 1) << 24)
             );
 
@@ -177,7 +177,7 @@ namespace klib::lpc802::io {
 
     public:
         template <
-            typename Sck, typename Mosi, 
+            typename Sck, typename Mosi,
             typename Miso, typename Cs,
             klib::io::spi::mode Mode = klib::io::spi::mode::mode0,
             uint32_t Frequency = 1'000'000
@@ -205,7 +205,7 @@ namespace klib::lpc802::io {
 
             // set the spi configuration (master mode and spi mode)
             Spi::port->CFG = (
-                (0x1 << 2) | 
+                (0x1 << 2) |
                 (klib::io::spi::get_cpol<Mode>() << 5) |
                 (klib::io::spi::get_cpha<Mode>() << 4)
             );
@@ -216,9 +216,9 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -226,9 +226,9 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -236,9 +236,9 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -246,9 +246,9 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -256,8 +256,8 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Write to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         static void write(const std::span<const uint8_t>& data) {
             return write_helper(data);
@@ -265,8 +265,8 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Write data to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         static void write(const multispan<const uint8_t>& data) {
             return write_helper(data);

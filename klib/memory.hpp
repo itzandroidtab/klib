@@ -23,18 +23,18 @@ namespace klib::allocator::detail {
         /**
          * @brief Chunk used to store information
          * about a memory allocation
-         * 
+         *
          */
         struct chunk {
             // magic header should always be
-            // 0xdeadbeef. Used to check if 
+            // 0xdeadbeef. Used to check if
             // a chunk is valid
             uint32_t magic_header;
 
             // pointer to the previous chunk
-            chunk *previous; 
+            chunk *previous;
 
-            // size of the current block (can also be used 
+            // size of the current block (can also be used
             // to determine the next chunk)
             uint32_t size;
 
@@ -73,7 +73,7 @@ namespace klib::allocator::detail {
 
     public:
         allocator(const uint32_t heap_start, const uint32_t heap_end):
-            start_address(heap_start), heap_size(heap_end - heap_start), 
+            start_address(heap_start), heap_size(heap_end - heap_start),
             end_address(heap_start)
         {
             // set a chunk on the start address
@@ -106,7 +106,7 @@ namespace klib::allocator::detail {
 
             // get the location of a new chunk header
             chunk &next_chunk = (*reinterpret_cast<chunk*>(
-                (reinterpret_cast<uint32_t>(&current_chunk) + sizeof(chunk)) + 
+                (reinterpret_cast<uint32_t>(&current_chunk) + sizeof(chunk)) +
                 current_chunk.size
             ));
 
@@ -114,7 +114,7 @@ namespace klib::allocator::detail {
             if (!next_chunk.in_use) {
                 // check if the next chunk is the last chunk
                 if (next_chunk.size == 0) {
-                    // clear the size of the current chunk to mark 
+                    // clear the size of the current chunk to mark
                     // it as the new last chunk
                     current_chunk.size = 0;
 
@@ -139,7 +139,7 @@ namespace klib::allocator::detail {
                     end_address = reinterpret_cast<const uint32_t>(&current_chunk.previous);
                 }
                 else {
-                    // add our size to the previous chunk (including 
+                    // add our size to the previous chunk (including
                     // the size of the chunk) so we point to the next
                     // chunk
                     current_chunk.previous->size += sizeof(chunk) + current_chunk.size;
@@ -206,13 +206,13 @@ namespace klib::allocator::detail {
                 // size is 0 so that means last item in currently allocated memory
                 // and we could not fit in any space
                 if (ch->size == 0) {
-                    // check if we can allocate behind the current chunk 
-                    // 
-                    // chunk + sizeof(chunk) + chunk.size (= 0) = end of 
-                    // current chunk. End of chunk + sizeof(chunk) + size 
+                    // check if we can allocate behind the current chunk
+                    //
+                    // chunk + sizeof(chunk) + chunk.size (= 0) = end of
+                    // current chunk. End of chunk + sizeof(chunk) + size
                     // needs to fit before we allocate
-                    if ((reinterpret_cast<uint32_t>(ch) + (sizeof(chunk) * 2) + size) >= 
-                        (start_address + heap_size)) 
+                    if ((reinterpret_cast<uint32_t>(ch) + (sizeof(chunk) * 2) + size) >=
+                        (start_address + heap_size))
                     {
                         return nullptr;
                     }
@@ -248,8 +248,8 @@ namespace klib::allocator::detail {
 
         /**
          * @brief return the amount of allocated memory
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         uint32_t size() const {
             return end_address - start_address;
@@ -261,7 +261,7 @@ namespace klib::allocator {
     // allocator for memory on the heap
     [[maybe_unused]]
     static auto allocator = detail::allocator<4>(
-        reinterpret_cast<uint32_t>(&__heap_start), 
+        reinterpret_cast<uint32_t>(&__heap_start),
         reinterpret_cast<uint32_t>(&__heap_end)
     );
 }
@@ -269,9 +269,9 @@ namespace klib::allocator {
 namespace klib {
     /**
      * @brief Allocate memory on the heap
-     * 
-     * @param size 
-     * @return void* 
+     *
+     * @param size
+     * @return void*
      */
     void* malloc(uint32_t size) {
         return allocator::allocator.allocate(size);
@@ -279,8 +279,8 @@ namespace klib {
 
     /**
      * @brief Free memory on the heap
-     * 
-     * @param ptr 
+     *
+     * @param ptr
      */
     void free(const void *const ptr) {
         return allocator::allocator.free(ptr);
@@ -289,9 +289,9 @@ namespace klib {
 
 /**
  * @brief Allocate size amount of memory
- * 
- * @param size 
- * @return void* 
+ *
+ * @param size
+ * @return void*
  */
 void* operator new(const size_t size) noexcept {
     return klib::allocator::allocator.allocate(size);
@@ -299,9 +299,9 @@ void* operator new(const size_t size) noexcept {
 
 /**
  * @brief Allocate a array amount of memory
- * 
- * @param size 
- * @return void* 
+ *
+ * @param size
+ * @return void*
  */
 void* operator new[](const size_t size) noexcept {
     return klib::allocator::allocator.allocate(size);
@@ -309,9 +309,9 @@ void* operator new[](const size_t size) noexcept {
 
 /**
  * @brief Delete memory the pointer points to
- * 
- * @param size 
- * @return void* 
+ *
+ * @param size
+ * @return void*
  */
 void operator delete(void *const ptr) noexcept {
     return klib::allocator::allocator.free(ptr);
@@ -319,9 +319,9 @@ void operator delete(void *const ptr) noexcept {
 
 /**
  * @brief Delete a array amount of memory
- * 
- * @param size 
- * @return void* 
+ *
+ * @param size
+ * @return void*
  */
 void operator delete[](void *const ptr) noexcept {
     return klib::allocator::allocator.free(ptr);
@@ -329,8 +329,8 @@ void operator delete[](void *const ptr) noexcept {
 
 /**
  * @brief Delete memory pointer points to
- * 
- * @param ptr 
+ *
+ * @param ptr
  * @param size (not used)
  */
 void operator delete(void *const ptr, size_t size) noexcept {
@@ -339,8 +339,8 @@ void operator delete(void *const ptr, size_t size) noexcept {
 
 /**
  * @brief Delete a raay amount of memory
- * 
- * @param ptr 
+ *
+ * @param ptr
  * @param size (not used)
  */
 void operator delete[](void *const ptr, size_t size) noexcept {

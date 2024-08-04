@@ -6,8 +6,8 @@
 namespace klib::io::i2c {
     /**
      * @brief Official i2c speed modes.
-     * 
-     * @details 
+     *
+     * @details
      * standard = 100kbps
      * fast = 400kbps
      * fast plus = 1Mbps

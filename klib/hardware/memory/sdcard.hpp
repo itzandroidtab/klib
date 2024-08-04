@@ -9,62 +9,62 @@
 
 namespace klib::io {
     /**
-     * @brief Sd card interface using spi. Needs to have 
+     * @brief Sd card interface using spi. Needs to have
      * control over the chip select pin as it uses it to
      * send the spi mode command with the chip select pin
      * high
-     * 
+     *
      * credits to http://elm-chan.org/docs/mmc/mmc_e.html
-     * 
-     * @tparam Bus 
-     * @tparam Cs 
+     *
+     * @tparam Bus
+     * @tparam Cs
      */
     template <typename Bus, typename Cs>
     class sd {
     protected:
         /**
          * @brief Generic sd card commands
-         * 
+         *
          */
         enum class sd_cmd {
             // Go to idle state
             CMD0 = 0x00,
             // Initiate initialization process for mmc
-            CMD1 = 0x01, 
+            CMD1 = 0x01,
             // Initiate initialization process for SDC
             ACMD41 = 0x29,
-            // check voltage range (only for SDC v2) 
-            CMD8 = 0x08, 
+            // check voltage range (only for SDC v2)
+            CMD8 = 0x08,
             // read CSD register
-            CMD9 = 0x09, 
+            CMD9 = 0x09,
             // read CID register
-            CMD10 = 0x0a, 
+            CMD10 = 0x0a,
             // stop reading data
-            CMD12 = 0x0c, 
+            CMD12 = 0x0c,
             // set the block lenght
-            CMD16 = 0x10, 
+            CMD16 = 0x10,
             // read a block
-            CMD17 = 0x11, 
+            CMD17 = 0x11,
             // read multiple blocks
-            CMD18 = 0x12, 
+            CMD18 = 0x12,
             // set block count (only for mmc)
-            CMD23 = 0x17, 
+            CMD23 = 0x17,
             // define number of blocks to pre-erase next multi-
             // block write command (only for sdc)
-            ACMD23 = 0x17, 
+            ACMD23 = 0x17,
             // write block
-            CMD24 = 0x18, 
+            CMD24 = 0x18,
             // write multiple blocks
-            CMD25 = 0x19, 
+            CMD25 = 0x19,
             // Leading command for ACMD commands
-            CMD55 = 0x37, 
+            CMD55 = 0x37,
             // read OCR
-            CMD58 = 0x3a, 
+            CMD58 = 0x3a,
         };
 
         /**
          * @brief SD type detected during init
-         * 
+         *
          */
         enum class type {
             unknown,
@@ -76,7 +76,7 @@ namespace klib::io {
         #pragma pack(push, 1)
         /**
          * @brief command to send to the sd card
-         * 
+         *
          */
         struct command {
             // command number
@@ -97,7 +97,7 @@ namespace klib::io {
 
         /**
          * @brief Response 3/7 for CMD58 and CMD8
-         * 
+         *
          */
         struct response37 {
             // r1 response
@@ -124,7 +124,7 @@ namespace klib::io {
 
         /**
          * @brief Change the sd card to spi mode
-         * 
+         *
          */
         static void change_mode() {
             // buffer to send at least 74 clock pulses
@@ -139,7 +139,7 @@ namespace klib::io {
             // spi mode
             Bus::write(buffer);
         }
-    
+
         static uint8_t receive_response(uint16_t cycles = 10) {
             // data to send while waiting
             const uint8_t tx = 0xff;
@@ -182,7 +182,7 @@ namespace klib::io {
                 timeout--;
             }
 
-            // return if we had a timeout or we 
+            // return if we had a timeout or we
             // have received data
             return rx;
         }
@@ -205,10 +205,10 @@ namespace klib::io {
                 return dummy_response<R1Only>();
             }
 
-            // send the command to the bus 
+            // send the command to the bus
             write_bus(cmd);
 
-            // receive the response. Can take 
+            // receive the response. Can take
             // up to 10 reads
             const uint8_t r1 = receive_response();
 
@@ -307,7 +307,7 @@ namespace klib::io {
 
         static void discard_crc() {
             const uint8_t tx[] = {0xff, 0xff};
-            uint8_t crc[2]; 
+            uint8_t crc[2];
 
             // make sure the in and out match in size
             static_assert(sizeof(tx) == sizeof(crc));
@@ -402,7 +402,7 @@ namespace klib::io {
             // make sure the in and out match in size
             static_assert(sizeof(tx) == sizeof(r1));
 
-            // wait until the card is not busy anymore 
+            // wait until the card is not busy anymore
             while (r1 == 0) {
                 Bus::write_read({&tx, sizeof(tx)}, {&r1, sizeof(r1)});
             }
@@ -432,7 +432,7 @@ namespace klib::io {
                 // restore the cs pin
                 Cs::template set<true>();
 
-                // return a unknown type if it does not respond to a 
+                // return a unknown type if it does not respond to a
                 // go to idle command
                 return type::unknown;
             }
@@ -505,7 +505,7 @@ namespace klib::io {
 
                 return type::sd_v2;
             }
-        
+
             // card is not v2. Must be v1 or mmc. Create the init command for v1
             const command init_v1 = {
                 .cmd = static_cast<uint8_t>(sd_cmd::ACMD41),
@@ -555,9 +555,9 @@ namespace klib::io {
 
         /**
          * @brief Init the sd card. Will return if sd has been initialized
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool init() {
             // return if we have a valid type
@@ -565,13 +565,13 @@ namespace klib::io {
         }
 
         /**
-         * @brief Write 1 or more blocks to the sd card 
-         * 
-         * @param sector 
-         * @param data 
-         * @param blocks 
-         * @return true 
-         * @return false 
+         * @brief Write 1 or more blocks to the sd card
+         *
+         * @param sector
+         * @param data
+         * @param blocks
+         * @return true
+         * @return false
          */
         static bool write(const uint32_t sector, const uint8_t *const data, const uint32_t blocks) {
             // set the cs pin manually
@@ -613,12 +613,12 @@ namespace klib::io {
 
         /**
          * @brief Read 1 or more blocks from the sd card
-         * 
-         * @param sector 
-         * @param data 
-         * @param blocks 
-         * @return true 
-         * @return false 
+         *
+         * @param sector
+         * @param data
+         * @param blocks
+         * @return true
+         * @return false
          */
         static bool read(const uint32_t sector, uint8_t *const data, const uint32_t blocks) {
             // set the cs pin manually

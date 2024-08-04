@@ -11,10 +11,10 @@
 namespace klib::graphics {
     /**
      * @brief Framebuffer with a different start position in a another framebuffer
-     * 
-     * @tparam FrameBuffer 
-     * @tparam XStart 
-     * @tparam YStart 
+     *
+     * @tparam FrameBuffer
+     * @tparam XStart
+     * @tparam YStart
      */
     template <typename FrameBuffer, uint32_t XStart, uint32_t YStart>
     class sub_framebuffer {
@@ -76,10 +76,10 @@ namespace klib::graphics {
 
     /**
      * @brief Framebuffer that scales input into multiple pixels to another framebuffer
-     * 
-     * @tparam FrameBuffer 
-     * @tparam XScale 
-     * @tparam YScale 
+     *
+     * @tparam FrameBuffer
+     * @tparam XScale
+     * @tparam YScale
      */
     template <typename FrameBuffer, uint32_t XScale, uint32_t YScale>
     class scaled_framebuffer {
@@ -149,13 +149,13 @@ namespace klib::graphics {
     };
 
     /**
-     * @brief Framebuffer that can flip another framebuffer. Uses all the 
+     * @brief Framebuffer that can flip another framebuffer. Uses all the
      * parameters from the original framebuffer. Can be flipped in the x-axis
      * and the y-axis independently.
-     * 
-     * @tparam FrameBuffer 
-     * @tparam XMirror 
-     * @tparam YMirror 
+     *
+     * @tparam FrameBuffer
+     * @tparam XMirror
+     * @tparam YMirror
      */
     template <typename FrameBuffer, bool XMirror, bool YMirror>
     class flipped_framebuffer {
@@ -235,21 +235,21 @@ namespace klib::graphics {
     };
 
     /**
-     * @brief Movable version of the framebuffer. Only difference is that the 
+     * @brief Movable version of the framebuffer. Only difference is that the
      * flush function allows overwriting the start position
-     * 
-     * @tparam Display 
-     * @tparam Mode 
-     * @tparam StartX 
-     * @tparam StartY 
-     * @tparam EndX 
-     * @tparam EndY 
+     *
+     * @tparam Display
+     * @tparam Mode
+     * @tparam StartX
+     * @tparam StartY
+     * @tparam EndX
+     * @tparam EndY
      */
     template <
         typename Display, graphics::mode Mode,
-        uint32_t StartX = 0, 
-        uint32_t StartY = 0, 
-        uint32_t EndX = Display::width, 
+        uint32_t StartX = 0,
+        uint32_t StartY = 0,
+        uint32_t EndX = Display::width,
         uint32_t EndY = Display::height,
         std::endian Endian = std::endian::native
     >
@@ -258,7 +258,7 @@ namespace klib::graphics {
         constexpr void flush(const klib::vector2u position) {
             // set the cursor to the start of the display
             Display::set_cursor(
-                position + klib::vector2u{StartX, StartY}, 
+                position + klib::vector2u{StartX, StartY},
                 position + klib::vector2u{EndX - 1, EndY - 1}
             );
 
@@ -271,7 +271,7 @@ namespace klib::graphics {
             // stop the write to the display
             Display::end_write();
         }
-    };    
+    };
 }
 
 #endif

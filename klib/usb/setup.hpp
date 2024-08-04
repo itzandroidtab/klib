@@ -10,18 +10,18 @@
 /**
  * Definitions are taken from:
  * https://www.beyondlogic.org/usbnutshell/
- * 
+ *
  */
 namespace klib::usb {
     /**
      * More information can be found here:
      * https://www.beyondlogic.org/usbnutshell/usb6.shtml
-     * 
+     *
      */
 
     /**
      * 8 byte long USB setup packet
-     * 
+     *
      */
     struct setup_packet {
         // b[0..4] = Recipient
@@ -58,7 +58,7 @@ namespace klib::usb {
 namespace klib::usb::setup {
     /**
      * Speed mode of a USB device
-     * 
+     *
      */
     enum class usb_speed {
         low_speed,
@@ -68,7 +68,7 @@ namespace klib::usb::setup {
 
     /**
      * Version of the USB device
-     * 
+     *
      */
     enum class usb_version {
         usb_v1_0 = 0x0100,
@@ -80,7 +80,7 @@ namespace klib::usb::setup {
     /**
      * USB request data transfer direction
      * (bmRequestType)
-     * 
+     *
      */
     enum class direction {
         host_to_device = 0,
@@ -90,7 +90,7 @@ namespace klib::usb::setup {
     /**
      * Usb request types
      * (bmRequestType)
-     * 
+     *
      */
     enum class request_type {
         standard = 0,
@@ -102,7 +102,7 @@ namespace klib::usb::setup {
     /**
      * USB recipient codes
      * (bmRequestType)
-     * 
+     *
      */
     enum class recipient_code {
         device = 0,
@@ -115,7 +115,7 @@ namespace klib::usb::setup {
     /**
      * Standard USB requests
      * (bRequest)
-     * 
+     *
      */
     enum class device_request {
         // wValue = zero
@@ -188,14 +188,14 @@ namespace klib::usb::setup {
     /**
      * interface USB requests
      * (bRequest)
-     * 
-     * wIndex is normally used to specify the referring interface for 
+     *
+     * wIndex is normally used to specify the referring interface for
      * requests directed at the interface. Its format is shown below.
-     * 
+     *
      * wIndex:
      * b[0..7] = interface number
      * b[8..15] = reserved
-     * 
+     *
      */
     enum class interface_request {
         // wValue = zero
@@ -232,17 +232,17 @@ namespace klib::usb::setup {
     /**
      * endpoint USB requests
      * (bRequest)
-     * 
-     * The wIndex field is normally used to specify the referring endpoint 
-     * and direction for requests directed to an endpoint. Its format is 
+     *
+     * The wIndex field is normally used to specify the referring endpoint
+     * and direction for requests directed to an endpoint. Its format is
      * shown below.
-     * 
+     *
      * windex:
      * b[0..3] = endpoint number
      * b[4..6] = reserved
      * b[7] = dir
      * b[8..15] = reserved
-     * 
+     *
      */
     enum class endpoint_request {
         // wValue = zero
@@ -273,7 +273,7 @@ namespace klib::usb::setup {
     /**
      * USB features
      * (wValue)
-     * 
+     *
      */
     enum class feature {
         endpoint_halt = 0,
@@ -282,8 +282,8 @@ namespace klib::usb::setup {
     };
 }
 
-// release the old pack so the rest of the structs are not 
+// release the old pack so the rest of the structs are not
 // affected by the pack(1)
 #pragma pack(pop)
 
-#endif 
+#endif

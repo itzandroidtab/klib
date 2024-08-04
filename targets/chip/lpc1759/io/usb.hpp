@@ -42,7 +42,7 @@ namespace klib::lpc1759::io::periph::lqfp_80 {
         // port to the usb hardware
         static inline USB_Type *const port = USB;
 
-        // configuration of the pins 
+        // configuration of the pins
         using connect = detail::usb::usb<pins::package::lqfp_80::p49, detail::usb::mode::connect, core::lpc175x::io::detail::alternate::func_1>;
         using led = detail::usb::usb<pins::package::lqfp_80::p25, detail::usb::mode::led, core::lpc175x::io::detail::alternate::func_1>;
         using vbus = detail::usb::usb<pins::package::lqfp_80::p18, detail::usb::mode::vbus, core::lpc175x::io::detail::alternate::func_2>;

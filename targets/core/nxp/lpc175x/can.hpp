@@ -34,14 +34,14 @@ namespace klib::core::lpc175x::io::detail {
             target::irq::register_irq<Can::interrupt_id>(irq_handler);
 
             // enable the interrupt
-            target::enable_irq<Can::interrupt_id>();            
+            target::enable_irq<Can::interrupt_id>();
         }
 
         /**
          * @brief Register a callback
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <uint32_t CanId>
         static void register_irq(const interrupt_callback& callback) {
@@ -53,8 +53,8 @@ namespace klib::core::lpc175x::io::detail {
 
         /**
          * @brief Clear a callback
-         * 
-         * @tparam Irq 
+         *
+         * @tparam Irq
          */
         template <uint32_t CanId>
         static void unregister_irq() {
@@ -65,9 +65,9 @@ namespace klib::core::lpc175x::io::detail {
         }
 
         /**
-         * @brief Interrupt handler for the can hardware. This should only be 
+         * @brief Interrupt handler for the can hardware. This should only be
          * called from NVIC
-         * 
+         *
          */
         static void irq_handler() {
             // call every callback we have
@@ -85,8 +85,8 @@ namespace klib::core::lpc175x::io::detail {
 namespace klib::core::lpc175x::io {
     /**
      * @brief lpc1756 can driver
-     * 
-     * @tparam Can 
+     *
+     * @tparam Can
      * @tparam CanTxBuffers amount of tx hardware buffers used. Can help
      * when a protocol needs a specific order of messages
      */
@@ -112,7 +112,7 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief buffer used in hardware
-         * 
+         *
          */
         struct hw_buffer {
             volatile uint32_t TFI;
@@ -123,7 +123,7 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Clocks for the can can acceptence filter
-         * 
+         *
          */
         struct can_filter {
             // peripheral clock bit position
@@ -132,7 +132,7 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Available transmit buffers
-         * 
+         *
          */
         enum class buffer_index {
             buffer_0 = 0,
@@ -142,10 +142,10 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Write implementation. Will fill up any of the buffers that is available
-         * 
-         * @tparam Async 
-         * @param frame 
-         * @param prio 
+         *
+         * @tparam Async
+         * @param frame
+         * @param prio
          */
         template <bool Async>
         static void write_impl(const klib::io::can::frame& frame, const uint8_t prio = 0) {
@@ -158,7 +158,7 @@ namespace klib::core::lpc175x::io {
             // index of the used buffer
             buffer_index index;
 
-            // check what buffer to write to. Some buffers might be 
+            // check what buffer to write to. Some buffers might be
             // disabled based on the value in CanTxBuffers.
             if (status & (0x1 << 2)) {
                 // point the pointer to the first buffer
@@ -189,12 +189,12 @@ namespace klib::core::lpc175x::io {
 
             // set the frame information
             buffer->TFI = (
-                (frame.extended << 31) | (klib::min((frame.size & 0xf), 8) << 16) | 
+                (frame.extended << 31) | (klib::min((frame.size & 0xf), 8) << 16) |
                 prio | (frame.remote << 30)
             );
 
             // write the address
-            buffer->TID = (frame.extended ? 
+            buffer->TID = (frame.extended ?
                 (frame.address & 0x1fffffff) : (frame.address & 0x7ff)
             );
 
@@ -273,7 +273,7 @@ namespace klib::core::lpc175x::io {
                 // get the channels that have a interrupt pending
                 uint32_t pending = masked_status & ((0x1 << 1) | (0x1 << 9) | (0x1 << 10));
 
-                // disable the interrupt bits for every enabled 
+                // disable the interrupt bits for every enabled
                 // transmit buffer
                 Can::port->IER &= ~(pending);
 
@@ -292,7 +292,7 @@ namespace klib::core::lpc175x::io {
                     }
                 }
             }
-            
+
             if (masked_status & (0x1 << 0)) {
                 // clear the read interrupt bit until the current data is read
                 Can::port->IER &= ~(0x1);
@@ -305,7 +305,7 @@ namespace klib::core::lpc175x::io {
             }
 
             // check if we have passed the error thresholds (protocol defined at 127)
-            if (masked_status & (0x1 << 5)) { 
+            if (masked_status & (0x1 << 5)) {
                 // get the current error counters
                 const uint32_t reg = Can::port->GSR;
 
@@ -318,10 +318,10 @@ namespace klib::core::lpc175x::io {
                 }
             }
 
-            // check if we have a bus error (only enabled when the thresholds 
+            // check if we have a bus error (only enabled when the thresholds
             // are reached)
             if (masked_status & (0x1 << 7)) {
-                // stop all the current transmissions when the bus error 
+                // stop all the current transmissions when the bus error
                 // interrupt is enabled and we have one
                 Can::port->CMR |= (0x1 << 1);
             }
@@ -363,10 +363,10 @@ namespace klib::core::lpc175x::io {
             transmit_callback = transmit;
             receive_callback = receive;
 
-            // enable the interrupt bits (all error and wakeup bits 
+            // enable the interrupt bits (all error and wakeup bits
             // and the receive interrupt if we are using interrupts)
             Can::port->IER = (
-                0b00000110000 | ((receive != nullptr) ? 0x1 : 0x0) 
+                0b00000110000 | ((receive != nullptr) ? 0x1 : 0x0)
                 // | (0x1 << 3) // data overrun interrupt bit
             );
 
@@ -385,9 +385,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Returns if we have a RX or a TX error
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool has_error() {
             return Can::port->GSR & (0x1 << 6);
@@ -395,9 +395,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Returns if we have data available
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool has_data() {
             // check both RBS bits in the status register
@@ -405,12 +405,12 @@ namespace klib::core::lpc175x::io {
         }
 
         /**
-         * @brief Function that returns if the transmitting side is 
-         * busy. If this function returns false it means there is 
+         * @brief Function that returns if the transmitting side is
+         * busy. If this function returns false it means there is
          * no space in the internal buffers
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_busy() {
             // get the status register
@@ -431,11 +431,11 @@ namespace klib::core::lpc175x::io {
         }
 
         /**
-         * @brief Write a frame to the bus. If no data can be written the 
+         * @brief Write a frame to the bus. If no data can be written the
          * packet is lost. If async == false this function blocks until
          * the data is written on the bus
-         * 
-         * @param frame 
+         *
+         * @param frame
          */
         template <bool Async = false>
         static void write(const klib::io::can::frame& frame) {
@@ -445,12 +445,12 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Read a frame from the can hardware
-         * 
-         * @warning undefined behaviour if data is read without data in the 
+         *
+         * @warning undefined behaviour if data is read without data in the
          * hardware buffer. (check has_data() or wait for the receive
          * interrupt)
-         * 
-         * @return klib::io::can::frame 
+         *
+         * @return klib::io::can::frame
          */
         static klib::io::can::frame read() {
             // create the frame

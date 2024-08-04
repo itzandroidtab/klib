@@ -9,23 +9,23 @@
 
 namespace klib::core::lpc17xx::io {
     /**
-     * @brief Driver for the lpc17xx flash. Uses IAP calls to write flash. The 
-     * IAP calls use a maximum of 128 bytes of user ram and the top 32 bytes of 
-     * memory. The user should not use the top bytes of memory or they will be 
+     * @brief Driver for the lpc17xx flash. Uses IAP calls to write flash. The
+     * IAP calls use a maximum of 128 bytes of user ram and the top 32 bytes of
+     * memory. The user should not use the top bytes of memory or they will be
      * overwritten.
-     * 
+     *
      * @details The IAP uses some undocumented registers to remap the flash to
      * something else. Reverse engineering this is a bit of a pain. Might look
      * at it later to see if this can be optimized. (This means if I figure out
      * how it works it would require ram as that is not changed. Not sure if
      * this is worth the tradeof)
-     * 
+     *
      */
     class flash {
     protected:
         /**
          * @brief All IAP commands available in the lpc17xx bootloader
-         * 
+         *
          */
         class iap_cmd {
         public:
@@ -43,7 +43,7 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief IAP result codes
-         * 
+         *
          */
         enum class iap_result {
             success = 0,
@@ -67,9 +67,9 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief do a IAP call
-         * 
-         * @param cmd 
-         * @param result 
+         *
+         * @param cmd
+         * @param result
          */
         static void iap_call(const uint32_t* cmd, uint32_t* result) {
             // disable interrupts as the flash is remapped
@@ -101,7 +101,7 @@ namespace klib::core::lpc17xx::io {
     public:
         /**
          * @brief Available erase modes
-         * 
+         *
          */
         enum class erase_mode {
             sector,
@@ -109,12 +109,12 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Get the sector the address is located in
-         * 
-         * 
-         * @return uint32_t 
+         *
+         *
+         * @return uint32_t
          */
         static uint32_t address_to_sector(const uint32_t address) {
-            // the lpc17xx chips have 16x 4k sectors at the start. 
+            // the lpc17xx chips have 16x 4k sectors at the start.
             // After the 4k sectors it has 32k sectors
             if (address < (16 * (4 * 1024))) {
                 return address / (4 * 1024);
@@ -126,9 +126,9 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Get the start address of a sector
-         * 
-         * @param address 
-         * @return sector 
+         *
+         * @param address
+         * @return sector
          */
         static uint32_t sector_to_address(const uint32_t sector) {
             if (sector < 16) {
@@ -141,10 +141,10 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Check if a sector is blank
-         * 
-         * @param address 
-         * @return true 
-         * @return false 
+         *
+         * @param address
+         * @return true
+         * @return false
          */
         static bool is_blank(const uint32_t address) {
             // get the sector number from the address
@@ -167,11 +167,11 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Erase using the mode
-         * 
-         * @param mode 
-         * @param address 
-         * @return true 
-         * @return false 
+         *
+         * @param mode
+         * @param address
+         * @return true
+         * @return false
          */
     	static bool erase(const erase_mode mode, const uint32_t address) {
             // get the sector number from the address
@@ -200,13 +200,13 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Write to the address with data
-         * 
+         *
          * @warning can only write 256, 512, 1024 or 4096 bytes at a time
-         * 
-         * @tparam T 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam T
+         * @param address
+         * @param data
+         * @param size
          * @return success
          */
         template <typename T>
@@ -223,7 +223,7 @@ namespace klib::core::lpc17xx::io {
             // create the command for the iap call
             const uint32_t buffer[5] = {
                 iap_cmd::copy_ram_to_flash,
-                address, reinterpret_cast<uint32_t>(data.data()), 
+                address, reinterpret_cast<uint32_t>(data.data()),
                 data.size_bytes(), get_clock_khz()
             };
 
@@ -238,7 +238,7 @@ namespace klib::core::lpc17xx::io {
 
         /**
          * @brief Erase the whole chip
-         * 
+         *
          */
         static void chip_erase() {
             // try to erase every sector

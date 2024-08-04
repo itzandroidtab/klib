@@ -15,8 +15,8 @@ namespace klib::core::lpc175x::io {
     public:
         /**
          * @brief Initialize the RTC
-         * 
-         * @param cal_value 
+         *
+         * @param cal_value
          * @param cal_direction
          */
         static void init(const uint32_t cal_value = 0, const bool cal_direction = 1) {
@@ -50,35 +50,35 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Returns if the current rtc time is valid.
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_valid() {
             return Rtc::port->YEAR < 1970;
         }
 
         /**
-         * @brief Get the current epoch time (currently we are using a 32 bit 
-         * values for the second counter. As we do not care about negative 
+         * @brief Get the current epoch time (currently we are using a 32 bit
+         * values for the second counter. As we do not care about negative
          * values we should not have the 2038 issue. This does cause a issue if
          * we want to have epoch values before 1970)
-         * 
-         * @return klib::time::s 
+         *
+         * @return klib::time::s
          */
         static klib::time::s get() {
             // convert the current date and time to epoch seconds
             return klib::io::rtc::datetime_to_epoch(
-                Rtc::port->YEAR, Rtc::port->MONTH, 
-                Rtc::port->DOM, Rtc::port->HRS, 
+                Rtc::port->YEAR, Rtc::port->MONTH,
+                Rtc::port->DOM, Rtc::port->HRS,
                 Rtc::port->MIN, Rtc::port->SEC
             );
         }
 
         /**
          * @brief Set the current epoch time
-         * 
-         * @param time 
+         *
+         * @param time
          */
         static void set(const klib::time::s time) {
             // convert the epoch to datetime

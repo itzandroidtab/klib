@@ -12,8 +12,8 @@ namespace klib::lpc55s66 {
 
     /**
      * @brief Get the current cpu id
-     * 
-     * @return uint32_t 
+     *
+     * @return uint32_t
      */
     static uint32_t get_cpu_id() {
         // pointer to the vector table offset register
@@ -31,8 +31,8 @@ namespace klib::lpc55s66 {
 
     /**
      * @brief Enable a interrupt
-     * 
-     * @tparam Irq 
+     *
+     * @tparam Irq
      */
     template <uint32_t Irq>
     static void enable_irq() {
@@ -44,8 +44,8 @@ namespace klib::lpc55s66 {
 
     /**
      * @brief Disable a interrupt
-     * 
-     * @tparam Irq 
+     *
+     * @tparam Irq
      */
     template <uint32_t Irq>
     static void disable_irq() {
@@ -57,7 +57,7 @@ namespace klib::lpc55s66 {
 
     /**
      * @brief Global enable interrupts.
-     * 
+     *
      */
     static void enable_irq() {
         __enable_irq();
@@ -65,7 +65,7 @@ namespace klib::lpc55s66 {
 
     /**
      * @brief Global disable interrupts. Prevents any interrupt from triggering
-     * 
+     *
      */
     static void disable_irq() {
         __disable_irq();

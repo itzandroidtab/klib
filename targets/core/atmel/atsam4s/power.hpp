@@ -8,10 +8,10 @@ namespace klib::core::atsam4s::io {
     public:
         /**
          * @brief Enable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P> 
+        template <typename P>
         static void enable() {
             // disable the write protect
             write_protect<false>();
@@ -30,10 +30,10 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Disable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P> 
+        template <typename P>
         static void disable() {
             // disable the write protect
             write_protect<false>();
@@ -51,13 +51,13 @@ namespace klib::core::atsam4s::io {
         }
 
         /**
-         * @brief Get the clock status of a peripheral 
-         * 
-         * @tparam P 
-         * @return true 
-         * @return false 
+         * @brief Get the clock status of a peripheral
+         *
+         * @tparam P
+         * @return true
+         * @return false
          */
-        template <typename P> 
+        template <typename P>
         static bool status() {
             // return the value of the clock id in the register (1 = enabled, 0 = disabled)
             if constexpr ((P::clock_id * 2) < 32) {
@@ -70,7 +70,7 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Disables/enables the write protect on the PMC
-         * 
+         *
          */
         template <bool Enable>
         static void write_protect() {

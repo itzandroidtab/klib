@@ -11,19 +11,19 @@ namespace klib::max32660 {
 
     /**
      * @brief Get the current cpu id
-     * 
-     * @return uint32_t 
+     *
+     * @return uint32_t
      */
     static uint32_t get_cpu_id() {
-        // NOTE: this mcu only has 1 core. So we always 
+        // NOTE: this mcu only has 1 core. So we always
         // return id 0
         return 0;
     }
 
     /**
      * @brief Enable a interrupt
-     * 
-     * @tparam Irq 
+     *
+     * @tparam Irq
      */
     template <uint32_t Irq>
     static void enable_irq() {
@@ -35,8 +35,8 @@ namespace klib::max32660 {
 
     /**
      * @brief Disable a interrupt
-     * 
-     * @tparam Irq 
+     *
+     * @tparam Irq
      */
     template <uint32_t Irq>
     static void disable_irq() {
@@ -45,10 +45,10 @@ namespace klib::max32660 {
         // disable the irq
         NVIC_DisableIRQ(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)));
     }
-    
+
     /**
      * @brief Global enable interrupts.
-     * 
+     *
      */
     static void enable_irq() {
         __enable_irq();
@@ -56,7 +56,7 @@ namespace klib::max32660 {
 
     /**
      * @brief Global disable interrupts. Prevents any interrupt from triggering
-     * 
+     *
      */
     static void disable_irq() {
         __disable_irq();

@@ -108,8 +108,8 @@ namespace klib::max32660::io {
     public:
         /**
          * @brief Available speed modes.
-         * 
-         * @details 
+         *
+         * @details
          * standard = 100kbps
          * fast = 400kbps
          * fast plus = 1Mbps
@@ -124,7 +124,7 @@ namespace klib::max32660::io {
 
     protected:
         // error mask
-        constexpr static uint32_t error_mask = (0x1 << 8) | (0x1 << 9) | 
+        constexpr static uint32_t error_mask = (0x1 << 8) | (0x1 << 9) |
             (0x1 << 10) | (0x1 << 11) | (0x1 << 12) | (0x1 << 13) | (0x1 << 14);
 
         struct clock_info {
@@ -152,7 +152,7 @@ namespace klib::max32660::io {
                 uint32_t hs_high_clk = ((ticks * 2) / 3) - 1;
 
                 // calculate the clock info on fast speed
-                clock_info t = calculate_clock<speed::fast>(); 
+                clock_info t = calculate_clock<speed::fast>();
 
                 // return the timings
                 return {t.high_clk, t.low_clk, hs_low_clk, hs_high_clk, true};
@@ -163,7 +163,7 @@ namespace klib::max32660::io {
 
                 // calculate timing based on 50% dutycycle
                 uint16_t highclks = ((ticks >> 1) - 1);
-                
+
                 // return the timings
                 return {highclks, highclks, 0, 0, false};
             }
@@ -171,12 +171,12 @@ namespace klib::max32660::io {
 
         /**
          * @brief Send a slave address to the i2c bus using a repeated start or a normal start
-         * 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param read 
-         * @return true 
-         * @return false 
+         *
+         * @tparam RepeatedStart
+         * @param address
+         * @param read
+         * @return true
+         * @return false
          */
         template <bool RepeatedStart>
         constexpr static bool send_slave_address(const uint8_t address, const bool read) {
@@ -234,12 +234,12 @@ namespace klib::max32660::io {
 
         /**
          * @brief Helper to read from a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<uint8_t>>
@@ -266,7 +266,7 @@ namespace klib::max32660::io {
                     // do nothing
                 }
 
-                // check if we have data 
+                // check if we have data
                 if (I2c::port->INT_FL0 & ((0x1 << 4) | (0x1))) {
                     // read the data in the fifo
                     while ((index < data.size()) && !(I2c::port->STATUS & (0x1 << 1))) {
@@ -309,19 +309,19 @@ namespace klib::max32660::io {
                 // send a stop
                 send_stop();
             }
-            
+
             // return the status
             return !failed;
         }
 
         /**
          * @brief Helper to write to a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if write was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<uint8_t>>
@@ -404,19 +404,19 @@ namespace klib::max32660::io {
             // set the high speed settings
             I2c::port->HS_CLK = (sp.hs_high_clk << 8) | sp.hs_low_clk;
 
-            // configure the i2c peripheral (set master mode, set the high 
+            // configure the i2c peripheral (set master mode, set the high
             // speed bit and disable clock stretching)
-            I2c::port->CTRL |= (0x1 << 1) | (sp.hs_bit << 15) | (1 << 12); 
-        }  
+            I2c::port->CTRL |= (0x1 << 1) | (sp.hs_bit << 15) | (1 << 12);
+        }
 
         /**
          * @brief Read from a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
@@ -426,12 +426,12 @@ namespace klib::max32660::io {
 
         /**
          * @brief Read from a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
@@ -441,12 +441,12 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write to a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
@@ -456,12 +456,12 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write to a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
@@ -470,13 +470,13 @@ namespace klib::max32660::io {
         }
 
         /**
-         * @brief Stop a transmission that has been started did 
+         * @brief Stop a transmission that has been started did
          * not send a stop
-         * 
+         *
          */
         constexpr static void stop() {
             // stop the current transmission
-            send_stop();   
+            send_stop();
         }
     };
 }

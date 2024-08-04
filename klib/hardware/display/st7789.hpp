@@ -11,9 +11,9 @@
 
 namespace klib::hardware::display {
     template <
-        typename Bus, typename PinDC, typename PinRst, 
+        typename Bus, typename PinDC, typename PinRst,
         graphics::mode Mode = graphics::mode::rgb565,
-        uint32_t Width = 320, uint32_t Height = 240, 
+        uint32_t Width = 320, uint32_t Height = 240,
         uint32_t XOffset = 0, uint32_t YOffset = 0
     >
     class st7789 {
@@ -126,7 +126,7 @@ namespace klib::hardware::display {
                 promctrl = 0xec,
                 promen = 0xfa,
                 nvmset = 0xfc,
-                promact = 0xfe,             
+                promact = 0xfe,
             };
 
             /**
@@ -154,23 +154,23 @@ namespace klib::hardware::display {
 
             /**
              * @brief Write a command to the display
-             * 
-             * @param command 
+             *
+             * @param command
              */
             static void write_cmd(const cmd command) {
                 // write the command to the display
                 write_cmd(command, nullptr, 0);
-            }  
+            }
 
             /**
              * @brief Write a command with one or multiple parameters to the display
-             * 
+             *
              * @details this function packs the aguments in a array to write to the display
-             * 
-             * @tparam Args 
-             * @param command 
-             * @param arg 
-             * @param args 
+             *
+             * @tparam Args
+             * @param command
+             * @param arg
+             * @param args
              */
             template <typename... Args>
             static void write_cmd(const cmd command, const uint8_t arg, Args &&... args) {
@@ -179,17 +179,17 @@ namespace klib::hardware::display {
 
                 // write the command and arguments to the display
                 write_cmd(command, arguments, sizeof(arguments));
-            }         
+            }
 
         public:
             /**
              * @brief inits the display
-             * 
-             * @tparam InvertedColors 
-             * @tparam RGBMode 
-             * @tparam Orientation 
-             * @tparam XMirror 
-             * @tparam YMirror 
+             *
+             * @tparam InvertedColors
+             * @tparam RGBMode
+             * @tparam Orientation
+             * @tparam XMirror
+             * @tparam YMirror
              */
             template <
                 bool InvertedColors = true, bool RGBMode = true,
@@ -235,12 +235,12 @@ namespace klib::hardware::display {
                 }
 
                 // memory direction control
-                write_cmd(cmd::madctl, 
+                write_cmd(cmd::madctl,
                     (RGBMode << 3) | ((Orientation == graphics::orientation::landscape) << 5) |
                     (XMirror << 6) | (YMirror << 7)
                 );
 
-                // frame rate control in idle and partial mode (set 
+                // frame rate control in idle and partial mode (set
                 // it so we use the values from frctrl2)
                 write_cmd(cmd::frctrl1, 0x00, 0x0f, 0x0f);
 
@@ -256,15 +256,15 @@ namespace klib::hardware::display {
 
                 // set gamma adjustment + polarity
                 write_cmd(
-                    cmd::pvgamctrl, 0xd0, 0x04, 0x0d, 
-                    0x11, 0x13, 0x2b, 0x3f, 0x54, 0x4c, 
+                    cmd::pvgamctrl, 0xd0, 0x04, 0x0d,
+                    0x11, 0x13, 0x2b, 0x3f, 0x54, 0x4c,
                     0x18, 0x0d, 0x0b, 0x1f, 0x23
                 );
 
                 // set gamma adjustment - polarity
                 write_cmd(
-                    cmd::nvgamctrl, 0xd0, 0x04, 0x0c, 
-                    0x11, 0x13, 0x2c, 0x3f, 0x44, 0x51, 
+                    cmd::nvgamctrl, 0xd0, 0x04, 0x0c,
+                    0x11, 0x13, 0x2c, 0x3f, 0x44, 0x51,
                     0x2f, 0x1f, 0x1f, 0x20, 0x23
                 );
 
@@ -333,27 +333,27 @@ namespace klib::hardware::display {
     };
 
     /**
-     * @brief Display write override with dma. Has support for 2 
-     * channels as some hardware requires a channel for reading the 
+     * @brief Display write override with dma. Has support for 2
+     * channels as some hardware requires a channel for reading the
      * spi data as well. If not used it can be set to:
      * "klib::io::dma::none"
-     * 
-     * @tparam DmaTx 
-     * @tparam DmaRx 
-     * @tparam Bus 
-     * @tparam PinDC 
-     * @tparam PinRst 
-     * @tparam Mode 
-     * @tparam Width 
-     * @tparam Height 
-     * @tparam XOffset 
-     * @tparam YOffset 
+     *
+     * @tparam DmaTx
+     * @tparam DmaRx
+     * @tparam Bus
+     * @tparam PinDC
+     * @tparam PinRst
+     * @tparam Mode
+     * @tparam Width
+     * @tparam Height
+     * @tparam XOffset
+     * @tparam YOffset
      */
     template <
         typename DmaTx, typename DmaRx,
-        typename Bus, typename PinDC, typename PinRst, 
+        typename Bus, typename PinDC, typename PinRst,
         graphics::mode Mode = graphics::mode::rgb565,
-        uint32_t Width = 320, uint32_t Height = 240, 
+        uint32_t Width = 320, uint32_t Height = 240,
         uint32_t XOffset = 0, uint32_t YOffset = 0
     >
     class st7789_dma: public st7789<Bus, PinDC, PinRst, Mode, Width, Height, XOffset, YOffset> {
@@ -364,17 +364,17 @@ namespace klib::hardware::display {
     public:
         /**
          * @brief Do a raw write using the dma
-         * 
-         * @warning DMA channels should be initialized before 
+         *
+         * @warning DMA channels should be initialized before
          * calling this function
-         * 
-         * @param data 
-         * @param size 
+         *
+         * @param data
+         * @param size
          */
         static void raw_write(const uint8_t *const data, const uint32_t size) {
             // check if we have a receive dma channel
             if constexpr (!std::is_same_v<DmaRx, klib::io::dma::none>) {
-                // read memory into the rx buffer. Do not increment as we 
+                // read memory into the rx buffer. Do not increment as we
                 // do not care about the result of what we are reading
                 DmaRx::template read<false>(std::span<uint8_t>{
                     reinterpret_cast<uint8_t*>(&rx), size

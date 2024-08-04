@@ -10,7 +10,7 @@
 namespace klib::usb::hid {
     /**
      * @brief Hid device descriptor
-     * 
+     *
      */
     struct descriptor {
         // size of the descriptor
@@ -30,7 +30,7 @@ namespace klib::usb::hid {
 
         // report descriptor type
         uint8_t bClassDescriptorType;
-        
+
         // total length of the report descriptor
         uint16_t wDescriptorLength;
     };
@@ -38,7 +38,7 @@ namespace klib::usb::hid {
     static_assert(sizeof(descriptor) == 0x09, "Hid descriptor size is wrong");
 }
 
-// release the old pack so the rest of the structs are not 
+// release the old pack so the rest of the structs are not
 // affected by the pack(1)
 #pragma pack(pop)
 

@@ -46,7 +46,7 @@ namespace klib::atsam3x8e {
 
     //         static source get_rst_cause() {
     //             return static_cast<source>((RSTC->RSTC_SR & RSTC_SR_RSTTYP_Msk) >> RSTC_SR_RSTTYP_Pos);
-    //         } 
+    //         }
     // };
 }
 

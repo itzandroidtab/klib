@@ -9,7 +9,7 @@
 namespace klib::crypt {
     /**
      * @brief Sha1 hash. C++ implementation inspired by [novan-ve/ft_ssl](https://github.com/novan-ve/ft_ssl)
-     * 
+     *
      */
     class sha1 {
     public:
@@ -102,26 +102,26 @@ namespace klib::crypt {
     public:
         /**
          * @brief Construct a new sha1 object
-         * 
+         *
          */
         sha1() {}
 
         /**
          * @brief Construct a new sha1 object and call update on the data
-         * 
-         * @param data 
-         * @param length 
+         *
+         * @param data
+         * @param length
          */
         sha1(const uint8_t *const data, const uint32_t length) {
             update(data, length);
         }
 
         /**
-         * @brief Update the internal structure with the provided 
+         * @brief Update the internal structure with the provided
          * data
-         * 
-         * @param data 
-         * @param length 
+         *
+         * @param data
+         * @param length
          */
         void update(const uint8_t *const data, const uint32_t length) {
             uint32_t input[16];
@@ -141,10 +141,10 @@ namespace klib::crypt {
         }
 
         /**
-         * @brief Finalize the hash. After this function is called update 
+         * @brief Finalize the hash. After this function is called update
          * should not be called anymore
-         * 
-         * @return digest 
+         *
+         * @return digest
          */
         std::array<uint8_t, digest_size> finalize() {
             const uint64_t offset = size % block_size;
@@ -167,7 +167,7 @@ namespace klib::crypt {
             input[15] = (uint32_t)(ssize >> 32);
 
             // the buffer is full calculate now
-            calc(input);            
+            calc(input);
 
             // copy the hash to the digest
             std::array<uint8_t, digest_size> ret;
@@ -184,4 +184,4 @@ namespace klib::crypt {
     };
 }
 
-#endif 
+#endif

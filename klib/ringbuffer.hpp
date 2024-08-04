@@ -7,7 +7,7 @@
 
 namespace klib {
     /**
-     * Simple ringbuffer implementation. When not using a MaxSize 
+     * Simple ringbuffer implementation. When not using a MaxSize
      * that is a power of 2 the operator[] the compiler cannot use
      * a and to substitutes the modulo
      *
@@ -25,8 +25,8 @@ namespace klib {
 
         /**
          * @brief Goto the index at which a item can be stored.
-         * 
-         * @return size_t 
+         *
+         * @return size_t
          */
         constexpr void advance() {
             // check if the ringbuffer is already full
@@ -35,7 +35,7 @@ namespace klib {
                 tail = (tail + 1) % MaxSize;
             }
             else {
-                // add to the used count    
+                // add to the used count
                 used++;
             }
 
@@ -46,7 +46,7 @@ namespace klib {
     public:
         /**
          * @brief Default constructor.
-         * 
+         *
          */
         constexpr ringbuffer() = default;
 
@@ -65,9 +65,9 @@ namespace klib {
 
         /**
          * @brief Emplace an item into the ringbuffer.
-         * 
-         * @tparam Args 
-         * @param args 
+         *
+         * @tparam Args
+         * @param args
          */
         template<typename ...Args>
         constexpr void emplace(Args&& ...args) {
@@ -89,7 +89,7 @@ namespace klib {
             }
 
             // get the current value
-            const T item = buffer[tail]; 
+            const T item = buffer[tail];
 
             // move the tail
             tail = (tail + 1) % MaxSize;

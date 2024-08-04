@@ -20,7 +20,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // setup the flash wait state to 5 + 1 CPU clocks
     target::io::system::flash::setup<5>();
 
-    // setup the clock to 120Mhz (in this example we are using a 12Mhz 
+    // setup the clock to 120Mhz (in this example we are using a 12Mhz
     // oscillator). FCCO needs to be in range 156 - 320Mhz
     // (((9 + 1) * 2 * 12Mhz) / (0 + 1) = 240Mhz) / (1 + 1) = 120Mhz
     clock::set_main<
@@ -28,16 +28,16 @@ void __attribute__((__constructor__(101))) __target_startup() {
     >();
 
     // set the global peripheral clock divider to 1. All the
-    // drivers expect this value. At the moment they do not 
+    // drivers expect this value. At the moment they do not
     // read the divider. TODO: add support for dynamic dividers
     target::io::clocks::set<target::io::clocks::divider::div_1>();
 
-    // setup the irq handler before main is called. This 
+    // setup the irq handler before main is called. This
     // moves the vector table to ram so it can be changed
-    // at runtime. When no interrupts are used this 
+    // at runtime. When no interrupts are used this
     // function call can be removed. By default interrupts
     // are mapped to a function that halts the whole cpu.
-    // this call does nothing when a flash handler is 
+    // this call does nothing when a flash handler is
     // configured
     klib::irq::boot_helper::init<target::irq>();
 

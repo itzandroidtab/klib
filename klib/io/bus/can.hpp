@@ -11,14 +11,14 @@ namespace klib::io::can {
 
     /**
      * @brief Can frame for 11 and 29 bit frames
-     * 
+     *
      */
     struct frame {
         // address in the can frame. This is for
         // extended and normal frames
         uint32_t address;
 
-        // flag if we have a extended or normal 
+        // flag if we have a extended or normal
         // frame
         bool extended;
 
@@ -33,16 +33,16 @@ namespace klib::io::can {
     };
 
     /**
-     * @brief Simpel helper class to extend the internal buffers for hardware that 
-     * only has limited buffer support. This class adds support for TxSize and RxSize 
-     * amount of buffers. 
-     * 
-     * @warning This does not sort messages on can priority (or any priority) but on 
+     * @brief Simpel helper class to extend the internal buffers for hardware that
+     * only has limited buffer support. This class adds support for TxSize and RxSize
+     * amount of buffers.
+     *
+     * @warning This does not sort messages on can priority (or any priority) but on
      * FIFO.
-     * 
-     * @tparam Can 
-     * @tparam TxSize 
-     * @tparam RxSize 
+     *
+     * @tparam Can
+     * @tparam TxSize
+     * @tparam RxSize
      */
     template <typename Can, uint32_t TxSize = 32, uint32_t RxSize = 32>
     class helper {
@@ -54,7 +54,7 @@ namespace klib::io::can {
         // flag if we are already transmitting
         static inline bool is_sending = false;
 
-        // flag to signal if we are "busy" and cannot process 
+        // flag to signal if we are "busy" and cannot process
         // more messages because the queue is full
         static inline volatile bool is_full = false;
 
@@ -64,10 +64,10 @@ namespace klib::io::can {
         /**
          * @brief Receive handler. Needs to be called when a frame
          * is received to store it in the queue
-         * 
+         *
          */
         static void receive_handler() {
-            // read the frame to empty the buffer on 
+            // read the frame to empty the buffer on
             // the hardware
             const auto frame = Can::read();
 
@@ -85,16 +85,16 @@ namespace klib::io::can {
         }
 
         /**
-         * @brief Transmit handler. Writes new frames to the can 
-         * bus. Needs to be called after the hardware is done 
+         * @brief Transmit handler. Writes new frames to the can
+         * bus. Needs to be called after the hardware is done
          * transmitted a message
-         * 
+         *
          */
         static void transmit_handler() {
             // check if we have any frames left to send
             if (transmit.empty()) {
-                // mark we are not busy anymore and 
-                // we need a restart next time we are 
+                // mark we are not busy anymore and
+                // we need a restart next time we are
                 // sending data
                 is_sending = false;
 
@@ -124,9 +124,9 @@ namespace klib::io::can {
 
         /**
          * @brief Returns if we have data available.
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool has_data() {
             // return we have data in the queue
@@ -135,11 +135,11 @@ namespace klib::io::can {
 
         /**
          * @brief Read a frame from the queue
-         * 
+         *
          * @warning the can interrupt should be suppressed while
          * this function called.
-         * 
-         * @return klib::io::can::frame 
+         *
+         * @return klib::io::can::frame
          */
         static can::frame read() {
             // get the frame
@@ -153,24 +153,24 @@ namespace klib::io::can {
         }
 
         /**
-         * @brief Function that returns if we have space in the 
+         * @brief Function that returns if we have space in the
          * transmit queue.
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_busy() {
             return is_full;
         }
 
         /**
-         * @brief Write a frame to the queue. Might send the 
-         * data immediately. 
-         * 
+         * @brief Write a frame to the queue. Might send the
+         * data immediately.
+         *
          * @warning the can interrupt should be suppressed while
          * this function called.
-         * 
-         * @param frame 
+         *
+         * @param frame
          */
         template <bool Async = true>
         static void write(const klib::io::can::frame& frame) {
@@ -181,7 +181,7 @@ namespace klib::io::can {
             if (is_full) {
                 return;
             }
-            
+
             // push our frame to the queue
             transmit.push(frame);
 
@@ -190,19 +190,19 @@ namespace klib::io::can {
 
             // check if we should start the interrupt chain
             if (!is_sending && !Can::is_busy()) {
-                // call the handler to write the data to the hardware 
+                // call the handler to write the data to the hardware
                 transmit_handler();
             }
         }
 
         /**
          * @brief Get the current size of the buffers.
-         * 
+         *
          * @warning These buffers can be changed in a interrupts. There is
          * no interrupt safety
-         * 
-         * @tparam Receive 
-         * @return uint32_t 
+         *
+         * @tparam Receive
+         * @return uint32_t
          */
         template <bool Receive = true>
         static uint32_t size() {

@@ -11,19 +11,19 @@ namespace klib::atsam3x8e {
 
     /**
      * @brief Get the current cpu id
-     * 
-     * @return uint32_t 
+     *
+     * @return uint32_t
      */
     static uint32_t get_cpu_id() {
-        // NOTE: this mcu only has 1 core. So we always 
+        // NOTE: this mcu only has 1 core. So we always
         // return id 0
         return 0;
     }
 
     /**
      * @brief Enable a interrupt
-     * 
-     * @tparam Irq 
+     *
+     * @tparam Irq
      */
     template <uint32_t Irq>
     static void enable_irq() {
@@ -35,8 +35,8 @@ namespace klib::atsam3x8e {
 
     /**
      * @brief Disable a interrupt
-     * 
-     * @tparam Irq 
+     *
+     * @tparam Irq
      */
     template <uint32_t Irq>
     static void disable_irq() {
@@ -48,7 +48,7 @@ namespace klib::atsam3x8e {
 
     /**
      * @brief Global enable interrupts.
-     * 
+     *
      */
     static void enable_irq() {
         __enable_irq();
@@ -56,7 +56,7 @@ namespace klib::atsam3x8e {
 
     /**
      * @brief Global disable interrupts. Prevents any interrupt from triggering
-     * 
+     *
      */
     static void disable_irq() {
         __disable_irq();

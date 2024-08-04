@@ -26,7 +26,7 @@ namespace klib::core::lpc175x::io::system {
     public:
         /**
          * @brief Available plls on the chip
-         * 
+         *
          */
         enum class pll {
             main = 0,
@@ -35,7 +35,7 @@ namespace klib::core::lpc175x::io::system {
 
         /**
          * @brief Available clock sources
-         * 
+         *
          */
         enum class source {
             internal = 0,
@@ -45,7 +45,7 @@ namespace klib::core::lpc175x::io::system {
 
         /**
          * @brief USB PLL clock divider if the USB pll is not used for USB
-         * 
+         *
          */
         enum class usb_pll_divider {
             mhz_288 = 5,
@@ -55,8 +55,8 @@ namespace klib::core::lpc175x::io::system {
 
         /**
          * @brief Check if a pll is connected
-         * 
-         * @tparam Pll 
+         *
+         * @tparam Pll
          * @return bool
          */
         template <pll Pll>
@@ -70,10 +70,10 @@ namespace klib::core::lpc175x::io::system {
         }
 
         /**
-         * @brief 
-         * 
-         * @tparam Pll 
-         * @tparam Connect 
+         * @brief
+         *
+         * @tparam Pll
+         * @tparam Connect
          */
         template <pll Pll, bool Connect>
         static void connect() {
@@ -100,10 +100,10 @@ namespace klib::core::lpc175x::io::system {
 
         /**
          * @brief Returns if a pll is enabled
-         * 
-         * @tparam Pll 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Pll
+         * @return true
+         * @return false
          */
         template <pll Pll>
         static bool is_enabled() {
@@ -117,11 +117,11 @@ namespace klib::core::lpc175x::io::system {
 
         /**
          * @brief Enable or disable the specified pll
-         * 
-         * @tparam Pll 
-         * @tparam Enable 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Pll
+         * @tparam Enable
+         * @return true
+         * @return false
          */
         template <pll Pll, bool Enable>
         static void enable() {
@@ -148,8 +148,8 @@ namespace klib::core::lpc175x::io::system {
 
         /**
          * @brief Feed the pll
-         * 
-         * @tparam Pll 
+         *
+         * @tparam Pll
          */
         template <pll Pll>
         static void feed() {
@@ -166,24 +166,24 @@ namespace klib::core::lpc175x::io::system {
 
         /**
          * @brief Setup a pll
-         * 
+         *
          * @details PLL0 calculation
          * PLL0 frequency:
          *     FCCO = (2 * M * FIN) / N
-         * 
+         *
          *     M = (FCCO * N) / (2 * FIN)
          *     N = (2 * M * FIN) / FCCO
          *     FIN = (FCCO * N) / (2 * M)
-         * 
+         *
          * PLL1 frequency:
-         *     USBCLK (48Mhz) = M * FOSC or 
+         *     USBCLK (48Mhz) = M * FOSC or
          *     USBCLK (48Mhz) = FCCO / (2 * P)
-         * 
+         *
          *     The CCO frequency can be computed as:
-         *     FCCO = USBCLK (48Mhz) * 2 * P or 
+         *     FCCO = USBCLK (48Mhz) * 2 * P or
          *     FCCO = FOSC ´ M * 2 * P
-         * 
-         * @tparam Pll 
+         *
+         * @tparam Pll
          * @param multiplier PLL multiplier.
          * @param pre_divider pre divider value.
          */
@@ -252,7 +252,7 @@ namespace klib::core::lpc175x::io::system {
 
             // connect the pll
             connect<pll::main, true>();
-            
+
             // notify klib what freqency we are running
             klib::io::clock::set(Freq);
         }
@@ -276,18 +276,18 @@ namespace klib::core::lpc175x::io::system {
             }
 
             // connect the usb pll
-            clock::connect<clock::pll::usb, true>();            
+            clock::connect<clock::pll::usb, true>();
         }
 
         /**
-         * @brief Set the USB clock input to the main pll with 
+         * @brief Set the USB clock input to the main pll with
          * a divider
-         * 
-         * @tparam Freq 
+         *
+         * @tparam Freq
          */
         template <usb_pll_divider Freq>
         static void set_usb() {
-            // disable the USB pll to switch to main pll 
+            // disable the USB pll to switch to main pll
             // with a divider
             clock::enable<clock::pll::usb, false>();
 

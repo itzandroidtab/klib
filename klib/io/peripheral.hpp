@@ -7,11 +7,11 @@
 namespace klib::io::peripheral::detail {
     /**
      * @brief Helper function to get a index to a pin in a peripheral tuple
-     * 
-     * @tparam Index 
-     * @tparam Pin 
-     * @tparam ValidPins 
-     * @return constexpr uint32_t 
+     *
+     * @tparam Index
+     * @tparam Pin
+     * @tparam ValidPins
+     * @return constexpr uint32_t
      */
     template <uint32_t Index, typename Pin, typename ValidPins>
     constexpr uint32_t index() {
@@ -34,10 +34,10 @@ namespace klib::io::peripheral::detail {
 namespace klib::io::peripheral {
     /**
      * @brief Peripheral helper function to verify and get the index in the peripheral tuple
-     * 
-     * @tparam Pin 
-     * @tparam ValidPins 
-     * @return consteval 
+     *
+     * @tparam Pin
+     * @tparam ValidPins
+     * @return consteval
      */
     template <typename Pin, typename ValidPins>
     consteval uint32_t get_index() {

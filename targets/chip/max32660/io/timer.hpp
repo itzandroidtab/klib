@@ -98,7 +98,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
 namespace klib::max32660::io::detail::timer {
     /**
      * @brief Different timer modes
-     * 
+     *
      */
     enum class mode {
         one_shot = 0x0,
@@ -113,9 +113,9 @@ namespace klib::max32660::io::detail::timer {
 
     /**
      * @brief Base timer for the max32660
-     * 
-     * @tparam Timer 
-     * @tparam Mode 
+     *
+     * @tparam Timer
+     * @tparam Mode
      */
     template <typename Timer, mode Mode = mode::continuous>
     class base_timer {
@@ -129,7 +129,7 @@ namespace klib::max32660::io::detail::timer {
 
         /**
          * @brief Interrupt handler
-         * 
+         *
          */
         static void isr_handler() {
             // write 0 to the register to clear the value
@@ -144,9 +144,9 @@ namespace klib::max32660::io::detail::timer {
     public:
         /**
          * @brief Init the provided timer
-         * 
-         * @param irq 
-         * @param frequency 
+         *
+         * @param irq
+         * @param frequency
          */
         static void init(const interrupt_callback& irq, const uint32_t frequency) {
             // enable the clock on the timer peripheral
@@ -180,8 +180,8 @@ namespace klib::max32660::io::detail::timer {
 
         /**
          * @brief Set the frequency of the timer
-         * 
-         * @param Frequency 
+         *
+         * @param Frequency
          */
         static void set_frequency(const uint32_t frequency) {
             // clear the prescaler
@@ -199,7 +199,7 @@ namespace klib::max32660::io::detail::timer {
 
         /**
          * @brief Disable the timer
-         * 
+         *
          */
         static void disable() {
             // disable the timer
@@ -208,7 +208,7 @@ namespace klib::max32660::io::detail::timer {
 
         /**
          * @brief Enable the timer
-         * 
+         *
          */
         static void enable() {
             // enable the timer
@@ -217,8 +217,8 @@ namespace klib::max32660::io::detail::timer {
 
         /**
          * @brief Returns the current value of a counter
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t get_counter() {
             return Timer::port->CNT;
@@ -226,7 +226,7 @@ namespace klib::max32660::io::detail::timer {
 
         /**
          * @brief Clear the counter in the timer
-         * 
+         *
          */
         static void clear_counter() {
             Timer::port->CNT = 1;
@@ -237,28 +237,28 @@ namespace klib::max32660::io::detail::timer {
 namespace klib::max32660::io {
     /**
      * @brief Basic timer. Uses interrupts to call a callback.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer>
     using timer = detail::timer::base_timer<Timer, detail::timer::mode::continuous>;
 
     /**
      * @brief Oneshot timer. Uses interrupt to call a callback once.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer>
     using oneshot_timer = detail::timer::base_timer<Timer, detail::timer::mode::one_shot>;
 
     /**
      * @brief Pin that uses a timer to toggle the output.
-     * 
+     *
      * @warning When disabling the timer the output of the gpio is not changed.
-     * 
-     * @tparam Timer 
-     * @tparam Frequency 
-     * @tparam Bits 
+     *
+     * @tparam Timer
+     * @tparam Frequency
+     * @tparam Bits
      */
     template <typename Timer, uint32_t Frequency = 50'000, uint8_t Bits = 8>
     class pin_timer {
@@ -274,8 +274,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Calculate the stepsize used in the set functions
-         * 
-         * @return float 
+         *
+         * @return float
          */
         static float calculate_stepsize() {
             // get the peripheral clock
@@ -299,7 +299,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Init the timer pin.
-         * 
+         *
          */
         static void init() {
             // enable the clock on the timer peripheral
@@ -320,7 +320,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Disable the timer pin
-         * 
+         *
          */
         static void disable() {
             // disable the timer
@@ -329,7 +329,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Enable the timer pin
-         * 
+         *
          */
         static void enable() {
             // enable the timer
@@ -338,8 +338,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Set the dutycycle of the timer pin
-         * 
-         * @tparam Dutycycle 
+         *
+         * @tparam Dutycycle
          */
         template <uint16_t Dutycycle>
         static void dutycycle() {
@@ -349,7 +349,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Set the dutycycle of the timer pin
-         * 
+         *
          * @param dutycycle
          */
         static void dutycycle(uint16_t dutycycle) {
@@ -359,8 +359,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Enable or disable output.
-         * 
-         * @tparam Value 
+         *
+         * @tparam Value
          */
         template <bool Value>
         static void set() {
@@ -379,8 +379,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Enable or disable output.
-         * 
-         * @param value 
+         *
+         * @param value
          */
         static void set(bool value) {
             // clear or set the pin to the peripheral
@@ -398,8 +398,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Returns the current value of a counter
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t get_counter() {
             return timer<Timer>::get_counter();
@@ -407,7 +407,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Clear the counter in the timer
-         * 
+         *
          */
         static void clear_counter() {
             timer<Timer>::clear_counter();

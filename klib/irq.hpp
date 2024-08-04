@@ -10,10 +10,10 @@
 
 namespace klib::irq::detail {
     /**
-     * @brief Available irq types. Flash irq types 
+     * @brief Available irq types. Flash irq types
      * have different requirements for initialization
      * that should be done by the user
-     * 
+     *
      */
     enum class type {
         ram,
@@ -24,28 +24,28 @@ namespace klib::irq::detail {
 namespace klib::irq {
     /**
      * @brief Irq boot helper. Will initialize any ram irq handler
-     * 
+     *
      */
     class boot_helper {
     public:
         /**
          * @brief Returns if the irq handler is in ram
-         * 
-         * @tparam Irq 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Irq
+         * @return true
+         * @return false
          */
         template <typename Irq>
         constexpr static bool in_ram() {
             // check if we have a ram handler
             return Irq::type == klib::irq::detail::type::ram;
-        } 
+        }
 
         /**
          * @brief Init the ram handler if we have one
-         * 
-         * @tparam Irq 
-         * @tparam Systick 
+         *
+         * @tparam Irq
+         * @tparam Systick
          */
         template <typename Irq>
         static void init() {
@@ -61,14 +61,14 @@ namespace klib::irq {
 
     /**
      * @brief IRQ handler that relocates the vector table.
-     * 
-     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
+     *
+     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
-     * 
-     * @tparam CpuId 
-     * @tparam IrqCount 
-     * @tparam Alignment 
+     *
+     * @tparam CpuId
+     * @tparam IrqCount
+     * @tparam Alignment
      */
     template <uint32_t CpuId, uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
     class irq_ram {
@@ -81,7 +81,7 @@ namespace klib::irq {
 
         /**
          * @brief Available arm vector entries
-         * 
+         *
          */
         enum class arm_vector: uint8_t {
             stack_ptr = 0,
@@ -94,18 +94,18 @@ namespace klib::irq {
             svcall = 11,
             pendsv = 14,
             systick = 15,
-            // end of the arm vector table. vector count should not 
+            // end of the arm vector table. vector count should not
             // be used as a valid vector entry.
             count
         };
 
         // make sure we have at least enough entries to fit the arm vector table
-        static_assert(IrqCount >= static_cast<const uint8_t>(arm_vector::count), 
+        static_assert(IrqCount >= static_cast<const uint8_t>(arm_vector::count),
             "Invalid IRQ count, cannot fit the arm vector table"
         );
-        
+
     protected:
-        // array with all the function callbacks. 
+        // array with all the function callbacks.
         alignas(Alignment) static inline volatile interrupt_callback callbacks[IrqCount] = {};
 
         // pointer to the vector table offset register
@@ -113,17 +113,17 @@ namespace klib::irq {
 
         /**
          * @brief Reserved handler. Used to fill the vector table with a valid pointer
-         * 
+         *
          */
         static void reserved() {
-            // loop as some arm interrupt has happend that is not registered. Probably 
+            // loop as some arm interrupt has happend that is not registered. Probably
             // a hardfault, busfault or a usagefault.
             while (true) {}
         }
 
         /**
          * @brief Default handler that just returns as soon as its called
-         * 
+         *
          */
         static void default_handler() {
             // return straight away
@@ -133,9 +133,9 @@ namespace klib::irq {
     public:
         /**
          * @brief Relocate the interrupt table and init all functions to the default handler
-         * 
-         * @tparam UpdateVectorTable 
-         * @param stack_end 
+         *
+         * @tparam UpdateVectorTable
+         * @param stack_end
          */
         template <bool UpdateVectorTable = true>
         static void init(const uint32_t* stack_end = &__stack_end) {
@@ -143,8 +143,8 @@ namespace klib::irq {
             callbacks[static_cast<uint8_t>(arm_vector::stack_ptr)] = reinterpret_cast<interrupt_callback>(stack_end);
 
             // setup the arm vector table
-            for (uint8_t i = static_cast<const uint8_t>(arm_vector::reset); 
-                 i < static_cast<const uint8_t>(arm_vector::count); i++) 
+            for (uint8_t i = static_cast<const uint8_t>(arm_vector::reset);
+                 i < static_cast<const uint8_t>(arm_vector::count); i++)
             {
                 callbacks[i] = &reserved;
             }
@@ -163,7 +163,7 @@ namespace klib::irq {
 
         /**
          * @brief Return the beginning of the callback array
-         * 
+         *
          * @return auto*
          */
         static auto* begin() {
@@ -172,9 +172,9 @@ namespace klib::irq {
 
         /**
          * @brief Register a callback
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <uint32_t Irq>
         static void register_irq(const interrupt_callback &callback) {
@@ -186,9 +186,9 @@ namespace klib::irq {
 
         /**
          * @brief Register a arm vector callback
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <arm_vector Irq>
         static void register_irq(const interrupt_callback &callback) {
@@ -200,8 +200,8 @@ namespace klib::irq {
 
         /**
          * @brief Clear a callback
-         * 
-         * @tparam Irq 
+         *
+         * @tparam Irq
          */
         template <uint32_t Irq>
         static void unregister_irq() {
@@ -213,16 +213,16 @@ namespace klib::irq {
     };
 
     /**
-     * @brief IRQ handler that relocates the vector table to a table in flash. This frees 
+     * @brief IRQ handler that relocates the vector table to a table in flash. This frees
      * the memory otherwise allocated for the vector table.
-     * 
-     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
+     *
+     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
-     * 
-     * @tparam CpuId 
-     * @tparam IrqCount 
-     * @tparam Alignment 
+     *
+     * @tparam CpuId
+     * @tparam IrqCount
+     * @tparam Alignment
      */
     template <uint32_t CpuId, uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
     class irq_flash {
@@ -238,7 +238,7 @@ namespace klib::irq {
 
         /**
          * @brief Available arm vector entries
-         * 
+         *
          */
         enum class arm_vector: uint8_t {
             stack_ptr = 0,
@@ -251,17 +251,17 @@ namespace klib::irq {
             svcall = 11,
             pendsv = 14,
             systick = 15,
-            // end of the arm vector table. vector count should not 
+            // end of the arm vector table. vector count should not
             // be used as a valid vector entry.
             count
         };
 
-        // export the alignment so the user can use it to 
+        // export the alignment so the user can use it to
         // align the vector table
         constexpr static uint32_t allignment = Alignment;
 
         // make sure we have at least enough entries to fit the arm vector table
-        static_assert(IrqCount >= static_cast<const uint8_t>(arm_vector::count), 
+        static_assert(IrqCount >= static_cast<const uint8_t>(arm_vector::count),
             "Invalid IRQ count, cannot fit the arm vector table"
         );
 
@@ -272,9 +272,9 @@ namespace klib::irq {
     public:
         /**
          * @brief Set the vector table to the array provided by the user
-         * 
-         * @tparam UpdateVectorTable 
-         * @param vectors 
+         *
+         * @tparam UpdateVectorTable
+         * @param vectors
          */
         template <bool UpdateVectorTable = true>
         static void init(const interrupt_callback *const vectors) {
@@ -287,8 +287,8 @@ namespace klib::irq {
 
         /**
          * @brief Return the beginning of the callback array
-         * 
-         * @return auto* 
+         *
+         * @return auto*
          */
         static auto* begin() {
             return (*vtor);
@@ -296,9 +296,9 @@ namespace klib::irq {
 
         /**
          * @brief Dummy function to keep the klib library happy
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <uint32_t Irq>
         static void register_irq(const interrupt_callback &callback) {
@@ -307,9 +307,9 @@ namespace klib::irq {
 
         /**
          * @brief Dummy function to keep the klib library happy
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <arm_vector Irq>
         static void register_irq(const interrupt_callback &callback) {
@@ -318,8 +318,8 @@ namespace klib::irq {
 
         /**
          * @brief Dummy function to keep the klib library happy
-         * 
-         * @tparam Irq 
+         *
+         * @tparam Irq
          */
         template <uint32_t Irq>
         static void unregister_irq() {
@@ -329,14 +329,14 @@ namespace klib::irq {
 
     /**
      * @brief IRQ handler that allows for hooks when a interrupt is called. Uses irq_ram in the background.
-     * 
-     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+ 
+     *
+     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
-     * 
-     * @tparam CpuId 
-     * @tparam IrqCount 
-     * @tparam klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t))) 
+     *
+     * @tparam CpuId
+     * @tparam IrqCount
+     * @tparam klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))
      */
     template <uint32_t CpuId, uint16_t IrqCount, uint32_t Alignment = klib::max(klib::exp2(32 - klib::clz(IrqCount * sizeof(uint32_t))), (32 * sizeof(uint32_t)))>
     class irq_hooked: public irq_ram<CpuId, IrqCount, Alignment> {
@@ -360,7 +360,7 @@ namespace klib::irq {
 
         /**
          * @brief Interrupt callback that calls the corresponding interrupt in the ram table
-         * 
+         *
          */
         static void irq_handler() {
             uint32_t irq;
@@ -386,23 +386,23 @@ namespace klib::irq {
 
         /**
          * @brief Function to set the lookup table at compile time
-         * 
-         * @return constexpr auto 
+         *
+         * @return constexpr auto
          */
         constexpr static auto set_func(uint32_t) {
             // return the irq handler for every item in the lookup table
             return irq_handler;
         }
 
-        // array with all the function callbacks. 
+        // array with all the function callbacks.
         alignas(Alignment) constexpr static auto hooked_callbacks = lookuptable<IrqCount, interrupt_callback>(set_func);
 
     public:
         /**
          * @brief Relocate the interrupt table and init all functions to the default handler
-         * 
-         * @tparam UpdateVectorTable 
-         * @param stack_end 
+         *
+         * @tparam UpdateVectorTable
+         * @param stack_end
          */
         template <bool UpdateVectorTable = true>
         static void init(const uint32_t* stack_end = &__stack_end) {
@@ -421,8 +421,8 @@ namespace klib::irq {
 
         /**
          * @brief Return the beginning of the callback array
-         * 
-         * @return auto* 
+         *
+         * @return auto*
          */
         static auto* begin() {
             return hooked_callbacks.begin();
@@ -430,9 +430,9 @@ namespace klib::irq {
 
         /**
          * @brief Set the entry and exit hooks
-         * 
-         * @param entry 
-         * @param exit 
+         *
+         * @param entry
+         * @param exit
          */
         static void set_hook(const hook_function& entry = nullptr, const hook_function& exit = nullptr) {
             // update the hooks
@@ -442,9 +442,9 @@ namespace klib::irq {
 
         /**
          * @brief Register a callback
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <uint32_t Irq>
         static void register_irq(const interrupt_callback &callback) {
@@ -456,9 +456,9 @@ namespace klib::irq {
 
         /**
          * @brief Register a arm vector callback
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <arm_vector Irq>
         static void register_irq(const interrupt_callback &callback) {
@@ -470,8 +470,8 @@ namespace klib::irq {
 
         /**
          * @brief Clear a callback
-         * 
-         * @tparam Irq 
+         *
+         * @tparam Irq
          */
         template <uint32_t Irq>
         static void unregister_irq() {

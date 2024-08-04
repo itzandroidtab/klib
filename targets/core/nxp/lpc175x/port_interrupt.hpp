@@ -10,11 +10,11 @@
 
 namespace klib::core::lpc175x::io::detail {
     /**
-     * @brief External 3 interrupt handler. Handles the GPIO interrupt 
+     * @brief External 3 interrupt handler. Handles the GPIO interrupt
      * by calling the correct callback for every port
-     * 
+     *
      * @todo: add support for the EXT3 interrupt
-     * 
+     *
      */
     class ext3_interrupt {
     public:
@@ -46,9 +46,9 @@ namespace klib::core::lpc175x::io::detail {
 
         /**
          * @brief Register a callback
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <typename Port>
         static void register_irq(const interrupt_callback& callback) {
@@ -60,8 +60,8 @@ namespace klib::core::lpc175x::io::detail {
 
         /**
          * @brief Clear a callback
-         * 
-         * @tparam Irq 
+         *
+         * @tparam Irq
          */
         template <typename Port>
         static void unregister_irq() {
@@ -72,9 +72,9 @@ namespace klib::core::lpc175x::io::detail {
         }
 
         /**
-         * @brief Interrupt handler for the can hardware. This should only be 
+         * @brief Interrupt handler for the can hardware. This should only be
          * called from NVIC
-         * 
+         *
          */
         static void irq_handler() {
             // get the port status register
@@ -97,8 +97,8 @@ namespace klib::core::lpc175x::io::detail {
 namespace klib::core::lpc175x::io {
     /**
      * @brief Interrupt handler for a port. Uses irq helper to handle the interrupts
-     * 
-     * @tparam Port 
+     *
+     * @tparam Port
      */
     template <typename Port>
     class port_interrupt {
@@ -110,7 +110,7 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Interrupt handler
-         * 
+         *
          */
         static void irq_handler() {
             // get the interrupt status from the port
@@ -136,7 +136,7 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Init the port interrupt
-         * 
+         *
          */
         static void init() {
             // register the interrupt
@@ -148,9 +148,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Register a interrupt for a specific pin
-         * 
-         * @tparam Pin 
-         * @param callback 
+         *
+         * @tparam Pin
+         * @param callback
          */
         template <typename Pin>
         static void register_irq(irq_helper::interrupt_callback callback) {
@@ -163,8 +163,8 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Unregister a interrupt for a specific pin
-         * 
-         * @tparam Pin 
+         *
+         * @tparam Pin
          */
         template <typename Pin>
         static void unregister_irq() {
@@ -181,14 +181,14 @@ namespace klib::core::lpc175x::io {
     public:
         /**
          * @brief Using for the interrupt callback used in the pin irq
-         * 
+         *
          */
         using interrupt_callback = port_interrupt<typename Pin::port>::interrupt_callback;
 
     public:
         /**
          * @brief Supported trigger modes
-         * 
+         *
          */
         enum class edge {
             falling,
@@ -198,9 +198,9 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Initialize a pin with a callback
-         * 
-         * @tparam Edge 
-         * @param callback 
+         *
+         * @tparam Edge
+         * @param callback
          */
         template <edge Edge>
         constexpr static void init(interrupt_callback callback) {
@@ -220,7 +220,7 @@ namespace klib::core::lpc175x::io {
                 GPIOINT->PORT[Pin::port::id / 2].ENR |= detail::pins::mask<Pin>;
                 GPIOINT->PORT[Pin::port::id / 2].ENF |= detail::pins::mask<Pin>;
             }
-            
+
             // register the interrupt in the port
             port_interrupt<typename Pin::port>::template register_irq<Pin>(callback);
 
@@ -230,7 +230,7 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Disable the interrupt on the pin
-         * 
+         *
          */
         constexpr static void disable() {
             // clear the pin from the interrupt list

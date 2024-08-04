@@ -9,7 +9,7 @@ namespace klib::core::lpc17xx::io::system {
     public:
         /**
          * @brief Set the amount of waitstates used for accessing flash
-         * 
+         *
          * @details
          * 0 = for up to 20Mhz
          * 1 = for up to 40Mhz
@@ -17,8 +17,8 @@ namespace klib::core::lpc17xx::io::system {
          * 3 = for up to 80Mhz
          * 4 = for up to 100Mhz
          * 5 = safe setting for all conditions
-         * 
-         * @tparam WaitState 
+         *
+         * @tparam WaitState
          */
         template <uint8_t WaitState>
         static void setup() {

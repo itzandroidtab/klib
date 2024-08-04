@@ -11,17 +11,17 @@ namespace klib::core::atsam4s::io::system {
     public:
         /**
          * @brief Set the amount of waitstates used for accessing flash
-         * 
+         *
          * @details
          * 0 = for up to 20Mhz
          * 1 = for up to 40Mhz
          * 2 = for up to 60Mhz
          * 3 = for up to 80Mhz
          * 4 = for up to 100Mhz
-         * 5 = for up to 120Mhz (safe setting for all conditions as 
+         * 5 = for up to 120Mhz (safe setting for all conditions as
          * it is the max cpu frequency)
-         * 
-         * @tparam WaitState 
+         *
+         * @tparam WaitState
          */
         template <uint8_t WaitState, bool Access64BitMode = false>
         static void setup() {
@@ -30,7 +30,7 @@ namespace klib::core::atsam4s::io::system {
 
             // set the other bits and write it back
             EFC0->FMR = (
-                (WaitState << 8) | (Access64BitMode << 24) | 
+                (WaitState << 8) | (Access64BitMode << 24) |
                 (0x1 << 26) | (0x1 << 16)
             );
         }
@@ -63,7 +63,7 @@ namespace klib::core::atsam4s::io::system {
     public:
         /**
          * @brief All the frequencies for the internal oscillator
-         * 
+         *
          */
         enum class frequency {
             mhz_4 = 0,
@@ -94,7 +94,7 @@ namespace klib::core::atsam4s::io::system {
 
             // set the frequency in the register
             PMC->CKGR_MOR = (
-                (PMC->CKGR_MOR & ~(0x7 << 4)) | (static_cast<uint8_t>(Frequency) << 4) | 
+                (PMC->CKGR_MOR & ~(0x7 << 4)) | (static_cast<uint8_t>(Frequency) << 4) |
                 (0x37 << 16)
             );
         }
@@ -104,7 +104,7 @@ namespace klib::core::atsam4s::io::system {
     public:
         /**
          * @brief Available plls on the chip
-         * 
+         *
          */
         enum class pll {
             plla = 0,
@@ -114,7 +114,7 @@ namespace klib::core::atsam4s::io::system {
 
         /**
          * @brief Available clock sources
-         * 
+         *
          */
         enum class source {
             internal = 0,
@@ -124,7 +124,7 @@ namespace klib::core::atsam4s::io::system {
 
         /**
          * @brief Availalble prescalers for the master clock
-         * 
+         *
          */
         enum class prescaler {
             div_1 = 0x0,
@@ -140,10 +140,10 @@ namespace klib::core::atsam4s::io::system {
     protected:
         /**
          * @brief Helper function to check if a source is enabled
-         * 
-         * @tparam Source 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Source
+         * @return true
+         * @return false
          */
         template <source Source>
         static bool is_enabled() {
@@ -162,11 +162,11 @@ namespace klib::core::atsam4s::io::system {
 
         /**
          * @brief Enable or disable the specified pll
-         * 
-         * @tparam Pll 
-         * @tparam Enable 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Pll
+         * @tparam Enable
+         * @return true
+         * @return false
          */
         template <pll Pll, bool Enable = false, uint32_t Value = 0x00>
         static void setup_impl() {
@@ -197,8 +197,8 @@ namespace klib::core::atsam4s::io::system {
 
         /**
          * @brief Switch to a specific master clock source
-         * 
-         * @tparam source 
+         *
+         * @tparam source
          */
         template <master_clock_source Source, prescaler Prescaler>
         static void switch_master_clock() {
@@ -281,9 +281,9 @@ namespace klib::core::atsam4s::io::system {
 
         /**
          * @brief Get the divider for the prescaler
-         * 
-         * @tparam Prescaler 
-         * @return uint8_t 
+         *
+         * @tparam Prescaler
+         * @return uint8_t
          */
         template <prescaler Prescaler>
         static uint8_t get_divider() {
@@ -297,12 +297,12 @@ namespace klib::core::atsam4s::io::system {
 
         /**
          * @brief Setup a pll
-         * 
+         *
          * @details PLL calculation
          * PLL frequency calculation:
          *     FCCO = ((Crystal * Multiplier) / Div)
-         * 
-         * @tparam Pll 
+         *
+         * @tparam Pll
          * @param multiplier PLL multiplier.
          * @param divider
          */
@@ -325,8 +325,8 @@ namespace klib::core::atsam4s::io::system {
     public:
         /**
          * @brief Set the internal rc frequency
-         * 
-         * @tparam Freq 
+         *
+         * @tparam Freq
          */
         template <uint32_t Freq>
         static void set_internal_rc() {
@@ -365,17 +365,17 @@ namespace klib::core::atsam4s::io::system {
         }
 
         /**
-         * @brief Set the master cpu clock. 
-         * 
-         * @tparam Source 
-         * @tparam Pll 
-         * @tparam OscillatorFreq 
-         * @tparam Multiplier 
-         * @tparam Div 
+         * @brief Set the master cpu clock.
+         *
+         * @tparam Source
+         * @tparam Pll
+         * @tparam OscillatorFreq
+         * @tparam Multiplier
+         * @tparam Div
          */
         template <
-            source Source, pll Pll, uint32_t OscillatorFreq = 0, 
-            uint16_t Multiplier = 0, uint32_t Div = 0, 
+            source Source, pll Pll, uint32_t OscillatorFreq = 0,
+            uint16_t Multiplier = 0, uint32_t Div = 0,
             prescaler Prescaler = prescaler::div_1
         >
         static void set_main() {
@@ -385,19 +385,19 @@ namespace klib::core::atsam4s::io::system {
             // enable the source we want to use
             enable<Source>();
 
-            // switch to the slow or main clock before we touch 
+            // switch to the slow or main clock before we touch
             // any of the pll settings
             switch_master_clock<
                 (
-                    (Source == source::rtc) ? 
+                    (Source == source::rtc) ?
                     master_clock_source::slow : master_clock_source::main
-                ), 
+                ),
                 Prescaler
             >();
 
             // check if we need to configure a pll
             if constexpr (Pll != pll::none) {
-                // make sure the user did not enable a pll. slow clock is not 
+                // make sure the user did not enable a pll. slow clock is not
                 // supported as a pll input
                 static_assert(
                     Source != source::rtc, "slow clock (rtc) is not supported as a pll source"
@@ -409,7 +409,7 @@ namespace klib::core::atsam4s::io::system {
                 // switch to the pll
                 switch_master_clock<
                     (
-                        (Pll == pll::plla) ? 
+                        (Pll == pll::plla) ?
                         master_clock_source::plla : master_clock_source::pllb
                     ),
                     Prescaler
@@ -429,9 +429,9 @@ namespace klib::core::atsam4s::io::system {
 
         /**
          * @brief Configure the USB clock
-         * 
-         * @tparam Pll 
-         * @tparam OscillatorFreq 
+         *
+         * @tparam Pll
+         * @tparam OscillatorFreq
          */
         template <pll Pll, uint32_t OscillatorFreq, uint16_t Multiplier = 8, uint8_t Div = 2, uint8_t UsbDiv = 1>
         static void set_usb() {

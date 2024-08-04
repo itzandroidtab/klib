@@ -42,9 +42,9 @@ namespace klib {
 
         /**
          * @brief Get the index of the iterator
-         * 
+         *
          * @tparam G
-         * @return constexpr uint32_t 
+         * @return constexpr uint32_t
          */
         template <typename G>
         constexpr uint32_t get_index(const G &it) {
@@ -444,20 +444,20 @@ namespace klib {
         }
 
         /**
-         * @brief Return a iterator to the 
+         * @brief Return a iterator to the
          * start of the dynamic array
-         * 
-         * @return constexpr iterator 
+         *
+         * @return constexpr iterator
          */
         constexpr iterator begin() noexcept {
             return iterator(data());
         }
 
         /**
-         * @brief Return a iterator to the 
+         * @brief Return a iterator to the
          * start of the dynamic array
-         * 
-         * @return constexpr iterator 
+         *
+         * @return constexpr iterator
          */
         constexpr const_iterator begin() const noexcept {
             return const_iterator(data());
@@ -466,28 +466,28 @@ namespace klib {
         /**
          * @brief Returns a const iterator
          * to the start of the dynamic array
-         * 
-         * @return constexpr const_iterator 
+         *
+         * @return constexpr const_iterator
          */
         constexpr const_iterator cbegin() const noexcept {
             return const_iterator(data());
         }
 
         /**
-         * @brief Returns a iterator to the 
+         * @brief Returns a iterator to the
          * end of the dynamic array
-         * 
-         * @return constexpr iterator 
+         *
+         * @return constexpr iterator
          */
         constexpr iterator end() noexcept {
             return iterator(data() + index);
         }
 
         /**
-         * @brief Returns a const iterator to 
+         * @brief Returns a const iterator to
          * the end of the dynamic array
-         * 
-         * @return constexpr iterator 
+         *
+         * @return constexpr iterator
          */
         constexpr const_iterator end() const noexcept {
             return const_iterator(data() + index);
@@ -515,7 +515,7 @@ namespace klib {
          *
          * @warning Calling this function with a
          * wrong iterator causes undefined behaviour
-         * 
+         *
          * @param pos
          */
         constexpr void erase(const const_iterator &it) {

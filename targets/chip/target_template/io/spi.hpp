@@ -5,15 +5,15 @@
 
 /**
  * @brief The peripheral namespaces are as follows:
- * 
+ *
  * // helper namespace where the details about the hardware can be stored
  * namespace klib::target_template::io::periph::detail::spi {
  * }
- * 
+ *
  * // global peripherals, not affected by chip package
  * namespace klib::target_template::io::periph {
  * }
- * 
+ *
  * // peripheral mapping affected by chip package
  * namespace klib::target_template::io::periph::lqfp_100 {
  * }
@@ -42,9 +42,9 @@ namespace klib::target_template::io::periph::detail::spi {
 
 namespace klib::target_template::io::periph::tqfn_100 {
     /**
-     * @brief Struct stores information about the spi0 
+     * @brief Struct stores information about the spi0
      * hardware.
-     * 
+     *
      */
     struct spi0 {
         // peripheral id (e.g spi0, spi1)
@@ -53,8 +53,8 @@ namespace klib::target_template::io::periph::tqfn_100 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 6;
 
-        // port to the spi peripheral. On hardware 
-        // this should have the port to write/read 
+        // port to the spi peripheral. On hardware
+        // this should have the port to write/read
         // the hardware with
         static inline void *const port = (nullptr);
 
@@ -68,15 +68,15 @@ namespace klib::target_template::io::periph::tqfn_100 {
 namespace klib::target_template::io::spi {
     /**
      * @brief Class for the spi hardware
-     * 
-     * @tparam Spi 
+     *
+     * @tparam Spi
      */
     template <typename Spi>
     class spi {
     public:
         /**
          * @brief Init the spi hardware including the gpio
-         * 
+         *
          */
         constexpr static void init() {}
     }

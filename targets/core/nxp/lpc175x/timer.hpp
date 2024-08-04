@@ -14,7 +14,7 @@
 namespace klib::core::lpc175x::io::detail::timer {
     /**
      * @brief Different timer modes
-     * 
+     *
      */
     enum class mode {
         one_shot,
@@ -24,9 +24,9 @@ namespace klib::core::lpc175x::io::detail::timer {
 
     /**
      * @brief Base timer for the lpc1756
-     * 
-     * @tparam Timer 
-     * @tparam Mode 
+     *
+     * @tparam Timer
+     * @tparam Mode
      */
     template <typename Timer, uint8_t Channel, mode Mode = mode::continuous>
     class base_timer {
@@ -43,7 +43,7 @@ namespace klib::core::lpc175x::io::detail::timer {
 
         /**
          * @brief Interrupt handler
-         * 
+         *
          */
         static void isr_handler() {
             // read the register
@@ -61,9 +61,9 @@ namespace klib::core::lpc175x::io::detail::timer {
     public:
         /**
          * @brief Init the provided timer
-         * 
-         * @param irq 
-         * @param frequency 
+         *
+         * @param irq
+         * @param frequency
          */
         static void init(const interrupt_callback& irq, const uint32_t frequency) {
             // enable power to the timer peripheral
@@ -111,8 +111,8 @@ namespace klib::core::lpc175x::io::detail::timer {
 
         /**
          * @brief Set the frequency of the timer
-         * 
-         * @param Frequency 
+         *
+         * @param Frequency
          */
         static void set_frequency(const uint32_t frequency) {
             // set the match register for the desired frequency
@@ -121,7 +121,7 @@ namespace klib::core::lpc175x::io::detail::timer {
 
         /**
          * @brief Disable the timer
-         * 
+         *
          */
         static void disable() {
             // disable the timer
@@ -130,7 +130,7 @@ namespace klib::core::lpc175x::io::detail::timer {
 
         /**
          * @brief Enable the timer
-         * 
+         *
          */
         static void enable() {
             // enable the timer
@@ -139,8 +139,8 @@ namespace klib::core::lpc175x::io::detail::timer {
 
         /**
          * @brief Returns the current value of a counter
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t get_counter() {
             return Timer::port->TC;
@@ -148,7 +148,7 @@ namespace klib::core::lpc175x::io::detail::timer {
 
         /**
          * @brief Clear the counter in the timer
-         * 
+         *
          */
         static void clear_counter() {
             Timer::port->TC = 0x1;
@@ -159,28 +159,28 @@ namespace klib::core::lpc175x::io::detail::timer {
 namespace klib::core::lpc175x::io {
     /**
      * @brief Basic timer. Uses interrupts to call a callback.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer, uint32_t Channel>
     using timer = detail::timer::base_timer<Timer, Channel>;
 
     /**
      * @brief Oneshot timer. Uses interrupt to call a callback once.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer, uint32_t Channel>
     using oneshot_timer = detail::timer::base_timer<Timer, Channel, detail::timer::mode::one_shot>;
 
     /**
      * @brief Pwm timer.
-     * 
-     * @tparam Pwm 
-     * @tparam Channel 
+     *
+     * @tparam Pwm
+     * @tparam Channel
      */
     template <
-        typename Pin, typename Pwm, uint8_t Channel, 
+        typename Pin, typename Pwm, uint8_t Channel,
         uint32_t Frequency, uint8_t Bits
     >
     class pin_timer: public detail::timer::base_timer<Pwm, 0, detail::timer::mode::continuous> {
@@ -200,8 +200,8 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Calculate the stepsize used in the set functions
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         template <bool FloatingPoint = true>
         static auto calculate_stepsize() {
@@ -240,15 +240,15 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Set the dutycycle of the Pwm pin
-         * 
-         * @tparam Dutycycle 
+         *
+         * @tparam Dutycycle
          */
         template <uint16_t Dutycycle>
         static void dutycycle() {
             // calculate the step size
             const uint32_t value = calculate_stepsize() * (Dutycycle & multiplier);
 
-            // set the dutycycle (if we are above channel 4 we switch 
+            // set the dutycycle (if we are above channel 4 we switch
             // from array to direct naming)
             if constexpr (Channel < 4) {
                 Pwm::port->MR[Channel] = value;
@@ -269,14 +269,14 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Set the dutycycle of the timer pin
-         * 
+         *
          * @param dutycycle
          */
         static void dutycycle(uint16_t dutycycle) {
             // calculate the step size
             const uint32_t value = calculate_stepsize() * (dutycycle & multiplier);
 
-            // set the dutycycle (if we are above channel 4 we switch 
+            // set the dutycycle (if we are above channel 4 we switch
             // from array to direct naming)
             if constexpr (Channel < 4) {
                 Pwm::port->MR[Channel] = value;
@@ -297,8 +297,8 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Enable or disable output.
-         * 
-         * @tparam Value 
+         *
+         * @tparam Value
          */
         template <bool Value>
         static void set() {
@@ -317,8 +317,8 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Enable or disable output.
-         * 
-         * @param value 
+         *
+         * @param value
          */
         static void set(bool value) {
             // clear or set the pin to the peripheral

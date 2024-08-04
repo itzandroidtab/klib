@@ -6,13 +6,13 @@
 
 namespace klib::hardware::wireless {
     /**
-     * @brief Driver for the sx1278. Currently only supports 
+     * @brief Driver for the sx1278. Currently only supports
      * explicit header mode
-     * 
-     * @tparam Bus 
-     * @tparam Cs 
-     * @tparam RstPin 
-     * @tparam IrqPin 
+     *
+     * @tparam Bus
+     * @tparam Cs
+     * @tparam RstPin
+     * @tparam IrqPin
      */
     template <typename Bus, typename Cs, typename RstPin, typename IrqPin>
     class sx1278 {
@@ -22,7 +22,7 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Available frequencies on the sx1278
-         * 
+         *
          */
         enum class frequency {
             mhz_433 = 433'000'000,
@@ -32,7 +32,7 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Lna gain mode
-         * 
+         *
          * g1 = 0dB (auto gain)
          * g2 = -6dB
          * g3 = -12dB
@@ -51,7 +51,7 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Available bandwidth modes
-         * 
+         *
          */
         enum class bandwidth {
             khz_7_8 = 0b00,
@@ -68,7 +68,7 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Available error coding rates
-         * 
+         *
          */
         enum class coding_rate {
             rate_4_5 = 0b01,
@@ -79,7 +79,7 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Available spreading factor rates
-         * 
+         *
          */
         enum class spreading_factor {
             sf_6 = 6,
@@ -101,7 +101,7 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief All the registers available on the sx1278
-         * 
+         *
          */
         enum class reg: uint8_t {
             fifo = 0x00,
@@ -113,7 +113,7 @@ namespace klib::hardware::wireless {
             pa_ramp = 0x0a,
             over_current_protection = 0x0b,
             lna_settings = 0x0c,
-            
+
             fifo_address_ptr = 0x0d,
             fifo_tx_base_address = 0x0e,
             fifo_rx_base_address = 0x0f,
@@ -139,7 +139,7 @@ namespace klib::hardware::wireless {
             preamble_lsb = 0x21,
             payload_length = 0x22,
             max_payload_length = 0x23,
-            
+
             hop_period = 0x24,
             fifo_rx_current_address = 0x25,
             modem_config2 = 0x26,
@@ -173,7 +173,7 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Available device operating modes
-         * 
+         *
          */
         enum class device_mode {
             sleep = 0x0,
@@ -188,9 +188,9 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Write a register with data
-         * 
-         * @param command 
-         * @param data 
+         *
+         * @param command
+         * @param data
          * @param size
          */
         static void write_reg(const reg command, const uint8_t* data, const uint8_t size) {
@@ -208,26 +208,26 @@ namespace klib::hardware::wireless {
 
             // unselect the device
             Cs::template set<true>();
-        }  
+        }
 
         /**
          * @brief Write one byte to a register
-         * 
-         * @param command 
-         * @param data 
-         * @param size 
+         *
+         * @param command
+         * @param data
+         * @param size
          */
         static void write_reg(const reg command, const uint8_t data) {
             // write using the array write
             write_reg(command, &data, sizeof(data));
-        }  
+        }
 
         /**
          * @brief multiple bytes from a register
-         * 
-         * @param command 
-         * @param data 
-         * @param size 
+         *
+         * @param command
+         * @param data
+         * @param size
          */
         static void read_reg(const reg command, uint8_t* data, const uint8_t size) {
             // set the chipselect to write to the device
@@ -235,19 +235,19 @@ namespace klib::hardware::wireless {
 
             // write the command to the display
             Bus::write(reinterpret_cast<const uint8_t*>(&command), sizeof(command));
-            
+
             // read the size amount of data in the data array
             Bus::write_read(nullptr, data, size);
 
             // unselect the device
             Cs::template set<true>();
-        }  
+        }
 
         /**
          * @brief Read a single register
-         * 
-         * @param command 
-         * @return uint8_t 
+         *
+         * @param command
+         * @return uint8_t
          */
         static uint8_t read_reg(const reg command) {
             uint8_t res;
@@ -260,8 +260,8 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Set the over current protection
-         * 
-         * @tparam MAmp 
+         *
+         * @tparam MAmp
          */
         template <uint8_t MAmp>
         static void set_over_current_protection() {
@@ -317,9 +317,9 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Interrupt handler. Calls the specific function
-         * that handles the interrupt request using the irq 
+         * that handles the interrupt request using the irq
          * helper
-         * 
+         *
          */
         static void irq_handler() {
             // check what interrupt we are handling
@@ -334,8 +334,8 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Changes the sx1278 to a different mode
-         * 
-         * @tparam Mode 
+         *
+         * @tparam Mode
          */
         template <device_mode Mode>
         static void change_mode() {
@@ -345,8 +345,8 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Change the current mode of the sx1278
-         * 
-         * @tparam RecieveMode 
+         *
+         * @tparam RecieveMode
          */
         template <bool RecieveMode>
         static void change_dio_mapping() {
@@ -361,7 +361,7 @@ namespace klib::hardware::wireless {
             // so we need to switch between them based
             // on the current mode
             if constexpr (RecieveMode) {
-                // set the receive done interrupt for the 
+                // set the receive done interrupt for the
                 // dio mapping
                 write_reg(reg::dio_mapping0, rx_done << 6);
             }
@@ -374,12 +374,12 @@ namespace klib::hardware::wireless {
     public:
         /**
          * @brief Init the sx1278
-         * 
-         * @tparam Frequency 
+         *
+         * @tparam Frequency
          */
         template <
-            frequency Frequency, 
-            bandwidth Bandwidth = bandwidth::khz_125, 
+            frequency Frequency,
+            bandwidth Bandwidth = bandwidth::khz_125,
             coding_rate ErrorCodingRate = coding_rate::rate_4_5,
             spreading_factor SpreadingFactor = spreading_factor::sf_8,
             bool Crc = false,
@@ -399,7 +399,7 @@ namespace klib::hardware::wireless {
             RstPin::template set<false>();
             klib::delay(10_ms);
 
-            // wait at least 10ms at the end of a Power on 
+            // wait at least 10ms at the end of a Power on
             // Reset cycle before communicating with the
             // sx1278
             RstPin::template set<true>();
@@ -407,7 +407,7 @@ namespace klib::hardware::wireless {
 
             Cs::template set<true>();
 
-            // enable lora mode and set the device to sleep 
+            // enable lora mode and set the device to sleep
             // mode so we can change the frequency
             change_mode<device_mode::sleep>();
 
@@ -421,13 +421,13 @@ namespace klib::hardware::wireless {
 
             // set to explict header mode and the provided bandwidth
             write_reg(reg::modem_config0, (
-                (static_cast<uint8_t>(Bandwidth) << 4) | 
+                (static_cast<uint8_t>(Bandwidth) << 4) |
                 (static_cast<uint8_t>(ErrorCodingRate) << 4))
             );
 
             // set the spreading factor and the CRC flag
-            write_reg(reg::modem_config1, 
-                (static_cast<uint8_t>(SpreadingFactor) << 4) | 
+            write_reg(reg::modem_config1,
+                (static_cast<uint8_t>(SpreadingFactor) << 4) |
                 (static_cast<uint8_t>(Crc) << 2)
             );
 
@@ -455,7 +455,7 @@ namespace klib::hardware::wireless {
             }
             else {
                 // all other combinations should write 0x03 to the
-                // register to automaticly configure 
+                // register to automaticly configure
                 // high_bw_optimize1
                 write_reg(reg::high_bw_optimize0, 0x03);
             }
@@ -492,9 +492,9 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Set the gain mode
-         * 
-         * @tparam gain 
-         * @tparam boost 
+         *
+         * @tparam gain
+         * @tparam boost
          */
         template <lna_gain Gain, bool Boost>
         static void set_gain() {
@@ -514,12 +514,12 @@ namespace klib::hardware::wireless {
             else {
                 // disable auto gain (and keep the other register
                 // values)
-                write_reg(reg::modem_config2, 
+                write_reg(reg::modem_config2,
                     read_reg(reg::modem_config2) & (~(0x1 << 2))
                 );
 
                 // set the lna settings
-                write_reg(reg::lna_settings, 
+                write_reg(reg::lna_settings,
                     result | static_cast<uint8_t>(Gain) << 5
                 );
             }
@@ -527,7 +527,7 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Set the tx power
-         * 
+         *
          * @tparam LowPowerPin (flag if RFO_LF or PA_BOOST pin is used)
          * @tparam Power power level
          */
@@ -572,10 +572,10 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Write data to the sx1278
-         * 
-         * @tparam Async 
-         * @param data 
-         * @param size 
+         *
+         * @tparam Async
+         * @param data
+         * @param size
          */
         template <bool Async = false>
         static void write(const uint8_t* data, const uint8_t size) {
@@ -610,9 +610,9 @@ namespace klib::hardware::wireless {
 
         /**
          * @brief Read data in the provided array
-         * 
-         * @param data 
-         * @return uint8_t 
+         *
+         * @param data
+         * @return uint8_t
          */
         static uint8_t read(uint8_t *const data, const uint8_t max_size) {
             // read the packet length
@@ -623,7 +623,7 @@ namespace klib::hardware::wireless {
                 return 0;
             }
 
-            // change the current address to the location the last packet has 
+            // change the current address to the location the last packet has
             // been received is stored
             write_reg(reg::fifo_address_ptr, read_reg(reg::fifo_rx_start_address));
 
@@ -632,7 +632,7 @@ namespace klib::hardware::wireless {
                 // read the fifo in the buffer
                 data[i] = read_reg(reg::fifo);
             }
-            
+
             // reset the fifo address back to the start
             write_reg(reg::fifo_address_ptr, 0x00);
 

@@ -10,7 +10,7 @@
 namespace klib::lpc802::io::system {
     /**
      * @brief System clock control register
-     * 
+     *
      */
     class clock {
     public:
@@ -21,7 +21,7 @@ namespace klib::lpc802::io::system {
             mhz_15 = 15'000'000,
         };
 
-        // get a pointer to the clock trimming register. This is a 
+        // get a pointer to the clock trimming register. This is a
         // undocumented register that is used in the bootrom
         static volatile inline uint32_t *const trim = reinterpret_cast<volatile uint32_t*>(0x40048000 + 0x28);
 
@@ -33,9 +33,9 @@ namespace klib::lpc802::io::system {
         static void set() {
             // check if we have a valid clock
             static_assert(
-                Clock == clock_source::mhz_9 || 
-                Clock == clock_source::mhz_12 || 
-                Clock == clock_source::mhz_15, 
+                Clock == clock_source::mhz_9 ||
+                Clock == clock_source::mhz_12 ||
+                Clock == clock_source::mhz_15,
                 "Invalid clock value. Use manual trimming instead"
             );
 

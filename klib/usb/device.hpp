@@ -7,11 +7,11 @@
 namespace klib::usb::device {
     /**
      * @brief Helper function to convert a descriptor struct to a descriptor description
-     * 
-     * @tparam T 
-     * @param desc 
-     * @param size 
-     * @return constexpr description 
+     *
+     * @tparam T
+     * @param desc
+     * @param size
+     * @return constexpr description
      */
     template <typename T>
     constexpr usb::description to_description(const T& desc, const uint32_t size) {
@@ -20,10 +20,10 @@ namespace klib::usb::device {
 
     /**
      * @brief Helper function to convert a raw descriptor array to a descriptor description
-     * 
-     * @param desc 
-     * @param size 
-     * @return constexpr usb::description 
+     *
+     * @param desc
+     * @param size
+     * @return constexpr usb::description
      */
     constexpr usb::description to_description(const uint8_t *const desc, const uint32_t size) {
         return {desc, size};
@@ -31,9 +31,9 @@ namespace klib::usb::device {
 
     /**
      * @brief Helper function to create a string descriptor from a string (removes the null terminator)
-     * 
-     * @param str 
-     * @return consteval 
+     *
+     * @param str
+     * @return consteval
      */
     template<uint32_t Size>
     consteval descriptor::string<Size - 1> string_descriptor(const char (&str)[Size]) {
@@ -46,7 +46,7 @@ namespace klib::usb::device {
         }
 
         return ret;
-    }    
+    }
 }
 
 #endif

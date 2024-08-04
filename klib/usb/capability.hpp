@@ -12,7 +12,7 @@
 namespace klib::usb::capability {
     /**
      * @brief Device capability type codes
-     * 
+     *
      */
     enum class capabilty_type {
         wireless_usb = 0x01,
@@ -23,7 +23,7 @@ namespace klib::usb::capability {
 
     /**
      * @brief USB 2.0 extension
-     * 
+     *
      */
     struct usb_2_0_extension {
         // bitmap encoding of supported device level features.
@@ -31,14 +31,11 @@ namespace klib::usb::capability {
         // b[1] = lpm
         // b[2..31] = reserved
         uint32_t bmAttributes;
-    };    
+    };
 }
 
-// release the old pack so the rest of the structs are not 
+// release the old pack so the rest of the structs are not
 // affected by the pack(1)
 #pragma pack(pop)
 
-#endif        
-        
-        
-        
+#endif

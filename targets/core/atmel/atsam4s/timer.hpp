@@ -16,7 +16,7 @@
 namespace klib::core::atsam4s::io::detail::timer {
     /**
      * @brief Different timer modes
-     * 
+     *
      */
     enum class mode {
         one_shot,
@@ -25,7 +25,7 @@ namespace klib::core::atsam4s::io::detail::timer {
 
     /**
      * @brief Different compare effects
-     * 
+     *
      */
     enum class compare_effect {
         none = 0x00,
@@ -36,9 +36,9 @@ namespace klib::core::atsam4s::io::detail::timer {
 
     /**
      * @brief Base timer for the lpc1756
-     * 
-     * @tparam Timer 
-     * @tparam Mode 
+     *
+     * @tparam Timer
+     * @tparam Mode
      */
     template <typename Timer, uint8_t Channel, uint8_t Match, mode Mode = mode::continuous, uint32_t Div = 2>
     class base_timer {
@@ -57,8 +57,8 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Helper class to get the correct clock id for the channels
-         * 
-         * @tparam Id 
+         *
+         * @tparam Id
          */
         template <uint32_t Id>
         struct tc_clock {
@@ -67,7 +67,7 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Interrupt handler
-         * 
+         *
          */
         static void isr_handler() {
             // read the status to clear the fields
@@ -81,8 +81,8 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Set the A/B/C register based on the channel
-         * 
-         * @param value 
+         *
+         * @param value
          */
         static void set_register(const uint32_t value) {
             // get a pointer to the first register
@@ -94,9 +94,9 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Internal init implementation to prevent duplicate code
-         * 
-         * @param irq 
-         * @param frequency 
+         *
+         * @param irq
+         * @param frequency
          */
         static void init_impl(const interrupt_callback& irq, const uint32_t frequency) {
             // enable power to the timer peripheral
@@ -108,10 +108,10 @@ namespace klib::core::atsam4s::io::detail::timer {
             // disable the channel
             disable();
 
-            // set the timer in waveform mode. Convert the divider 2 -> 0, 8 -> 1, 32 -> 2, 128 -> 3 and 
+            // set the timer in waveform mode. Convert the divider 2 -> 0, 8 -> 1, 32 -> 2, 128 -> 3 and
             // configure the other parameters based on if we are in one_shot mode
             const uint32_t value = (
-                ((klib::log2(Div) / 2) & 0x7) | ((Mode == mode::one_shot) << 6) | ((Mode == mode::one_shot) << 7) | 
+                ((klib::log2(Div) / 2) & 0x7) | ((Mode == mode::one_shot) << 6) | ((Mode == mode::one_shot) << 7) |
                 (0b10 << 13) | (0x1 << 15)
             );
 
@@ -128,9 +128,9 @@ namespace klib::core::atsam4s::io::detail::timer {
                 target::irq::register_irq<Timer::interrupt_id + Channel>(isr_handler);
 
                 // enable the interrupt
-                target::enable_irq<Timer::interrupt_id + Channel>();          
+                target::enable_irq<Timer::interrupt_id + Channel>();
 
-                // enable the correct compare status based on the 
+                // enable the correct compare status based on the
                 // match register used
                 Timer::port->CH[Channel].IER = (0x1 << (Match + 2));
             }
@@ -150,8 +150,8 @@ namespace klib::core::atsam4s::io::detail::timer {
     public:
         /**
          * @brief Set the frequency of the timer
-         * 
-         * @param Frequency 
+         *
+         * @param Frequency
          */
         static void set_frequency(const uint32_t frequency) {
             // set the match register for the desired frequency
@@ -160,7 +160,7 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Disable the timer
-         * 
+         *
          */
         static void disable() {
             // disable the timer
@@ -169,7 +169,7 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Enable the timer
-         * 
+         *
          */
         static void enable() {
             // enable the timer
@@ -178,8 +178,8 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Returns the current value of a counter
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t get_counter() {
             return Timer::port->CH[Channel].CV;
@@ -187,7 +187,7 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Clear the counter in the timer
-         * 
+         *
          */
         static void clear_counter() {
             Timer::port->CH[Channel].CCR = (0x1 << 2);
@@ -198,25 +198,25 @@ namespace klib::core::atsam4s::io::detail::timer {
 namespace klib::core::atsam4s::io {
     /**
      * @brief Basic timer. Uses interrupts to call a callback.
-     * 
-     * @warning Timer counter only resets to 0 when the counter matches 
-     * match register 2. The other match registers can still trigger 
-     * interrupts (if below match register 2). All match registers share 
+     *
+     * @warning Timer counter only resets to 0 when the counter matches
+     * match register 2. The other match registers can still trigger
+     * interrupts (if below match register 2). All match registers share
      * registers and thus share all the configuration.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer, uint32_t Channel, uint32_t Match = 2, uint32_t Div = 2>
     class timer: public detail::timer::base_timer<Timer, Channel, Match, detail::timer::mode::continuous, Div> {
     public:
         // using for the array of callbacks
         using interrupt_callback = void (*)();
-        
+
         /**
          * @brief Init the timer
-         * 
-         * @param irq 
-         * @param frequency 
+         *
+         * @param irq
+         * @param frequency
          */
         static void init(const interrupt_callback& irq, const uint32_t frequency) {
             // init the base timer
@@ -228,26 +228,26 @@ namespace klib::core::atsam4s::io {
 
     /**
      * @brief Oneshot timer. Uses interrupt to call a callback once.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer, uint32_t Channel, uint32_t Match = 2, uint32_t Div = 2>
     class oneshot_timer: public detail::timer::base_timer<Timer, Channel, 2, detail::timer::mode::one_shot, Div> {
     protected:
         // make sure the correct match register is used. For one shot we need to
-        // turn off the channel. This can only be done when match register 2 is 
+        // turn off the channel. This can only be done when match register 2 is
         // used
         static_assert(Match == 2, "Timer only supports Match register 2 for oneshot mode");
 
     public:
         // using for the array of callbacks
         using interrupt_callback = void (*)();
-        
+
         /**
          * @brief Init the timer
-         * 
-         * @param irq 
-         * @param frequency 
+         *
+         * @param irq
+         * @param frequency
          */
         static void init(const interrupt_callback& irq, const uint32_t frequency) {
             // init the base timer
@@ -259,12 +259,12 @@ namespace klib::core::atsam4s::io {
 
     /**
      * @brief Pin that uses a timer to toggle the output.
-     * 
+     *
      * @warning When disabling the timer the output of the gpio is not changed.
      */
     template <
-        typename Pin, typename Timer, uint32_t Frequency, 
-        uint8_t Bits, uint32_t Div = 2, 
+        typename Pin, typename Timer, uint32_t Frequency,
+        uint8_t Bits, uint32_t Div = 2,
         typename PPin = std::tuple_element<klib::io::peripheral::get_index<Pin, typename Timer::tc_pins>(), typename Timer::tc_pins>::type
     >
     class pin_timer: public detail::timer::base_timer<Timer, PPin::channel, 2, detail::timer::mode::continuous, Div> {
@@ -287,8 +287,8 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Calculate the stepsize used in the set functions
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         template <bool FloatingPoint = true>
         static auto calculate_stepsize() {
@@ -309,7 +309,7 @@ namespace klib::core::atsam4s::io {
             // get a pointer to the first register
             volatile uint32_t* reg = &(Timer::port->CH[PPin::channel].RA);
 
-            // check if we need to disable the output or 
+            // check if we need to disable the output or
             // reenable it
             if (!value) {
                 // disable the output to get a low level
@@ -350,8 +350,8 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Set the dutycycle of the Pwm pin
-         * 
-         * @tparam Dutycycle 
+         *
+         * @tparam Dutycycle
          */
         template <uint16_t Dutycycle>
         static void dutycycle() {
@@ -364,7 +364,7 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Set the dutycycle of the timer pin
-         * 
+         *
          * @param dutycycle
          */
         static void dutycycle(uint16_t dutycycle) {
@@ -377,8 +377,8 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Enable or disable output.
-         * 
-         * @tparam Value 
+         *
+         * @tparam Value
          */
         template <bool Value>
         static void set() {
@@ -397,8 +397,8 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Enable or disable output.
-         * 
-         * @param value 
+         *
+         * @param value
          */
         static void set(bool value) {
             // clear or set the pin to the peripheral

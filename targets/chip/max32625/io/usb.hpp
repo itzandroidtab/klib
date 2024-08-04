@@ -33,7 +33,7 @@ namespace klib::max32625::io::detail::usb {
 
     /**
      * @brief Struct for the endpoint buffers
-     * 
+     *
      */
     struct endpoint_buffer {
         volatile uint32_t buf0_desc;
@@ -44,7 +44,7 @@ namespace klib::max32625::io::detail::usb {
 
     /**
      * @brief Struct for endpoint 0
-     * 
+     *
      */
     struct endpoint0_buffer {
         endpoint_buffer out_buffer;
@@ -53,7 +53,7 @@ namespace klib::max32625::io::detail::usb {
 
     /**
      * @brief Struct for storing all the endpoints. Needs to be 512 byte aligned for the max32625
-     * 
+     *
      */
     template <uint32_t EndpointAmount>
     struct ep_buffer_descriptor {
@@ -66,7 +66,7 @@ namespace klib::max32625::io::detail::usb {
 
     /**
      * @brief Struct to store the state of a endpoint
-     * 
+     *
      */
     struct state {
         // flag if the endpoint is busy
@@ -79,7 +79,7 @@ namespace klib::max32625::io::detail::usb {
         uint32_t requested_size;
 
         // transmitted/received amount of data.
-        volatile uint32_t transferred_size; 
+        volatile uint32_t transferred_size;
 
         // callback function
         klib::usb::usb::usb_callback callback;
@@ -98,7 +98,7 @@ namespace klib::max32625::io {
 
         // max size in a single endpoint
         constexpr static uint8_t max_endpoint_size = 64;
-        
+
         // type to use in device functions
         using usb_type = usb<Usb, Device>;
 
@@ -108,7 +108,7 @@ namespace klib::max32625::io {
     protected:
         /**
          * @brief Flags about the usb device we are configured with.
-         * 
+         *
          */
 
         // check if the device has the usb wakeup callback
@@ -153,17 +153,17 @@ namespace klib::max32625::io {
 
         using irq_helper = klib::irq_helper<32>;
 
-        // create a helper to call all the specific functions when 
+        // create a helper to call all the specific functions when
         // certain bits are set in the status register
         static inline auto helper = irq_helper();
 
         /**
          * @brief Different events supported by the hardware
-         * 
+         *
          */
         enum class event: uint8_t {
             dplus_activity = 0,
-            remote_wakeup_done = 1, 
+            remote_wakeup_done = 1,
             bus_active = 2,
             bus_reset = 3,
             suspend = 4,
@@ -215,7 +215,7 @@ namespace klib::max32625::io {
 
         /**
          * @brief Reset the usb controller
-         * 
+         *
          */
         static void reset() {
             // disable the device
@@ -238,7 +238,7 @@ namespace klib::max32625::io {
         }
 
         static volatile uint32_t *const get_endpoint_ptr(const uint32_t endpoint) {
-            // get the stall flag 
+            // get the stall flag
             switch (endpoint) {
                 case 1:
                     return &port->EP1;
@@ -265,7 +265,7 @@ namespace klib::max32625::io {
         /**
          * @brief Connect the device to the host by enabling the
          * pullup
-         * 
+         *
          */
         static void connect() {
             // enable interrupts for setup, endpoint in, endpoint out and dma erros
@@ -275,8 +275,8 @@ namespace klib::max32625::io {
             port->EP0 |= (0x1 << 4);
 
             // enable the pullups on dplus to signal the host we have connected (and enable the fifo bit
-            // to respond to a incomming in request as soon as the device controllers fifo becomes 
-            // non-empty, instead of wiating the full pakcet to be received by the fifo. reduces the 
+            // to respond to a incomming in request as soon as the device controllers fifo becomes
+            // non-empty, instead of wiating the full pakcet to be received by the fifo. reduces the
             // likelihood of returning a nak)
             port->DEV_CN |= (0x1 << 3) | (0x1 << 9);
         }
@@ -284,7 +284,7 @@ namespace klib::max32625::io {
         /**
          * @brief Disconnect the device from the host by disabling
          * the pullup
-         * 
+         *
          */
         static void disconnect() {
             // disable the pullups to disconnect the device
@@ -293,9 +293,9 @@ namespace klib::max32625::io {
 
         /**
          * @brief Convert a mode to the correct raw value for the usb hardware
-         * 
-         * @param mode 
-         * @return uint8_t 
+         *
+         * @param mode
+         * @return uint8_t
          */
         static uint8_t endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode) {
             switch (mode) {
@@ -369,7 +369,7 @@ namespace klib::max32625::io {
                 device::template connected<usb_type>();
             }
 
-            // put the usb controller in a low power state until we get 
+            // put the usb controller in a low power state until we get
             // activity from the host
             sleep();
         }
@@ -380,7 +380,7 @@ namespace klib::max32625::io {
         }
 
         static void activity_irq() {
-            // wakeup the usb transceiver 
+            // wakeup the usb transceiver
             wakeup();
 
             if constexpr (has_activity_callback) {
@@ -432,7 +432,7 @@ namespace klib::max32625::io {
 
             // enable thje power
             PWRMAN->PWR_RST_CTRL |= (0x1 << 4);
-            
+
             // power on the usb tranceiver
             port->DEV_CN &= ~(0x1 << 4);
 
@@ -445,9 +445,9 @@ namespace klib::max32625::io {
         /**
          * @brief This function is called when we get device -> host
          * interrupt. (IN is from the host side)
-         * 
-         * @param status_register 
-         * @param interrupt_mask 
+         *
+         * @param status_register
+         * @param interrupt_mask
          */
         static void data_in_irq() {
             // get the in interrupts
@@ -486,7 +486,7 @@ namespace klib::max32625::io {
                     // get the amount of data we have transferred
                     const auto transferred = state[ep].transferred_size;
 
-                    // clear the state of the endpoint. (we clear it first as the 
+                    // clear the state of the endpoint. (we clear it first as the
                     // callback may reissue a request)
                     clear_endpoint_state(ep);
 
@@ -505,7 +505,7 @@ namespace klib::max32625::io {
                     // get the amount of data we can transmit in a single go
                     const uint32_t transmit_size = klib::min(data_left, state[ep].max_size);
 
-                    // increment the transmitted length. When we receive the interrupt 
+                    // increment the transmitted length. When we receive the interrupt
                     // again the data is already transmitted
                     state[ep].transferred_size += transmit_size;
 
@@ -518,12 +518,12 @@ namespace klib::max32625::io {
                 else {
                     // all done sending data, either send ZLP or we are done. Get size mask
                     // of the endpoint max size. Used to determine if the last packet was the
-                    // full size of the endpoint. 
+                    // full size of the endpoint.
                     const uint32_t size_mask = state[ep].max_size ? (state[ep].max_size - 1) : 0;
 
                     // check if the last message was full sized
                     if ((state[ep].transferred_size & size_mask) == 0) {
-                        // send ZLP following the spec. the last packet was full sized and nothing left to send    
+                        // send ZLP following the spec. the last packet was full sized and nothing left to send
                         buffer.buf0_desc = 0;
                         port->IN_OWNER = (0x1 << ep);
                     }
@@ -540,7 +540,7 @@ namespace klib::max32625::io {
                         // we are done with the transaction. call the callback
                         if (callback) {
                             // send we are done. Do not care about the return value
-                            // as we are always clearing the endpoint after the 
+                            // as we are always clearing the endpoint after the
                             // transaction is done
                             callback(ep, klib::usb::usb::endpoint_mode::in, klib::usb::usb::error::no_error, transferred);
                         }
@@ -550,11 +550,11 @@ namespace klib::max32625::io {
         }
 
         /**
-         * @brief This function is called when we get host -> device 
+         * @brief This function is called when we get host -> device
          * interrupt. (OUT is from the host side)
-         * 
-         * @param status_register 
-         * @param interrupt_mask 
+         *
+         * @param status_register
+         * @param interrupt_mask
          */
         static void data_out_irq() {
             // get the out interrupts
@@ -573,15 +573,15 @@ namespace klib::max32625::io {
 
                 // check if the endpoint is busy
                 if (!state[ep].is_busy) {
-                    // endpoint is not busy. This can happen if the 
+                    // endpoint is not busy. This can happen if the
                     // callback was called then ZLP received. (ignore
-                    // the callback must have been called and it has 
+                    // the callback must have been called and it has
                     // cleared the endpoint)
                     continue;
                 }
 
                 // what was the size we have requested
-                const uint32_t request_size = klib::min(state[ep].max_size, 
+                const uint32_t request_size = klib::min(state[ep].max_size,
                     (state[ep].requested_size - state[ep].transferred_size)
                 );
 
@@ -590,8 +590,8 @@ namespace klib::max32625::io {
                     (ep == 0) ? (descriptor.ep0.in_buffer) : (descriptor.ep[ep - 1])
                 );
 
-                // get the actual size of the data written to the buffer. 
-                // This will be lesser of the packet size and the 
+                // get the actual size of the data written to the buffer.
+                // This will be lesser of the packet size and the
                 // requested size
                 const uint32_t rx_size = klib::min(request_size, buffer.buf0_desc);
 
@@ -613,7 +613,7 @@ namespace klib::max32625::io {
 
                     if (callback) {
                         // send we are done. Do not care about the return value
-                        // as we are always clearing the endpoint after the 
+                        // as we are always clearing the endpoint after the
                         // transaction is done
                         callback(ep, klib::usb::usb::endpoint_mode::out, klib::usb::usb::error::no_error, transferred);
                     }
@@ -632,7 +632,7 @@ namespace klib::max32625::io {
 
         /**
          * @brief Interrupt handler for the usb driver
-         * 
+         *
          */
         static void irq_handler() {
             // get the interrupt status from the hardware
@@ -681,7 +681,7 @@ namespace klib::max32625::io {
     public:
         /**
          * @brief Init the usb hardware
-         * 
+         *
          */
         static void init() {
             // enable the usb clock
@@ -699,7 +699,7 @@ namespace klib::max32625::io {
                     .is_busy = false,
                     .max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0),
                     .requested_size = 0,
-                    .transferred_size = 0, 
+                    .transferred_size = 0,
                     .callback = nullptr
                 };
             }
@@ -729,9 +729,9 @@ namespace klib::max32625::io {
 
         /**
          * @brief Function to check if a endpoint with type is supported at compile time
-         * 
-         * @tparam endpoint 
-         * @tparam type 
+         *
+         * @tparam endpoint
+         * @tparam type
          */
         template <uint8_t endpoint, klib::usb::descriptor::transfer_type type>
         constexpr static void is_valid_endpoint() {
@@ -740,7 +740,7 @@ namespace klib::max32625::io {
 
         /**
          * @brief Shutdown the usb peripheral
-         * 
+         *
          */
         static void shutdown() {
             port->DEV_CN = 1 << 5;
@@ -749,10 +749,10 @@ namespace klib::max32625::io {
         }
 
         /**
-         * @brief Function that gets called to notify the driver 
+         * @brief Function that gets called to notify the driver
          * the devices is configured
-         * 
-         * @param cfg 
+         *
+         * @param cfg
          */
         static void configured(const bool cfg) {
             // do nothing
@@ -760,22 +760,22 @@ namespace klib::max32625::io {
 
         /**
          * @brief Configure a endpoint
-         * 
-         * @param endpoint 
-         * @param mode 
-         * @param type 
-         * @param size 
+         *
+         * @param endpoint
+         * @param mode
+         * @param type
+         * @param size
          */
         static void configure(
-            const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode, 
-            const klib::usb::descriptor::transfer_type type, const uint32_t size) 
+            const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode,
+            const klib::usb::descriptor::transfer_type type, const uint32_t size)
         {
             // get the endpoint pointer
             auto *const ep = get_endpoint_ptr(endpoint);
 
             // prepare the endpoint register
             const uint32_t ctrl = (
-                endpoint_mode_to_raw(mode) | (1 << 6) | 
+                endpoint_mode_to_raw(mode) | (1 << 6) |
                 ((mode == klib::usb::usb::endpoint_mode::disabled) ? 0 : (1 << 4))
             );
 
@@ -788,11 +788,11 @@ namespace klib::max32625::io {
 
         /**
          * @brief Returns if a endpoint is configured (not disabled)
-         * 
-         * @param endpoint 
+         *
+         * @param endpoint
          * @param mode
-         * @return true 
-         * @return false 
+         * @return true
+         * @return false
          */
         static bool is_configured(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // get the endpoint pointer
@@ -804,8 +804,8 @@ namespace klib::max32625::io {
 
         /**
          * @brief Stall a endpoint
-         * 
-         * @param endpoint 
+         *
+         * @param endpoint
          * @param mode
          */
         static void stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
@@ -818,7 +818,7 @@ namespace klib::max32625::io {
                 (*ep) |= (0x1 << 9);
             }
 
-            // set the stall flag 
+            // set the stall flag
             (*ep) |= (0x1 << 8);
 
             // get the callback
@@ -838,15 +838,15 @@ namespace klib::max32625::io {
 
         /**
          * @brief Unstall a endpoint
-         * 
-         * @param endpoint 
+         *
+         * @param endpoint
          * @param mode
          */
         static void un_stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // get the pointer to the endpoint
             auto *const ep = get_endpoint_ptr(endpoint);
 
-            // check if the endpoint is stalled. The host can unstall 
+            // check if the endpoint is stalled. The host can unstall
             // us even if we are not stalled
             if (!((*ep) & (0x1 << 8))) {
                 // ack the request
@@ -882,24 +882,24 @@ namespace klib::max32625::io {
 
         /**
          * @brief returns if a endpoint is stalled
-         * 
-         * @param endpoint 
+         *
+         * @param endpoint
          * @param mode
-         * @return true 
-         * @return false 
+         * @return true
+         * @return false
          */
         static bool is_stalled(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // get the pointer to the endpoint
             const auto *const ep = get_endpoint_ptr(endpoint);
 
-            // get the stall flag 
+            // get the stall flag
             return (*ep) & (0x1 << 8);
         }
 
         /**
          * @brief Reset a endpoint
-         * 
-         * @param endpoint 
+         *
+         * @param endpoint
          * @param mode
          */
         static void reset(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
@@ -922,7 +922,7 @@ namespace klib::max32625::io {
             clear_endpoint_state(endpoint);
 
             if (callback) {
-                // send a error to the callback. Do not care about the 
+                // send a error to the callback. Do not care about the
                 // return value as we are always clearing the endpoint
                 // in a reset event
                 callback(endpoint, mode, klib::usb::usb::error::reset, transferred);
@@ -931,8 +931,8 @@ namespace klib::max32625::io {
 
         /**
          * @brief Ack a endpoint
-         * 
-         * @param endpoint 
+         *
+         * @param endpoint
          * @param mode
          */
         static void ack(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
@@ -945,8 +945,8 @@ namespace klib::max32625::io {
 
         /**
          * @brief Set the device address. Handled in hardware
-         * 
-         * @param address 
+         *
+         * @param address
          */
         static klib::usb::usb::handshake set_device_address(const uint8_t address) {
             // ack the response. The hardware handles this
@@ -955,20 +955,20 @@ namespace klib::max32625::io {
 
         /**
          * @brief Write data to an endpoint.
-         * 
+         *
          * @warning Buffers should be valid until the callback function is called
-         * 
-         * @param callback 
-         * @param endpoint 
+         *
+         * @param callback
+         * @param endpoint
          * @param mode
-         * @param data 
-         * @param size 
-         * @return true 
-         * @return false 
+         * @param data
+         * @param size
+         * @return true
+         * @return false
          */
-        static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
-                          const klib::usb::usb::endpoint_mode mode, const uint8_t* data, 
-                          const uint32_t size) 
+        static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint,
+                          const klib::usb::usb::endpoint_mode mode, const uint8_t* data,
+                          const uint32_t size)
         {
             // check if the endpoint is configured
             if (!is_configured(endpoint, mode)) {
@@ -988,8 +988,8 @@ namespace klib::max32625::io {
             // set the endpoint callback and mark the endpoint as busy
             state[endpoint].is_busy = true;
             state[endpoint].callback = callback;
-            
-            // set the endpoint data (we prefill the transferred size. When we get a 
+
+            // set the endpoint data (we prefill the transferred size. When we get a
             // interrupt for it is already transmitted)
             state[endpoint].requested_size = size;
             state[endpoint].transferred_size = s;
@@ -1015,20 +1015,20 @@ namespace klib::max32625::io {
 
         /**
          * @brief Read data from a endpoint. Data is only valid when the callback is called.
-         * 
+         *
          * @warning Buffers should be valid until the callback function is called
-         * 
-         * @param callback 
-         * @param endpoint 
+         *
+         * @param callback
+         * @param endpoint
          * @param mode
-         * @param data 
-         * @param size 
-         * @return true 
-         * @return false 
+         * @param data
+         * @param size
+         * @return true
+         * @return false
          */
-        static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint, 
-                         const klib::usb::usb::endpoint_mode mode, uint8_t* data, 
-                         const uint32_t size) 
+        static bool read(const klib::usb::usb::usb_callback callback, const uint8_t endpoint,
+                         const klib::usb::usb::endpoint_mode mode, uint8_t* data,
+                         const uint32_t size)
         {
             // check if the endpoint is configured
             if (!is_configured(endpoint, mode) || is_stalled(endpoint, mode)) {
@@ -1048,7 +1048,7 @@ namespace klib::max32625::io {
             // set the endpoint callback and mark the endpoint as busy
             state[endpoint].is_busy = true;
             state[endpoint].callback = callback;
-            
+
             // set the endpoint data
             state[endpoint].requested_size = size;
             state[endpoint].transferred_size = 0;
@@ -1074,7 +1074,7 @@ namespace klib::max32625::io {
 
         /**
          * @brief Send a remote wakeup signal to the host
-         * 
+         *
          */
         static void remote_wakeup() {
             // wakup the usb tranceiver
@@ -1086,11 +1086,11 @@ namespace klib::max32625::io {
 
         /**
          * @brief Returns if a endpoint has a pending transmission
-         * 
-         * @param endpoint 
+         *
+         * @param endpoint
          * @param mode
-         * @return true 
-         * @return false 
+         * @return true
+         * @return false
          */
         static bool is_pending(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             return state[endpoint].is_busy;

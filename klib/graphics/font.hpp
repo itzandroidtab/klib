@@ -8,7 +8,7 @@
 namespace klib::graphics {
     /**
      * @brief 8x8 ascii font
-     * 
+     *
      */
     class ascii_font_8x8 {
     public:
@@ -112,15 +112,15 @@ namespace klib::graphics {
             {0x1c, 0x30, 0x30, 0xe0, 0x30, 0x30, 0x1c, 0x00}, // {
             {0x18, 0x18, 0x18, 0x00, 0x18, 0x18, 0x18, 0x00}, // |
             {0xe0, 0x30, 0x30, 0x1c, 0x30, 0x30, 0xe0, 0x00}, // }
-            {0x76, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // ~ 
+            {0x76, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // ~
         };
 
     public:
         /**
          * @brief Get a character from the font
-         * 
-         * @param ch 
-         * @return mono_bitmap<width, height> 
+         *
+         * @param ch
+         * @return mono_bitmap<width, height>
          */
         constexpr static mono_bitmap<8, 8> get_character(const char ch) {
             if (ch > (' ' + sizeof(characters) / sizeof(characters[0])) || ch < ' ') {
@@ -133,7 +133,7 @@ namespace klib::graphics {
 
     /**
      * @brief Example 8x8 ascii font
-     * 
+     *
      */
     class ascii_font_16x16: private ascii_font_8x8 {
     public:
@@ -143,11 +143,11 @@ namespace klib::graphics {
 
     protected:
         /**
-         * @brief Expand the lower nibble to 8 bits by 
+         * @brief Expand the lower nibble to 8 bits by
          * duplicating every bit
-         * 
-         * @param value 
-         * @return constexpr uint8_t 
+         *
+         * @param value
+         * @return constexpr uint8_t
          */
         constexpr static uint8_t expand(const uint8_t value) {
             uint8_t ret = 0;
@@ -186,9 +186,9 @@ namespace klib::graphics {
     public:
         /**
          * @brief Get a character from the font
-         * 
-         * @param ch 
-         * @return mono_bitmap<width, height> 
+         *
+         * @param ch
+         * @return mono_bitmap<width, height>
          */
         constexpr static mono_bitmap<16, 16> get_character(const char ch) {
             if (ch > (' ' + sizeof(ascii_font_8x8::characters) / sizeof(ascii_font_8x8::characters[0])) || ch < ' ') {

@@ -49,7 +49,7 @@ namespace klib::lpc802::io {
             return Pin::port::port->B[Pin::number];
         }
     };
- 
+
     template <typename Pin>
     class pin_out {
     public:

@@ -27,7 +27,7 @@ namespace klib::lpc1752::io::periph {
         // port to the gpio hardware
         static inline GPIO0_Type *const port = GPIO1;
     };
-    
+
     struct gpio2 {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 2;

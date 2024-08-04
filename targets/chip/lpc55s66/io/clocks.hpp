@@ -8,10 +8,10 @@ namespace klib::lpc55s66 {
     public:
         /**
          * @brief Enable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P> 
+        template <typename P>
         static void enable() {
             // set the bit to enable the clock on the peripheral
             if constexpr (P::clock_id < 32) {
@@ -42,10 +42,10 @@ namespace klib::lpc55s66 {
 
         /**
          * @brief Disable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P> 
+        template <typename P>
         static void disable() {
             // clear the bit to Disable the clock on the peripheral
             if constexpr (P::clock_id < 32) {
@@ -75,13 +75,13 @@ namespace klib::lpc55s66 {
         }
 
         /**
-         * @brief Get the clock status of a peripheral 
-         * 
-         * @tparam P 
-         * @return true 
-         * @return false 
+         * @brief Get the clock status of a peripheral
+         *
+         * @tparam P
+         * @return true
+         * @return false
          */
-        template <typename P> 
+        template <typename P>
         static bool status() {
             // return the value of the clock id in the register (1 = enabled, 0 = disabled)
             if constexpr (P::clock_id < 32) {

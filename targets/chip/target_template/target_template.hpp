@@ -9,8 +9,8 @@ namespace klib::template {
 
     /**
      * @brief Get the current cpu id
-     * 
-     * @return uint32_t 
+     *
+     * @return uint32_t
      */
     static uint32_t get_cpu_id() {
         return 0;
@@ -18,8 +18,8 @@ namespace klib::template {
 
     /**
      * @brief Enable a interrupt
-     * 
-     * @tparam Irq 
+     *
+     * @tparam Irq
      */
     template <uint32_t Irq>
     static void enable_irq() {
@@ -28,17 +28,17 @@ namespace klib::template {
 
     /**
      * @brief Disable a interrupt
-     * 
-     * @tparam Irq 
+     *
+     * @tparam Irq
      */
     template <uint32_t Irq>
     static void disable_irq() {
         // disable a interrupt
     }
-    
+
     /**
      * @brief Global enable interrupts.
-     * 
+     *
      */
     static void enable_irq() {
         // enable the global interrupts
@@ -46,7 +46,7 @@ namespace klib::template {
 
     /**
      * @brief Global disable interrupts. Prevents any interrupt from triggering
-     * 
+     *
      */
     static void disable_irq() {
         // globally disable the interrupts

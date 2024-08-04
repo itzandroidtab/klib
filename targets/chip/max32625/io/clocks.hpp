@@ -8,10 +8,10 @@ namespace klib::max32625 {
     public:
         /**
          * @brief Enable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P> 
+        template <typename P>
         static void enable() {
             // clear the bit to enable the clock on the peripheral
             CLKMAN->CLK_CTRL &= ~(1 << P::clock_id);
@@ -31,10 +31,10 @@ namespace klib::max32625 {
 
         /**
          * @brief Disable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P> 
+        template <typename P>
         static void disable() {
             // clear the bit to Disable the clock on the peripheral
             CLKMAN->CLK_CTRL |= (1 << P::clock_id);
@@ -53,13 +53,13 @@ namespace klib::max32625 {
         }
 
         /**
-         * @brief Get the clock status of a peripheral 
-         * 
-         * @tparam P 
-         * @return true 
-         * @return false 
+         * @brief Get the clock status of a peripheral
+         *
+         * @tparam P
+         * @return true
+         * @return false
          */
-        template <typename P> 
+        template <typename P>
         static bool status() {
             // return the inverse of the register (0 = enabled, 1 = disabled)
             return !(CLKMAN->CLK_CTRL & (1 << P::clock_id));

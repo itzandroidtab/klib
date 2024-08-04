@@ -11,13 +11,13 @@ namespace klib::usb::descriptor {
     /**
      * More information can be found here:
      * https://www.beyondlogic.org/usbnutshell/usb5.shtml
-     * 
+     *
      */
 
     /**
      * Descriptor types from the usb 2.0 specification
-     * 
-     */ 
+     *
+     */
     enum class descriptor_type: uint8_t {
         device = 1,
         configuration = 2,
@@ -38,7 +38,7 @@ namespace klib::usb::descriptor {
     /**
      * Transfer types
      * (bmAttributes)
-     * 
+     *
      */
     enum class transfer_type {
         control = 0,
@@ -50,7 +50,7 @@ namespace klib::usb::descriptor {
     /**
      * Synchronisation types
      * (bmAttributes)
-     * 
+     *
      */
     enum class synchronisation_type {
         no_synchronisation = 0,
@@ -62,7 +62,7 @@ namespace klib::usb::descriptor {
     /**
      * Usage types
      * (bmAttributes)
-     * 
+     *
      */
     enum class usage_type {
         data_endpoint = 0,
@@ -73,12 +73,12 @@ namespace klib::usb::descriptor {
 
     /**
      * The device descriptor of a USB device represents the entire device.
-     * As a result a USB device can only have one device descriptor. It 
-     * specifies some basic, yet important information about the device 
+     * As a result a USB device can only have one device descriptor. It
+     * specifies some basic, yet important information about the device
      * such as the supported USB version, maximum packet size, vendor and
      * product ids and the number of possible configurations the device can
      * have.
-     * 
+     *
      */
     struct device {
         // size of descriptor in bytes
@@ -129,7 +129,7 @@ namespace klib::usb::descriptor {
 
     /**
      * Descriptor for a configuration.
-     * 
+     *
      */
     struct configuration {
         // size of descriptor in bytes
@@ -163,23 +163,23 @@ namespace klib::usb::descriptor {
     static_assert(sizeof(configuration) == 9, "Configuration descriptor is not 9 bytes in length");
 
     /**
-     * Descriptor for a string. This provides human readable information 
+     * Descriptor for a string. This provides human readable information
      * and is optional. If they are not used, any string index fields of
-     * descriptors must be set to zero indicating there is no string 
+     * descriptors must be set to zero indicating there is no string
      * descriptor available.
-     * 
-     * All strings are encoded in the unicode format and products can be 
+     *
+     * All strings are encoded in the unicode format and products can be
      * made to support multiple languages.
-     * 
-     * Language descriptor uses this descriptor to send the languages 
+     *
+     * Language descriptor uses this descriptor to send the languages
      * are supported by the device. List with id's can be found here:
-     * 
+     *
      * http://www.usb.org/developers/data/USB_LANGIDs.pdf
-     * 
+     *
      * e.g. for English - United States code 0x0409 is used.
-     * 
+     *
      * @tparam Size the size of the string
-     * 
+     *
      */
     template <uint32_t Size>
     struct string {
@@ -196,10 +196,10 @@ namespace klib::usb::descriptor {
     static_assert(sizeof(string<1>) == 4, "String descriptor with 1 entry is not 4 bytes in length");
 
     /**
-     * A interface descriptor can be seen as a header or grouping of the 
+     * A interface descriptor can be seen as a header or grouping of the
      * endpoints into a functional group performing a single feature of the
-     * device. 
-     * 
+     * device.
+     *
      */
     struct interface {
         // size of descriptor in bytes
@@ -233,11 +233,11 @@ namespace klib::usb::descriptor {
     static_assert(sizeof(interface) == 9, "Interface descriptor is not 9 bytes in length");
 
     /**
-     * Descriptor for an endpoint. Endpoint zero is always assumed to be a 
-     * control endpoint and is configured before any descriptors are even 
-     * requested. The host will use the information returned from these 
+     * Descriptor for an endpoint. Endpoint zero is always assumed to be a
+     * control endpoint and is configured before any descriptors are even
+     * requested. The host will use the information returned from these
      * descriptors to determine the bandwidth requirements of the bus.
-     * 
+     *
      */
     struct endpoint {
         // size of descriptor in bytes
@@ -251,7 +251,7 @@ namespace klib::usb::descriptor {
         // b[4..6] = reserved, set to 0
         // b[7] = direction (ignored for control endpoints)
         // 0x0 = out
-        // 0x1 = in 
+        // 0x1 = in
         uint8_t bEndpointAddress;
 
         // b[0..1] = Transfer type
@@ -259,7 +259,7 @@ namespace klib::usb::descriptor {
         // 0x1 = Isochronous
         // 0x2 = Bulk
         // 0x3 = Interrupt
-        // b[2..3] = Synchronisation type 
+        // b[2..3] = Synchronisation type
         // 0x0 = no synchronisation
         // 0x1 = asynchronous
         // 0x2 = adaptive
@@ -272,11 +272,11 @@ namespace klib::usb::descriptor {
         // b[2..7] = reserved if Isochronous endpoint
         uint8_t bmAttributes;
 
-        // maximum packet size this endpoint is capable of sending or 
+        // maximum packet size this endpoint is capable of sending or
         // receiving
         uint16_t wMaxPacketSize;
 
-        // interval for polling endpoint data transfers. Value in frame 
+        // interval for polling endpoint data transfers. Value in frame
         // counts. Ignored for bulk and control endpoints. Isochronous
         // must equal 1 and field may range from 1 to 255 for interrupt
         // endpoints
@@ -287,7 +287,7 @@ namespace klib::usb::descriptor {
 
     /**
      * @brief Device qualifier descriptor
-     * 
+     *
      */
     struct qualifier {
         // size of descriptor in bytes
@@ -322,7 +322,7 @@ namespace klib::usb::descriptor {
 
     /**
      * @brief Binary device object store (BOS)
-     * 
+     *
      */
     struct bos {
         // size of this descriptor
@@ -331,11 +331,11 @@ namespace klib::usb::descriptor {
         // the BOS descriptor type
         const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::bos);
 
-        // the length of this descriptor and all of 
+        // the length of this descriptor and all of
         // its sub descriptors
         uint16_t wTotalLength;
 
-        // the number of separate device capability 
+        // the number of separate device capability
         // descriptors in the BOS
         uint8_t bNumDeviceCaps;
     };
@@ -344,8 +344,8 @@ namespace klib::usb::descriptor {
 
     /**
      * @brief Device capability descriptor
-     * 
-     * @tparam Size 
+     *
+     * @tparam Size
      */
     template <typename T>
     struct capability {
@@ -355,7 +355,7 @@ namespace klib::usb::descriptor {
         // the device capability descriptor type
         const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::device_capability);
 
-        // device capability type (valid values are 
+        // device capability type (valid values are
         // listed in table 9-11)
         uint8_t bDevCapabilityType;
 
@@ -366,8 +366,8 @@ namespace klib::usb::descriptor {
     static_assert(sizeof(capability<uint8_t>) == 4, "Capability descriptor is not 4 bytes in length");
 
     /**
-     * @brief Interface association descriptor 
-     * 
+     * @brief Interface association descriptor
+     *
      */
     struct interface_association {
         // size of this descriptor
@@ -376,7 +376,7 @@ namespace klib::usb::descriptor {
         // the device capability descriptor type
         const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::interface_association);
 
-        // first interface number of the next 
+        // first interface number of the next
         // descriptor
         uint8_t bFirstInterface;
 
@@ -387,15 +387,15 @@ namespace klib::usb::descriptor {
         // 	bInterfaceClass used for the interface
         uint8_t bFunctionClass;
 
-        // bInterfaceSubClass used for the 
+        // bInterfaceSubClass used for the
         // interface
         uint8_t bFunctionSubClass;
 
-        // bInterfaceProtocol used for the 
+        // bInterfaceProtocol used for the
         // interface
         uint8_t bFunctionProtocol;
 
-        // index of string descirptor describing 
+        // index of string descirptor describing
         // this interface
         uint8_t iFunction;
     };
@@ -403,7 +403,7 @@ namespace klib::usb::descriptor {
     static_assert(sizeof(interface_association) == 8, "Interface association descriptor is not 8 bytes in length");
 }
 
-// release the old pack so the rest of the structs are not 
+// release the old pack so the rest of the structs are not
 // affected by the pack(1)
 #pragma pack(pop)
 

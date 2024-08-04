@@ -9,18 +9,18 @@ namespace klib::usb::device {
     class device_template {
     public:
         /**
-         * @brief public functions for the user. This is not required 
+         * @brief public functions for the user. This is not required
          * but is used in all the other drivers and should be provided
          * as a default
-         * 
+         *
          */
 
         /**
          * @brief Returns if the device is configured
-         * 
-         * @tparam Usb 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Usb
+         * @return true
+         * @return false
          */
         template <typename Usb>
         static bool is_configured() {
@@ -29,16 +29,16 @@ namespace klib::usb::device {
 
     public:
         /**
-         * @brief static functions needed for the usb stack. Should not 
+         * @brief static functions needed for the usb stack. Should not
          * be called manually
-         * 
+         *
          * This part is for the optional functions
          */
 
         /**
          * @brief Called when the usb tranceiver wakes up
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         void wakeup() {
@@ -47,8 +47,8 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when the usb tranceiver goes to sleep
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         void sleep() {
@@ -57,8 +57,8 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when the host is disconnected
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         void disconnected() {
@@ -67,8 +67,8 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when the usb has connected to a host
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         void connected() {
@@ -77,10 +77,10 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when the usb tranceiver has detected activity
-         * 
+         *
          * @warning not all hardware supports this
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         void activity() {
@@ -89,20 +89,20 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when a bus reset has occured
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         void bus_reset() {
             // if not needed this function can be removed
-        }; 
+        };
 
         /**
          * @brief Called when get interface is received
-         * 
-         * @tparam Usb 
-         * @param packet 
-         * @return usb::handshake 
+         *
+         * @tparam Usb
+         * @param packet
+         * @return usb::handshake
          */
         template <typename Usb>
         static usb::handshake get_interface(const klib::usb::setup_packet &packet) {
@@ -112,10 +112,10 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when set interface is received
-         * 
-         * @tparam Usb 
-         * @param packet 
-         * @return usb::handshake 
+         *
+         * @tparam Usb
+         * @param packet
+         * @return usb::handshake
          */
         template <typename Usb>
         static usb::handshake set_interface(const klib::usb::setup_packet &packet) {
@@ -125,9 +125,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when a class specific packet is received
-         * 
-         * @tparam Usb 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake handle_class_packet(const klib::usb::setup_packet &packet) {
@@ -137,9 +137,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when a vendor specific packet is received
-         * 
-         * @tparam Usb 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake handle_vendor_packet(const klib::usb::setup_packet &packet) {
@@ -149,17 +149,17 @@ namespace klib::usb::device {
 
     public:
         /**
-         * @brief static functions needed for the usb stack. Should not 
+         * @brief static functions needed for the usb stack. Should not
          * be called manually
-         * 
-         * This part is is required for the usb stack to work. (it will 
+         *
+         * This part is is required for the usb stack to work. (it will
          * give compile errors when one of the function is missing)
          */
 
         /**
          * @brief Init function. Called when the usb stack is initalized
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         static void init() {
@@ -168,10 +168,10 @@ namespace klib::usb::device {
 
         /**
          * @brief Clear a feature on the device
-         * 
-         * @tparam Usb 
-         * @param feature 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param feature
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake clear_feature(const klib::usb::setup::feature feature, const klib::usb::setup_packet &packet) {
@@ -180,10 +180,10 @@ namespace klib::usb::device {
 
         /**
          * @brief Set a feature on the device
-         * 
-         * @tparam Usb 
-         * @param feature 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param feature
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake set_feature(const klib::usb::setup::feature feature, const klib::usb::setup_packet &packet) {
@@ -192,12 +192,12 @@ namespace klib::usb::device {
 
         /**
          * @brief Get the descriptor for the descriptor type and index
-         * 
-         * @tparam Usb 
-         * @param packet 
-         * @param type 
-         * @param index 
-         * @return usb::description 
+         *
+         * @tparam Usb
+         * @param packet
+         * @param type
+         * @param index
+         * @return usb::description
          */
         template <typename Usb>
         static usb::description get_descriptor(const setup_packet &packet, descriptor::descriptor_type type, const uint8_t index) {
@@ -206,9 +206,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Get the configuration value set in the set config call
-         * 
-         * @tparam Usb 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake get_config(const klib::usb::setup_packet &packet) {
@@ -217,9 +217,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Set a configuration value
-         * 
-         * @tparam Usb 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake set_config(const klib::usb::setup_packet &packet) {
@@ -228,9 +228,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Get the device status. Called when the status is requested
-         * 
-         * @tparam Usb 
-         * @return uint8_t 
+         *
+         * @tparam Usb
+         * @return uint8_t
          */
         template <typename Usb>
         static uint8_t get_device_status() {

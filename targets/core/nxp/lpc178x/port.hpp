@@ -7,7 +7,7 @@
 
 namespace klib::core::lpc178x::io::detail::alternate {
     // alternate functions for all the gpio
-    // default function (view reference manual for 
+    // default function (view reference manual for
     // default functions for every pin)
     struct none {
         // peripheral id (e.g func0, func1)
@@ -64,9 +64,9 @@ namespace klib::core::lpc178x::io::detail::pins {
 
     /**
      * @brief Get the pointer to the correct pin select register
-     * 
-     * @tparam Pin 
-     * @return uint32_t* const 
+     *
+     * @tparam Pin
+     * @return uint32_t* const
      */
     template <typename Pin>
     constexpr uint32_t get_pinselect_offset() {
@@ -82,11 +82,11 @@ namespace klib::core::lpc178x::io::detail::pins {
 
     /**
      * @brief Helper function to set a pin to a specific peripheral
-     * 
-     * @tparam Pin 
-     * @tparam Periph 
+     *
+     * @tparam Pin
+     * @tparam Periph
      */
-    template <typename Pin, typename Periph>    
+    template <typename Pin, typename Periph>
     static void set_peripheral() {
         // get the register offset for the pin selection
         constexpr uint32_t pin_offset = get_pinselect_offset<Pin>();
@@ -100,7 +100,7 @@ namespace klib::core::lpc178x::io::detail::pins {
 
     /**
      * @brief Available pin modes
-     * 
+     *
      */
     enum class mode {
         pullup = 0b00,
@@ -110,10 +110,10 @@ namespace klib::core::lpc178x::io::detail::pins {
     };
 
     /**
-     * @brief Helper function to set the mode of a pin. 
-     * 
-     * @tparam Pin 
-     * @tparam Value 
+     * @brief Helper function to set the mode of a pin.
+     *
+     * @tparam Pin
+     * @tparam Value
      */
     template <typename Pin, mode Value>
     static void set_pinmode() {
@@ -128,9 +128,9 @@ namespace klib::core::lpc178x::io::detail::pins {
 
     /**
      * @brief Set the open drain of a pin
-     * 
-     * @tparam Pin 
-     * @tparam OpenDrain 
+     *
+     * @tparam Pin
+     * @tparam OpenDrain
      */
     template <typename Pin, bool OpenDrain>
     static void set_open_drain() {
@@ -166,19 +166,19 @@ namespace klib::core::lpc178x::io {
 
         template <bool Val>
         constexpr static void pullup_enable() {
-            detail::pins::set_pinmode<Pin, 
+            detail::pins::set_pinmode<Pin,
                 Val ? detail::pins::mode::pullup : detail::pins::mode::none
             >();
         }
 
         template <bool Val>
         constexpr static void pulldown_enable() {
-            detail::pins::set_pinmode<Pin, 
+            detail::pins::set_pinmode<Pin,
                 Val ? detail::pins::mode::pulldown : detail::pins::mode::none
             >();
-        }        
+        }
     };
- 
+
     template <typename Pin>
     class pin_out {
     public:

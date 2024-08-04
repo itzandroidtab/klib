@@ -30,9 +30,9 @@ namespace klib::hardware::display {
         static inline klib::vector2u cursor = {};
 
         /**
-         * @brief All commands for the display. Command bit is already set for the 
+         * @brief All commands for the display. Command bit is already set for the
          * appropriate commands
-         * 
+         *
          */
         enum class cmd: uint8_t {
             adset = 0x00,
@@ -45,7 +45,7 @@ namespace klib::hardware::display {
 
         /**
          * @brief Available frequencies
-         * 
+         *
          * @details format of the value:
          * 0bx00 = p3 of disctl
          * 0b0x0 = p2 of disctl
@@ -64,7 +64,7 @@ namespace klib::hardware::display {
 
         /**
          * @brief Available duty cycle and bias modes
-         * 
+         *
          */
         enum class duty_bias: bool {
             duty_1_8_bias_1_4 = 0,
@@ -83,12 +83,12 @@ namespace klib::hardware::display {
                 // ICSET reset the display
                 (static_cast<uint8_t>(cmd::icset) | (0x1 << 1)),
 
-                // DISCTL with option 0x00 for 233hz (80hz if FRSEL is 
+                // DISCTL with option 0x00 for 233hz (80hz if FRSEL is
                 // not set in MODESET)
-                static_cast<uint8_t>(cmd::disctl) | (static_cast<uint8_t>(Freq) >> 1), 
+                static_cast<uint8_t>(cmd::disctl) | (static_cast<uint8_t>(Freq) >> 1),
 
                 // EVRSET with option 0x00
-                static_cast<uint8_t>(cmd::evrset), 
+                static_cast<uint8_t>(cmd::evrset),
 
                 // MODESET with option 200hz and 1/4 duty and 1/3 bias
                 static_cast<uint8_t>(cmd::modeset) | ((static_cast<uint8_t>(Freq) & 0x1) << 1) |
@@ -129,8 +129,8 @@ namespace klib::hardware::display {
         }
 
         static void raw_write(const uint8_t *const data, const uint32_t size) {
-            // raw write still uses buffer. Write the data to the buffer first. Update the 
-            // display afterwards as we only have a max of 15 bytes. (+ 8 as the first byte 
+            // raw write still uses buffer. Write the data to the buffer first. Update the
+            // display afterwards as we only have a max of 15 bytes. (+ 8 as the first byte
             // is the adset command)
             constexpr uint32_t offset = ((YOffset * width) + XOffset) + 8;
 
@@ -191,9 +191,9 @@ namespace klib::hardware::display {
 
     /**
      * @brief Using for the a TN 3x7 segment display
-     * 
-     * @tparam Bus 
-     * @tparam Address 
+     *
+     * @tparam Bus
+     * @tparam Address
      */
     template <typename Bus, uint8_t Address = 0x3e>
     using bu97960_3x7segment = bu97960<Bus, Address, 6, 4, 2, 13>;

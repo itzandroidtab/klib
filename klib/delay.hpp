@@ -13,20 +13,20 @@
 namespace klib::detail {
     /**
      * @brief Flag for waiting until a timer is triggered
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer>
     static volatile bool done = false;
 
     /**
-     * @brief Delay using a hardware timer. Max wait 
-     * time is 1 second. 
-     * 
+     * @brief Delay using a hardware timer. Max wait
+     * time is 1 second.
+     *
      * @warning Input is not checked.
-     * 
+     *
      * @tparam Timer
-     * @param time 
+     * @param time
      */
     template <typename Timer, bool LowPowerSleep>
     static void timer_delay_impl(const time::us time) {
@@ -62,12 +62,12 @@ namespace klib::detail {
     }
 
     /**
-     * @brief Delay using the systick timer. Timing accuracy depends 
+     * @brief Delay using the systick timer. Timing accuracy depends
      * on the cpu accuracy.
-     * 
-     * @tparam Timer 
-     * @tparam T 
-     * @param time 
+     *
+     * @tparam Timer
+     * @tparam T
+     * @param time
      */
     template <typename Timer, bool LowPowerSleep>
     static void systick_delay_impl(const time::us time) {
@@ -86,21 +86,21 @@ namespace klib::detail {
             }
         }
 
-        // wait until the counter goes over the count we 
-        // had before 
+        // wait until the counter goes over the count we
+        // had before
         while (Timer::template get_runtime<time::us>() < target) {
-            // wait and do nothing. We cannot use the low power sleep here as 
+            // wait and do nothing. We cannot use the low power sleep here as
             // no interrupt will trigger
         }
     }
 
     /**
      * @brief Do a busy wait for time amount of microseconds
-     * 
-     * @warning is a rough estimation based on the cpu clock and the 
+     *
+     * @warning is a rough estimation based on the cpu clock and the
      * amount of instructions used in a loop with optimization -Os
-     * 
-     * @param time 
+     *
+     * @param time
      */
     static void __attribute__((__optimize__("-Os"))) busy_delay_impl(const time::us time) {
         // get the cpu speed
@@ -120,12 +120,12 @@ namespace klib::detail {
 
 namespace klib {
     /**
-     * @brief Type that should be used for a loop that does 
+     * @brief Type that should be used for a loop that does
      * a busy wait.
-     * 
-     * @warning this a aproximation. for accurate timing a 
+     *
+     * @warning this a aproximation. for accurate timing a
      * timer should be used
-     * 
+     *
      */
     struct busy_wait {};
 
@@ -133,10 +133,10 @@ namespace klib {
      * @brief Delay using a hardware timer. The systick timer
      * has its own implementation that limits the accuracy to
      * 1 micro second
-     * 
-     * @tparam Timer 
-     * @tparam T 
-     * @param time 
+     *
+     * @tparam Timer
+     * @tparam T
+     * @param time
      */
     template <
         typename Timer = io::systick<>,
@@ -151,7 +151,7 @@ namespace klib {
             Timer::get_runtime();
         };
 
-        // delay in 1 second intervals as some timers 
+        // delay in 1 second intervals as some timers
         // do not support frequencies below 1hz
         for (uint32_t i = 0; i < sec.value; i++) {
             if constexpr (std::is_same_v<Timer, klib::busy_wait>) {

@@ -12,7 +12,7 @@ namespace klib::io {
     public:
         /**
          * @brief Get the core clock speed of the cpu in Hz
-         * 
+         *
          */
         static uint32_t get() {
             return core_clock;
@@ -20,8 +20,8 @@ namespace klib::io {
 
         /**
          * @brief Change the core clock
-         * 
-         * @param clock 
+         *
+         * @param clock
          */
         static void set(const uint32_t clock) {
             core_clock = clock;

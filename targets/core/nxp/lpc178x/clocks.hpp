@@ -19,9 +19,9 @@ namespace klib::core::lpc178x::io {
 
         /**
          * @brief Set the global peripheral clock selection
-         * 
+         *
          */
-        template <divider Divider = divider::div_1> 
+        template <divider Divider = divider::div_1>
         static void set() {
             // enable the peripheral
             SYSCON->PCLKSEL = static_cast<uint32_t>(Divider);
@@ -29,10 +29,10 @@ namespace klib::core::lpc178x::io {
 
         /**
          * @brief Get the global peripheral clock selection
-         * 
-         * @tparam P 
-         * @return true 
-         * @return false 
+         *
+         * @tparam P
+         * @return true
+         * @return false
          */
         static divider status() {
             // return the value of the selection

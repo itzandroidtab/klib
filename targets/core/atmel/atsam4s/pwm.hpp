@@ -154,7 +154,7 @@ namespace klib::core::atsam4s::io {
      * @warning When disabling the pwm the output of the gpio is not changed.
      */
     template <
-        typename Pin, typename Pwm, uint32_t Frequency, uint8_t Bits = 12, 
+        typename Pin, typename Pwm, uint32_t Frequency, uint8_t Bits = 12,
         detail::pwm::pwm_clock UseClock = detail::pwm::pwm_clock::mck,
         typename PPin = std::tuple_element<klib::io::peripheral::get_index<Pin, typename Pwm::pwm_pins>(), typename Pwm::pwm_pins>::type
     >
@@ -209,13 +209,13 @@ namespace klib::core::atsam4s::io {
                     // configure the clock with the provided value (clear previous value
                     // and set the new value)
                     Pwm::port->CLK = (
-                        (clk & (~(0xffff << (16 * index)))) | 
+                        (clk & (~(0xffff << (16 * index)))) |
                         ((clock.divider << (16 * index)) | (static_cast<uint32_t>(clock.prescaler) << ((16 * index) + 8)))
                     );
 
                     // Change the prescaler to either clka or clkb
                     Pwm::port->CH[PPin::channel].CMR = (
-                        static_cast<uint32_t>(detail::pwm::pwm_prescaler::clka) + 
+                        static_cast<uint32_t>(detail::pwm::pwm_prescaler::clka) +
                         static_cast<uint32_t>(UseClock)
                     );
                 }

@@ -7,11 +7,11 @@
 
 namespace klib {
     /**
-     * @brief Masked interrupt list. Calls interrupt based on the input and 
-     * the mask. Can be used as a helper class to call functions that need 
+     * @brief Masked interrupt list. Calls interrupt based on the input and
+     * the mask. Can be used as a helper class to call functions that need
      * to be called when specific bits are set
-     * 
-     * @tparam Size 
+     *
+     * @tparam Size
      */
     template <uint32_t Size = 32>
     class irq_helper {
@@ -27,19 +27,19 @@ namespace klib {
         static_assert(Size <= 32, "Masked interrupt only supports up to 32 bits");
         static_assert(Size >= 1, "Masked interrupt needs at least 1 item");
 
-        // array with all the function callbacks. 
+        // array with all the function callbacks.
         interrupt_callback callbacks[Size] = {};
 
     public:
         /**
-         * @brief Handle all the bits in the status register (masked by the interrupt mask) by 
+         * @brief Handle all the bits in the status register (masked by the interrupt mask) by
          * calling the callback function.
-         * 
+         *
          * @warning Does not clear any bits in the status register of the handler that calls
          * this function
-         * 
-         * @param status_register 
-         * @param interrupt_mask 
+         *
+         * @param status_register
+         * @param interrupt_mask
          */
         void handle_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
             // create the mask for the input size
@@ -69,9 +69,9 @@ namespace klib {
 
         /**
          * @brief Register a callback
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <uint32_t Irq>
         void register_irq(const interrupt_callback &callback) {
@@ -83,8 +83,8 @@ namespace klib {
 
         /**
          * @brief Clear a callback
-         * 
-         * @tparam Irq 
+         *
+         * @tparam Irq
          */
         template <uint32_t Irq>
         void unregister_irq() {
@@ -96,13 +96,13 @@ namespace klib {
     };
 
     /**
-     * @brief Masked interrupt list. Calls interrupt based on the input and 
-     * the mask. Can be used as a helper class to call functions that need 
+     * @brief Masked interrupt list. Calls interrupt based on the input and
+     * the mask. Can be used as a helper class to call functions that need
      * to be called when specific bits are set
-     * 
+     *
      * @note seperate class to prevent any overhead for virtual functions
-     * 
-     * @tparam Size 
+     *
+     * @tparam Size
      */
     template <uint32_t Size = 32>
     class irq_helper_status {
@@ -118,19 +118,19 @@ namespace klib {
         static_assert(Size <= 32, "Masked interrupt only supports up to 32 bits");
         static_assert(Size >= 1, "Masked interrupt needs at least 1 item");
 
-        // array with all the function callbacks. 
+        // array with all the function callbacks.
         interrupt_callback callbacks[Size] = {};
 
     public:
         /**
-         * @brief Handle all the bits in the status register (masked by the interrupt mask) by 
+         * @brief Handle all the bits in the status register (masked by the interrupt mask) by
          * calling the callback function.
-         * 
+         *
          * @warning Does not clear any bits in the status register of the handler that calls
          * this function
-         * 
-         * @param status_register 
-         * @param interrupt_mask 
+         *
+         * @param status_register
+         * @param interrupt_mask
          */
         void handle_irq(const uint32_t status_register, const uint32_t interrupt_mask) {
             // create the mask for the input size
@@ -160,9 +160,9 @@ namespace klib {
 
         /**
          * @brief Register a callback
-         * 
-         * @tparam Irq 
-         * @param callback 
+         *
+         * @tparam Irq
+         * @param callback
          */
         template <uint32_t Irq>
         void register_irq(const interrupt_callback &callback) {
@@ -174,8 +174,8 @@ namespace klib {
 
         /**
          * @brief Clear a callback
-         * 
-         * @tparam Irq 
+         *
+         * @tparam Irq
          */
         template <uint32_t Irq>
         void unregister_irq() {

@@ -9,9 +9,9 @@
 
 namespace klib::hardware::display {
     template <
-        typename Bus, typename PinDC, typename PinRst, 
+        typename Bus, typename PinDC, typename PinRst,
         graphics::mode Mode = graphics::mode::rgb565,
-        uint32_t Width = 80, uint32_t Height = 160, 
+        uint32_t Width = 80, uint32_t Height = 160,
         uint32_t XOffset = 26, uint32_t YOffset = 1
     >
     class st7735 {
@@ -102,23 +102,23 @@ namespace klib::hardware::display {
 
             /**
              * @brief Write a command to the display
-             * 
-             * @param command 
+             *
+             * @param command
              */
             static void write_cmd(const cmd command) {
                 // write the command to the display
                 write_cmd(command, nullptr, 0);
-            }  
+            }
 
             /**
              * @brief Write a command with one or multiple parameters to the display
-             * 
+             *
              * @details this function packs the aguments in a array to write to the display
-             * 
-             * @tparam Args 
-             * @param command 
-             * @param arg 
-             * @param args 
+             *
+             * @tparam Args
+             * @param command
+             * @param arg
+             * @param args
              */
             template <typename... Args>
             static void write_cmd(const cmd command, const uint8_t arg, Args &&... args) {
@@ -127,17 +127,17 @@ namespace klib::hardware::display {
 
                 // write the command and arguments to the display
                 write_cmd(command, arguments, sizeof(arguments));
-            }         
+            }
 
         public:
             /**
              * @brief inits the display
-             * 
-             * @tparam InvertedColors 
-             * @tparam RGBMode 
-             * @tparam Orientation 
-             * @tparam XMirror 
-             * @tparam YMirror 
+             *
+             * @tparam InvertedColors
+             * @tparam RGBMode
+             * @tparam Orientation
+             * @tparam XMirror
+             * @tparam YMirror
              */
             template <
                 bool InvertedColors = true, bool RGBMode = true,
@@ -195,7 +195,7 @@ namespace klib::hardware::display {
                 }
 
                 // memory direction control
-                write_cmd(cmd::madctl, 
+                write_cmd(cmd::madctl,
                     (RGBMode << 3) | ((Orientation == graphics::orientation::landscape) << 5) |
                     (XMirror << 6) | (YMirror << 7)
                 );
@@ -216,15 +216,15 @@ namespace klib::hardware::display {
 
                 // set gamma adjustment + polarity
                 write_cmd(
-                    cmd::gmctrp1, 0x02, 0x1C, 0x07, 0x12, 
-                    0x37, 0x32, 0x29, 0x2D, 0x29, 0x25, 
+                    cmd::gmctrp1, 0x02, 0x1C, 0x07, 0x12,
+                    0x37, 0x32, 0x29, 0x2D, 0x29, 0x25,
                     0x2B, 0x39, 0x00, 0x01, 0x03, 0x10
                 );
 
                 // set gamma adjustment - polarity
                 write_cmd(
-                    cmd::gmctrn1, 0x03, 0x1D, 0x07, 0x06, 
-                    0x2E, 0x2C, 0x29, 0x2D, 0x2E, 0x2E, 
+                    cmd::gmctrn1, 0x03, 0x1D, 0x07, 0x06,
+                    0x2E, 0x2C, 0x29, 0x2D, 0x2E, 0x2E,
                     0x37, 0x3F, 0x00, 0x00, 0x02, 0x10
                 );
 
@@ -296,27 +296,27 @@ namespace klib::hardware::display {
     };
 
     /**
-     * @brief Display write override with dma. Has support for 2 
-     * channels as some hardware requires a channel for reading the 
+     * @brief Display write override with dma. Has support for 2
+     * channels as some hardware requires a channel for reading the
      * spi data as well. If not used it can be set to:
      * "klib::io::dma::none"
-     * 
-     * @tparam DmaTx 
-     * @tparam DmaRx 
-     * @tparam Bus 
-     * @tparam PinDC 
-     * @tparam PinRst 
-     * @tparam Mode 
-     * @tparam Width 
-     * @tparam Height 
-     * @tparam XOffset 
-     * @tparam YOffset 
+     *
+     * @tparam DmaTx
+     * @tparam DmaRx
+     * @tparam Bus
+     * @tparam PinDC
+     * @tparam PinRst
+     * @tparam Mode
+     * @tparam Width
+     * @tparam Height
+     * @tparam XOffset
+     * @tparam YOffset
      */
     template <
         typename DmaTx, typename DmaRx,
-        typename Bus, typename PinDC, typename PinRst, 
+        typename Bus, typename PinDC, typename PinRst,
         graphics::mode Mode = graphics::mode::rgb565,
-        uint32_t Width = 80, uint32_t Height = 160, 
+        uint32_t Width = 80, uint32_t Height = 160,
         uint32_t XOffset = 26, uint32_t YOffset = 1
     >
     class st7735_dma: public st7735<Bus, PinDC, PinRst, Mode, Width, Height, XOffset, YOffset> {
@@ -327,17 +327,17 @@ namespace klib::hardware::display {
     public:
         /**
          * @brief Do a raw write using the dma
-         * 
-         * @warning DMA channels should be initialized before 
+         *
+         * @warning DMA channels should be initialized before
          * calling this function
-         * 
-         * @param data 
-         * @param size 
+         *
+         * @param data
+         * @param size
          */
         static void raw_write(const uint8_t *const data, const uint32_t size) {
             // check if we have a receive dma channel
             if constexpr (!std::is_same_v<DmaRx, klib::io::dma::none>) {
-                // read memory into the rx buffer. Do not increment as we 
+                // read memory into the rx buffer. Do not increment as we
                 // do not care about the result of what we are reading
                 DmaRx::template read<false>(&rx, size);
             }
@@ -349,13 +349,13 @@ namespace klib::hardware::display {
 
     /**
      * @brief Using for the st7735 mini display with the resolution 80 x 160
-     * 
-     * @tparam Bus 
-     * @tparam PinDC 
-     * @tparam PinRst 
+     *
+     * @tparam Bus
+     * @tparam PinDC
+     * @tparam PinRst
      */
     template <
-        typename Bus, typename PinDC, typename PinRst, 
+        typename Bus, typename PinDC, typename PinRst,
         graphics::mode Mode = graphics::mode::rgb565
     >
     using st7735_160x80 = st7735<Bus, PinDC, PinRst, Mode, 80, 160, 26, 1>;

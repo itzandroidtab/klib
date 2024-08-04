@@ -8,8 +8,8 @@
 namespace klib::crypt {
     /**
      * @brief Hmac implementation
-     * 
-     * @tparam T 
+     *
+     * @tparam T
      */
     template <typename T>
     class hmac {
@@ -34,7 +34,7 @@ namespace klib::crypt {
             return buffer;
         }
 
-    public:        
+    public:
         static auto hash(const uint8_t *const key, const uint32_t k_length, const uint8_t *const message, const uint32_t m_length) {
             // compute the block sized key
             const auto block_key = compute_block_sized_key(key, k_length);

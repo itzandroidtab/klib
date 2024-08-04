@@ -26,7 +26,7 @@ namespace klib::core::lpc178x::io::system {
     public:
         /**
          * @brief Available plls on the chip
-         * 
+         *
          */
         enum class pll {
             main = 0,
@@ -35,7 +35,7 @@ namespace klib::core::lpc178x::io::system {
 
         /**
          * @brief Available clock sources
-         * 
+         *
          */
         enum class source {
             internal = 0,
@@ -44,7 +44,7 @@ namespace klib::core::lpc178x::io::system {
 
         /**
          * @brief Available pre dividers
-         * 
+         *
          */
         enum class pre_divider {
             div_1 = 0x00,
@@ -55,8 +55,8 @@ namespace klib::core::lpc178x::io::system {
 
         /**
          * @brief Feed the pll
-         * 
-         * @tparam Pll 
+         *
+         * @tparam Pll
          */
         template <pll Pll>
         static void feed() {
@@ -73,15 +73,15 @@ namespace klib::core::lpc178x::io::system {
 
         /**
          * @brief Setup a pll
-         * 
+         *
          * @details PLL0 calculation:
          *     FCCO = (2 * M * FIN) / N
-         * 
+         *
          *     M = (FCCO * N) / (2 * FIN)
          *     N = (2 * M * FIN) / FCCO
          *     FIN = (FCCO * N) / (2 * M)
-         * 
-         * @tparam Pll 
+         *
+         * @tparam Pll
          * @param multiplier PLL multiplier.
          * @param pre_divider pre divider value.
          */
@@ -98,8 +98,8 @@ namespace klib::core::lpc178x::io::system {
 
         /**
          * @brief Enable/Disable a pll
-         * 
-         * @tparam Pll 
+         *
+         * @tparam Pll
          */
         template <pll Pll, bool Enable>
         static void enable() {
@@ -115,10 +115,10 @@ namespace klib::core::lpc178x::io::system {
 
         /**
          * @brief Returns if the pll is locked
-         * 
-         * @tparam Pll 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Pll
+         * @return true
+         * @return false
          */
         template <pll Pll>
         static bool is_locked() {
@@ -131,8 +131,8 @@ namespace klib::core::lpc178x::io::system {
         }
 
         template <
-            source Source, uint32_t Freq, 
-            uint16_t Multiplier, pre_divider PreDivider, 
+            source Source, uint32_t Freq,
+            uint16_t Multiplier, pre_divider PreDivider,
             uint8_t Div
         >
         static void set_main() {
@@ -146,7 +146,7 @@ namespace klib::core::lpc178x::io::system {
                 }
             }
 
-            // enable/disable the boost based on the frequency 
+            // enable/disable the boost based on the frequency
             // (> 100 Mhz = on)
             SYSCON->PBOOST = (Freq > 100'000'000) ? 0b11 : 0b00;
 
@@ -172,7 +172,7 @@ namespace klib::core::lpc178x::io::system {
                 // Change to the requested source
                 SYSCON->CLKSRCSEL = static_cast<uint32_t>(Source);
 
-                // setup the main pll 
+                // setup the main pll
                 setup<pll::main>(Multiplier, PreDivider);
 
                 // enable the pll
@@ -196,7 +196,7 @@ namespace klib::core::lpc178x::io::system {
         }
 
         template <
-            uint32_t Freq, uint16_t Multiplier, 
+            uint32_t Freq, uint16_t Multiplier,
             pre_divider PreDivider
         >
         static void set_usb() {
@@ -220,7 +220,7 @@ namespace klib::core::lpc178x::io::system {
                 SYSCON->USBCLKSEL &= ~(0b11 << 8);
             }
 
-            // setup the second pll 
+            // setup the second pll
             setup<pll::alternate>(Multiplier, PreDivider);
 
             // enable the pll
@@ -231,7 +231,7 @@ namespace klib::core::lpc178x::io::system {
                 // do nothing
             }
 
-            // setup the correct divider for the usb and 
+            // setup the correct divider for the usb and
             // change to the alternate pll
             SYSCON->USBCLKSEL = (Freq / 48'000'000) | (0x2 << 8);
         }

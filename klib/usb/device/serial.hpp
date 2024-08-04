@@ -16,7 +16,7 @@ namespace klib::usb::device {
     protected:
         /**
          * @brief Enum with the string descriptor indexes
-         * 
+         *
          */
         enum class string_index {
             language = 0,
@@ -27,7 +27,7 @@ namespace klib::usb::device {
 
         /**
          * @brief The command we are receiving from the host
-         * 
+         *
          */
         struct command {
             // the requested opt-code
@@ -47,10 +47,10 @@ namespace klib::usb::device {
 
         /**
          * @brief Config descriptor for the hid keyboard
-         * 
-         * @details packed so we can write this whole descriptor 
+         *
+         * @details packed so we can write this whole descriptor
          * to the usb hardware in one go.
-         * 
+         *
          */
         struct config_descriptor {
             // configuration descriptor
@@ -73,12 +73,12 @@ namespace klib::usb::device {
 
             // endpoint descriptor
             descriptor::endpoint endpoint1;
-            
+
             // endpoint descriptor
             descriptor::endpoint endpoint2;
         };
 
-        // release the old pack so the rest of the structs are not 
+        // release the old pack so the rest of the structs are not
         // affected by the pack(1)
         #pragma pack(pop)
 
@@ -179,7 +179,7 @@ namespace klib::usb::device {
         // configuration value. Value is set in the set config function
         static inline uint8_t configuration = 0x00;
 
-        // temporary storage 
+        // temporary storage
         static inline klib::ringbuffer<uint8_t, RxSize> receive = {};
 
         // buffer to receive commands
@@ -197,9 +197,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Callback that can send more keypresses or will send no keys
-         * 
-         * @tparam Usb 
-         * @param data 
+         *
+         * @tparam Usb
+         * @param data
          */
         template <typename Usb>
         static void command_callback_handler(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
@@ -208,7 +208,7 @@ namespace klib::usb::device {
                 // we have a error
                 return;
             }
-            
+
             // check if we are configured
             if (!configuration) {
                 return;
@@ -222,9 +222,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Callback that can send more keypresses or will send no keys
-         * 
-         * @tparam Usb 
-         * @param data 
+         *
+         * @tparam Usb
+         * @param data
          */
         template <typename Usb>
         static void transmit_callback_handler(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
@@ -233,7 +233,7 @@ namespace klib::usb::device {
                 // we have a error
                 return;
             }
-            
+
             // check if we are configured
             if (!configuration) {
                 return;
@@ -246,13 +246,13 @@ namespace klib::usb::device {
                 send_zlp = false;
 
                 // send a zero length packet
-                Usb::write(transmit_callback_handler<Usb>, 
-                    usb::get_endpoint(config.endpoint2.bEndpointAddress), 
+                Usb::write(transmit_callback_handler<Usb>,
+                    usb::get_endpoint(config.endpoint2.bEndpointAddress),
                     usb::get_endpoint_mode(config.endpoint2.bEndpointAddress),
                     {}
                 );
 
-                // wait until we have called this callback again before 
+                // wait until we have called this callback again before
                 // we clear the is_transmitting flag
                 return;
             }
@@ -263,9 +263,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Callback that can send more keypresses or will send no keys
-         * 
-         * @tparam Usb 
-         * @param data 
+         *
+         * @tparam Usb
+         * @param data
          */
         template <typename Usb>
         static void receive_callback_handler(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
@@ -274,7 +274,7 @@ namespace klib::usb::device {
                 // we have a error
                 return;
             }
-            
+
             // check if we are configured
             if (!configuration) {
                 return;
@@ -289,8 +289,8 @@ namespace klib::usb::device {
             has_received_data = true;
 
             // start receiving a new packet
-            Usb::read(receive_callback_handler<Usb>, 
-                usb::get_endpoint(config.endpoint1.bEndpointAddress), 
+            Usb::read(receive_callback_handler<Usb>,
+                usb::get_endpoint(config.endpoint1.bEndpointAddress),
                 usb::get_endpoint_mode(config.endpoint1.bEndpointAddress),
                 rx_buffer, 1, sizeof(rx_buffer)
             );
@@ -299,9 +299,9 @@ namespace klib::usb::device {
     public:
         /**
          * @brief Returns if we have data available.
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool has_data() {
             // return if we have data in the buffer
@@ -310,12 +310,12 @@ namespace klib::usb::device {
 
         /**
          * @brief Returns data read into the receive buffer
-         * 
+         *
          * @warning the USB interrupt should be suppressed while
          * this function called. Undefined behaviour when no data
          * in ringbuffer and this function is called
-         * 
-         * @return uint8_t 
+         *
+         * @return uint8_t
          */
         static uint8_t read() {
             // get the first item in the buffer
@@ -332,11 +332,11 @@ namespace klib::usb::device {
         }
 
         /**
-         * @brief Function that returns if the transmitting side is 
+         * @brief Function that returns if the transmitting side is
          * busy.
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_busy() {
             return is_transmitting;
@@ -344,12 +344,12 @@ namespace klib::usb::device {
 
         /**
          * @brief Write data to the serial buffer. Waits until data
-         * can be written using the USB driver. Buffer needs to be 
-         * available until transfer is done (can be checked using 
+         * can be written using the USB driver. Buffer needs to be
+         * available until transfer is done (can be checked using
          * 'is_busy()')
-         * 
-         * @tparam Async 
-         * @param data 
+         *
+         * @tparam Async
+         * @param data
          */
         template <typename Usb, bool Async = false>
         static void write(const std::span<const uint8_t> data) {
@@ -371,8 +371,8 @@ namespace klib::usb::device {
             }
 
             // write the data
-            Usb::write(transmit_callback_handler<Usb>, 
-                usb::get_endpoint(config.endpoint2.bEndpointAddress), 
+            Usb::write(transmit_callback_handler<Usb>,
+                usb::get_endpoint(config.endpoint2.bEndpointAddress),
                 usb::get_endpoint_mode(config.endpoint2.bEndpointAddress),
                 data
             );
@@ -388,10 +388,10 @@ namespace klib::usb::device {
 
         /**
          * @brief Returns if the device is configured
-         * 
-         * @tparam Usb 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Usb
+         * @return true
+         * @return false
          */
         template <typename Usb>
         static bool is_configured() {
@@ -400,39 +400,39 @@ namespace klib::usb::device {
 
     public:
         /**
-         * @brief static functions needed for the usb stack. Should not 
+         * @brief static functions needed for the usb stack. Should not
          * be called manually
-         * 
+         *
          */
 
         /**
          * @brief Init function. Called when the usb stack is initalized
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         static void init() {
             // make sure the endpoints support the transfer types
             Usb::template is_valid_endpoint<
-                CmdEndpoint, 
+                CmdEndpoint,
                 klib::usb::descriptor::transfer_type::interrupt
             >();
 
             Usb::template is_valid_endpoint<
-                InEndpoint, 
+                InEndpoint,
                 klib::usb::descriptor::transfer_type::bulk
             >();
 
             Usb::template is_valid_endpoint<
-                OutEndpoint, 
+                OutEndpoint,
                 klib::usb::descriptor::transfer_type::bulk
             >();
         }
 
         /**
          * @brief Called when the host is disconnected
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         static void disconnected() {
@@ -442,8 +442,8 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when a bus reset has occured
-         * 
-         * @tparam Usb 
+         *
+         * @tparam Usb
          */
         template <typename Usb>
         static void bus_reset() {
@@ -453,12 +453,12 @@ namespace klib::usb::device {
 
         /**
          * @brief Clear a feature on the device
-         * 
+         *
          * @warning only remote wakeup is supported
-         * 
-         * @tparam Usb 
-         * @param feature 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param feature
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake clear_feature(const klib::usb::setup::feature feature, const klib::usb::setup_packet &packet) {
@@ -468,12 +468,12 @@ namespace klib::usb::device {
 
         /**
          * @brief Set a feature on the device
-         * 
+         *
          * @warning only remote wakeup is supported
-         * 
-         * @tparam Usb 
-         * @param feature 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param feature
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake set_feature(const klib::usb::setup::feature feature, const klib::usb::setup_packet &packet) {
@@ -483,12 +483,12 @@ namespace klib::usb::device {
 
         /**
          * @brief Get the descriptor for the descriptor type and index
-         * 
-         * @tparam Usb 
-         * @param packet 
-         * @param type 
-         * @param index 
-         * @return usb::description 
+         *
+         * @tparam Usb
+         * @param packet
+         * @param type
+         * @param index
+         * @return usb::description
          */
         template <typename Usb>
         static usb::description get_descriptor(const setup_packet &packet, descriptor::descriptor_type type, const uint8_t index) {
@@ -498,7 +498,7 @@ namespace klib::usb::device {
                     // return the device descriptor
                     return to_description(device, device.bLength);
                 case descriptor::descriptor_type::configuration:
-                    // return the whole configuration descriptor (total size is in 
+                    // return the whole configuration descriptor (total size is in
                     // wTotalLength of the configuration)
                     return to_description(config, config.configuration.wTotalLength);
                 case descriptor::descriptor_type::string:
@@ -527,16 +527,16 @@ namespace klib::usb::device {
 
         /**
          * @brief Get the configuration value set in the set config call
-         * 
-         * @tparam Usb 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake get_config(const klib::usb::setup_packet &packet) {
             // send the configuration back to the host
             const auto result = Usb::write(
-                usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, 
+                usb::status_callback<Usb>, usb::control_endpoint,
+                usb::endpoint_mode::in,
                 {&configuration, sizeof(configuration)}
             );
 
@@ -546,16 +546,16 @@ namespace klib::usb::device {
                 return usb::handshake::stall;
             }
 
-            // we do not ack here as the status callback 
+            // we do not ack here as the status callback
             // will handle this for us
             return usb::handshake::wait;
         }
 
         /**
          * @brief Set a configuration value
-         * 
-         * @tparam Usb 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake set_config(const klib::usb::setup_packet &packet) {
@@ -565,28 +565,28 @@ namespace klib::usb::device {
                 Usb::configure(
                     usb::get_endpoint(config.endpoint0.bEndpointAddress),
                     usb::get_endpoint_mode(config.endpoint0.bEndpointAddress),
-                    usb::get_transfer_type(config.endpoint0.bmAttributes), 
+                    usb::get_transfer_type(config.endpoint0.bmAttributes),
                     config.endpoint0.wMaxPacketSize
                 );
 
                 Usb::configure(
                     usb::get_endpoint(config.endpoint1.bEndpointAddress),
                     usb::get_endpoint_mode(config.endpoint1.bEndpointAddress),
-                    usb::get_transfer_type(config.endpoint1.bmAttributes), 
+                    usb::get_transfer_type(config.endpoint1.bmAttributes),
                     config.endpoint1.wMaxPacketSize
                 );
 
                 Usb::configure(
                     usb::get_endpoint(config.endpoint2.bEndpointAddress),
                     usb::get_endpoint_mode(config.endpoint2.bEndpointAddress),
-                    usb::get_transfer_type(config.endpoint2.bmAttributes), 
+                    usb::get_transfer_type(config.endpoint2.bmAttributes),
                     config.endpoint2.wMaxPacketSize
                 );
 
                 // start receiving on the out endpoint
                 Usb::read(
-                    receive_callback_handler<Usb>, 
-                    usb::get_endpoint(config.endpoint1.bEndpointAddress), 
+                    receive_callback_handler<Usb>,
+                    usb::get_endpoint(config.endpoint1.bEndpointAddress),
                     usb::get_endpoint_mode(config.endpoint1.bEndpointAddress),
                     rx_buffer, 1, sizeof(rx_buffer)
                 );
@@ -608,21 +608,21 @@ namespace klib::usb::device {
                 if (configuration) {
                     // reset the endpoints
                     Usb::reset(
-                        usb::get_endpoint(config.endpoint0.bEndpointAddress), 
+                        usb::get_endpoint(config.endpoint0.bEndpointAddress),
                         usb::get_endpoint_mode(config.endpoint0.bEndpointAddress)
                     );
-                    
+
                     Usb::reset(
-                        usb::get_endpoint(config.endpoint1.bEndpointAddress), 
+                        usb::get_endpoint(config.endpoint1.bEndpointAddress),
                         usb::get_endpoint_mode(config.endpoint1.bEndpointAddress)
                     );
-                    
+
                     Usb::reset(
-                        usb::get_endpoint(config.endpoint2.bEndpointAddress), 
+                        usb::get_endpoint(config.endpoint2.bEndpointAddress),
                         usb::get_endpoint_mode(config.endpoint2.bEndpointAddress)
                     );
-                } 
-                
+                }
+
                 // clear the configuration value
                 configuration = 0x00;
 
@@ -637,9 +637,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Get the device status. Called when the status is requested
-         * 
-         * @tparam Usb 
-         * @return uint8_t 
+         *
+         * @tparam Usb
+         * @return uint8_t
          */
         template <typename Usb>
         static uint8_t get_device_status() {
@@ -649,9 +649,9 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when a class specific packet is received
-         * 
-         * @tparam Usb 
-         * @param packet 
+         *
+         * @tparam Usb
+         * @param packet
          */
         template <typename Usb>
         static usb::handshake handle_class_packet(const klib::usb::setup_packet &packet) {
@@ -664,8 +664,8 @@ namespace klib::usb::device {
                 if (direction == klib::usb::setup::direction::device_to_host) {
                     // send the interface back to the host
                     const auto result = Usb::write(
-                        usb::status_callback<Usb>, usb::control_endpoint, 
-                        usb::endpoint_mode::in, 
+                        usb::status_callback<Usb>, usb::control_endpoint,
+                        usb::endpoint_mode::in,
                         {command_buffer, packet.wLength}
                     );
 
@@ -674,7 +674,7 @@ namespace klib::usb::device {
                         // something went wrong stall
                         return usb::handshake::stall;
                     }
-                } 
+                }
                 else {
                     // get the op-code and the length
                     opt_code.optcode = packet.bRequest;
@@ -682,8 +682,8 @@ namespace klib::usb::device {
 
                     // start a read with the provided length
                     const auto result = Usb::read(
-                        command_callback_handler<Usb>, usb::control_endpoint, 
-                        usb::endpoint_mode::in, 
+                        command_callback_handler<Usb>, usb::control_endpoint,
+                        usb::endpoint_mode::in,
                         {command_buffer, opt_code.length}
                     );
 
@@ -704,10 +704,10 @@ namespace klib::usb::device {
 
         /**
          * @brief Called when get interface is received
-         * 
-         * @tparam Usb 
-         * @param packet 
-         * @return usb::handshake 
+         *
+         * @tparam Usb
+         * @param packet
+         * @return usb::handshake
          */
         template <typename Usb>
         static usb::handshake get_interface(const klib::usb::setup_packet &packet) {
@@ -716,8 +716,8 @@ namespace klib::usb::device {
 
             // send the interface back to the host
             const auto result = Usb::write(
-                usb::status_callback<Usb>, usb::control_endpoint, 
-                usb::endpoint_mode::in, 
+                usb::status_callback<Usb>, usb::control_endpoint,
+                usb::endpoint_mode::in,
                 {&alternate, sizeof(alternate)}
             );
 
@@ -727,17 +727,17 @@ namespace klib::usb::device {
                 return usb::handshake::stall;
             }
 
-            // we do not ack here as the status callback 
+            // we do not ack here as the status callback
             // will handle this for us
             return usb::handshake::wait;
         }
 
         /**
          * @brief Called when set interface is received
-         * 
-         * @tparam Usb 
-         * @param packet 
-         * @return usb::handshake 
+         *
+         * @tparam Usb
+         * @param packet
+         * @return usb::handshake
          */
         template <typename Usb>
         static usb::handshake set_interface(const klib::usb::setup_packet &packet) {

@@ -8,10 +8,10 @@ namespace klib::core::lpc175x::io {
     public:
         /**
          * @brief Available clock dividers
-         * 
-         * 0b11 is a div by 8 for everyting except can1, can2 and 
+         *
+         * 0b11 is a div by 8 for everyting except can1, can2 and
          * can filtering. Then it is div by 6
-         * 
+         *
          */
         enum class divider {
             div_4 = 0b00,
@@ -22,10 +22,10 @@ namespace klib::core::lpc175x::io {
 
         /**
          * @brief Enable the clock on the peripheral
-         * 
-         * @tparam P 
+         *
+         * @tparam P
          */
-        template <typename P, divider Divider = divider::div_1> 
+        template <typename P, divider Divider = divider::div_1>
         static void set() {
             // set the bit to enable the clock on the peripheral
             if constexpr ((P::clock_id * 2) < 32) {
@@ -45,13 +45,13 @@ namespace klib::core::lpc175x::io {
         }
 
         /**
-         * @brief Get the clock status of a peripheral 
-         * 
-         * @tparam P 
-         * @return true 
-         * @return false 
+         * @brief Get the clock status of a peripheral
+         *
+         * @tparam P
+         * @return true
+         * @return false
          */
-        template <typename P> 
+        template <typename P>
         static bool status() {
             // return the value of the clock id in the register (1 = enabled, 0 = disabled)
             if constexpr ((P::clock_id * 2) < 32) {

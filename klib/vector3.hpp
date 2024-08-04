@@ -201,16 +201,16 @@ namespace klib {
         }
 
         /**
-         * @param other 
-         * @return bool 
+         * @param other
+         * @return bool
          */
         constexpr bool operator==(const vector3<T> other) const {
             return (x == other.x) && (y == other.y) && (z == other.z);
         }
 
         /**
-         * @param other 
-         * @return bool 
+         * @param other
+         * @return bool
          */
         constexpr bool operator!=(const vector3<T> other) const {
             return !operator==(other);

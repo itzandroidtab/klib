@@ -22,9 +22,9 @@ namespace klib::max32625::io::pins::detail {
 
     /**
      * @brief Convert a peripheral to a function selection.
-     * 
-     * @tparam Periph 
-     * @return constexpr uint32_t 
+     *
+     * @tparam Periph
+     * @return constexpr uint32_t
      */
     template <typename Periph>
     constexpr static uint32_t peripheral_to_function_selection() {
@@ -46,11 +46,11 @@ namespace klib::max32625::io::pins::detail {
 namespace klib::max32625::io::detail {
     /**
      * @brief Set the peripheral of a pin
-     * 
-     * @tparam Pin 
-     * @tparam Periph 
+     *
+     * @tparam Pin
+     * @tparam Periph
      */
-    template<typename Pin, typename Periph>    
+    template<typename Pin, typename Periph>
     static void set_peripheral() {
         // get the index the pin is on (4 bits per pin and 32 bits in a registre)
         constexpr uint32_t index = Pin::number / ((sizeof(uint32_t) * 8) / 4);

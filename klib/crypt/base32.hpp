@@ -10,7 +10,7 @@
 namespace klib::crypt {
     /**
      * @brief Base32
-     * 
+     *
      * @note implemented using: https://datatracker.ietf.org/doc/html/rfc4648#section-6
      */
     class base32 {
@@ -20,12 +20,12 @@ namespace klib::crypt {
 
         /**
          * @brief Checks if a character is a valid base32 character
-         * 
+         *
          * @details valid characters are: A-Z and 2-7
-         * 
-         * @param ch 
-         * @return true 
-         * @return false 
+         *
+         * @param ch
+         * @return true
+         * @return false
          */
         constexpr static bool is_valid_character(const char ch) {
             // check if above highest valid character
@@ -36,7 +36,7 @@ namespace klib::crypt {
             // check if below lowest valid number
             if (ch < '2') {
                 return false;
-            }   
+            }
 
             // check if between the valid numbers and the lowest
             // valid character
@@ -50,11 +50,11 @@ namespace klib::crypt {
 
         /**
          * @brief Convert a base32 character to a 5 bit value
-         * 
+         *
          * @warning does not check if character are valid
-         * 
-         * @param ch 
-         * @return constexpr uint8_t 
+         *
+         * @param ch
+         * @return constexpr uint8_t
          */
         constexpr static uint8_t character_to_value(const char ch) {
             if (ch >= 'A' && ch <= 'Z') {
@@ -67,11 +67,11 @@ namespace klib::crypt {
     public:
         /**
          * @brief Decode a base32 string
-         * 
-         * @param input 
+         *
+         * @param input
          * @param output
-         * @param size 
-         * @return uint32_t amount of bytes written in 
+         * @param size
+         * @return uint32_t amount of bytes written in
          * output (0 if invalid)
          */
         constexpr static uint32_t decode(const char *const input, const std::span<uint8_t> output) {
@@ -83,7 +83,7 @@ namespace klib::crypt {
             // check the length
             if (((length % 8) != 0) || (!length)) {
                 return false;
-            } 
+            }
 
             // check if the output size fits
             if ((((length * 5) + 7) / 8) > output.size()) {
@@ -99,7 +99,7 @@ namespace klib::crypt {
             // amount of bytes processed
             uint32_t processed = 0;
 
-            // check if every character is a valid character. The last 
+            // check if every character is a valid character. The last
             // characters can be '=' instead of valid characters as this is
             // the value used as padding
             for (uint32_t i = 0; i < length; i++) {
@@ -113,7 +113,7 @@ namespace klib::crypt {
                     return false;
                 }
 
-                // check if we have a valid character after we detected 
+                // check if we have a valid character after we detected
                 // padding
                 if (valid && padding_started) {
                     return false;

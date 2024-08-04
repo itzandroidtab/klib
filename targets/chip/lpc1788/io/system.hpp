@@ -9,7 +9,7 @@ namespace klib::lpc1788::io::system {
     // library in the current system namespace
     using namespace core::lpc178x::io::system;
 
-    // import the generic lpc17xx system drivers as 
+    // import the generic lpc17xx system drivers as
     // well
     using namespace core::lpc17xx::io::system;
 }

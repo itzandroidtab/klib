@@ -9,7 +9,7 @@ namespace klib::core::tmpm37x::io::system {
     public:
         /**
          * @brief Available clock sources
-         * 
+         *
          */
         enum class source {
             internal = 0,
@@ -18,9 +18,9 @@ namespace klib::core::tmpm37x::io::system {
 
         /**
          * @brief Setup the pll to 8x the source frequency
-         * 
-         * @tparam Frequency 
-         * @tparam Source 
+         *
+         * @tparam Frequency
+         * @tparam Source
          */
         template <uint32_t Frequency, source Source>
         static void setup() {
@@ -38,7 +38,7 @@ namespace klib::core::tmpm37x::io::system {
             // set the warmup time to 1ms. The PLL needs
             // 200 us before it is stabilized
             CG->OSCCR = (
-                (CG->OSCCR & (klib::exp2(20) - 1)) | 
+                (CG->OSCCR & (klib::exp2(20) - 1)) |
                 ((((1 * Frequency) / 1000) >> 4) << 20)
             );
 

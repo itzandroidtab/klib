@@ -10,7 +10,7 @@
 namespace klib::usb::msc {
     /**
      * @brief Mass storage class requests
-     * 
+     *
      */
     enum class requests: uint8_t {
         get_status = 0x00,
@@ -21,7 +21,7 @@ namespace klib::usb::msc {
     };
 }
 
-// release the old pack so the rest of the structs are not 
+// release the old pack so the rest of the structs are not
 // affected by the pack(1)
 #pragma pack(pop)
 

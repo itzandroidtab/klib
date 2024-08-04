@@ -12,7 +12,7 @@
 namespace klib::usb::dfu {
     /**
      * DFU USB requests
-     * 
+     *
      */
     enum class dfu_request {
         // wValue = wTimeout
@@ -60,7 +60,7 @@ namespace klib::usb::dfu {
 
     /**
      * @brief Device status
-     * 
+     *
      */
     enum class device_status: uint8_t {
         ok = 0x00,
@@ -83,7 +83,7 @@ namespace klib::usb::dfu {
 
     /**
      * @brief Device state
-     * 
+     *
      */
     enum class device_state: uint8_t {
         app_idle = 0x00,
@@ -100,9 +100,9 @@ namespace klib::usb::dfu {
     };
 
     /**
-     * @brief Status struct. Response the device should send when a 
+     * @brief Status struct. Response the device should send when a
      * getstatus request is received
-     * 
+     *
      */
     struct status {
         // an indication of the status resulting from the
@@ -117,7 +117,7 @@ namespace klib::usb::dfu {
         // an indication of the state that the device is going to
         // enter immediately following transmission of this
         // response. (By the time the host receives this
-        // information, this is the current state of the device.) 
+        // information, this is the current state of the device.)
         uint8_t bState;
 
         // index of status description in string table
@@ -127,7 +127,7 @@ namespace klib::usb::dfu {
     static_assert(sizeof(status) == 0x06, "DFU status size is wrong");
 }
 
-// release the old pack so the rest of the structs are not 
+// release the old pack so the rest of the structs are not
 // affected by the pack(1)
 #pragma pack(pop)
 

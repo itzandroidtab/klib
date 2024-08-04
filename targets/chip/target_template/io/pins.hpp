@@ -5,9 +5,9 @@
 
 namespace klib::target_template::pins::package::tqfn_100 {
     /**
-     * @brief Pin 0 of the tqfn package. Stores information about the 
+     * @brief Pin 0 of the tqfn package. Stores information about the
      * port and bit number of the io.
-     * 
+     *
      */
     struct p0 {
         // P{port}.{bit numer}

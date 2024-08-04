@@ -14,7 +14,7 @@ namespace klib::atsam4s2b::io::periph {
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 11;
-        
+
         // interrupt id (including the arm vector table)
         constexpr static uint32_t interrupt_id = 27;
 

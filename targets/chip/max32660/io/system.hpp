@@ -72,14 +72,14 @@ namespace klib::max32660::io::periph::tqfn_24 {
 namespace klib::max32660::io::system {
     /**
      * @brief System control register
-     * 
+     *
      */
     class control {
     public:
         /**
          * @brief Enable or disable the floating point unit (FPU)
-         * 
-         * @tparam Enabled 
+         *
+         * @tparam Enabled
          */
         template <bool Enabled>
         static void enable_fpu() {
@@ -92,11 +92,11 @@ namespace klib::max32660::io::system {
                 // set the bit to disable the fpu
                 GCR->SCON |= (1 << 5);
             }
-        } 
+        }
 
         /**
          * @brief Flush the cache and wait for the flush to finish
-         * 
+         *
          */
         static void flush_cache() {
             // trigger the cache flush
@@ -107,10 +107,10 @@ namespace klib::max32660::io::system {
         }
 
         /**
-         * @brief Enable or disable the serial wire debug (SWD). Only 
+         * @brief Enable or disable the serial wire debug (SWD). Only
          * writable if the fmv lock word is not programmed.
-         * 
-         * @tparam Enabled 
+         *
+         * @tparam Enabled
          */
         template <bool Enabled>
         static void enable_swd() {
@@ -128,7 +128,7 @@ namespace klib::max32660::io::system {
 
     /**
      * @brief System clock control register
-     * 
+     *
      */
     class clock {
     public:

@@ -192,16 +192,16 @@ namespace klib {
         }
 
         /**
-         * @param other 
-         * @return bool 
+         * @param other
+         * @return bool
          */
         constexpr bool operator==(const vector2<T> other) const {
             return (x == other.x) && (y == other.y);
         }
 
         /**
-         * @param other 
-         * @return bool 
+         * @param other
+         * @return bool
          */
         constexpr bool operator!=(const vector2<T> other) const {
             return !operator==(other);
@@ -209,7 +209,7 @@ namespace klib {
 
         /**
          * @brief Swap the x and y of the vector2
-         * 
+         *
          */
         constexpr void swap() {
             // create a copy of x

@@ -98,28 +98,28 @@ namespace klib::lpc1759::io::periph {
 namespace klib::lpc1759::io {
     /**
      * @brief Basic timer. Uses interrupts to call a callback.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer, uint32_t Channel>
     using timer = core::lpc175x::io::timer<Timer, Channel>;
 
     /**
      * @brief Oneshot timer. Uses interrupt to call a callback once.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer, uint32_t Channel>
     using oneshot_timer = core::lpc175x::io::oneshot_timer<Timer, Channel>;
 
     /**
      * @brief Pwm timer.
-     * 
-     * @tparam Pwm 
-     * @tparam Channel 
+     *
+     * @tparam Pwm
+     * @tparam Channel
      */
     template <
-        typename Pin, typename Pwm, uint8_t Channel, 
+        typename Pin, typename Pwm, uint8_t Channel,
         uint32_t Frequency, uint8_t Bits
     >
     using pin_timer = core::lpc175x::io::pin_timer<Pin, Pwm, Channel, Frequency, Bits>;

@@ -25,7 +25,7 @@ namespace klib::max32660::io {
     public:
         /**
          * @brief Disable the watchdog timer
-         * 
+         *
          */
         static void disable() {
             // clear the enable bit
@@ -34,7 +34,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Feed the watchdog timer to prevent the watchdog from triggering
-         * 
+         *
          */
         static void feed() {
             // reset the counter by writing the reset sequence twice
@@ -44,13 +44,13 @@ namespace klib::max32660::io {
 
         /**
          * @brief Init the watchdog timer
-         * 
+         *
          * @warning this clears the watchdog reset flag and watchdog interrupt flag
-         * 
+         *
          * @tparam Irq enable/disable the watchdog timer interrupt
          * @tparam IrqPeriod interrupt period
-         * 
-         * @tparam Reset enable/disable if the cpu resets when the watchdog timer overflows 
+         *
+         * @tparam Reset enable/disable if the cpu resets when the watchdog timer overflows
          * @tparam ResetPeriod reset period
          */
         template <bool Irq = true, uint8_t IrqPeriod = 0, bool Reset = false, uint8_t ResetPeriod = 0>

@@ -11,7 +11,7 @@ namespace klib::core::tmpm37x::io {
     public:
         /**
          * @brief Disable the watchdog
-         * 
+         *
          */
         static void disable() {
             // disable the watchdog
@@ -22,9 +22,9 @@ namespace klib::core::tmpm37x::io {
         }
 
         /**
-         * @brief Feed the watchdog to prevent the cpu from resetting 
+         * @brief Feed the watchdog to prevent the cpu from resetting
          * or triggering the watchdog interrupt.
-         * 
+         *
          */
         static void feed() {
             // feed the watchdog
@@ -33,11 +33,11 @@ namespace klib::core::tmpm37x::io {
 
         /**
          * @brief Init the watchdog timer.
-         * 
+         *
          * @tparam Reset enable/disable if the cpu resets when the watchdog timer overflows. When
          * reset is disabled it will generate a interrupt
          * @tparam PauseInIdle for the watchdog
-         * @tparam DetectionTime reset period (see datasheet page 512 for more info. The timing 
+         * @tparam DetectionTime reset period (see datasheet page 512 for more info. The timing
          * depends on the system frequency)
          */
         template <bool Reset = false, bool PauseInIdle = true, uint8_t DetectionTime = 0b101>
@@ -47,7 +47,7 @@ namespace klib::core::tmpm37x::io {
 
             // enable the watchdog timer
             Wdt::port->MOD = (
-                (0x1 << 7) | (PauseInIdle << 2) | 
+                (0x1 << 7) | (PauseInIdle << 2) |
                 (Reset << 1) | (DetectionTime << 4)
             );
 

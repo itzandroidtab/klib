@@ -10,8 +10,8 @@ namespace klib::lpc55s66::io::system {
     public:
         /**
          * @brief Start CPU1
-         * 
-         * @param vectors 
+         *
+         * @param vectors
          */
         static void start(const auto* vectors) {
             // set the vector table for CPU1
@@ -32,8 +32,8 @@ namespace klib::lpc55s66::io::system {
     public:
         /**
          * @brief Enable DAP on the provided cpu
-         * 
-         * @tparam CpuId 
+         *
+         * @tparam CpuId
          */
         template <uint32_t CpuId>
         static void enable() {

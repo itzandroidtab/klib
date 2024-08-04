@@ -61,27 +61,27 @@ namespace klib::atsam4s2b::io::periph::wlcsp_64 {
 namespace klib::atsam4s2b::io {
     /**
      * @brief Basic timer. Uses interrupts to call a callback.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer, uint32_t Channel, uint32_t Div = 2>
     using timer = core::atsam4s::io::timer<Timer, Channel, 2, Div>;
 
     /**
      * @brief Oneshot timer. Uses interrupt to call a callback once.
-     * 
-     * @tparam Timer 
+     *
+     * @tparam Timer
      */
     template <typename Timer, uint32_t Channel, uint32_t Div = 2>
     using oneshot_timer = core::atsam4s::io::oneshot_timer<Timer, Channel, 2, Div>;
 
     /**
      * @brief Pin that uses a timer to toggle the output.
-     * 
+     *
      * @warning When disabling the timer the output of the gpio is not changed.
      */
     template <
-        typename Pin, typename Timer, uint32_t Frequency, 
+        typename Pin, typename Timer, uint32_t Frequency,
         uint8_t Bits, uint32_t Div = 2
     >
     using pin_timer = core::atsam4s::io::pin_timer<Pin, Timer, Frequency, Bits, Div>;

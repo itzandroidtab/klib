@@ -72,7 +72,7 @@ namespace klib::max32660::pins::package::wlp {
     struct pc4 {
         // P0.7
         using port = io::periph::gpio0;
-        
+
         // bit number in port
         constexpr static uint32_t number = 7;
     };
@@ -99,7 +99,7 @@ namespace klib::max32660::pins::package::wlp {
 
         // bit number in port
         constexpr static uint32_t number = 4;
-    }; 
+    };
 
     struct pd4 {
         // P0.5
@@ -132,7 +132,7 @@ namespace klib::max32660::pins::package::tqfn_20 {
         using port = io::periph::gpio0;
 
         // bit number in port
-        constexpr static uint32_t number = 13;  
+        constexpr static uint32_t number = 13;
     };
 
     struct p4 {
@@ -205,7 +205,7 @@ namespace klib::max32660::pins::package::tqfn_20 {
 
         // bit number in port
         constexpr static uint32_t number = 7;
-    }; 
+    };
 
     struct p16 {
         // P0.6
@@ -331,7 +331,7 @@ namespace klib::max32660::pins::package::tqfn_24 {
 
     struct p15 {
         // NC
-    }; 
+    };
 
     struct p16 {
         // P0.11

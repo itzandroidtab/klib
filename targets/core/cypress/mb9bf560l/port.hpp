@@ -24,16 +24,16 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         // using to get the register
         using periph = Periph;
 
-        // value needed to switch the pin to the correct 
+        // value needed to switch the pin to the correct
         // alternate function
         constexpr static uint32_t value = Value;
     };
 
     /**
      * @brief Helper function to write set a alterernate function
-     * 
-     * @tparam Pin 
-     * @tparam Periph 
+     *
+     * @tparam Pin
+     * @tparam Periph
      */
     template <typename Pin, typename Periph>
     static void peripheral_helper_setup() {
@@ -59,21 +59,21 @@ namespace klib::core::mb9bf560l::io::detail::pins {
 
 namespace klib::core::mb9bf560l::io::detail::alternate {
     // alternate functions for all the gpio
-    // default function (view reference manual for 
+    // default function (view reference manual for
     // default functions for every pin)
     struct none {};
 
     // alternate function for analog pins
     struct analog {};
 
-    // For some reason this chip does not have the 
-    // alternate functions tied to the port/pin. 
+    // For some reason this chip does not have the
+    // alternate functions tied to the port/pin.
     // (probably due to only having 1 gpio port). This
-    // is quite annoying as we need to keep track what 
+    // is quite annoying as we need to keep track what
     // pin goes where. We also need to clear any other
     // alternate functions the pin can be when changing
     // to another alternate function as this is not
-    // cleared automaticly
+    // cleared automaticly.
     namespace system_function {
         // register EPFR00
         // alternate function for trc3e
@@ -124,7 +124,7 @@ namespace klib::core::mb9bf560l::io::detail::alternate {
         template <bool Value>
         struct nmis: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<0, 0, 1>, Value> {};
     }
-    
+
     namespace multi_function_timer {
         // register EPFR01
         // alternate function for i2c03s
@@ -565,9 +565,9 @@ namespace klib::core::mb9bf560l::io::detail::pins {
 
     /**
      * @brief Helper function to set a pin to a specific peripheral
-     * 
-     * @tparam Pin 
-     * @tparam Periph 
+     *
+     * @tparam Pin
+     * @tparam Periph
      */
     template <typename Pin, typename Periph>
     static void set_peripheral() {
@@ -580,7 +580,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         // make sure we are not setting a pin that does not have
         // analog to analog
         static_assert(
-            !std::is_same_v<Periph, io::detail::alternate::analog> || 
+            !std::is_same_v<Periph, io::detail::alternate::analog> ||
             (std::is_same_v<Periph, io::detail::alternate::analog> && has_analog),
             "Pin does not support analog mode"
         );
@@ -599,7 +599,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
 
         // set the alternate function
         if constexpr (std::is_same_v<Periph, io::detail::alternate::none>) {
-            // enable control using the PIO. Disables peripheral 
+            // enable control using the PIO. Disables peripheral
             // control of the pin
             pfr[Pin::port::id] &= (~detail::pins::mask<Pin>);
         }
@@ -608,11 +608,11 @@ namespace klib::core::mb9bf560l::io::detail::pins {
             Pin::port::port->ADE |= detail::pins::mask<Pin>;
         }
         else {
-            // disable control using the PIO. Enables peripheral 
+            // disable control using the PIO. Enables peripheral
             // control of the pin
             pfr[Pin::port::id] |= detail::pins::mask<Pin>;
 
-            // all the other peripherals are configured using the 
+            // all the other peripherals are configured using the
             // peripheral helper
             detail::pins::peripheral_helper_setup<Pin, Periph>();
         }
@@ -653,9 +653,9 @@ namespace klib::core::mb9bf560l::io {
             else {
                 pcr[Pin::port::id] &= (~detail::pins::mask<Pin>);
             }
-        }    
+        }
     };
- 
+
     template <typename Pin>
     class pin_out {
     public:

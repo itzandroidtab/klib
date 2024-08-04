@@ -28,7 +28,7 @@ namespace klib::lpc802::io {
     public:
         /**
          * @brief Pin functions in the flex matrix
-         * 
+         *
          */
         enum class flex_matrix {
             // first register
@@ -49,7 +49,7 @@ namespace klib::lpc802::io {
             spi0_miso = 10,
             spi0_ssel0 = 11,
 
-            // forth register 
+            // forth register
             spi0_ssel1 = 12,
             timer0_capture0 = 13,
             timer0_capture1 = 14,
@@ -79,7 +79,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Pin functions in the fixed matrix
-         * 
+         *
          */
         enum class fixed_matrix {
             acmp_i1 = 0,
@@ -109,9 +109,9 @@ namespace klib::lpc802::io {
     protected:
         /**
          * @brief Get the register offset for the pinassignment register used for the flex option
-         * 
-         * @tparam Flex 
-         * @return constexpr uint32_t 
+         *
+         * @tparam Flex
+         * @return constexpr uint32_t
          */
         template <flex_matrix Flex>
         constexpr static uint32_t get_register_offset() {
@@ -145,12 +145,12 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Validate if a flex offset and index are supported for a specific pin
-         * 
-         * @tparam Pin 
-         * @tparam Offset 
-         * @tparam index 
-         * @return true 
-         * @return false 
+         *
+         * @tparam Pin
+         * @tparam Offset
+         * @tparam index
+         * @return true
+         * @return false
          */
         template <typename Pin, uint32_t Offset, uint32_t index>
         constexpr static bool validate_flex_parameter() {
@@ -158,63 +158,63 @@ namespace klib::lpc802::io {
             switch (Offset) {
                 case 0:
                     return (
-                        ((Pin::number >= 0 && Pin::number <= 5) || 
-                        (Pin::number >= 7 && Pin::number <= 17)) && 
+                        ((Pin::number >= 0 && Pin::number <= 5) ||
+                        (Pin::number >= 7 && Pin::number <= 17)) &&
                         Pin::port::id == 0
                     );
                 case 1:
                     return (
-                        ((Pin::number >= 0 && Pin::number <= 5) || 
-                        (Pin::number >= 7 && Pin::number <= 17)) && 
+                        ((Pin::number >= 0 && Pin::number <= 5) ||
+                        (Pin::number >= 7 && Pin::number <= 17)) &&
                         Pin::port::id == 0
                     );
                 case 2:
                     return (
-                        (Pin::number == 5 || 
-                        (Pin::number >= 7 && Pin::number <= 17)) && 
+                        (Pin::number == 5 ||
+                        (Pin::number >= 7 && Pin::number <= 17)) &&
                         Pin::port::id == 0
                     );
                 case 3:
                     return (
-                        (Pin::number == 5 || 
-                        (Pin::number >= 7 && Pin::number <= 17)) && 
+                        (Pin::number == 5 ||
+                        (Pin::number >= 7 && Pin::number <= 17)) &&
                         Pin::port::id == 0
                     );
                 case 4:
                     return (
-                        (Pin::number == 5 || 
-                        (Pin::number >= 7 && Pin::number <= 17)) && 
+                        (Pin::number == 5 ||
+                        (Pin::number >= 7 && Pin::number <= 17)) &&
                         Pin::port::id == 0
                     );
                 case 5:
                     return (
-                        (Pin::number == 5 || 
-                        (Pin::number >= 7 && Pin::number <= 17)) && 
+                        (Pin::number == 5 ||
+                        (Pin::number >= 7 && Pin::number <= 17)) &&
                         Pin::port::id == 0
                     );
                 case 6:
                     if constexpr (index == 0) {
                         return (
-                            (Pin::number == 5 || 
-                            (Pin::number >= 7 && Pin::number <= 17)) && 
+                            (Pin::number == 5 ||
+                            (Pin::number >= 7 && Pin::number <= 17)) &&
                             Pin::port::id == 0
                         );
                     }
                     else {
                         return (
-                            ((Pin::number >= 0 && Pin::number <= 5) || 
-                            (Pin::number >= 7 && Pin::number <= 30)) && 
+                            ((Pin::number >= 0 && Pin::number <= 5) ||
+                            (Pin::number >= 7 && Pin::number <= 30)) &&
                             Pin::port::id == 0
                         );
                     }
                 case 7:
                     return (
-                        ((Pin::number >= 0 && Pin::number <= 5) || 
-                        (Pin::number >= 7 && Pin::number <= 30)) && 
+                        ((Pin::number >= 0 && Pin::number <= 5) ||
+                        (Pin::number >= 7 && Pin::number <= 30)) &&
                         Pin::port::id == 0
                     );
                 default:
-                    // unknown offset. This should never happen but 
+                    // unknown offset. This should never happen but
                     // return we have a invalid flex output if it does
                     return false;
             }
@@ -223,9 +223,9 @@ namespace klib::lpc802::io {
     public:
         /**
          * @brief Setup a pin using the flexable pin matrix
-         * 
-         * @tparam Pin 
-         * @param flex 
+         *
+         * @tparam Pin
+         * @param flex
          */
         template <typename Pin, flex_matrix Flex>
         static void setup() {
@@ -245,7 +245,7 @@ namespace klib::lpc802::io {
 
             // check if the pin is a valid option for the current flex option
             static_assert(
-                validate_flex_parameter<Pin, offset, index>(), 
+                validate_flex_parameter<Pin, offset, index>(),
                 "Flex function is not supported on pin"
             );
 
@@ -258,8 +258,8 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Setup a pin using the fixed pin matrix
-         * 
-         * @param flex 
+         *
+         * @param flex
          */
         template <fixed_matrix Fixed>
         static void setup() {
@@ -275,8 +275,8 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Clear all the alternate functions for the provided pin
-         * 
-         * @tparam Pin 
+         *
+         * @tparam Pin
          */
         template <typename Pin>
         static void clear() {

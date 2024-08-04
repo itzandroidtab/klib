@@ -9,7 +9,7 @@
 
 namespace klib::core::atsam4s::io::detail::alternate {
     // alternate functions for all the gpio
-    // default function (view reference manual for 
+    // default function (view reference manual for
     // default functions for every pin)
     struct none {};
 
@@ -33,7 +33,7 @@ namespace klib::core::atsam4s::io::detail::pins {
 
     /**
      * @brief Disable the write protect on a specific port
-     * 
+     *
      */
     template <typename Port>
     static void disable_write_protect() {
@@ -43,24 +43,24 @@ namespace klib::core::atsam4s::io::detail::pins {
 
     /**
      * @brief Helper function to set a pin to a specific peripheral
-     * 
-     * @tparam Pin 
-     * @tparam Periph 
+     *
+     * @tparam Pin
+     * @tparam Periph
      */
-    template <typename Pin, typename Periph>    
+    template <typename Pin, typename Periph>
     static void set_peripheral() {
         // disable the write protection on the port
         disable_write_protect<typename Pin::port>();
 
-        // set the 2 function registers based on what alternate 
+        // set the 2 function registers based on what alternate
         // function we want
         if constexpr (std::is_same_v<Periph, io::detail::alternate::none>) {
-            // enable control using the PIO. Disables peripheral 
+            // enable control using the PIO. Disables peripheral
             // control of the pin
             Pin::port::port->PER |= mask<Pin>;
         }
         else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_1>) {
-            // disable control using the PIO. Enables peripheral 
+            // disable control using the PIO. Enables peripheral
             // control of the pin
             Pin::port::port->PDR |= mask<Pin>;
 
@@ -69,7 +69,7 @@ namespace klib::core::atsam4s::io::detail::pins {
             Pin::port::port->ABCDSR[1] &= ~mask<Pin>;
         }
         else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_2>) {
-            // disable control using the PIO. Enables peripheral 
+            // disable control using the PIO. Enables peripheral
             // control of the pin
             Pin::port::port->PDR |= mask<Pin>;
 
@@ -78,7 +78,7 @@ namespace klib::core::atsam4s::io::detail::pins {
             Pin::port::port->ABCDSR[1] &= ~mask<Pin>;
         }
         else if constexpr (std::is_same_v<Periph, io::detail::alternate::func_3>) {
-            // disable control using the PIO. Enables peripheral 
+            // disable control using the PIO. Enables peripheral
             // control of the pin
             Pin::port::port->PDR |= mask<Pin>;
 
@@ -87,7 +87,7 @@ namespace klib::core::atsam4s::io::detail::pins {
             Pin::port::port->ABCDSR[1] |= mask<Pin>;
         }
         else {
-            // disable control using the PIO. Enables peripheral 
+            // disable control using the PIO. Enables peripheral
             // control of the pin
             Pin::port::port->PDR |= mask<Pin>;
 
@@ -136,9 +136,9 @@ namespace klib::core::atsam4s::io {
             else {
                 Pin::port::port->PPDDR = detail::pins::mask<Pin>;
             }
-        }        
+        }
     };
- 
+
     template <typename Pin>
     class pin_out {
     public:

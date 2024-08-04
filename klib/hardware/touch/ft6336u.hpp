@@ -6,7 +6,7 @@
 
 #include "touch.hpp"
 
-namespace klib::hardware::touch {   
+namespace klib::hardware::touch {
     template <typename TouchHelper, typename Bus, typename IrqPin, typename RstPin>
     class ft6336u {
     public:
@@ -15,11 +15,11 @@ namespace klib::hardware::touch {
 
     protected:
         // 7-bit base address of the ft6336u
-        constexpr static uint8_t address = 0x38;        
+        constexpr static uint8_t address = 0x38;
 
         /**
          * @brief Available registers on the ft6336u. TODO: add gesture registers
-         * 
+         *
          */
         enum class cmd: uint8_t {
             // mode registers
@@ -75,9 +75,9 @@ namespace klib::hardware::touch {
 
         /**
          * @brief function to write commands to the i2c bus. length of the data is calculated automaticly
-         * 
-         * @tparam Args 
-         * @param args 
+         *
+         * @tparam Args
+         * @param args
          */
         template <typename... Args>
         static bool write_command(const cmd command, Args &&... args) {
@@ -89,9 +89,9 @@ namespace klib::hardware::touch {
         }
 
         /**
-         * @brief 
-         * 
-         * @param command 
+         * @brief
+         *
+         * @param command
          */
         static void read(const cmd command, uint8_t *const rx, const uint8_t size) {
             // write the command
@@ -139,7 +139,7 @@ namespace klib::hardware::touch {
 
             // update all the touch data
             for (uint32_t i = 0; i < max_touch_points; i++) {
-                // check if the 
+                // check if the
                 if (i >= count) {
                     // unpress the touch point
                     TouchHelper::update(i);
@@ -158,7 +158,7 @@ namespace klib::hardware::touch {
                 const uint16_t x = (raw[0] & 0xf) << 8 | raw[1];
                 const uint16_t y = (raw[2] & 0xf) << 8 | raw[3];
 
-                // set the data 
+                // set the data
                 TouchHelper::update(i, {x, y});
             }
         }

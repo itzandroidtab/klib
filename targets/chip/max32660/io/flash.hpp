@@ -25,7 +25,7 @@ namespace klib::max32660::io {
     protected:
         /**
          * @brief Init the FLC clock to 1 mhz
-         * 
+         *
          */
         static void init_clock() {
             // get the core clock
@@ -37,7 +37,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Unlock the flash
-         * 
+         *
          */
         static void unlock_flash() {
             // unlock the flash by setting the unlock value to 0x2
@@ -47,7 +47,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Lock the flash
-         * 
+         *
          */
         static void lock_flash() {
             // lock the flash again by clearing the unlock value and the erase code
@@ -56,11 +56,11 @@ namespace klib::max32660::io {
 
         /**
          * @brief Writes 4 bytes of data to address
-         * 
-         * @param address 
-         * @param value 
-         * @return true 
-         * @return false 
+         *
+         * @param address
+         * @param value
+         * @return true
+         * @return false
          */
         static bool write_impl(const uint32_t address, const uint32_t value) {
             // wait until the flash is ready
@@ -111,20 +111,20 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write helper that writes data in 4 byte chunks
-         * 
-         * @tparam T 
-         * @param address 
-         * @param data 
-         * @return true 
-         * @return false 
+         *
+         * @tparam T
+         * @param address
+         * @param data
+         * @return true
+         * @return false
          */
         template <typename T>
         static bool write_helper(const uint32_t address, const T& data) {
             // write all the data we have
             for (uint32_t i = 0; i < data.size_bytes(); i += 4) {
                 // write in 4 byte chunks
-                const auto x = write_impl(address + i, 
-                    (data[i] << 24) | (data[i + 1] << 16) | 
+                const auto x = write_impl(address + i,
+                    (data[i] << 24) | (data[i + 1] << 16) |
                     (data[i + 2] << 8) | data[i + 1]
                 );
 
@@ -140,7 +140,7 @@ namespace klib::max32660::io {
     public:
         /**
          * @brief Available erase modes
-         * 
+         *
          * sector size = 8192 bytes
          */
         enum class erase_mode {
@@ -149,11 +149,11 @@ namespace klib::max32660::io {
 
         /**
          * @brief Erase using the mode
-         * 
-         * @param mode 
-         * @param address 
-         * @return true 
-         * @return false 
+         *
+         * @param mode
+         * @param address
+         * @return true
+         * @return false
          */
     	static bool erase(const erase_mode mode, const uint32_t address) {
             // wait until the flash is ready
@@ -168,7 +168,7 @@ namespace klib::max32660::io {
             init_clock();
 
             // set the address
-            Flc::port->FLSH_ADDR = address; 
+            Flc::port->FLSH_ADDR = address;
 
             // set the page erase code
             Flc::port->FLSH_CN &= ~(0xff << 8);
@@ -181,7 +181,7 @@ namespace klib::max32660::io {
             while (Flc::port->FLSH_CN & (0x1 << 24)) {
                 // do nothing
             }
-            
+
             // start a page erase
             Flc::port->FLSH_CN |= 0x1 << 2;
 
@@ -202,12 +202,12 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write to the address with data
-         * 
+         *
          * @warning can only write multiplies of 4 bytes at a time
-         * 
-         * @tparam T 
-         * @param address 
-         * @param data 
+         *
+         * @tparam T
+         * @param address
+         * @param data
          * @return success
          */
         static bool write(const uint32_t address, const std::span<const uint8_t>& data) {
@@ -216,13 +216,13 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write to the address with data
-         * 
-         * @tparam T 
-         * @tparam G 
-         * @param address 
-         * @param data 
-         * @return true 
-         * @return false 
+         *
+         * @tparam T
+         * @tparam G
+         * @param address
+         * @param data
+         * @return true
+         * @return false
          */
         static bool write(const uint32_t address, const klib::multispan<const uint8_t>& data) {
             return write_helper(address, data);

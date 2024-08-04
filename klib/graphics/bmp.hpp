@@ -8,8 +8,8 @@ namespace klib::detail::bmp {
     // as all these structs have specific sizes
     #pragma pack(push, 1)
     /**
-     * @brief 
-     * 
+     * @brief
+     *
      */
     struct header {
         // magic identifier (should be 0x4d42);
@@ -22,7 +22,7 @@ namespace klib::detail::bmp {
         uint16_t reserved1;
         uint16_t reserved2;
 
-        // offset to the data in the image. 
+        // offset to the data in the image.
         uint32_t offset;
 
         // DIB header size
@@ -59,7 +59,7 @@ namespace klib::detail::bmp {
         uint32_t important_colors;
     };
 
-    // release the old pack so the rest of the structs are not 
+    // release the old pack so the rest of the structs are not
     // affected by the pack(1)
     #pragma pack(pop)
 

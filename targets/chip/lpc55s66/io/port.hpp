@@ -9,7 +9,7 @@
 
 namespace klib::lpc55s66::io::detail::alternate {
     // alternate functions for all the gpio
-    // default function (view reference manual for 
+    // default function (view reference manual for
     // default functions for every pin)
     struct none {
         // peripheral id (e.g func0, func1)
@@ -78,11 +78,11 @@ namespace klib::lpc55s66::io::detail::pins {
 
     /**
      * @brief Helper function to set a pin to a specific peripheral
-     * 
-     * @tparam Pin 
-     * @tparam Periph 
+     *
+     * @tparam Pin
+     * @tparam Periph
      */
-    template <typename Pin, typename Periph>    
+    template <typename Pin, typename Periph>
     static void set_peripheral() {
         // get the register offset for the pin selection
         constexpr uint32_t pin_offset = (Pin::port::id * 32) + Pin::number;
@@ -98,9 +98,9 @@ namespace klib::lpc55s66::io::detail::pins {
 
     /**
      * @brief Set the open drain of a pin
-     * 
-     * @tparam Pin 
-     * @tparam OpenDrain 
+     *
+     * @tparam Pin
+     * @tparam OpenDrain
      */
     template <typename Pin, bool OpenDrain>
     static void set_open_drain() {
@@ -111,7 +111,7 @@ namespace klib::lpc55s66::io::detail::pins {
         volatile uint32_t *const pin_select = &(
             (reinterpret_cast<volatile uint32_t *const>(IOCON))[pin_offset]
         );
-        
+
         // set or clear based on the value
         if constexpr (OpenDrain) {
             // set the open drain mode
@@ -125,7 +125,7 @@ namespace klib::lpc55s66::io::detail::pins {
 
     /**
      * @brief Available pin modes
-     * 
+     *
      */
     enum class mode {
         none = 0b00,
@@ -135,10 +135,10 @@ namespace klib::lpc55s66::io::detail::pins {
     };
 
     /**
-     * @brief Helper function to set the mode of a pin. 
-     * 
-     * @tparam Pin 
-     * @tparam Value 
+     * @brief Helper function to set the mode of a pin.
+     *
+     * @tparam Pin
+     * @tparam Value
      */
     template <typename Pin, mode Value>
     static void set_pinmode() {
@@ -156,9 +156,9 @@ namespace klib::lpc55s66::io::detail::pins {
 
     /**
      * @brief Helper function to change the digimode of a pin
-     * 
-     * @tparam Pin 
-     * @tparam Enabled 
+     *
+     * @tparam Pin
+     * @tparam Enabled
      */
     template <typename Pin, bool Enabled>
     static void set_digimode() {
@@ -211,7 +211,7 @@ namespace klib::lpc55s66::io::periph {
         // port to the gpio hardware
         static inline GPIO_Type *const port = GPIO;
     };
-    
+
     struct gpio2 {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 2;
@@ -252,7 +252,7 @@ namespace klib::lpc55s66::io {
             // clear all the alternate functions
             detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
 
-            // set the pin as a digital input 
+            // set the pin as a digital input
             detail::pins::set_digimode<Pin, true>();
 
             // disable the output of the pin
@@ -260,27 +260,27 @@ namespace klib::lpc55s66::io {
         }
 
         constexpr static bool get() {
-            // read the pin using the byte register (gives higher 
-            // performance as we do not need to and with the mask. 
+            // read the pin using the byte register (gives higher
+            // performance as we do not need to and with the mask.
             // Gives slower performace when reading multiple pins)
             return GPIO->B[Pin::port::id].B_[Pin::number];
         }
 
         template <bool Val>
         constexpr static void pullup_enable() {
-            detail::pins::set_pinmode<Pin, 
+            detail::pins::set_pinmode<Pin,
                 Val ? detail::pins::mode::pullup : detail::pins::mode::none
             >();
         }
 
         template <bool Val>
         constexpr static void pulldown_enable() {
-            detail::pins::set_pinmode<Pin, 
+            detail::pins::set_pinmode<Pin,
                 Val ? detail::pins::mode::pulldown : detail::pins::mode::none
             >();
-        }        
+        }
     };
- 
+
     template <typename Pin>
     class pin_out {
     public:

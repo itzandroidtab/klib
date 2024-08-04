@@ -28,7 +28,7 @@ namespace klib::lpc1752::io::periph::detail::ssp {
 
 namespace klib::lpc1752::io::periph::lqfp_80 {
     template <
-        typename Mosi = pins::package::lqfp_80::p45, 
+        typename Mosi = pins::package::lqfp_80::p45,
         typename Miso = pins::package::lqfp_80::p46,
         typename Sck = pins::package::lqfp_80::p47
     >

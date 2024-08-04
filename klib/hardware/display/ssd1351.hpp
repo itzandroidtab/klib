@@ -39,7 +39,7 @@ namespace klib::hardware::display {
                 // 0xB3 = command for changing the front clock divider
                 write_command(0xB3);
                 write_data(&divider, 1);
-            } 
+            }
 
             static void set_gpio(uint8_t gpio) {
                 // 0xA2 = command for setting gpio
@@ -142,7 +142,7 @@ namespace klib::hardware::display {
             }
 
             static void set_column_address(const uint8_t start, const uint8_t end) {
-                // 0x15 = command for setting the column 
+                // 0x15 = command for setting the column
                 // second byte is start adress
                 // third byte is end adress
                 uint8_t data[] = {
@@ -185,8 +185,8 @@ namespace klib::hardware::display {
                 write_command(command);
             }
 
-            static void set_re_co(const bool increment, const bool map, 
-                                  const bool sequence, const bool scan, 
+            static void set_re_co(const bool increment, const bool map,
+                                  const bool sequence, const bool scan,
                                   const bool split, const uint8_t depth) {
                 // Set Remap/ Color depth
                 // A0 = 0b0 = Horizontal address increment
@@ -271,7 +271,7 @@ namespace klib::hardware::display {
 
                 // wait 10ms to make sure the screen is on
                 klib::delay<klib::busy_wait>(10_ms);
-                
+
                 // reset the display
                 PinRst::template set<false>();
 
@@ -280,57 +280,57 @@ namespace klib::hardware::display {
 
                 // enable the screen again
                 PinRst::template set<true>();
-                
+
                 // wait 10ms for the screen to startup
                 klib::delay<klib::busy_wait>(10_ms);
 
                 // disable command lock
-                set_command_lock(0); 
+                set_command_lock(0);
                 // enable access to commands
-                enable_power_options(1); 
-                
+                enable_power_options(1);
+
                 // turn sleep on(screen off)
-                set_sleep_mode(1); 
-                
+                set_sleep_mode(1);
+
                 // set clock
-                set_clock_divider(0xF1); 
+                set_clock_divider(0xF1);
                 // set mux ratio
-                set_mux_ratio(0x7F); 
+                set_mux_ratio(0x7F);
 
                 // set multiple screen settings
-                set_re_co(0, 0, 1, 1, 1, 0x01); 
-                
+                set_re_co(0, 0, 1, 1, 1, 0x01);
+
                 // set start line(height)
-                set_display_startline(0); 
+                set_display_startline(0);
                 // set offset(width)
-                set_display_offset(0); 
+                set_display_offset(0);
 
                 // set gpio
-                set_gpio(0); 
-                
+                set_gpio(0);
+
                 // set power options and interface registers
-                set_interface_reg(1, 0x00); 
-                
+                set_interface_reg(1, 0x00);
+
                 // set phases
                 set_phases(0x2, 0x3);
-                
-                // set vsl 
-                set_external_vsl(0); 
-                
+
+                // set vsl
+                set_external_vsl(0);
+
                 // set com deselect voltage
-                set_com_deselect_voltage(0x05); 
-                
+                set_com_deselect_voltage(0x05);
+
                 // set master contrast
-                set_master_contrast(0x0F); 
-                
+                set_master_contrast(0x0F);
+
                 // set second precharge period
-                set_second_precharge(0x01); 
-                
+                set_second_precharge(0x01);
+
                 // reset display commands
-                set_display_mode(0x2); 
+                set_display_mode(0x2);
 
                 // set color contrast
-                set_color_contrast(0xFF, 0xFF, 0xFF); 
+                set_color_contrast(0xFF, 0xFF, 0xFF);
 
                 // set start column
                 set_column_address(0, width - 1);
@@ -338,7 +338,7 @@ namespace klib::hardware::display {
                 set_row_address(0, height - 1);
 
                 //turn sleep off(screen on)
-                set_sleep_mode(0); 
+                set_sleep_mode(0);
             }
 
            /**
@@ -376,7 +376,7 @@ namespace klib::hardware::display {
             }
 
             constexpr static uint32_t position_to_buffer(const klib::vector2u &pos) {
-                // convert the 
+                // convert the position to the raw position in the buffer
                 return (pos.y * width) + pos.x;
             }
     };

@@ -12,7 +12,7 @@
 namespace klib::usb::cdc::detail {
     /**
      * @brief Functional descriptor subtype
-     * 
+     *
      */
     enum class subtype {
         header = 0x00,
@@ -46,7 +46,7 @@ namespace klib::usb::cdc::detail {
 
     /**
      * @brief Base for all the functional descriptors
-     * 
+     *
      */
     template <typename Base, subtype SubType>
     struct functional {
@@ -67,7 +67,7 @@ namespace klib::usb::cdc::detail {
 namespace klib::usb::cdc {
     /**
      * @brief Header descriptor
-     * 
+     *
      */
     struct header {
         // header of the descriptor
@@ -81,7 +81,7 @@ namespace klib::usb::cdc {
 
     /**
      * @brief Call management descriptor
-     * 
+     *
      */
     struct call_management {
         // header of the descriptor
@@ -101,7 +101,7 @@ namespace klib::usb::cdc {
 
     /**
      * @brief Abstract control management descriptor
-     * 
+     *
      */
     struct abstract_control_management {
         // header of the descriptor
@@ -110,7 +110,7 @@ namespace klib::usb::cdc {
         // b[0] = device suppports the request combination of
         // set_comm_feature, clear_comm_feature and get_comm_feature
         // b[1] = device supports the request combination of
-        // set_line_coding, set_control_line_state, get_line_coding, 
+        // set_line_coding, set_control_line_state, get_line_coding,
         // and the notification serial_state
         // b[2] = device supports the request send_break
         // b[3] = device supports the notification network_connection
@@ -130,7 +130,7 @@ namespace klib::usb::cdc {
         // set_aux_line_state, ring_aux_jack, and
         // notification aux_jack_hook_state
         // b[2] = device requires extra pulse_setup request
-        // during pulse dialing sequence to disengage holding 
+        // during pulse dialing sequence to disengage holding
         // circuit
         // b[3..7] = reserved
         uint8_t bmCapabilities;
@@ -142,7 +142,7 @@ namespace klib::usb::cdc {
         // header of the descriptor
         const detail::functional<telephone_ringer, detail::subtype::telephone_ringer> header;
 
-        // number of discrete steps in volume supported by the 
+        // number of discrete steps in volume supported by the
         // ringer
         // 0 = 256 discrete volume steps
         // 1 = 1 discrete volume step (fixed volume)
@@ -151,7 +151,7 @@ namespace klib::usb::cdc {
         // 254 = 254 discrete volume steps
         uint8_t bRingerVolSteps;
 
-        // number of ringer patterns supported, 0 is reserved for 
+        // number of ringer patterns supported, 0 is reserved for
         // future use
         uint8_t bNumRingerPatterns;
     };
@@ -196,9 +196,9 @@ namespace klib::usb::cdc {
         // header of the descriptor
         const detail::functional<country_selection, detail::subtype::country_selection> header;
 
-        // index of a string giving the release date for the implemented 
+        // index of a string giving the release date for the implemented
         // ISO 3166 country codes
-        // 
+        //
         // date shall be presented as ddmmyyyy
         uint8_t iCountryCodeRelDate;
     };
@@ -347,7 +347,7 @@ namespace klib::usb::cdc {
 }
 
 
-// release the old pack so the rest of the structs are not 
+// release the old pack so the rest of the structs are not
 // affected by the pack(1)
 #pragma pack(pop)
 

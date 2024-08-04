@@ -10,7 +10,7 @@ namespace klib::core::atsam4s::io {
     public:
         /**
          * @brief Available clock ids
-         * 
+         *
          */
         enum class id {
             udp = 7,
@@ -21,10 +21,10 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Enable the clock on the peripheral
-         * 
+         *
          * @tparam Ids
          */
-        template <id Ids> 
+        template <id Ids>
         static void enable() {
             // disable the write protect
             power_control::write_protect<false>();
@@ -38,10 +38,10 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Disable the clock on the peripheral
-         * 
+         *
          * @tparam Ids
          */
-        template <id Ids> 
+        template <id Ids>
         static void disable() {
             // disable the write protect
             power_control::write_protect<false>();
@@ -54,13 +54,13 @@ namespace klib::core::atsam4s::io {
         }
 
         /**
-         * @brief Get the clock status of a peripheral 
-         * 
+         * @brief Get the clock status of a peripheral
+         *
          * @tparam Ids
-         * @return true 
-         * @return false 
+         * @return true
+         * @return false
          */
-        template <id Ids> 
+        template <id Ids>
         static bool status() {
             // return the value of the clock id in the register (1 = enabled, 0 = disabled)
             return PMC->PMC_SCSR & (0x1 << static_cast<uint8_t>(Ids));

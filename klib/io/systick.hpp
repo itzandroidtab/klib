@@ -14,15 +14,15 @@
 namespace klib::io {
     /**
      * @brief Systick class uses cpu id 0 by default
-     * 
-     * @tparam CpuId 
+     *
+     * @tparam CpuId
      */
     template <uint32_t CpuId = 0, bool Callback = SYSTICK_CALLBACK_ENABLED>
     class systick {
     protected:
         /**
          * @brief Struct to access the systick registers
-         * 
+         *
          */
         struct systick_type {
             // control and status register
@@ -47,7 +47,7 @@ namespace klib::io {
         // additional callback when the systick is triggered.
         static inline interrupt_callback callback = nullptr;
 
-        // current runtime value in ms. Can store up to 49.71 
+        // current runtime value in ms. Can store up to 49.71
         // days of runtime in ms
         static volatile inline time::ms runtime = 0;
 
@@ -60,20 +60,20 @@ namespace klib::io {
             // register our handler
             Irq::template register_irq<Irq::arm_vector::systick>(irq_handler);
 
-            // setup the clock source and enable 
+            // setup the clock source and enable
             // the systick interrupt
             port->ctrl = (ExternalClockSource << 2) | (0x1 << 1);
         }
 
     public:
         /**
-         * @brief Init the systick timer to 1khz with a callback method using 
+         * @brief Init the systick timer to 1khz with a callback method using
          * supplied clock value
-         * 
+         *
          * @tparam Irq
          * @tparam ExternalClockSource
-         * @param irq 
-         * @param clock 
+         * @param irq
+         * @param clock
          */
         template <typename Irq, bool ExternalClockSource = false>
         static void init(const uint32_t clock) {
@@ -85,12 +85,12 @@ namespace klib::io {
         }
 
         /**
-         * @brief Init the systick timer to 1khz with a callback method using 
+         * @brief Init the systick timer to 1khz with a callback method using
          * the internal clock value
-         * 
+         *
          * @tparam Irq
          * @tparam ExternalClockSource
-         * @param irq 
+         * @param irq
          */
         template <typename Irq, bool ExternalClockSource = false>
         static void init() {
@@ -99,12 +99,12 @@ namespace klib::io {
         }
 
         /**
-         * @brief Init the systick using a calibration value. Klib expects 
+         * @brief Init the systick using a calibration value. Klib expects
          * a 1 khz output for the timing
-         * 
-         * @tparam Irq 
-         * @tparam ExternalClockSource 
-         * @param irq 
+         *
+         * @tparam Irq
+         * @tparam ExternalClockSource
+         * @param irq
          */
         template <typename Irq, bool ExternalClockSource = false>
         static void init_with_calibration(const uint32_t calibration) {
@@ -116,12 +116,12 @@ namespace klib::io {
         }
 
         /**
-         * @brief Init the systick using the default 100hz calibration value 
+         * @brief Init the systick using the default 100hz calibration value
          * in the systick register. Should only be used when calibration value
          * is valid for the current clock frequency
-         * 
-         * @tparam Irq 
-         * @tparam ExternalClockSource 
+         *
+         * @tparam Irq
+         * @tparam ExternalClockSource
          */
         template <typename Irq, bool ExternalClockSource = false>
         static void init_with_default_calibration() {
@@ -134,7 +134,7 @@ namespace klib::io {
 
         /**
          * @brief Disable the timer
-         * 
+         *
          */
         static void disable() {
             // disable the timer
@@ -143,7 +143,7 @@ namespace klib::io {
 
         /**
          * @brief Enable the timer
-         * 
+         *
          */
         static void enable() {
             // enable the timer
@@ -152,8 +152,8 @@ namespace klib::io {
 
         /**
          * @brief Returns the current value of a counter
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t get_counter() {
             return port->value;
@@ -161,7 +161,7 @@ namespace klib::io {
 
         /**
          * @brief Clear the counter in the timer
-         * 
+         *
          */
         static void clear_counter() {
             port->value = 0;
@@ -169,21 +169,21 @@ namespace klib::io {
 
         /**
          * @brief Get the runtime of the cpu in milliseconds
-         * 
-         * @note when using ns we uint64_t for the conversions 
+         *
+         * @note when using ns we uint64_t for the conversions
          * this might increase code size on certain micro's.
          * Due to the internal usage of uint32_t the ns counter
-         * overflows every 4.29 seconds. 
-         * 
+         * overflows every 4.29 seconds.
+         *
          * To get the best accuracy the conversion should be done
-         * after the fact. This function does the conversion 
+         * after the fact. This function does the conversion
          * every time it is called. This can cause overhead. Use
-         * get_counter for the raw value that the systick 
+         * get_counter for the raw value that the systick
          * provides (uses around 75 clock cycles for this call on
          * a cortex-m4 with time units ns)
-         * 
-         * @tparam T 
-         * @return T 
+         *
+         * @tparam T
+         * @return T
          */
         template <typename T = time::ms>
         static T get_runtime() requires time::is_time_unit<T> {
@@ -196,7 +196,7 @@ namespace klib::io {
                 // counts down we have to invert the result of the micro
                 // second calculation)
                 return (
-                    static_cast<time::us>(time::ms{runtime.value}) + 
+                    static_cast<time::us>(time::ms{runtime.value}) +
                     (time::us{999} - time::us{(value * 1'000) / port->load})
                 );
             }
@@ -204,12 +204,12 @@ namespace klib::io {
                 // get the current counter
                 const uint32_t value = get_counter();
 
-                // return the even higher precision conversion. (as the 
-                // counter counts down we have to invert the result of 
+                // return the even higher precision conversion. (as the
+                // counter counts down we have to invert the result of
                 // the nano second calculation). This uses uint64_t and
                 // might be slow on some hardware
                 return (
-                    static_cast<time::ns>(time::ms{runtime.value}) + 
+                    static_cast<time::ns>(time::ms{runtime.value}) +
                     time::ns{999'999} - time::ns{
                         static_cast<uint32_t>(
                             (static_cast<uint64_t>(value) * 1'000'000) / port->load
@@ -225,8 +225,8 @@ namespace klib::io {
 
         /**
          * @brief Register a callback after the init sequence
-         * 
-         * @param irq 
+         *
+         * @param irq
          */
         static void set_callback(const interrupt_callback& irq = nullptr) {
             // only register the callback when enabled
@@ -239,13 +239,13 @@ namespace klib::io {
     public:
         /**
          * @brief Interrupt handler. Should not be called by the user
-         * 
+         *
          */
         static void irq_handler() {
-            // clear the interrupt flag by reading 
+            // clear the interrupt flag by reading
             // the systick control register
             (void) port->ctrl;
-            
+
             // increment the current runtime value
             runtime.value++;
 

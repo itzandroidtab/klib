@@ -11,7 +11,7 @@ namespace klib::core::atsamxx::io {
     public:
         /**
          * @brief Disable the watchdog timer
-         * 
+         *
          */
         static void disable() {
             // set the disable bit
@@ -20,7 +20,7 @@ namespace klib::core::atsamxx::io {
 
         /**
          * @brief Feed the watchdog timer to prevent the watchdog from triggering
-         * 
+         *
          */
         static void feed() {
             // reset the counter by writing the reset sequence twice
@@ -29,9 +29,9 @@ namespace klib::core::atsamxx::io {
 
         /**
          * @brief Init the watchdog timer
-         * 
+         *
          * @warning this clears the watchdog reset flag and watchdog interrupt flag
-         * 
+         *
          * @tparam Irq enable/disable the watchdog timer interrupt
          * @tparam WdtRst enable/disable if a watchdog fault triggers a watchdog reset
          * @tparam RstCPU enable/disable if a processor reset gets generated
@@ -42,7 +42,7 @@ namespace klib::core::atsamxx::io {
         static void init() {
             // setup the parameters of the watchdog
             Wdt::port->MR = (
-                (Period & 0xfff) | (Irq << 12) | (WdtRst << 13) | (RstCPU << 14) | 
+                (Period & 0xfff) | (Irq << 12) | (WdtRst << 13) | (RstCPU << 14) |
                 ((Period & 0xfff) << 16) | (0x1 << 28) | (IdleHalt << 29)
             );
         }

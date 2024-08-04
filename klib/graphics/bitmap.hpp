@@ -11,10 +11,10 @@ namespace klib::graphics {
     /**
      * @brief Bitmap for colors. Colors with less than 8 bits use 8 bits
      * for every pixel
-     * 
-     * @tparam Width 
-     * @tparam Height 
-     * @tparam Mode 
+     *
+     * @tparam Width
+     * @tparam Height
+     * @tparam Mode
      */
     template <uint32_t Width, uint32_t Height, mode Mode>
     class bitmap {
@@ -30,10 +30,10 @@ namespace klib::graphics {
         color_mode::type data[size];
 
         /**
-         * @brief Get the pixel data of a position 
-         * 
-         * @param x 
-         * @param y 
+         * @brief Get the pixel data of a position
+         *
+         * @param x
+         * @param y
          * @return bool set or unset
          */
         constexpr color_mode::type get_pixel(const klib::vector2u position) const {
@@ -51,10 +51,10 @@ namespace klib::graphics {
 
         /**
          * @brief Construct a new bitmap using a array
-         * 
-         * @param data 
+         *
+         * @param data
          */
-        template <typename... T> 
+        template <typename... T>
         constexpr bitmap(const klib::graphics::color arg, const T... args):
             data{detail::color_to_raw<Mode>(arg), detail::color_to_raw<Mode>(args)...}
         {
@@ -64,10 +64,10 @@ namespace klib::graphics {
 
         /**
          * @brief Construct a new bitmap using a array
-         * 
-         * @param data 
+         *
+         * @param data
          */
-        template <typename... T> 
+        template <typename... T>
         constexpr bitmap(const color_mode::type arg, const T... args):
             data{arg, args...}
         {
@@ -77,18 +77,18 @@ namespace klib::graphics {
 
         /**
          * @brief Construct a empty bitmap
-         * 
+         *
          */
         constexpr bitmap(): data{} {}
 
         /**
          * @brief Draw the bitmap to the framebuffer
-         * 
-         * @tparam Fb 
-         * @param framebuffer 
-         * @param position 
-         * @param foreground 
-         * @param background 
+         *
+         * @tparam Fb
+         * @param framebuffer
+         * @param position
+         * @param foreground
+         * @param background
          */
         template <typename Fb>
         void draw(Fb& framebuffer, const klib::vector2i& position) const {
@@ -96,7 +96,7 @@ namespace klib::graphics {
             for (int32_t y = 0; y < height; y++) {
                 for (int32_t x = 0; x < width; x++) {
                     // make sure the position is inside the framebuffer
-                    if (((position.y + y) < 0 || (position.y + y) >= static_cast<int32_t>(framebuffer.height)) || 
+                    if (((position.y + y) < 0 || (position.y + y) >= static_cast<int32_t>(framebuffer.height)) ||
                         ((position.x + x) < 0 || (position.x + x) >= static_cast<int32_t>(framebuffer.width)))
                     {
                         // skip the pixel if it outside of the framebuffer
@@ -117,11 +117,11 @@ namespace klib::graphics {
     };
 
     /**
-     * @brief Bitmap for mono images (1 bit per pixel). Uses optimisation to 
+     * @brief Bitmap for mono images (1 bit per pixel). Uses optimisation to
      * reduce space. This adds overhead on runtime
-     * 
-     * @tparam Width 
-     * @tparam Height 
+     *
+     * @tparam Width
+     * @tparam Height
      */
     template <uint32_t Width, uint32_t Height>
     class mono_bitmap {
@@ -134,8 +134,8 @@ namespace klib::graphics {
         uint8_t data[raw_size];
 
         /**
-         * @brief Get the pixel data of a position 
-         * 
+         * @brief Get the pixel data of a position
+         *
          * @param position
          * @return bool set or unset
          */
@@ -146,7 +146,7 @@ namespace klib::graphics {
             // get the index of the data
             const uint32_t index = t / 8;
 
-            // get the bit position 
+            // get the bit position
             const uint32_t pos = t % 8;
 
             // return if the bit is set in the bitmap
@@ -160,10 +160,10 @@ namespace klib::graphics {
 
         /**
          * @brief Construct a new bitmap using a array
-         * 
-         * @param data 
+         *
+         * @param data
          */
-        template <typename... T> 
+        template <typename... T>
         constexpr mono_bitmap(const uint8_t arg, const T... args):
             data{arg, static_cast<uint8_t>(args)...}
         {
@@ -173,18 +173,18 @@ namespace klib::graphics {
 
         /**
          * @brief Construct a empty bitmap
-         * 
+         *
          */
         constexpr mono_bitmap(): data{} {}
 
         /**
          * @brief Draw the bitmap to the framebuffer
-         * 
-         * @tparam Fb 
-         * @param framebuffer 
-         * @param position 
-         * @param foreground 
-         * @param background 
+         *
+         * @tparam Fb
+         * @param framebuffer
+         * @param position
+         * @param foreground
+         * @param background
          */
         template <typename Fb>
         void draw(Fb& framebuffer, const klib::vector2i& position, const klib::graphics::color foreground, const klib::graphics::color background) const {
@@ -197,7 +197,7 @@ namespace klib::graphics {
             for (int32_t y = 0; y < height; y++) {
                 for (int32_t x = 0; x < width; x++) {
                     // make sure the position is inside the framebuffer
-                    if (((position.y + y) < 0 || (position.y + y) >= static_cast<int32_t>(framebuffer.height)) || 
+                    if (((position.y + y) < 0 || (position.y + y) >= static_cast<int32_t>(framebuffer.height)) ||
                         ((position.x + x) < 0 || (position.x + x) >= static_cast<int32_t>(framebuffer.width)))
                     {
                         // skip the pixel if it outside of the framebuffer

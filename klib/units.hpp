@@ -22,8 +22,8 @@ namespace klib {
 
 namespace klib::angle {
     /**
-     * @brief Degree unit. Range 0 - 360 
-     * 
+     * @brief Degree unit. Range 0 - 360
+     *
      */
     struct degree {
         uint16_t value;
@@ -36,7 +36,7 @@ namespace klib::angle {
 namespace klib::time {
     /**
      * @brief Available time units
-     * 
+     *
      */
     enum class time_unit: uint8_t {
         ns = 0,
@@ -47,7 +47,7 @@ namespace klib::time {
 
     /**
      * @brief Declarations for all the time units
-     * 
+     *
      */
     struct ns;
     struct us;
@@ -56,7 +56,7 @@ namespace klib::time {
 
     /**
      * @brief Definitions for all the time units
-     * 
+     *
      */
     struct ns {
         uint32_t value;
@@ -100,20 +100,20 @@ namespace klib::time {
 
     /**
      * @brief Concept to check if we have a time unit
-     * 
-     * @tparam T 
+     *
+     * @tparam T
      */
     template <typename T>
     concept is_time_unit = (
-        std::is_same_v<T, ns> || std::is_same_v<T, us> || 
+        std::is_same_v<T, ns> || std::is_same_v<T, us> ||
         std::is_same_v<T, ms> || std::is_same_v<T, s>
     );
 
     /**
      * @brief Converts a time struct to a time unit
-     * 
-     * @tparam T 
-     * @return consteval 
+     *
+     * @tparam T
+     * @return consteval
      */
     template <typename T>
     consteval time_unit time_to_unit() requires is_time_unit<T> {
@@ -133,13 +133,13 @@ namespace klib::time {
     }
 
     /**
-     * @brief Gets the conversion factor to convert between 
+     * @brief Gets the conversion factor to convert between
      * time units. Only returns the difference between the
      * units. Does not return the direction
-     * 
-     * @tparam T 
-     * @tparam G 
-     * @return consteval 
+     *
+     * @tparam T
+     * @tparam G
+     * @return consteval
      */
     template <typename T, typename G>
     consteval uint32_t conversion_factor() requires is_time_unit<T> && is_time_unit<G> {
@@ -160,7 +160,7 @@ namespace klib::time {
 
     /**
      * @brief Operators for all the time units
-     * 
+     *
      */
     constexpr ns operator"" _ns(const unsigned long long int value) {
         // get rid of the unsigned long long int straight away
@@ -169,11 +169,11 @@ namespace klib::time {
 
     constexpr ns::operator us() const {
         return (value / conversion_factor<ns, us>());
-    } 
+    }
 
     constexpr ns::operator ms() const {
         return (value / conversion_factor<ns, ms>());
-    } 
+    }
 
     constexpr ns::operator s() const {
         return (value / conversion_factor<ns, s>());
@@ -186,11 +186,11 @@ namespace klib::time {
 
     constexpr us::operator ns() const {
         return (value * conversion_factor<us, ns>());
-    } 
+    }
 
     constexpr us::operator ms() const {
         return (value / conversion_factor<us, ms>());
-    } 
+    }
 
     constexpr us::operator s() const {
         return (value / conversion_factor<us, s>());
@@ -203,7 +203,7 @@ namespace klib::time {
 
     constexpr ms::operator ns() const {
         return (value * conversion_factor<ms, ns>());
-    } 
+    }
 
     constexpr ms::operator us() const {
         return (value * conversion_factor<ms, us>());
@@ -220,7 +220,7 @@ namespace klib::time {
 
     constexpr s::operator ns() const {
         return (value * conversion_factor<s, ns>());
-    } 
+    }
 
     constexpr s::operator us() const {
         return (value * conversion_factor<s, us>());
@@ -232,7 +232,7 @@ namespace klib::time {
 
     /**
      * @brief Operators for the time units
-     * 
+     *
      */
     template <typename T, typename G>
     constexpr T operator-(const T lhs, const G rhs) requires is_time_unit<T> && is_time_unit<G> {

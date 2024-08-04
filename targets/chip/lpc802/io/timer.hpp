@@ -36,7 +36,7 @@ namespace klib::lpc802::io::periph {
         struct channel_2 {
             constexpr static uint32_t id = 2;
         };
-        
+
         struct channel_3 {
             constexpr static uint32_t id = 3;
         };
@@ -56,7 +56,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Interrupt handler
-         * 
+         *
          */
         static void isr_handler() {
             // read the register
@@ -74,9 +74,9 @@ namespace klib::lpc802::io {
     public:
         /**
          * @brief Init the provided timer
-         * 
-         * @param irq 
-         * @param frequency 
+         *
+         * @param irq
+         * @param frequency
          */
         static void init(const interrupt_callback& irq, const uint32_t frequency) {
             // enable the clock on the timer peripheral
@@ -85,7 +85,7 @@ namespace klib::lpc802::io {
             // disable the timer
             disable();
 
-            // clear the prescale register to have the counter increment 
+            // clear the prescale register to have the counter increment
             // every clock cycle
             Timer::port->PR = 0;
 
@@ -122,7 +122,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Disable the timer
-         * 
+         *
          */
         static void disable() {
             // disable the timer
@@ -131,7 +131,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Enable the timer
-         * 
+         *
          */
         static void enable() {
             // enable the timer
@@ -140,8 +140,8 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Returns the current value of a counter
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t get_counter() {
             return Timer::port->TC;
@@ -149,7 +149,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Clear the counter in the timer
-         * 
+         *
          */
         static void clear_counter() {
             Timer::port->TC = 1;
@@ -175,8 +175,8 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Calculate the stepsize used in the set functions
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t calculate_stepsize() {
             // calculate the maximum compare value
@@ -197,7 +197,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Init the timer pin.
-         * 
+         *
          */
         static void init() {
             // using for the pin matrix
@@ -217,7 +217,7 @@ namespace klib::lpc802::io {
             // disable the timer
             disable();
 
-            // clear the prescale register to have the counter increment 
+            // clear the prescale register to have the counter increment
             // every clock cycle
             Timer::port->PR = 0;
 
@@ -239,7 +239,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Disable the timer pin
-         * 
+         *
          */
         static void disable() {
             timer<Timer, Channel>::disable();
@@ -247,7 +247,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Enable the timer pin
-         * 
+         *
          */
         static void enable() {
             timer<Timer, Channel>::enable();
@@ -255,8 +255,8 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Set the dutycycle of the timer pin
-         * 
-         * @tparam Dutycycle 
+         *
+         * @tparam Dutycycle
          */
         template <uint16_t Dutycycle>
         static void dutycycle() {
@@ -266,7 +266,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Set the dutycycle of the timer pin
-         * 
+         *
          * @param dutycycle
          */
         static void dutycycle(uint16_t dutycycle) {
@@ -275,10 +275,10 @@ namespace klib::lpc802::io {
         }
 
         /**
-         * @brief Enable or disable output. When setting to false (0) it disables 
+         * @brief Enable or disable output. When setting to false (0) it disables
          * the output and makes the output low
-         * 
-         * @tparam Value 
+         *
+         * @tparam Value
          */
         template <bool Value>
         static void set() {
@@ -286,10 +286,10 @@ namespace klib::lpc802::io {
         }
 
         /**
-         * @brief Enable or disable output. When setting to false (0) it disables 
+         * @brief Enable or disable output. When setting to false (0) it disables
          * the output and makes the output low
-         * 
-         * @param value 
+         *
+         * @param value
          */
         static void set(bool value) {
             // TODO: implement set
@@ -297,8 +297,8 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Returns the current value of a counter
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t get_counter() {
             return timer<Timer, Channel>::get_counter();
@@ -306,7 +306,7 @@ namespace klib::lpc802::io {
 
         /**
          * @brief Clear the counter in the timer
-         * 
+         *
          */
         static void clear_counter() {
             timer<Timer, Channel>::clear_counter();
@@ -338,7 +338,7 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Interrupt handler
-//          * 
+//          *
 //          */
 //         static void isr_handler() {
 //             // read the register
@@ -390,12 +390,12 @@ namespace klib::lpc802::io {
 //                 return;
 //             }
 
-//             // we only have 1 counter. To handle multiple channels we need to 
-//             // use the highest counter value and have the other values match 
+//             // we only have 1 counter. To handle multiple channels we need to
+//             // use the highest counter value and have the other values match
 //             // with that timing
 //             const uint32_t channel = find_highest_channel();
 
-//             // 
+//             //
 //             if ()
 //         }
 
@@ -412,7 +412,7 @@ namespace klib::lpc802::io {
 //             // disable the timer
 //             disable();
 
-//             // clear the prescale register to have the counter increment 
+//             // clear the prescale register to have the counter increment
 //             // every clock cycle
 //             Timer::port->PR = 0;
 
@@ -452,7 +452,7 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Register a callback for a specific event
-//          * 
+//          *
 //          */
 //         template <uint32_t Event>
 //         static void register_irq(const irq_handler::interrupt_callback callback) {
@@ -461,8 +461,8 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Clear a interrupt
-//          * 
-//          * @tparam Event 
+//          *
+//          * @tparam Event
 //          */
 //         template <uint32_t Event>
 //         static void unregister_irq() {
@@ -471,7 +471,7 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Disable the timer
-//          * 
+//          *
 //          */
 //         static void disable() {
 //             // disable the timer
@@ -480,7 +480,7 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Enable the timer
-//          * 
+//          *
 //          */
 //         static void enable() {
 //             // enable the timer
@@ -489,8 +489,8 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Returns the current value of a counter
-//          * 
-//          * @return uint32_t 
+//          *
+//          * @return uint32_t
 //          */
 //         static uint32_t get_counter() {
 //             return Timer::port->TC;
@@ -498,7 +498,7 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Clear the counter in the timer
-//          * 
+//          *
 //          */
 //         static void clear_counter() {
 //             Timer::port->TC = 1;
@@ -516,9 +516,9 @@ namespace klib::lpc802::io {
 //     public:
 //         /**
 //          * @brief Init the provided timer
-//          * 
-//          * @param irq 
-//          * @param frequency 
+//          *
+//          * @param irq
+//          * @param frequency
 //          */
 //         static void init(const interrupt_callback& irq, const uint32_t frequency) {
 //             // register our callback
@@ -530,8 +530,8 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Set the frequency of the timer
-//          * 
-//          * @param Frequency 
+//          *
+//          * @param Frequency
 //          */
 //         static void set_frequency(const uint32_t frequency) {
 //             // set the frequency using the ctimer
@@ -540,7 +540,7 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Disable the timer
-//          * 
+//          *
 //          */
 //         static void disable() {
 //             return detail::timer::ctimer<Timer>::disable();
@@ -548,7 +548,7 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Enable the timer
-//          * 
+//          *
 //          */
 //         static void enable() {
 //             return detail::timer::ctimer<Timer>::enable();
@@ -556,8 +556,8 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Returns the current value of a counter
-//          * 
-//          * @return uint32_t 
+//          *
+//          * @return uint32_t
 //          */
 //         static uint32_t get_counter() {
 //             return detail::timer::ctimer<Timer>::get_counter();
@@ -565,7 +565,7 @@ namespace klib::lpc802::io {
 
 //         /**
 //          * @brief Clear the counter in the timer
-//          * 
+//          *
 //          */
 //         static void clear_counter() {
 //             return detail::timer::ctimer<Timer>::clear_counter();

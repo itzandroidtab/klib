@@ -48,7 +48,7 @@ namespace klib::max32660::io::periph::wlp {
         // port to the spi peripheral
         static inline SPI17Y_Type *const port = SPI17Y;
 
-        // configuration of the pins 
+        // configuration of the pins
         using mosi = detail::spi::spi<pins::package::wlp::pd4, detail::spi::mode::mosi, io::detail::alternate::func_1>;
         using miso = detail::spi::spi<pins::package::wlp::pd3, detail::spi::mode::miso, io::detail::alternate::func_1>;
         using sck = detail::spi::spi<pins::package::wlp::pc3, detail::spi::mode::sck, io::detail::alternate::func_1>;
@@ -68,7 +68,7 @@ namespace klib::max32660::io::periph::wlp {
         // port to the spi peripheral
         static inline SPIMSS_Type *const port = SPIMSS;
 
-        // configuration of the pins 
+        // configuration of the pins
         using mosi = detail::spi::spi<pins::package::wlp::pc2, detail::spi::mode::mosi, io::detail::alternate::func_2>;
         using miso = detail::spi::spi<pins::package::wlp::pc1, detail::spi::mode::miso, io::detail::alternate::func_2>;
         using sck = detail::spi::spi<pins::package::wlp::pd1, detail::spi::mode::sck, io::detail::alternate::func_2>;
@@ -90,7 +90,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // port to the spi peripheral
         static inline SPI17Y_Type *const port = SPI17Y;
 
-        // configuration of the pins 
+        // configuration of the pins
         using mosi = detail::spi::spi<pins::package::tqfn_24::p20, detail::spi::mode::mosi, io::detail::alternate::func_1>;
         using miso = detail::spi::spi<pins::package::tqfn_24::p21, detail::spi::mode::miso, io::detail::alternate::func_1>;
         using sck = detail::spi::spi<pins::package::tqfn_24::p19, detail::spi::mode::sck, io::detail::alternate::func_1>;
@@ -110,7 +110,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // port to the spi peripheral
         static inline SPIMSS_Type *const port = SPIMSS;
 
-        // configuration of the pins 
+        // configuration of the pins
         using mosi = detail::spi::spi<pins::package::tqfn_24::p16, detail::spi::mode::mosi, io::detail::alternate::func_1>;
         using miso = detail::spi::spi<pins::package::tqfn_24::p17, detail::spi::mode::miso, io::detail::alternate::func_1>;
         using sck = detail::spi::spi<pins::package::tqfn_24::p5, detail::spi::mode::sck, io::detail::alternate::func_1>;
@@ -130,7 +130,7 @@ namespace klib::max32660::io::periph::tqfn_24 {
         // port to the spi peripheral
         static inline SPIMSS_Type *const port = SPIMSS;
 
-        // configuration of the pins 
+        // configuration of the pins
         using mosi = detail::spi::spi<pins::package::tqfn_24::p1, detail::spi::mode::mosi, io::detail::alternate::func_2>;
         using miso = detail::spi::spi<pins::package::tqfn_24::p2, detail::spi::mode::miso, io::detail::alternate::func_2>;
         using sck = detail::spi::spi<pins::package::tqfn_24::p24, detail::spi::mode::sck, io::detail::alternate::func_2>;
@@ -150,7 +150,7 @@ namespace klib::max32660::io {
 
         /**
          * @brief Struct used for passing clock calculations
-         * 
+         *
          */
         struct clock_info {
             // high and low clock periods
@@ -182,7 +182,7 @@ namespace klib::max32660::io {
         static clock_info calculate_clock() {
             // get the amount of ticks for the spi frequency
             uint32_t ticks = klib::max(
-                (klib::io::clock::get() / 2) / static_cast<uint32_t>(Frequency), 
+                (klib::io::clock::get() / 2) / static_cast<uint32_t>(Frequency),
                 static_cast<uint32_t>(1)
             );
 
@@ -202,8 +202,8 @@ namespace klib::max32660::io {
 
             // return the timings
             return {
-                static_cast<uint8_t>(high_clk), 
-                static_cast<uint8_t>(high_clk), 
+                static_cast<uint8_t>(high_clk),
+                static_cast<uint8_t>(high_clk),
                 scale
             };
         }
@@ -227,11 +227,11 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write size amount of data to the fifo buffer
-         * 
-         * @param data 
-         * @param size 
-         * @param transmitted 
-         * @return uint16_t 
+         *
+         * @param data
+         * @param size
+         * @param transmitted
+         * @return uint16_t
          */
         template <typename T>
         static uint16_t write_fifo(const T& data, const uint16_t size, const uint16_t transmitted) {
@@ -268,11 +268,11 @@ namespace klib::max32660::io {
 
         /**
          * @brief Read size amount of data from the fifo buffer
-         * 
-         * @param data 
-         * @param size 
-         * @param received 
-         * @return uint16_t 
+         *
+         * @param data
+         * @param size
+         * @param received
+         * @return uint16_t
          */
         template <typename T>
         static uint16_t read_fifo(const T& data, const uint16_t size, const uint16_t received) {
@@ -308,9 +308,9 @@ namespace klib::max32660::io {
 
         /**
          * @brief Returns if the transaction is done
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_done() {
             return (Spi::port->INT_FL & (0x1 << 11));
@@ -318,11 +318,11 @@ namespace klib::max32660::io {
 
         /**
          * @brief Helper to write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
-        template <typename T, typename G> 
+        template <typename T, typename G>
         static void write_read_helper(const T& tx, const G& rx) {
             // clear the fifo buffers
             Spi::port->DMA |= (0x1 << 23) | (0x1 << 7);
@@ -333,7 +333,7 @@ namespace klib::max32660::io {
             // enable the transmit fifo port
             setup_fifo<true, true>();
 
-            // get the amount of data to receive and transmit. The smaller 
+            // get the amount of data to receive and transmit. The smaller
             // between the two must still write/read the data to clear the
             // fifo
             const uint32_t size = klib::max(tx.size(), rx.size());
@@ -427,12 +427,12 @@ namespace klib::max32660::io {
                 io::detail::pins::set_peripheral<typename Spi::cs0::pin, typename Spi::cs0::periph>();
             }
 
-            // set if we are using the cs pin, enable that the slave select stays asserted at 
+            // set if we are using the cs pin, enable that the slave select stays asserted at
             // the end of a transmission, enable master mode and enable the peripheral
             Spi::port->CTRL0 = (
-                ((!ExternalCs) << 15) | 
+                ((!ExternalCs) << 15) |
                 (0x1 << 8) |
-                (0x1 << 1) | 
+                (0x1 << 1) |
                 (0x1)
             );
 
@@ -448,7 +448,7 @@ namespace klib::max32660::io {
 
             Spi::port->CLK_CFG = (
                 (clk.scale << 16) |
-                (clk.high_clk << 8) | 
+                (clk.high_clk << 8) |
                 clk.low_clk
             );
 
@@ -458,9 +458,9 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -468,9 +468,9 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -478,9 +478,9 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const multispan<const uint8_t>& tx, const std::span<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -488,9 +488,9 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write and read from the spi bus
-         * 
-         * @param tx 
-         * @param rx 
+         *
+         * @param tx
+         * @param rx
          */
         static void write_read(const multispan<const uint8_t>& tx, const multispan<uint8_t>& rx) {
             return write_read_helper(tx, rx);
@@ -498,8 +498,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         static void write(const std::span<const uint8_t>& data) {
             return write_helper(data);
@@ -507,8 +507,8 @@ namespace klib::max32660::io {
 
         /**
          * @brief Write data to the spi bus
-         * 
-         * @param data 
+         *
+         * @param data
          */
         static void write(const multispan<const uint8_t>& data) {
             return write_helper(data);
@@ -523,7 +523,7 @@ namespace klib::max32660::io {
 
     public:
         static void init() {
-            
+
         }
 
     };

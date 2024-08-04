@@ -42,7 +42,7 @@ namespace klib::lpc1752::io::periph::lqfp_80 {
         // port to the SPI hardware
         static inline SPI_Type *const port = SPI;
 
-        // configuration of the pins 
+        // configuration of the pins
         using mosi = detail::spi::spi<pins::package::lqfp_80::p45, detail::spi::mode::mosi, core::lpc175x::io::detail::alternate::func_3>;
         using miso = detail::spi::spi<pins::package::lqfp_80::p46, detail::spi::mode::miso, core::lpc175x::io::detail::alternate::func_3>;
         using sck = detail::spi::spi<pins::package::lqfp_80::p47, detail::spi::mode::sck, core::lpc175x::io::detail::alternate::func_3>;

@@ -31,7 +31,7 @@ namespace klib::usb::msc::bot {
         struct block {
             uint32_t address;
             uint32_t count;
-        }; 
+        };
 
         // information for the the transfers
         static inline volatile block transfer_block;
@@ -59,21 +59,21 @@ namespace klib::usb::msc::bot {
         static void de_init() {
             // stop the memory
             Memory::stop();
-        }        
+        }
 
         template <typename Usb>
         static usb::handshake get_interface(const klib::usb::setup_packet &packet) {
             if (!Usb::write(usb::status_callback<Usb>,
-                usb::control_endpoint, usb::endpoint_mode::in, 
+                usb::control_endpoint, usb::endpoint_mode::in,
                 {&interface, sizeof(interface)}))
             {
                 // something went wrong stall now
                 return usb::handshake::stall;
-            }            
+            }
 
             // wait for now until the callback is called
             return usb::handshake::wait;
-        } 
+        }
 
         template <typename Usb>
         static usb::handshake set_interface(const klib::usb::setup_packet &packet) {
@@ -101,13 +101,13 @@ namespace klib::usb::msc::bot {
                         return usb::handshake::stall;
                     }
 
-                    // we do not ack here as the status callback 
+                    // we do not ack here as the status callback
                     // will handle this for us
                     return usb::handshake::wait;
                 case msc::requests::bulk_only_reset:
                     // cancel any open requests
                     Usb::cancel(
-                        usb::get_endpoint(OutEndpoint), 
+                        usb::get_endpoint(OutEndpoint),
                         usb::get_endpoint_mode(OutEndpoint)
                     );
 
@@ -120,7 +120,7 @@ namespace klib::usb::msc::bot {
             }
 
             // unknown packet. stall
-            return usb::handshake::stall;            
+            return usb::handshake::stall;
         }
 
         template <typename Usb, state State>
@@ -175,16 +175,16 @@ namespace klib::usb::msc::bot {
                     write_memory<Usb>();
                     break;
                 default:
-                    break;                    
+                    break;
             }
         }
 
         template <typename Usb>
         static void wait_for_cbw() {
             // Start a read request for new cbw data
-            Usb::read(callback_handler<Usb, state::receive_cbw>, 
-                usb::get_endpoint(OutEndpoint), 
-                usb::get_endpoint_mode(OutEndpoint), 
+            Usb::read(callback_handler<Usb, state::receive_cbw>,
+                usb::get_endpoint(OutEndpoint),
+                usb::get_endpoint_mode(OutEndpoint),
                 {reinterpret_cast<uint8_t*>(&cbw), sizeof(cbw)}
             );
         }
@@ -192,8 +192,8 @@ namespace klib::usb::msc::bot {
         template <typename Usb>
         static bool receive_cbw() {
             // make sure we do not have a error code
-            if (cbw.dCBWSignature != 0x43425355 || cbw.bCBWCBLength < 1 || 
-                cbw.bCBWCBLength > sizeof(cbw.CBWCB)) 
+            if (cbw.dCBWSignature != 0x43425355 || cbw.bCBWCBLength < 1 ||
+                cbw.bCBWCBLength > sizeof(cbw.CBWCB))
             {
                 // something is wrong with the cbw. Return we should stall
                 return false;
@@ -208,12 +208,12 @@ namespace klib::usb::msc::bot {
             // get the scsi command
             const auto scsi = static_cast<msc::scsi::command>(cbw.CBWCB[0]);
 
-            // process the scsi command. 
+            // process the scsi command.
             switch (scsi) {
                 case msc::scsi::command::test_unit_ready:
                     // check if the memory is ready
-                    csw.bCSWStatus = (Memory::ready() ? 
-                        static_cast<uint8_t>(status::command::passed) : 
+                    csw.bCSWStatus = (Memory::ready() ?
+                        static_cast<uint8_t>(status::command::passed) :
                         static_cast<uint8_t>(status::command::failed)
                     );
 
@@ -226,7 +226,7 @@ namespace klib::usb::msc::bot {
                     request_sense<Usb>();
                     break;
                 case msc::scsi::command::inquiry:
-                    // respond to the inquiry and send a status response after 
+                    // respond to the inquiry and send a status response after
                     // sending the sense
                     send_inquiry<Usb>();
                     break;
@@ -234,8 +234,8 @@ namespace klib::usb::msc::bot {
                     // check if we should stop or start the memory
                     if (cbw.CBWCB[3] & 0x2) {
                         // flush any pending transactions and report the result
-                        csw.bCSWStatus = (Memory::stop() ? 
-                            static_cast<uint8_t>(status::command::passed) : 
+                        csw.bCSWStatus = (Memory::stop() ?
+                            static_cast<uint8_t>(status::command::passed) :
                             static_cast<uint8_t>(status::command::failed)
                         );
                     }
@@ -244,8 +244,8 @@ namespace klib::usb::msc::bot {
                         Memory::start();
 
                         // check if the memory is ready
-                        csw.bCSWStatus = (Memory::ready() ? 
-                            static_cast<uint8_t>(status::command::passed) : 
+                        csw.bCSWStatus = (Memory::ready() ?
+                            static_cast<uint8_t>(status::command::passed) :
                             static_cast<uint8_t>(status::command::failed)
                         );
                     }
@@ -260,8 +260,8 @@ namespace klib::usb::msc::bot {
                     break;
                 case msc::scsi::command::allow_medium_removal:
                     // check if the memory is ready for removal
-                    csw.bCSWStatus = (Memory::can_remove() ? 
-                        static_cast<uint8_t>(status::command::passed) : 
+                    csw.bCSWStatus = (Memory::can_remove() ?
+                        static_cast<uint8_t>(status::command::passed) :
                         static_cast<uint8_t>(status::command::failed)
                     );
 
@@ -284,14 +284,14 @@ namespace klib::usb::msc::bot {
                 case msc::scsi::command::write10:
                     // get the address we should use
                     transfer_block.address = (
-                        cbw.CBWCB[2] << 24 | cbw.CBWCB[3] << 16 | 
+                        cbw.CBWCB[2] << 24 | cbw.CBWCB[3] << 16 |
                         cbw.CBWCB[4] << 8 | cbw.CBWCB[5]
                     );
-                    
+
                     // get the block count
                     transfer_block.count = cbw.CBWCB[7] << 8 | cbw.CBWCB[8];
 
-                    // start a read or write based on the scsi command we 
+                    // start a read or write based on the scsi command we
                     // received
                     if (scsi == msc::scsi::command::read10) {
                         read_memory<Usb>();
@@ -313,9 +313,9 @@ namespace klib::usb::msc::bot {
 
         template <typename Usb>
         static void send_csw() {
-            // write the current csw to the host and request a new cbw 
+            // write the current csw to the host and request a new cbw
             // in the status callback
-            Usb::write(callback_handler<Usb, state::wait_for_cbw>, 
+            Usb::write(callback_handler<Usb, state::wait_for_cbw>,
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
                 {reinterpret_cast<const uint8_t*>(&csw), sizeof(csw)}
@@ -364,7 +364,7 @@ namespace klib::usb::msc::bot {
             response.data.bytes[9] = 0x00;
 
             // send the data and send a csw after we have transmitted the data
-            Usb::write(callback_handler<Usb, state::send_csw>, 
+            Usb::write(callback_handler<Usb, state::send_csw>,
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
                 {reinterpret_cast<const uint8_t*>(&response), sizeof(response)}
@@ -391,7 +391,7 @@ namespace klib::usb::msc::bot {
             klib::string::strcpy(reinterpret_cast<char*>(buffer) + 32, "1.0");
 
             // send the data and send a csw after we have transmitted the data
-            Usb::write(callback_handler<Usb, state::send_csw>, 
+            Usb::write(callback_handler<Usb, state::send_csw>,
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
                 buffer
@@ -409,11 +409,11 @@ namespace klib::usb::msc::bot {
             buffer[3] = 0x00;
 
             // send the data and send a csw after we have transmitted the data
-            Usb::write(callback_handler<Usb, state::send_csw>, 
+            Usb::write(callback_handler<Usb, state::send_csw>,
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
                 buffer
-            );   
+            );
         }
 
         template <typename Usb>
@@ -422,13 +422,13 @@ namespace klib::usb::msc::bot {
             static uint8_t buffer[32] = {};
 
             // send the data and send a csw after we have transmitted the data
-            Usb::write(callback_handler<Usb, state::send_csw>, 
+            Usb::write(callback_handler<Usb, state::send_csw>,
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
                 buffer
-            );   
+            );
         }
-        
+
         template <typename Usb>
         static void send_format_capacity() {
             // Get the total number of blocks on the "disk".
@@ -454,11 +454,11 @@ namespace klib::usb::msc::bot {
             buffer[11] = static_cast<uint8_t>(max_packet_size | formatted_media);
 
             // send the data and send a csw after we have transmitted the data
-            Usb::write(callback_handler<Usb, state::send_csw>, 
+            Usb::write(callback_handler<Usb, state::send_csw>,
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
                 buffer
-            );            
+            );
         }
 
         template <typename Usb>
@@ -476,11 +476,11 @@ namespace klib::usb::msc::bot {
             response.length = klib::to_big_endian(max_packet_size);
 
             // send the data and send a csw after we have transmitted the data
-            Usb::write(callback_handler<Usb, state::send_csw>, 
+            Usb::write(callback_handler<Usb, state::send_csw>,
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
                 {reinterpret_cast<const uint8_t*>(&response), sizeof(response)}
-            );            
+            );
         }
 
         template <typename Usb>
@@ -503,11 +503,11 @@ namespace klib::usb::msc::bot {
             buffer[11] = static_cast<uint8_t>(max_packet_size);
 
             // send the data and send a csw after we have transmitted the data
-            Usb::write(callback_handler<Usb, state::send_csw>, 
+            Usb::write(callback_handler<Usb, state::send_csw>,
                 usb::get_endpoint(InEndpoint),
                 usb::get_endpoint_mode(InEndpoint),
                 buffer
-            );            
+            );
         }
 
         template <typename Usb>
@@ -516,8 +516,8 @@ namespace klib::usb::msc::bot {
             if (transfer_block.count) {
                 // read the memory and update the status
                 csw.bCSWStatus |= (
-                    Memory::read(block_buffer, transfer_block.address * max_packet_size, sizeof(block_buffer)) ? 
-                        static_cast<uint8_t>(status::command::passed) : 
+                    Memory::read(block_buffer, transfer_block.address * max_packet_size, sizeof(block_buffer)) ?
+                        static_cast<uint8_t>(status::command::passed) :
                         static_cast<uint8_t>(status::command::failed)
                 );
 
@@ -526,11 +526,11 @@ namespace klib::usb::msc::bot {
                 transfer_block.address++;
 
                 // write the data and have it call this function again to write more data
-                Usb::write(callback_handler<Usb, state::memory_read>, 
+                Usb::write(callback_handler<Usb, state::memory_read>,
                     usb::get_endpoint(InEndpoint),
                     usb::get_endpoint_mode(InEndpoint),
                     block_buffer
-                );                    
+                );
             }
             else {
                 // send the status after we are done with sending all the memory
@@ -543,7 +543,7 @@ namespace klib::usb::msc::bot {
             // check if we have more data to receive
             if (transfer_block.count) {
                 Usb::read(
-                    callback_handler<Usb, state::memory_write>, 
+                    callback_handler<Usb, state::memory_write>,
                     usb::get_endpoint(OutEndpoint),
                     usb::get_endpoint_mode(OutEndpoint),
                     block_buffer
@@ -551,7 +551,7 @@ namespace klib::usb::msc::bot {
             }
             else {
                 // we are done send the status
-                send_csw<Usb>();                
+                send_csw<Usb>();
             }
         }
 
@@ -559,8 +559,8 @@ namespace klib::usb::msc::bot {
         static void write_memory() {
             // read the memory and update the status
             csw.bCSWStatus |= (
-                Memory::write(block_buffer, transfer_block.address * max_packet_size, sizeof(block_buffer)) ? 
-                    static_cast<uint8_t>(status::command::passed) : 
+                Memory::write(block_buffer, transfer_block.address * max_packet_size, sizeof(block_buffer)) ?
+                    static_cast<uint8_t>(status::command::passed) :
                     static_cast<uint8_t>(status::command::failed)
             );
 
@@ -570,16 +570,16 @@ namespace klib::usb::msc::bot {
 
             // request more data if needed
             request_data_write<Usb>();
-        }     
+        }
     };
 
     /**
      * @brief Helper class that alows a memory device to be accessed by the bulk only transfer driver
-     * 
-     * @tparam Memory 
-     * @tparam Size 
-     * @tparam SectorSize 
-     * @tparam PageSize 
+     *
+     * @tparam Memory
+     * @tparam Size
+     * @tparam SectorSize
+     * @tparam PageSize
      */
     template <typename Memory, uint32_t Size, uint32_t SectorSize, uint32_t PageSize>
     class helper {
@@ -597,10 +597,10 @@ namespace klib::usb::msc::bot {
 
         /**
          * @brief Write or read from the sector
-         * 
-         * @param sector 
-         * @return true 
-         * @return false 
+         *
+         * @param sector
+         * @return true
+         * @return false
          */
         static bool get_sector(const uint32_t sector) {
             // check if a new sector requested
@@ -621,7 +621,7 @@ namespace klib::usb::msc::bot {
                     // do nothing until the memory is not busy anymore
                 }
 
-                // write the data in pagesize chunks (some memories do not 
+                // write the data in pagesize chunks (some memories do not
                 // support writing big chunks at once)
                 for (uint32_t i = 0; i < sizeof(buffer); i += PageSize) {
                     // write the buffer
@@ -646,16 +646,16 @@ namespace klib::usb::msc::bot {
 
                 // update the current sector and clear the dirty flag
                 current_sector = sector;
-                dirty = false;            
+                dirty = false;
             }
-            
+
             return true;
         }
 
     public:
         /**
          * @brief Init the memory
-         * 
+         *
          */
         static void init() {
             // mark the current sector as invalid
@@ -663,14 +663,14 @@ namespace klib::usb::msc::bot {
 
             // clear the dirty flag as we did not do anything yet
             dirty = false;
-            
+
             // initialize the memory
             Memory::init();
         }
 
         /**
          * @brief Start the memory
-         * 
+         *
          */
         static void start() {
             // nothing to do here
@@ -678,12 +678,12 @@ namespace klib::usb::msc::bot {
 
         /**
          * @brief Stop any pending transaction and flush to disk
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool stop() {
-            // stop any pending transactions and make sure to write the 
+            // stop any pending transactions and make sure to write the
             // last sector we wrote to if it is dirty
             get_sector(invalid_sector);
 
@@ -692,9 +692,9 @@ namespace klib::usb::msc::bot {
 
         /**
          * @brief Return if the memory is ready
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool ready() {
             // return if the device is busy
@@ -703,9 +703,9 @@ namespace klib::usb::msc::bot {
 
         /**
          * @brief Returns if the device can be removed from the host
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool can_remove() {
             // return the device can be removed
@@ -714,8 +714,8 @@ namespace klib::usb::msc::bot {
 
         /**
          * @brief Returns the size of the memory device in bytes
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         static uint32_t size() {
             return Size;
@@ -723,23 +723,23 @@ namespace klib::usb::msc::bot {
 
         /**
          * @brief Returns if the drive is writable
-         * 
-         * @return true 
-         * @return false 
+         *
+         * @return true
+         * @return false
          */
         static bool is_writable() {
             return true;
         }
 
         /**
-         * @brief Read a sector. Can read up to SectorSize of bytes 
+         * @brief Read a sector. Can read up to SectorSize of bytes
          * at once (without crossing a sector boundry)
-         * 
-         * @param data 
-         * @param address 
-         * @param size 
-         * @return true 
-         * @return false 
+         *
+         * @param data
+         * @param address
+         * @param size
+         * @return true
+         * @return false
          */
         static bool read(uint8_t *const data, const uint32_t address, const uint16_t size) {
             // get the sector from memory
@@ -755,14 +755,14 @@ namespace klib::usb::msc::bot {
         }
 
         /**
-         * @brief Write to a sector. Can write up to SectorSize of bytes 
+         * @brief Write to a sector. Can write up to SectorSize of bytes
          * at once (without crossing a sector boundry)
-         * 
-         * @param data 
-         * @param address 
-         * @param size 
-         * @return true 
-         * @return false 
+         *
+         * @param data
+         * @param address
+         * @param size
+         * @return true
+         * @return false
          */
         static bool write(uint8_t *const data, const uint32_t address, const uint16_t size) {
             // get the sector
@@ -773,14 +773,14 @@ namespace klib::usb::msc::bot {
             // copy the data from the buffer to the destination
             std::copy_n(data, size, &buffer[address & (SectorSize - 1)]);
 
-            // mark the sector as dirty so we will write it when 
+            // mark the sector as dirty so we will write it when
             // we change sectors
             dirty = true;
 
             // return we are good
             return true;
         }
-    };    
+    };
 }
 
 #endif

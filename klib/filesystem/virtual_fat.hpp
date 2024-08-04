@@ -10,7 +10,7 @@
 namespace klib::filesystem::detail {
     /**
      * @brief fat file attributes
-     * 
+     *
      */
     class attributes {
     public:
@@ -31,7 +31,7 @@ namespace klib::filesystem::detail {
 
     /**
      * @brief Fat boot sector as described in the fat specification
-     * 
+     *
      */
     struct boot_sector {
         // jump instruction to boot code
@@ -42,7 +42,7 @@ namespace klib::filesystem::detail {
 
         // DOS 2.0 BPB (bios parameter block) 11 bytes
 
-        // count of bytes per sector. This value may take on 
+        // count of bytes per sector. This value may take on
         // only the following values: 512, 1024, 2048, 4096
         uint16_t bytes_per_sector;
 
@@ -51,7 +51,7 @@ namespace klib::filesystem::detail {
         // legal values are 1, 2, 4, 8, 16, 32, 64, 128
         uint8_t sectors_per_cluster;
 
-        // number of reserved sectors in the reserved region 
+        // number of reserved sectors in the reserved region
         // of the volume starting at the first sector of the
         // volume
         uint16_t reserved_sector_count;
@@ -60,27 +60,27 @@ namespace klib::filesystem::detail {
         // the volume. A value of 2 is recommended
         uint8_t num_fats;
 
-        // root entry count (only for FAT12 and FAT16) for 
+        // root entry count (only for FAT12 and FAT16) for
         // FAT32 this field must be 0
         uint16_t root_entry_count;
 
         // old 16-bit total count of the sectors on the volume.
-        // This count includes the count of all the sectors in 
+        // This count includes the count of all the sectors in
         // all four regions of the volume. This field can be 0
         // but then the total_sectors32 must be non zero. For
-        // FAT32 this field must be 0. For FAT12 and FAT16 this 
+        // FAT32 this field must be 0. For FAT12 and FAT16 this
         // field contains the sector count if it fits and if it
         // does not fit it should be 0
         uint16_t total_sectors16;
 
-        // media type. legal values are 0xf0, 0xf8, 0xf9, 0xfa, 
-        // 0xfb, 0xfc, 0xfd, 0xfe, and 0xff. 
+        // media type. legal values are 0xf0, 0xf8, 0xf9, 0xfa,
+        // 0xfb, 0xfc, 0xfd, 0xfe, and 0xff.
         // 0xf8 is the standard value foor "fixed" (non-removable)
         // media. For removable media 0xf0 is frequently used
         uint8_t media_type;
 
-        // on FAT12 and FAT16 this field should have a count of 
-        // sectors occupied by one FAT. On FAT32 volumes this 
+        // on FAT12 and FAT16 this field should have a count of
+        // sectors occupied by one FAT. On FAT32 volumes this
         // field must be 0 and fat_size32 contains the FAT size
         // count
         uint16_t fat_size16;
@@ -88,14 +88,14 @@ namespace klib::filesystem::detail {
         // DOS 3.31 BPB (bios parameter block) 12 bytes
 
         // amount of sectors per track. Is only relevant for media
-        // that have a geometry (broken down into tracks by 
+        // that have a geometry (broken down into tracks by
         // multiple heads and cylinders)
         uint16_t sectors_per_track;
 
         // number of heads for interrupt 0x13
         uint16_t head_count;
 
-        // Count of hidden sectors preceding the partition that 
+        // Count of hidden sectors preceding the partition that
         // contains this FAT volume. (must always be 0 for media
         // that is not partitioned)
         uint32_t hidden_sector_count;
@@ -105,16 +105,16 @@ namespace klib::filesystem::detail {
         // in all four regions of the volume
         uint32_t total_sectors32;
 
-        // Extended BIOS parameter block 26 bytes 
+        // Extended BIOS parameter block 26 bytes
 
         // extended section. Casted to correct type when FAT type
         // is known at runtime
         uint8_t extended_section[54];
     };
- 
+
     /**
     * @brief Fat directory structure as described in the fat specification
-     * 
+     *
      */
     struct directory {
         // short filename limited to 11 characters (8.3 format)
@@ -135,7 +135,7 @@ namespace klib::filesystem::detail {
 
         // creation date
         uint16_t creation_date;
-        
+
         // last access date. Last access is defined as a read or
         // write operation performed on the file/directory
         uint16_t accessed_date;
@@ -145,7 +145,7 @@ namespace klib::filesystem::detail {
         // field must be 0
         uint16_t first_cluster_high_16;
 
-        // last modification (write) time 
+        // last modification (write) time
         uint16_t modification_time;
 
         // last modification (write) date
@@ -165,7 +165,7 @@ namespace klib::filesystem::detail {
 
     static_assert(sizeof(directory) == 32, "Invalid fat directory structure size");
 
-    // release the old pack so the rest of the structs are not 
+    // release the old pack so the rest of the structs are not
     // affected by the pack(1)
     #pragma pack(pop)
 
@@ -188,15 +188,15 @@ namespace klib::filesystem::detail {
             reverved = ClusterCount + 1,
             bad_sector = 0xff7,
             reserved1 = 0xff8,
-            final_cluster = 0xfff            
+            final_cluster = 0xfff
         };
 
         /**
          * @brief register a cluster in the fat
-         * 
+         *
          * @param fat
-         * @param index 
-         * @param value 
+         * @param index
+         * @param value
          */
         static void set_cluster(uint8_t *const fat, const uint32_t index, const type value) {
             const uint32_t offset = index + (index / 2);
@@ -208,16 +208,16 @@ namespace klib::filesystem::detail {
             }
             else {
                 fat[offset] = value & 0xff;
-                fat[offset + 1] = ((value >> 8) & 0xf) | (fat[offset + 1] & 0xf0);                
+                fat[offset + 1] = ((value >> 8) & 0xf) | (fat[offset + 1] & 0xf0);
             }
         }
 
         /**
          * @brief get the cluster value at a specific index
-         * 
-         * @param fat 
-         * @param index 
-         * @return type 
+         *
+         * @param fat
+         * @param index
+         * @return type
          */
         static type get_cluster(uint8_t *const fat, const uint32_t index) {
             const uint32_t offset = index + (index / 2);
@@ -227,7 +227,7 @@ namespace klib::filesystem::detail {
                 return (fat[offset + 1] << 4) | (fat[offset] >> 4);
             }
             else {
-                return ((fat[offset + 1] & 0xf) << 8) | fat[offset];              
+                return ((fat[offset + 1] & 0xf) << 8) | fat[offset];
             }
         }
     };
@@ -248,15 +248,15 @@ namespace klib::filesystem::detail {
             reverved = ClusterCount + 1,
             bad_sector = 0xfff7,
             reserved1 = 0xfff8,
-            final_cluster = 0xffff            
+            final_cluster = 0xffff
         };
 
         /**
          * @brief register a cluster in the fat
-         * 
+         *
          * @param fat
-         * @param index 
-         * @param value 
+         * @param index
+         * @param value
          */
         static void set_cluster(uint8_t *const fat, const uint32_t index, const type value) {
             const uint32_t offset = index * 2;
@@ -268,10 +268,10 @@ namespace klib::filesystem::detail {
 
         /**
          * @brief get the cluster value at a specific index
-         * 
-         * @param fat 
-         * @param index 
-         * @return type 
+         *
+         * @param fat
+         * @param index
+         * @return type
          */
         static type get_cluster(uint8_t *const fat, const uint32_t index) {
             const uint32_t offset = index * 2;
@@ -302,10 +302,10 @@ namespace klib::filesystem::detail {
 
         /**
          * @brief register a cluster in the fat
-         * 
+         *
          * @param fat
-         * @param index 
-         * @param value 
+         * @param index
+         * @param value
          */
         static void set_cluster(uint8_t *const fat, const uint32_t index, const type value) {
             const uint32_t offset = index * 4;
@@ -319,17 +319,17 @@ namespace klib::filesystem::detail {
 
         /**
          * @brief get the cluster value at a specific index
-         * 
-         * @param fat 
-         * @param index 
-         * @return type 
+         *
+         * @param fat
+         * @param index
+         * @return type
          */
         static type get_cluster(uint8_t *const fat, const uint32_t index) {
             const uint32_t offset = index * 4;
 
             // restore the fat entry
             return (
-                (fat[offset + 3] << 8) | (fat[offset + 2] << 8) | 
+                (fat[offset + 3] << 8) | (fat[offset + 2] << 8) |
                 (fat[offset + 1] << 8) | fat[offset]
             );
         }
@@ -338,21 +338,21 @@ namespace klib::filesystem::detail {
 
 namespace klib::filesystem {
     /**
-     * @brief Virtual FAT12/FAT16 filesystem. Switches automaticly between the 
+     * @brief Virtual FAT12/FAT16 filesystem. Switches automaticly between the
      * 2 based on the amount of clusters
-     * 
+     *
      * @tparam MaxFiles Max amount of files that can be stored
      * @tparam TotalSize Total disk size
      * @tparam ClusterSize Amount of sectors per cluster
-     * @tparam FatRamSizeLimit Allows to limit the FAT in ram. Can be used 
+     * @tparam FatRamSizeLimit Allows to limit the FAT in ram. Can be used
      * to simulate a big filesystem with low amounts of ram
      * @tparam NumFats Number of fats
      */
     template <
         typename Handler,
-        uint32_t MaxFiles = 32, 
-        uint32_t TotalSize = (1 * 1024 * 1024), 
-        uint32_t ClusterSize = 64, 
+        uint32_t MaxFiles = 32,
+        uint32_t TotalSize = (1 * 1024 * 1024),
+        uint32_t ClusterSize = 64,
         uint32_t FatRamSizeLimit = 0xffffffff,
         uint8_t NumFats = 0x01
     >
@@ -368,14 +368,14 @@ namespace klib::filesystem {
         static_assert((MaxFiles & 0xf) == 0, "Maxfiles needs to be a modulo of 16");
 
         // amount of fats (recommended value is 2)
-        constexpr static uint8_t number_of_fats = NumFats; 
+        constexpr static uint8_t number_of_fats = NumFats;
 
         // amount of sectors per cluster
         constexpr static uint8_t sectors_per_cluster = ClusterSize;
 
-        // number of reserved sectors in the reserved region of the 
+        // number of reserved sectors in the reserved region of the
         // volume starting at the first sector of the volume
-        constexpr static uint16_t reserved_sector_count = 0x0001; 
+        constexpr static uint16_t reserved_sector_count = 0x0001;
 
         // get the total amount of sectors
         constexpr static uint32_t sector_count = TotalSize / sector_size;
@@ -385,17 +385,17 @@ namespace klib::filesystem {
             ((root_entry_count * sizeof(detail::directory)) + (sector_size - 1)) / sector_size
         );
 
-        // calculate the fat size or use the max fat size (calculation 
+        // calculate the fat size or use the max fat size (calculation
         // is not perfect. Look at FAT specification for more info)
         constexpr static uint32_t fat_size = (
-            ((sector_count - (reserved_sector_count + root_directory_sector_count)) + 
+            ((sector_count - (reserved_sector_count + root_directory_sector_count)) +
             (((256 * sectors_per_cluster) + number_of_fats) - 1)) / ((256 * sectors_per_cluster) + number_of_fats)
         );
 
         // mbr boot sector
         constexpr static inline detail::boot_sector mbr = {
             .bootjmp = {0xeb, 0x3c, 0x90},
-            .oem_name = {'M','S','D','O','S','5','.','0'},  
+            .oem_name = {'M','S','D','O','S','5','.','0'},
 
             // 512 bytes per sector
             .bytes_per_sector = sector_size,
@@ -407,9 +407,9 @@ namespace klib::filesystem {
             .root_entry_count = root_entry_count,
 
             // set the total amount of sectors if it is less than 0xffff
-            .total_sectors16 = (sector_count > 0xffff) ? 
+            .total_sectors16 = (sector_count > 0xffff) ?
                 0x0000 : sector_count,
-            
+
             // removable medium
             .media_type = 0xf8,
 
@@ -419,7 +419,7 @@ namespace klib::filesystem {
             .hidden_sector_count = 0x00,
 
             // set the total amount of sectors if it is bigger than 0xffff
-            .total_sectors32 = (sector_count > 0xffff) ? 
+            .total_sectors32 = (sector_count > 0xffff) ?
                 sector_count : 0x0000,
 
             .extended_section = {},
@@ -440,7 +440,7 @@ namespace klib::filesystem {
         static_assert(cluster_count <= 65524, "To many sectors for FAT12/FAT16. FAT32 is not supported");
 
         // amount of current fat clusters in use
-        static inline uint32_t cluster_index = 0; 
+        static inline uint32_t cluster_index = 0;
 
         // fat file allocation table
         static inline uint8_t fat[sector_size * klib::min(mbr.fat_size16, FatRamSizeLimit) * number_of_fats] = {};
@@ -457,7 +457,7 @@ namespace klib::filesystem {
 
         /**
          * @brief structure for virtual media
-         * 
+         *
          */
         struct media {
             // media read callback
@@ -477,10 +477,10 @@ namespace klib::filesystem {
     protected:
         /**
          * @brief returns if a filename char array is following the 8.3 standard
-         * 
-         * @param filename 
-         * @return true 
-         * @return false 
+         *
+         * @param filename
+         * @return true
+         * @return false
          */
         static bool is_valid_filename(const uint8_t* filename) {
             // invalid characters for the 8.3 specification
@@ -509,15 +509,15 @@ namespace klib::filesystem {
 
         /**
          * @brief returns if a character is valid in a 8.3 filename
-         * 
-         * @param character 
-         * @return true 
-         * @return false 
+         *
+         * @param character
+         * @return true
+         * @return false
          */
         static bool character_valid(const char character) {
             // all the invalid characters
             constexpr static char invalid_chars[] = {
-                0x22, 0x2a, 0x2b, 0x2c, 0x2e, 0x2f, 0x3a, 0x3b, 
+                0x22, 0x2a, 0x2b, 0x2c, 0x2e, 0x2f, 0x3a, 0x3b,
                 0x3c, 0x3d, 0x3e, 0x3f, 0x5b, 0x5c, 0x5d, 0x7c
             };
 
@@ -543,10 +543,10 @@ namespace klib::filesystem {
 
         /**
          * @brief Read the mbr data
-         * 
-         * @param offset 
-         * @param data 
-         * @param sectors 
+         *
+         * @param offset
+         * @param data
+         * @param sectors
          */
         static void read_mbr(const uint32_t offset, uint8_t *const data, const uint32_t sectors) {
             // the mbr is only 1 sector
@@ -568,10 +568,10 @@ namespace klib::filesystem {
 
         /**
          * @brief Read the fat data
-         * 
-         * @param offset 
-         * @param data 
-         * @param sectors 
+         *
+         * @param offset
+         * @param data
+         * @param sectors
          */
         template <uint32_t Fat>
         static void read_fat(const uint32_t offset, uint8_t *const data, const uint32_t sectors) {
@@ -588,7 +588,7 @@ namespace klib::filesystem {
                 else {
                     // read the actual fat
                     std::copy_n(
-                        reinterpret_cast<const uint8_t*>(&fat) + (fat_offset * sector_size), 
+                        reinterpret_cast<const uint8_t*>(&fat) + (fat_offset * sector_size),
                         sector_size * sectors, data
                     );
                 }
@@ -596,12 +596,12 @@ namespace klib::filesystem {
         }
 
         /**
-         * @brief Called when the host is trying to read the directory 
+         * @brief Called when the host is trying to read the directory
          * structure of the filesystem
-         * 
-         * @param offset 
-         * @param data 
-         * @param sectors 
+         *
+         * @param offset
+         * @param data
+         * @param sectors
          */
         static void read_directory_structure(const uint32_t offset, uint8_t *const data, const uint32_t sectors) {
             // check if we have something to do
@@ -630,19 +630,19 @@ namespace klib::filesystem {
 
                 // copy the entry count of directory structures
                 std::copy_n(
-                    &reinterpret_cast<const uint8_t*>(&directory)[dir_offset * sector_size], 
+                    &reinterpret_cast<const uint8_t*>(&directory)[dir_offset * sector_size],
                     byte_count, &data[i * sector_size]
                 );
             }
         }
 
         /**
-         * @brief Called when the host is trying to write to the root 
+         * @brief Called when the host is trying to write to the root
          * directory of the filesystem
-         * 
-         * @param offset 
-         * @param data 
-         * @param sectors 
+         *
+         * @param offset
+         * @param data
+         * @param sectors
          */
         static void write_directory_structure(const uint32_t offset, const uint8_t *const data, const uint32_t sectors) {
             // check if it is trying to write outside of the fat directory array
@@ -659,7 +659,7 @@ namespace klib::filesystem {
 
             // get the max amount of items in the current offset
             const uint32_t entries = klib::min(
-                klib::max((static_cast<int32_t>(root_entry_count) - fat_offset), 0), 
+                klib::max((static_cast<int32_t>(root_entry_count) - fat_offset), 0),
                 max_directories_sector
             );
 
@@ -686,7 +686,7 @@ namespace klib::filesystem {
                     Handler::on_create(fat_offset + i, n);
                 }
                 else {
-                    // something else changed. Let the handler check what 
+                    // something else changed. Let the handler check what
                     // it is it for us
                     Handler::on_change(fat_offset + i, old, n);
                 }
@@ -694,13 +694,13 @@ namespace klib::filesystem {
                 // store the new data in the directory structure
                 old = n;
             }
-        }             
+        }
 
         /**
          * @brief Set the virtual media with the provided number of fats
-         * 
-         * @tparam Index 
-         * @param offset 
+         *
+         * @tparam Index
+         * @param offset
          */
         template <uint32_t Index = 0>
         static void set_fat_read(uint32_t offset) {
@@ -718,12 +718,12 @@ namespace klib::filesystem {
         /**
          * @brief Read write implementation that calls the corresponding
          * media callback for reading or writing
-         * 
-         * @tparam Read 
-         * @tparam T 
-         * @param sector 
-         * @param data 
-         * @param sectors 
+         *
+         * @tparam Read
+         * @tparam T
+         * @param sector
+         * @param data
+         * @param sectors
          */
         template <bool Read, typename T>
         static void read_write_impl(uint32_t sector, T data, uint32_t sectors) {
@@ -734,7 +734,7 @@ namespace klib::filesystem {
             for (uint32_t i = 0; i < directory_index; i++) {
                 // get the end of the current media
                 const uint32_t current_end = current_sector + virtual_media[i].sector_count;
-                
+
                 // check if the request is for the current media
                 if ((sector >= current_sector) && (sector < current_end)) {
                     // get the offset in the current media
@@ -774,7 +774,7 @@ namespace klib::filesystem {
                 current_sector += virtual_media[i].sector_count;
             }
 
-            // check if we need to do something with the unhandled sector. We do not know 
+            // check if we need to do something with the unhandled sector. We do not know
             // yet what file this is for. We either need to store all the data until the
             // fat is updated or we have the handler figure it out. Here we leave it to the
             // handler.
@@ -797,10 +797,10 @@ namespace klib::filesystem {
 
     public:
         /**
-         * @brief Init the virtual filesystem. Filename should conform 
+         * @brief Init the virtual filesystem. Filename should conform
          * the 8.3 filename specification
-         * 
-         * @param drive_name 
+         *
+         * @param drive_name
          */
         static void init(const char* drive_name) {
             // set the first reserved entry to the media type. (filling the other bits to 1)
@@ -825,7 +825,7 @@ namespace klib::filesystem {
 
             // set the drive name in the directory
             klib::string::strncpy(
-                reinterpret_cast<char*>(directory[0].name), drive_name, 
+                reinterpret_cast<char*>(directory[0].name), drive_name,
                 klib::min(sizeof(directory[0].name), klib::string::strlen(drive_name))
             );
 
@@ -857,11 +857,11 @@ namespace klib::filesystem {
 
         /**
          * @brief Create a file in the virtual filesystem
-         * 
-         * @param file_name 
-         * @param size 
-         * @param read 
-         * @param write 
+         *
+         * @param file_name
+         * @param size
+         * @param read
+         * @param write
          */
         static void create_file(const char* file_name, const uint32_t size, const read_callback read = nullptr, const write_callback write = nullptr) {
             // make sure we can create a file
@@ -871,7 +871,7 @@ namespace klib::filesystem {
             }
 
             const uint32_t clusters = (
-                (size + ((sectors_per_cluster * sector_size) - 1)) / 
+                (size + ((sectors_per_cluster * sector_size) - 1)) /
                 (sectors_per_cluster * sector_size)
             );
 
@@ -909,8 +909,8 @@ namespace klib::filesystem {
             // set the file in the directory
             entry = {
                 .name = {""},
-                .attributes = (write == nullptr) ? 
-                    static_cast<uint8_t>(detail::attributes::read_only) : 
+                .attributes = (write == nullptr) ?
+                    static_cast<uint8_t>(detail::attributes::read_only) :
                     static_cast<uint8_t>(0x00),
                 .reserved = 0x00,
                 .creation_time_ms = 0x00,
@@ -926,7 +926,7 @@ namespace klib::filesystem {
 
             // set the drive name in the directory
             klib::string::strncpy(
-                reinterpret_cast<char*>(entry.name), file_name, 
+                reinterpret_cast<char*>(entry.name), file_name,
                 klib::min(sizeof(entry.name), klib::string::strlen(file_name))
             );
 
@@ -943,8 +943,8 @@ namespace klib::filesystem {
 
         /**
          * @brief Returns the total size in bytes of the filesystem
-         * 
-         * @return constexpr uint32_t 
+         *
+         * @return constexpr uint32_t
          */
         constexpr static uint32_t size() {
             // check what total sector field to use
@@ -958,10 +958,10 @@ namespace klib::filesystem {
 
         /**
          * @brief Write handler
-         * 
-         * @param sector 
-         * @param data 
-         * @param sectors 
+         *
+         * @param sector
+         * @param data
+         * @param sectors
          */
         static void write(const uint32_t sector, const uint8_t *const data, const uint32_t sectors) {
             read_write_impl<false>(sector, data, sectors);
@@ -969,10 +969,10 @@ namespace klib::filesystem {
 
         /**
          * @brief Read handler
-         * 
-         * @param sector 
-         * @param data 
-         * @param sectors 
+         *
+         * @param sector
+         * @param data
+         * @param sectors
          */
         static void read(const uint32_t sector, uint8_t *const data, uint32_t sectors) {
             read_write_impl<true>(sector, data, sectors);
@@ -980,15 +980,15 @@ namespace klib::filesystem {
 
         /**
          * @brief Get the sector from the cluster
-         * 
-         * @param cluster 
-         * @return uint32_t 
+         *
+         * @param cluster
+         * @return uint32_t
          */
         constexpr static uint32_t cluster_to_sector(const uint32_t cluster) {
             // calculate the amount of sectors before the data starts
             constexpr uint32_t sectors = (
                 ((sizeof(detail::boot_sector) + (sector_size - 1)) / sector_size) +
-                (number_of_fats * mbr.fat_size16) + 
+                (number_of_fats * mbr.fat_size16) +
                 (((sizeof(detail::directory) * root_entry_count) + (sector_size - 1)) / sector_size)
             );
 

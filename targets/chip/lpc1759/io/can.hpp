@@ -81,8 +81,8 @@ namespace klib::lpc1759::io::periph::lqfp_80 {
 namespace klib::lpc1759::io {
     /**
      * @brief lpc1759 can driver
-     * 
-     * @tparam Can 
+     *
+     * @tparam Can
      * @tparam CanTxBuffers amount of tx hardware buffers used. Can help
      * when a protocol needs a specific order of messages
      */

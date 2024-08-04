@@ -14,9 +14,9 @@ namespace klib::core::atsam4s::io {
     protected:
         /**
          * @brief Set the address with read/write mode
-         * 
-         * @tparam Read 
-         * @param address 
+         *
+         * @tparam Read
+         * @param address
          */
         template <bool Read>
         constexpr static void read_write_set_address(const uint8_t address) {
@@ -26,9 +26,9 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Wait until some bits are set in the status register
-         * 
-         * @param bits 
-         * @return constexpr uint32_t 
+         *
+         * @param bits
+         * @return constexpr uint32_t
          */
         constexpr static uint32_t wait_for_status(const uint32_t bits) {
             // check for valid bits
@@ -50,14 +50,14 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Internal write implementation
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
-         * @return true 
-         * @return false 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
+         * @return true
+         * @return false
          */
         template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<const uint8_t>>
         constexpr static bool write_impl(const uint8_t address, const T& data) {
@@ -172,16 +172,16 @@ namespace klib::core::atsam4s::io {
             // configure the gpio pins
             io::detail::pins::set_peripheral<typename I2c::sda::pin, typename I2c::sda::periph>();
             io::detail::pins::set_peripheral<typename I2c::scl::pin, typename I2c::scl::periph>();
-        }  
+        }
 
         /**
          * @brief Read from a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
@@ -191,12 +191,12 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Read from a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
@@ -206,12 +206,12 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Write to a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
@@ -221,12 +221,12 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Write to a device on the i2c bus
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart 
-         * @param address 
-         * @param data 
-         * @param size 
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @param address
+         * @param data
+         * @param size
          * @return state if read was successfull
          */
         template <bool SendStop = true, bool RepeatedStart = false>
@@ -235,9 +235,9 @@ namespace klib::core::atsam4s::io {
         }
 
         /**
-         * @brief Stop a transmission that has been started did 
+         * @brief Stop a transmission that has been started did
          * not send a stop
-         * 
+         *
          */
         constexpr static void stop() {
 

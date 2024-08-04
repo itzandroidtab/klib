@@ -10,10 +10,10 @@
 namespace klib::usb::msc::bot {
     /**
      * @brief Command block wrapper (cbw)
-     * 
+     *
      */
     struct command_block_wrapper {
-        // signature that helps identify this data packet 
+        // signature that helps identify this data packet
         // as a cbw
         const uint32_t dCBWSignature = 0x43425355;
 
@@ -46,18 +46,18 @@ namespace klib::usb::msc::bot {
 
     /**
      * @brief Command status wrapper (csw)
-     * 
+     *
      */
     struct command_status_wrapper {
-        // signature that helps identify this data packet 
+        // signature that helps identify this data packet
         // as a cbw
         const uint32_t dCBWSignature = 0x53425355;
 
-        // device should set this as the data received 
+        // device should set this as the data received
         // from the host dCBWTag field
         uint32_t dCBWTag;
 
-        // difference between the expected data and the 
+        // difference between the expected data and the
         // actual transmitted amount of data
         uint32_t dCSWDataResidue;
 
@@ -71,7 +71,7 @@ namespace klib::usb::msc::bot {
 namespace klib::usb::msc::bot::status {
     /**
      * @brief bCSWStatus responses
-     * 
+     *
      */
     enum class command: uint8_t {
         passed = 0x00,
@@ -83,7 +83,7 @@ namespace klib::usb::msc::bot::status {
 namespace klib::usb::msc::scsi {
     /**
      * @brief Supported scsi commands
-     * 
+     *
      */
     enum class command {
         test_unit_ready = 0x00,
@@ -105,7 +105,7 @@ namespace klib::usb::msc::scsi {
 namespace klib::usb::msc::scsi::commands {
     /**
      * @brief Test unit ready command
-     * 
+     *
      */
     struct test_unit_ready {
         // operation code (0x00 for test unit ready)
@@ -121,7 +121,7 @@ namespace klib::usb::msc::scsi::commands {
 
     /**
      * @brief Test unit ready command
-     * 
+     *
      */
     struct request_sense {
         // operation code (0x03 for request sense)
@@ -144,7 +144,7 @@ namespace klib::usb::msc::scsi::commands {
 
     /**
      * @brief Read 10 command structure
-     * 
+     *
      */
     struct read10 {
         // operation code (0x28 for read10)
@@ -174,7 +174,7 @@ namespace klib::usb::msc::scsi::commands {
 
     /**
      * @brief Write 10 command structure
-     * 
+     *
      */
     struct write10 {
         // operation code (0x2a for write10)
@@ -204,11 +204,11 @@ namespace klib::usb::msc::scsi::commands {
 }
 
 namespace klib::usb::msc::scsi::parameters {
-    // All these parameters use big endian. As we are on a little endian system we need to convert 
-    
+    // All these parameters use big endian. As we are on a little endian system we need to convert
+
     /**
      * @brief Sense parameter data
-     * 
+     *
      */
     template <typename AdditionalSenseData>
     struct sense {
@@ -235,7 +235,7 @@ namespace klib::usb::msc::scsi::parameters {
 
     /**
      * @brief Read capacity parameter data
-     * 
+     *
      */
     struct read_capacity10 {
         // returned logical block address
@@ -248,7 +248,7 @@ namespace klib::usb::msc::scsi::parameters {
     static_assert(sizeof(read_capacity10) == 8, "Read capacity 10 response is the wrong size");
 }
 
-// release the old pack so the rest of the structs are not 
+// release the old pack so the rest of the structs are not
 // affected by the pack(1)
 #pragma pack(pop)
 

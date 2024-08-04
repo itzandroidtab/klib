@@ -87,8 +87,8 @@ namespace klib::atsam4s2b::io {
 
     /**
      * @brief Pin that uses a pwm to toggle the output.
-     * 
-     * @note When Using a clka or clkb all channels that use the clock will 
+     *
+     * @note When Using a clka or clkb all channels that use the clock will
      * have their timing changed when selected
      * @warning When disabling the pwm the output of the gpio is not changed.
      */

@@ -7,7 +7,7 @@
 
 namespace klib::core::tmpm37x::io::detail::alternate {
     // alternate functions for all the gpio
-    // default function (view reference manual for 
+    // default function (view reference manual for
     // default functions for every pin)
     struct none {};
 
@@ -36,16 +36,16 @@ namespace klib::core::tmpm37x::io::detail::pins {
         }
         if constexpr (fr3) {
             Pin::port::port->FR3 = v3;
-        }        
+        }
     }
 
     /**
      * @brief Helper function to set a pin to a specific peripheral
-     * 
-     * @tparam Pin 
-     * @tparam Periph 
+     *
+     * @tparam Pin
+     * @tparam Periph
      */
-    template <typename Pin, typename Periph>    
+    template <typename Pin, typename Periph>
     static void set_peripheral() {
         // check how many PxFRn registers we have
         constexpr static bool fr1 = requires() {
@@ -113,9 +113,9 @@ namespace klib::core::tmpm37x::io {
             else {
                 Pin::port::port->PDN &= (~detail::pins::mask<Pin>);
             }
-        }        
+        }
     };
- 
+
     template <typename Pin>
     class pin_out {
     public:

@@ -8,10 +8,10 @@
 namespace klib {
     /**
      * @brief Non owning wrapper to map two std::span in a single array
-     * 
-     * @tparam T 
+     *
+     * @tparam T
      */
-    template <typename T> 
+    template <typename T>
     class multispan {
     protected:
         // amount of items in the buffer
@@ -21,7 +21,7 @@ namespace klib {
         std::array<std::span<T>, Amount> storage;
 
     public:
-        // member types (no iterators as it is not a continuous 
+        // member types (no iterators as it is not a continuous
         // block of memory)
         using element_type        = T;
         using value_type          = std::remove_cv_t<T>;
@@ -33,29 +33,29 @@ namespace klib {
         using const_reference     = const element_type&;
 
         /**
-         * @brief Construct a new multispan object using a initializer list, raw 
+         * @brief Construct a new multispan object using a initializer list, raw
          * array(not a pointer) or std::array
-         * 
+         *
          * for raw pointers {ptr, size} should be used as a parameter
-         * 
-         * @param first 
-         * @param second 
+         *
+         * @param first
+         * @param second
          */
-        template <typename... E> 
+        template <typename... E>
         constexpr multispan(const std::span<T>& first, const std::span<T>& second):
             storage{first, second}
         {}
 
         /**
          * @brief Copy constructor for the multispan
-         * 
+         *
          */
         constexpr multispan(const multispan&) noexcept = default;
 
         /**
          * @brief Construct a multispan from a different multispan
-         * 
-         * @tparam G 
+         *
+         * @tparam G
          */
         template <typename G>
         constexpr multispan(const multispan<G>& other) noexcept:
@@ -64,9 +64,9 @@ namespace klib {
 
         /**
          * @brief Operator to get data from the two spans
-         * 
-         * @param index 
-         * @return constexpr T& 
+         *
+         * @param index
+         * @return constexpr T&
          */
         constexpr reference operator[](const uint32_t index) const {
             uint32_t offset = 0;
@@ -78,7 +78,7 @@ namespace klib {
                 if (x < s.size()) {
                     return s[x];
                 }
-                
+
                 offset += s.size();
             }
 
@@ -88,8 +88,8 @@ namespace klib {
 
         /**
          * @brief Returns the total size of both spans
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         constexpr uint32_t size() const {
             uint32_t count = 0;
@@ -103,8 +103,8 @@ namespace klib {
 
         /**
          * @brief Returns if the span is empty
-         * 
-         * @return uint32_t 
+         *
+         * @return uint32_t
          */
         constexpr uint32_t empty() const {
             return size() == 0;
@@ -112,8 +112,8 @@ namespace klib {
 
         /**
          * @brief Returns the amount of bytes the combined spans use
-         * 
-         * @return constexpr uint32_t 
+         *
+         * @return constexpr uint32_t
          */
         constexpr uint32_t size_bytes() const {
             uint32_t count = 0;
@@ -128,10 +128,10 @@ namespace klib {
     public:
         /**
          * @brief Get a reference to the storage
-         * 
+         *
          * @details needed for the copy constructor
-         * 
-         * @return constexpr const std::span<T>& 
+         *
+         * @return constexpr const std::span<T>&
          */
         constexpr const std::array<std::span<T>, Amount>& store() const {
             return storage;

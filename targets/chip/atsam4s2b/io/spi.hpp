@@ -63,7 +63,7 @@ namespace klib::atsam4s2b::io::periph::wlcsp_64 {
             detail::spi::spi<pins::package::wlcsp_64::pf6, detail::spi::mode::cs3, core::atsam4s::io::detail::alternate::func_2>
         >;
 
-        // configuration of the pins 
+        // configuration of the pins
         using mosi = detail::spi::spi<pins::package::wlcsp_64::pf5, detail::spi::mode::mosi, core::atsam4s::io::detail::alternate::func_1>;
         using miso = detail::spi::spi<pins::package::wlcsp_64::ph4, detail::spi::mode::miso, core::atsam4s::io::detail::alternate::func_1>;
         using sck = detail::spi::spi<pins::package::wlcsp_64::pg6, detail::spi::mode::sck, core::atsam4s::io::detail::alternate::func_1>;

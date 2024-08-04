@@ -10,9 +10,9 @@
 namespace klib::crypt {
     /**
      * @brief Hotp implementation
-     * 
-     * @tparam T 
-     * @tparam Digits 
+     *
+     * @tparam T
+     * @tparam Digits
      */
     template <typename T, uint32_t Digits = 6>
     class hotp {
