@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstddef>
 
-#include <klib/klib.hpp>
+#include <targets/core/cypress/mb9bf560l/port.hpp>
 
 // global peripherals, not affected by chip package
 namespace klib::mb9bf566k::io::periph {
@@ -107,5 +107,18 @@ namespace klib::mb9bf566k::io::periph {
         static inline GPIO_Type *const port = GPIO;
     };
 }
+
+namespace klib::mb9bf566k::io::detail::pins {
+    using namespace klib::core::mb9bf560l::io::detail::pins;
+}
+
+namespace klib::mb9bf566k::io {
+    template <typename Pin>
+    using pin_in = klib::core::mb9bf560l::io::pin_in<Pin>;
+
+    template <typename Pin>
+    using pin_out = klib::core::mb9bf560l::io::pin_out<Pin>;
+}
+
 
 #endif
