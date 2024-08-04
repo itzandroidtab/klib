@@ -21,7 +21,7 @@ MEMORY
     ram (rwx) : org = 0x1ff80000, len = 32k
 
     /* Note the following ranges are not on the I or D code bus */
-    ram1 (rwx) : org = 0x20000000, len = 16k
+    ram1 (rwx) : org = 0x2003c000, len = 16k
     ram2 (rwx) : org = 0x20040000, len = 16k
     rom1 (rx) : org = 0x200C0000, len = 32k
 }
