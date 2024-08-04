@@ -39,7 +39,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         static_assert(
             !std::is_same_v<Periph, io::detail::alternate::analog> || 
             (std::is_same_v<Periph, io::detail::alternate::analog> && has_analog),
-            "Pin does not support analog"
+            "Pin does not support analog mode"
         );
 
         // always disable analog mode if we are not switching to analog mode

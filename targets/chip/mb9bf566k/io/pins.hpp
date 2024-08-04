@@ -184,6 +184,9 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
 
         // bit number in port
         constexpr static uint32_t number = 2;
+
+        // bit number in port for the analog selection
+        constexpr static uint32_t analog_number = 0;
     };
 
     struct p28 {
@@ -192,6 +195,9 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
 
         // bit number in port
         constexpr static uint32_t number = 3;
+
+        // bit number in port for the analog selection
+        constexpr static uint32_t analog_number = 1;
     };
 
     struct p29 {
@@ -200,6 +206,9 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
 
         // bit number in port
         constexpr static uint32_t number = 0;
+
+        // bit number in port for the analog selection
+        constexpr static uint32_t analog_number = 2;
     };
 
     struct p30 {
@@ -224,6 +233,9 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
 
         // bit number in port
         constexpr static uint32_t number = 1;
+
+        // bit number in port for the analog selection
+        constexpr static uint32_t analog_number = 3;
     };
 
     struct p35 {
@@ -232,6 +244,9 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
 
         // bit number in port
         constexpr static uint32_t number = 2;
+
+        // bit number in port for the analog selection
+        constexpr static uint32_t analog_number = 4;
     };
 
     struct p36 {
@@ -240,6 +255,9 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
 
         // bit number in port
         constexpr static uint32_t number = 3;
+
+        // bit number in port for the analog selection
+        constexpr static uint32_t analog_number = 5;
     };
 
     struct p37 {
@@ -288,6 +306,9 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
 
         // bit number in port
         constexpr static uint32_t number = 6;
+
+        // bit number in port for the analog selection
+        constexpr static uint32_t analog_number = 9;
     };
 
     struct p43 {
@@ -296,6 +317,9 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
 
         // bit number in port
         constexpr static uint32_t number = 1;
+
+        // bit number in port for the analog selection
+        constexpr static uint32_t analog_number = 14;
     };
 
     struct p44 {
