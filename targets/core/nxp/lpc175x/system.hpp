@@ -44,6 +44,16 @@ namespace klib::core::lpc175x::io::system {
         };
 
         /**
+         * @brief USB PLL clock divider if the USB pll is not used for USB
+         * 
+         */
+        enum class usb_pll_divider {
+            mhz_288 = 5,
+            mhz_384 = 7,
+            mhz_480 = 9,
+        };
+
+        /**
          * @brief Check if a pll is connected
          * 
          * @tparam Pll 
@@ -267,6 +277,22 @@ namespace klib::core::lpc175x::io::system {
 
             // connect the usb pll
             clock::connect<clock::pll::usb, true>();            
+        }
+
+        /**
+         * @brief Set the USB clock input to the main pll with 
+         * a divider
+         * 
+         * @tparam Freq 
+         */
+        template <usb_pll_divider Freq>
+        static void set_usb() {
+            // disable the USB pll to switch to main pll 
+            // with a divider
+            clock::enable<clock::pll::usb, false>();
+
+            // set the clock divider to the one provided
+            SYSCON->USBCLKCFG = static_cast<uint32_t>(Freq);
         }
     };
 
