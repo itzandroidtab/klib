@@ -18,7 +18,7 @@ Memories definitions
 MEMORY
 {
     rom (rx) : org = 0x00000000, len = 512k
-    ram (rwx) : org = 0x1ff80000, len = 32k
+    ram (rwx) : org = 0x1fff8000, len = 32k
 
     /* Note the following ranges are not on the I or D code bus */
     ram1 (rwx) : org = 0x2003c000, len = 16k
