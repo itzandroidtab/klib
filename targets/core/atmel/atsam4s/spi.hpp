@@ -1,5 +1,5 @@
-#ifndef KLIB_NXP_ATSAM4S_SPI_HPP
-#define KLIB_NXP_ATSAM4S_SPI_HPP
+#ifndef KLIB_ATMEL_ATSAM4S_SPI_HPP
+#define KLIB_ATMEL_ATSAM4S_SPI_HPP
 
 #include <klib/klib.hpp>
 #include <klib/multispan.hpp>
