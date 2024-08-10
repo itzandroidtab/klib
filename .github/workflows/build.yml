@@ -66,10 +66,16 @@ jobs:
           echo "Contents of main:"
           cat ${{github.workspace}}/project/main.cpp
 
+      - name: Check for startup file
+        id: check_files
+        uses: andstor/file-existence-action@v3
+        with:
+          files: "${{github.workspace}}/targets/chip/${{matrix.cpu}}/startup.cpp"
+
       - name: Add startup file (if it exists)
-        if: ${{ hashFiles('${{github.workspace}}/targets/chip/${{matrix.cpu}}/startup.cpp') != '' }}
+        if: if: steps.check_files.outputs.files_exists == 'true'
         run: |
-          sed -i '6 s/# //' ./project/CMakeLists.txt
+          sed -i '6 s/# //' ${{github.workspace}}/project/CMakeLists.txt
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
