@@ -88,7 +88,8 @@ SECTIONS
         . = ALIGN(4);
         PROVIDE(__preinit_array_start = .);
 
-        KEEP(*(.preinit_array))
+        KEEP(*(SORT(.preinit_array.*)))
+        KEEP(*(SORT(.preinit_array)))
 
         PROVIDE(__preinit_array_end = .);
     } > rom
@@ -99,7 +100,7 @@ SECTIONS
         PROVIDE(__init_array_start = .);
 
         KEEP(*(SORT(.init_array.*)))
-        KEEP(*(.init_array))
+        KEEP(*(SORT(.init_array)))
 
         PROVIDE(__init_array_end = .);
     } > rom
@@ -110,7 +111,7 @@ SECTIONS
         PROVIDE(__fini_array_start = .);
 
         KEEP(*(SORT(.fini_array.*)))
-        KEEP(*(.fini_array))
+        KEEP(*(SORT(.fini_array)))
         
         PROVIDE(__fini_array_end = .);
     } > rom
