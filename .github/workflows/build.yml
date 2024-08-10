@@ -73,7 +73,7 @@ jobs:
           files: "${{github.workspace}}/targets/chip/${{matrix.cpu}}/startup.cpp"
 
       - name: Add startup file (if it exists)
-        if: if: steps.check_files.outputs.files_exists == 'true'
+        if: steps.check_files.outputs.files_exists == 'true'
         run: |
           sed -i '6 s/# //' ${{github.workspace}}/project/CMakeLists.txt
 
