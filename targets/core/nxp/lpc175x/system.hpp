@@ -212,6 +212,23 @@ namespace klib::core::lpc175x::io::system {
 
         template <source Source, uint32_t Freq, uint16_t Multiplier, uint8_t PreDivider, uint32_t Div>
         static void set_main() {
+            // make sure the input is valid
+            static_assert(Freq > 0, "Invalid frequency");
+            static_assert(Multiplier > 0, "Invalid multiplier");
+            static_assert(Div > 0 && Div <= 256, "Invalid divider");
+            static_assert(PreDivider > 0, "Invalid pre-divider");
+
+            // calculate the fcco frequency using the oscilator and multiplier
+            constexpr static uint32_t partial_freq = (Freq * 2 * Multiplier) / klib::exp2(static_cast<uint32_t>(PreDivider));
+
+            static_assert(
+                (Multiplier == 1) || (partial_freq >= 156'000'000 && partial_freq <= 320'000'000), 
+                "Invalid Fcco output. PLL frequency needs to be between 156 and 320mhz"
+            );
+
+            // calculate the final frequency
+            constexpr static uint32_t freq = (partial_freq / Div);
+
             // disconnect the main pll if it is connected.
             if (is_connected<pll::main>()) {
                 // disconnect the pll
@@ -224,37 +241,46 @@ namespace klib::core::lpc175x::io::system {
                 enable<pll::main, false>();
             }
 
-            // enable the crystal if it is not enabled
-            if (!crystal::is_enabled()) {
-                // enable the crystal
-                crystal::enable<true>();
+            // check if we need the crystal
+            if constexpr (Source == source::main) {
+                // enable the crystal if it is not enabled
+                if (!crystal::is_enabled()) {
+                    // enable the crystal
+                    crystal::enable<true>();
+                }
             }
 
             // set the clock divider to 0
             SYSCON->CCLKCFG = 0;
 
-            // set the clock source for PLL0 to the oscillator
+            // set the clock source for the system clock
             SYSCON->CLKSRCSEL = static_cast<uint32_t>(Source);
 
-            // setup the pll
-            setup<pll::main>(Multiplier, PreDivider);
+            // check if we need to setup the pll
+            if constexpr (Multiplier > 1) {
+                // setup the pll
+                setup<pll::main>((Multiplier - 1), (PreDivider - 1));
 
-            // enable the pll after configuring it
-            enable<pll::main, true>();
+                // enable the pll after configuring it
+                enable<pll::main, true>();
 
-            // setup the divider to get the correct cpu frequency
-            SYSCON->CCLKCFG = Div;
-
-            // wait until the pll is locked
-            while (!is_locked<pll::main>()) {
-                // do nothing
+                // wait until the pll is locked
+                while (!is_locked<pll::main>()) {
+                    // do nothing
+                }
             }
 
-            // connect the pll
-            connect<pll::main, true>();
+            // setup the divider to get the correct cpu frequency
+            SYSCON->CCLKCFG = (Div - 1);
+
+            // check if we need to connect the pll
+            if constexpr (Multiplier > 1) {
+                // connect the pll
+                connect<pll::main, true>();
+            }
 
             // notify klib what freqency we are running
-            klib::io::clock::set(Freq);
+            klib::io::clock::set(freq);
         }
 
         template <uint32_t ExtCrystalFreq, uint8_t PreDivider = 0x1>

@@ -23,7 +23,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
     wdt::disable();
 
     // enable the PLL using the internal oscillator
-    target::io::system::clock::setup<
+    target::io::system::clock::set_main<
         10'000'000,
         target::io::system::clock::source::internal
     >();

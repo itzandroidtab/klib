@@ -369,16 +369,19 @@ namespace klib::core::atsam4s::io::system {
          *
          * @tparam Source
          * @tparam Pll
-         * @tparam OscillatorFreq
+         * @tparam Freq
          * @tparam Multiplier
          * @tparam Div
          */
         template <
-            source Source, pll Pll, uint32_t OscillatorFreq = 0,
+            source Source, pll Pll, uint32_t Freq = 0,
             uint16_t Multiplier = 0, uint32_t Div = 0,
             prescaler Prescaler = prescaler::div_1
         >
         static void set_main() {
+            // make sure the input is valid
+            static_assert(Freq > 0, "Invalid frequency");
+
             // disable the write protect on the PMC
             target::io::power_control::write_protect<false>();
 
@@ -397,6 +400,10 @@ namespace klib::core::atsam4s::io::system {
 
             // check if we need to configure a pll
             if constexpr (Pll != pll::none) {
+                // make sure the pll inputs are valid
+                static_assert(Multiplier > 0, "Invalid multiplier");
+                static_assert(Div > 0, "Invalid divider");
+
                 // make sure the user did not enable a pll. slow clock is not
                 // supported as a pll input
                 static_assert(
@@ -416,11 +423,11 @@ namespace klib::core::atsam4s::io::system {
                 >();
 
                 // notify klib what freqency we are running
-                klib::io::clock::set(((OscillatorFreq * Multiplier) / Div) / get_divider<Prescaler>());
+                klib::io::clock::set(((Freq * Multiplier) / Div) / get_divider<Prescaler>());
             }
             else {
                 // notify klib what freqency we are running
-                klib::io::clock::set(OscillatorFreq / get_divider<Prescaler>());
+                klib::io::clock::set(Freq / get_divider<Prescaler>());
             }
 
             // enable the write protect again

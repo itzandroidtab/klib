@@ -30,7 +30,7 @@ namespace klib::lpc802::io::system {
 
     public:
         template <clock_source Clock>
-        static void set() {
+        static void set_main() {
             // check if we have a valid clock
             static_assert(
                 Clock == clock_source::mhz_9 ||
@@ -65,7 +65,7 @@ namespace klib::lpc802::io::system {
         }
 
         template <uint32_t Trim, uint32_t ClockFreq>
-        static void set() {
+        static void set_main() {
             // check if the trim value will lock up the cpu
             static_assert(
                 Trim <= (klib::exp2(18) - 1),

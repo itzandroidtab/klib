@@ -132,10 +132,24 @@ namespace klib::core::lpc178x::io::system {
 
         template <
             source Source, uint32_t Freq,
-            uint16_t Multiplier, pre_divider PreDivider,
-            uint8_t Div
+            uint16_t Multiplier = 1, pre_divider PreDivider = pre_divider::div_1,
+            uint8_t Div = 1
         >
         static void set_main() {
+            // calculate the fcco frequency using the oscilator and multiplier
+            constexpr static uint32_t partial_freq = (Freq * 2 * Multiplier) / klib::exp2(static_cast<uint32_t>(PreDivider));
+
+            // make sure the pll inputs are valid
+            static_assert(Multiplier > 0, "Invalid multiplier");
+            static_assert(Div > 0, "Invalid divider");
+            static_assert(
+                (Multiplier == 1) || (partial_freq >= 156'000'000 && partial_freq <= 320'000'000), 
+                "Invalid Fcco output. PLL frequency needs to be between 156 and 320mhz"
+            );
+
+            // calculate the final frequency
+            constexpr static uint32_t freq = (partial_freq / Div);
+
             // enable the crystal if we are changing to that
             if constexpr (Source == source::main) {
                 crystal::enable<true>();
@@ -148,10 +162,10 @@ namespace klib::core::lpc178x::io::system {
 
             // enable/disable the boost based on the frequency
             // (> 100 Mhz = on)
-            SYSCON->PBOOST = (Freq > 100'000'000) ? 0b11 : 0b00;
+            SYSCON->PBOOST = (freq > 100'000'000) ? 0b11 : 0b00;
 
             // check if we need to enable the pll
-            if constexpr (Multiplier) {
+            if constexpr (Multiplier > 1) {
                 // disconnect the main pll if it is connected.
                 if (SYSCON->CCLKSEL & (0x1 << 8)) {
                     SYSCON->CCLKSEL &= ~(0x1 << 8);
@@ -173,7 +187,7 @@ namespace klib::core::lpc178x::io::system {
                 SYSCON->CLKSRCSEL = static_cast<uint32_t>(Source);
 
                 // setup the main pll
-                setup<pll::main>(Multiplier, PreDivider);
+                setup<pll::main>((Multiplier - 1), PreDivider);
 
                 // enable the pll
                 enable<pll::main, true>();
@@ -189,10 +203,10 @@ namespace klib::core::lpc178x::io::system {
             }
 
             // setup the cpu clock divider
-            SYSCON->CCLKSEL = Div & 0x1f | ((Multiplier > 0) << 8);
+            SYSCON->CCLKSEL = (Div - 1) & 0x1f | ((Multiplier > 1) << 8);
 
             // notify klib what freqency we are running
-            klib::io::clock::set(Freq);
+            klib::io::clock::set(freq);
         }
 
         template <
@@ -200,9 +214,15 @@ namespace klib::core::lpc178x::io::system {
             pre_divider PreDivider
         >
         static void set_usb() {
-            static_assert((Freq % 48'000'000) == 0, "Pll frequency needs to be 48, 96 or 144Mhz");
-            static_assert(Freq <= 144'000'000, "Maximum USB pll frequency supported is 144Mhz");
-            static_assert(Freq >= 48'000'000, "Minumim USB pll frequency supported is 48Mhz");
+            static_assert((48'000'000 % Freq) == 0, "Invalid crystal frequency");
+
+            // calculate the frequency
+            constexpr static uint32_t freq = ((Freq * Multiplier) / klib::exp2(static_cast<uint32_t>(PreDivider)));
+
+            static_assert((freq % 48'000'000) == 0, "Pll frequency needs to be 48, 96 or 144Mhz");
+            static_assert(freq <= 144'000'000, "Maximum USB pll frequency supported is 144Mhz");
+            static_assert(freq >= 48'000'000, "Minumim USB pll frequency supported is 48Mhz");
+            static_assert(Multiplier > 0, "Invalid multiplier");
 
             // check if the crystal is stable and enabled
             if (!crystal::status()) {
@@ -221,7 +241,7 @@ namespace klib::core::lpc178x::io::system {
             }
 
             // setup the second pll
-            setup<pll::alternate>(Multiplier, PreDivider);
+            setup<pll::alternate>(Multiplier - 1, PreDivider);
 
             // enable the pll
             enable<pll::alternate, true>();
@@ -233,7 +253,7 @@ namespace klib::core::lpc178x::io::system {
 
             // setup the correct divider for the usb and
             // change to the alternate pll
-            SYSCON->USBCLKSEL = (Freq / 48'000'000) | (0x2 << 8);
+            SYSCON->USBCLKSEL = (freq / 48'000'000) | (0x2 << 8);
         }
     };
 

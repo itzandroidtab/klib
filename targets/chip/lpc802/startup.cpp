@@ -14,7 +14,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::lpc802;
 
     // change the clock frequency to 15Mhz
-    target::io::system::clock::set<target::io::system::clock::clock_source::mhz_15>();
+    target::io::system::clock::set_main<target::io::system::clock::clock_source::mhz_15>();
 
     // setup the irq handler before main is called. This
     // moves the vector table to ram so it can be changed

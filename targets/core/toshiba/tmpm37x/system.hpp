@@ -23,7 +23,7 @@ namespace klib::core::tmpm37x::io::system {
          * @tparam Source
          */
         template <uint32_t Frequency, source Source>
-        static void setup() {
+        static void set_main() {
             // enable changing the oscillation frequency detector (ofd)
             OFD->CR1 = 0xf9;
 

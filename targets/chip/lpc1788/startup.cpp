@@ -22,9 +22,9 @@ void __attribute__((__constructor__(101))) __target_startup() {
 
     // setup the clock to 120Mhz (in this example we are using a 12Mhz
     // oscillator). FCCO needs to be in range 156 - 320Mhz
-    // (((9 + 1) * 2 * 12Mhz) / (0 + 1) = 240Mhz) / (1 + 1) = 120Mhz
+    // ((10 * 2 * 12Mhz) / 1 = 240Mhz) / 2 = 120Mhz
     clock::set_main<
-        clock::source::main, 120'000'000, 9, clock::pre_divider::div_1, 1
+        clock::source::main, 12'000'000, 10, clock::pre_divider::div_1, 2
     >();
 
     // set the global peripheral clock divider to 1. All the
