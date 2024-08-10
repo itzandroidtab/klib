@@ -44,14 +44,14 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // are mapped to a function that halts the whole cpu.
     // this call does nothing when a flash handler is
     // configured
-    klib::irq::boot_helper::init<target::irq>();
+    klib::irq::boot_helper::init<target::irq0>();
 
     // check if we can enable the systick. If we enable it
     // here when we have a flash irq handler we will cause
     // a hang in the default irq handler
-    if constexpr (klib::irq::boot_helper::in_ram<target::irq>()) {
+    if constexpr (klib::irq::boot_helper::in_ram<target::irq0>()) {
         // init the systick timer
-        klib::io::systick<>::init<target::irq, true>();
+        klib::io::systick<>::init<target::irq0, true>();
 
         // enable the systick timer
         klib::io::systick<>::enable();
