@@ -19,6 +19,19 @@ namespace klib::usb::hid {
     };
 
     /**
+     * @brief Class specific requests for the handle class packet function
+     *
+     */
+    enum class class_request {
+        get_report = 0x01,
+        get_idle = 0x02,
+        get_protocol = 0x03,
+        set_report = 0x09,
+        set_idle = 0x0a,
+        set_protocol = 0x0b,
+    };
+
+    /**
      * @brief Hid device descriptor
      *
      */

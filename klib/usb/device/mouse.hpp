@@ -23,19 +23,6 @@ namespace klib::usb::device {
             serial = 3
         };
 
-        /**
-         * @brief Class specific requests for the handle class packet function
-         *
-         */
-        enum class class_request {
-            get_report = 0x01,
-            get_idle = 0x02,
-            get_protocol = 0x03,
-            set_report = 0x09,
-            set_idle = 0x0a,
-            set_protocol = 0x0b,
-        };
-
         // Push the current pack to the stack and set the pack to 1
         // as all these structs have specific sizes
         #pragma pack(push, 1)
@@ -511,11 +498,11 @@ namespace klib::usb::device {
             }
 
             // convert the request to a class request
-            const auto& request = static_cast<class_request>(packet.bRequest);
+            const auto& request = static_cast<hid::class_request>(packet.bRequest);
 
             // check what requets we got
             switch (request) {
-                case class_request::get_report:
+                case hid::class_request::get_report:
                     // the host should not use this as a substitute for the Interrupt EP
                     // but send the data we have anyway
 
@@ -533,7 +520,7 @@ namespace klib::usb::device {
                         return usb::handshake::stall;
                     }
                     break;
-                case class_request::get_idle:
+                case hid::class_request::get_idle:
                     // TODO: add support for report id != 0
                     // for now we only support report id == 0
                     if ((packet.wValue & 0xff) != 0x00) {
@@ -559,7 +546,7 @@ namespace klib::usb::device {
                         }
                     }
                     break;
-                case class_request::set_report:
+                case hid::class_request::set_report:
                     // check if the packet length is not above the max endpoint size
                     if (packet.wLength > Usb::max_endpoint_size) {
                         // invalid length
@@ -570,7 +557,7 @@ namespace klib::usb::device {
                         return usb::handshake::ack;
                     }
                     break;
-                case class_request::set_idle:
+                case hid::class_request::set_idle:
                     // TODO: add support for report id != 0
                     // for now we only support report id == 0 and we do not
                     // support changing the idle
@@ -582,8 +569,8 @@ namespace klib::usb::device {
                         return usb::handshake::ack;
                     }
                     break;
-                case class_request::get_protocol:
-                case class_request::set_protocol:
+                case hid::class_request::get_protocol:
+                case hid::class_request::set_protocol:
                 default:
                     // not supported. stall
                     return usb::handshake::stall;
