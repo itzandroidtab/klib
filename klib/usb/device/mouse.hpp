@@ -202,8 +202,9 @@ namespace klib::usb::device {
             data_updating = true;
 
             // send the report to the host
-            Usb::write(hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f,
-                usb::endpoint_mode::in,
+            Usb::write(hid_callback<Usb>, 
+                usb::get_endpoint(config.endpoint.bEndpointAddress),
+                usb::get_endpoint_mode(config.endpoint.bEndpointAddress),
                 {reinterpret_cast<const uint8_t*>(&report_data), sizeof(report_data)}
             );
 
@@ -421,8 +422,8 @@ namespace klib::usb::device {
             if (packet.wValue == config.configuration.bConfigurationValue) {
                 // configure the endpoint for our report data
                 Usb::configure(
-                    config.endpoint.bEndpointAddress & 0x0f,
-                    usb::endpoint_mode::in,
+                    usb::get_endpoint(config.endpoint.bEndpointAddress),
+                    usb::get_endpoint_mode(config.endpoint.bEndpointAddress),
                     usb::get_transfer_type(config.endpoint.bmAttributes),
                     sizeof(report_data)
                 );
@@ -437,9 +438,10 @@ namespace klib::usb::device {
                 report_data = {};
 
                 // write the inital report
-                if (Usb::write(hid_callback<Usb>, config.endpoint.bEndpointAddress & 0x0f,
-                    usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&report_data),
-                    sizeof(report_data)}))
+                if (Usb::write(hid_callback<Usb>, 
+                    usb::get_endpoint(config.endpoint.bEndpointAddress),
+                    usb::get_endpoint_mode(config.endpoint.bEndpointAddress), 
+                    {reinterpret_cast<const uint8_t*>(&report_data), sizeof(report_data)}))
                 {
                     // no issue for now ack
                     return usb::handshake::ack;
@@ -456,7 +458,10 @@ namespace klib::usb::device {
                 // reset the used endpoint if we have one
                 if (configuration) {
                     // reset the endpoint
-                    Usb::reset(config.endpoint.bEndpointAddress & 0x0f, usb::endpoint_mode::in);
+                    Usb::reset(
+                        usb::get_endpoint(config.endpoint.bEndpointAddress),
+                        usb::get_endpoint_mode(config.endpoint.bEndpointAddress)
+                    );
                 }
 
                 // clear the configuration value
