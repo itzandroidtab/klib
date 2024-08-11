@@ -4,7 +4,7 @@
 #include <max32625.hpp>
 
 #include <klib/irq_helper.hpp>
-#include <klib/usb/usb.hpp>
+#include <klib/usb/usb/usb.hpp>
 #include <klib/math.hpp>
 
 #include "clocks.hpp"

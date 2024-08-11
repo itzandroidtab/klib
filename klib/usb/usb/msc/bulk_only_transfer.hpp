@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <algorithm>
 
-#include <klib/usb/usb.hpp>
+#include <klib/usb/usb/usb.hpp>
 #include <klib/string.hpp>
 
 #include "bot.hpp"

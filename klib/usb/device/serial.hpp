@@ -6,9 +6,9 @@
 
 #include <klib/ringbuffer.hpp>
 #include <klib/string.hpp>
-#include <klib/usb/device.hpp>
-#include <klib/usb/descriptor.hpp>
-#include <klib/usb/cdc/descriptor.hpp>
+#include <klib/usb/usb/device.hpp>
+#include <klib/usb/usb/descriptor.hpp>
+#include <klib/usb/usb/cdc/descriptor.hpp>
 
 namespace klib::usb::device {
     template <uint8_t CmdEndpoint = 1, uint8_t OutEndpoint = 2, uint8_t InEndpoint = 3, uint32_t RxSize = 128>

@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include <klib/usb/device.hpp>
+#include <klib/usb/usb/device.hpp>
 
 namespace klib::usb::device {
     class device_template {

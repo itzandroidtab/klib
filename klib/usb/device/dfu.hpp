@@ -4,10 +4,10 @@
 #include <algorithm>
 #include <cstdint>
 
-#include <klib/usb/usb.hpp>
-#include <klib/usb/dfu/descriptor.hpp>
-#include <klib/usb/device.hpp>
-#include <klib/usb/dfu/request.hpp>
+#include <klib/usb/usb/usb.hpp>
+#include <klib/usb/usb/device.hpp>
+#include <klib/usb/usb/dfu/descriptor.hpp>
+#include <klib/usb/usb/dfu/request.hpp>
 
 namespace klib::usb::device {
     template <typename Memory, uint32_t TransferSize = 64>

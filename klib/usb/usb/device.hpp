@@ -1,8 +1,8 @@
 #ifndef KLIB_USB_DEVICE_HPP
 #define KLIB_USB_DEVICE_HPP
 
-#include <klib/usb/usb.hpp>
-#include <klib/usb/descriptor.hpp>
+#include "usb.hpp"
+#include "descriptor.hpp"
 
 namespace klib::usb::device {
     /**

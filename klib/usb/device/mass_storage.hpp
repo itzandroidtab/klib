@@ -1,11 +1,10 @@
 #ifndef KLIB_USB_MASS_STORAGE_HPP
 #define KLIB_USB_MASS_STORAGE_HPP
 
-#include <klib/usb/device.hpp>
-#include <klib/usb/capability.hpp>
-
-#include <klib/usb/msc/msc.hpp>
-#include <klib/usb/msc/bulk_only_transfer.hpp>
+#include <klib/usb/usb/device.hpp>
+#include <klib/usb/usb/capability.hpp>
+#include <klib/usb/usb/msc/msc.hpp>
+#include <klib/usb/usb/msc/bulk_only_transfer.hpp>
 
 namespace klib::usb::device {
     template <typename Memory, uint8_t InEndpoint = 0x02, uint8_t OutEndpoint = 0x05>

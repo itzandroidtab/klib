@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <klib/usb/descriptor.hpp>
+#include <klib/usb/usb/descriptor.hpp>
 
 // Push the current pack to the stack and set the pack to 1
 // as all these structs have specific sizes

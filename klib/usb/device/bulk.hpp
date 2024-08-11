@@ -4,8 +4,8 @@
 #include <algorithm>
 
 #include <klib/string.hpp>
-#include <klib/usb/device.hpp>
-#include <klib/usb/descriptor.hpp>
+#include <klib/usb/usb/device.hpp>
+#include <klib/usb/usb/descriptor.hpp>
 
 namespace klib::usb::device {
     template <uint8_t InEndpoint = 0x2, uint8_t OutEndpoint = 0x05>

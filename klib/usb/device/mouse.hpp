@@ -4,9 +4,9 @@
 #include <algorithm>
 
 #include <klib/string.hpp>
-#include <klib/usb/device.hpp>
-#include <klib/usb/descriptor.hpp>
-#include <klib/usb/hid/descriptor.hpp>
+#include <klib/usb/usb/device.hpp>
+#include <klib/usb/usb/descriptor.hpp>
+#include <klib/usb/usb/hid/descriptor.hpp>
 
 namespace klib::usb::device {
     template <uint32_t Endpoint = 6>
