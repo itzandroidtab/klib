@@ -49,19 +49,7 @@ namespace klib::usb::cdc::detail {
      *
      */
     template <typename Base, subtype SubType>
-    struct functional {
-        // size of the descriptor
-        const uint8_t bFunctionLength = sizeof(Base);
-
-        // descriptor type (CS_INTERFACE)
-        const descriptor::descriptor_type bDescriptorType = descriptor::descriptor_type::cs_interface;
-
-        // header functional descriptor subtype
-        const uint8_t bDescriptorSubtype = static_cast<uint8_t>(SubType);
-    };
-
-    // make sure the size is correct
-    static_assert(sizeof(functional<uint8_t, subtype::header>) == 0x03, "Cdc functional descriptor size is wrong");
+    struct functional: public descriptor::cs_interface<Base, static_cast<uint8_t>(SubType)> {};
 }
 
 namespace klib::usb::cdc {

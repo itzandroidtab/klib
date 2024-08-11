@@ -436,6 +436,25 @@ namespace klib::usb::descriptor {
     };
 
     static_assert(sizeof(interface_association) == 8, "Interface association descriptor is not 8 bytes in length");
+
+    /**
+     * @brief Base for all the class specific interface descriptors
+     *
+     */
+    template <typename Base, uint8_t SubType>
+    struct cs_interface {
+        // size of the descriptor
+        const uint8_t bFunctionLength = sizeof(Base);
+
+        // the device class specific descriptor type
+        const descriptor_type bDescriptorType = descriptor_type::cs_interface;
+
+        // header functional descriptor subtype
+        const uint8_t bDescriptorSubtype = static_cast<uint8_t>(SubType);
+    };
+
+    // make sure the size is correct
+    static_assert(sizeof(cs_interface<uint8_t, 0x00>) == 0x03, "Class specific base descriptor size is wrong");
 }
 
 // release the old pack so the rest of the structs are not
