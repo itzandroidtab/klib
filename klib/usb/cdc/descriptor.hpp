@@ -93,7 +93,7 @@ namespace klib::usb::cdc {
         uint8_t bmCapabilities;
 
         // interface number of the data class interface. (optionally
-        // used for call management)7
+        // used for call management)
         uint8_t bDataInterface;
     };
 

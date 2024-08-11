@@ -85,7 +85,7 @@ namespace klib::usb::device {
         // device descriptor for the hid keyboard
         const __attribute__((aligned(4))) static inline descriptor::device device = {
             .bcdUSB = static_cast<uint16_t>(setup::usb_version::usb_v2_0),
-            .bDeviceClass = 0x02,
+            .bDeviceClass = descriptor::class_type::communication_and_cdc,
             .bDeviceSubClass = 0x02,
             .bDeviceProtocol = 0x00,
             .bMaxPacketSize = 0x40,

@@ -15,6 +15,39 @@ namespace klib::usb::descriptor {
      */
 
     /**
+     * @brief Defined class codes following the USB definitions
+     * https://www.usb.org/defined-class-codes
+     * 
+     */
+    enum class class_type: uint8_t {
+        use_class_info = 0x00,
+        audio = 0x01,
+        communication_and_cdc = 0x02,
+        hid = 0x03,
+        physical = 0x04,
+        image = 0x06,
+        printer = 0x07,
+        mass_storage = 0x08,
+        hub = 0x09,
+        cdc_Data = 0x0a,
+        smart_card = 0x0b,
+        content_security = 0x0d,
+        video = 0x0e,
+        personal_healthcare = 0x0f,
+        audio_video_devices = 0x10,
+        billboard_device = 0x11,
+        type_c_bridge = 0x12,
+        bulk_display = 0x13,
+        mctp_over_usb = 0x14,
+        i3c = 0x3c,
+        diagnostic_device = 0xdc,
+        wireless_controller = 0xe0,
+        miscellaneous = 0xef,
+        application_specific = 0xfe,
+        vendor_specific = 0xff,
+    };
+
+    /**
      * Descriptor types from the usb 2.0 specification
      *
      */
@@ -91,7 +124,7 @@ namespace klib::usb::descriptor {
         uint16_t bcdUSB;
 
         // class code
-        uint8_t bDeviceClass;
+        class_type bDeviceClass;
 
         // subclass code
         uint8_t bDeviceSubClass;
@@ -300,7 +333,7 @@ namespace klib::usb::descriptor {
         uint16_t bcdUSB;
 
         // class code
-        uint8_t bDeviceClass;
+        class_type bDeviceClass;
 
         // subclass code
         uint8_t bDeviceSubClass;
