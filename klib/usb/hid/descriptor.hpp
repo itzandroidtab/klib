@@ -9,6 +9,16 @@
 
 namespace klib::usb::hid {
     /**
+     * @brief Class specific descriptors
+     *
+     */
+    enum class class_type: uint8_t {
+        hid = 0x21,
+        report = 0x22,
+        pyhisical = 0x23
+    };
+
+    /**
      * @brief Hid device descriptor
      *
      */
@@ -17,7 +27,7 @@ namespace klib::usb::hid {
         const uint8_t bLength = sizeof(descriptor);
 
         // descriptor type
-        uint8_t bDescriptorType;
+        class_type bDescriptorType;
 
         // Hid class specification number which device complies to
         uint16_t bcdHID;
@@ -29,7 +39,7 @@ namespace klib::usb::hid {
         uint8_t bNumDescriptors;
 
         // report descriptor type
-        uint8_t bClassDescriptorType;
+        class_type bClassDescriptorType;
 
         // total length of the report descriptor
         uint16_t wDescriptorLength;

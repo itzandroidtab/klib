@@ -24,15 +24,6 @@ namespace klib::usb::device {
         };
 
         /**
-         * @brief Class specific descriptors
-         *
-         */
-        enum class class_type {
-            hid = 0x21,
-            report = 0x22
-        };
-
-        /**
          * @brief Class specific requests for the handle class packet function
          *
          */
@@ -136,11 +127,11 @@ namespace klib::usb::device {
                 .iInterface = 0x00
             },
             {
-                .bDescriptorType = 0x21,
+                .bDescriptorType = hid::class_type::hid,
                 .bcdHID = 0x0110,
                 .bCountryCode = 0x00,
                 .bNumDescriptors = 0x01,
-                .bClassDescriptorType = static_cast<uint8_t>(class_type::report),
+                .bClassDescriptorType = hid::class_type::report,
                 .wDescriptorLength = sizeof(report)
             },
             {
@@ -554,11 +545,11 @@ namespace klib::usb::device {
             }
 
             // check if we have a class specific descriptor
-            switch (static_cast<class_type>(type)) {
-                case class_type::hid:
+            switch (static_cast<hid::class_type>(type)) {
+                case hid::class_type::hid:
                     // return the hid descriptor only
                     return to_description(config.hid, config.hid.bLength);
-                case class_type::report:
+                case hid::class_type::report:
                     // return the raw report.
                     return to_description(report, sizeof(report));
                 default:

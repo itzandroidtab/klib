@@ -54,7 +54,7 @@ namespace klib::usb::cdc::detail {
         const uint8_t bFunctionLength = sizeof(Base);
 
         // descriptor type (CS_INTERFACE)
-        const uint8_t bDescriptorType = 0x24;
+        const descriptor::descriptor_type bDescriptorType = descriptor::descriptor_type::cs_interface;
 
         // header functional descriptor subtype
         const uint8_t bDescriptorSubtype = static_cast<uint8_t>(SubType);

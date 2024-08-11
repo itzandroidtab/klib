@@ -65,6 +65,8 @@ namespace klib::usb::descriptor {
         interface_association = 11,
         bos = 15,
         device_capability = 16,
+        cs_interface = 36,
+        cs_endpoint = 37,
         superspeed_usb_endpoint_compainion = 48,
     };
 
@@ -118,7 +120,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(device);
 
         // descriptorType
-        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::device);
+        const descriptor_type bDescriptionType = descriptor_type::device;
 
         // usb specification number which device compies to
         uint16_t bcdUSB;
@@ -169,7 +171,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(configuration);
 
         // descriptorType
-        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::configuration);
+        const descriptor_type bDescriptionType = descriptor_type::configuration;
 
         // total length in bytes of data returned
         uint16_t wTotalLength;
@@ -220,7 +222,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(string<Size>);
 
         // descriptorType
-        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::string);
+        const descriptor_type bDescriptionType = descriptor_type::string;
 
         // unicode encoded string
         char16_t bString[Size];
@@ -239,7 +241,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(interface);
 
         // descriptorType
-        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::interface);
+        const descriptor_type bDescriptionType = descriptor_type::interface;
 
         // number of interface
         uint8_t bInterfaceNumber;
@@ -277,7 +279,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(endpoint);
 
         // descriptorType
-        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::endpoint);
+        const descriptor_type bDescriptionType = descriptor_type::endpoint;
 
         // endpoint address
         // b[0..3] = endpoint number
@@ -327,7 +329,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(qualifier);
 
         // descriptorType
-        const uint8_t bDescriptionType = static_cast<uint8_t>(descriptor_type::device_qualifier);
+        const descriptor_type bDescriptionType = descriptor_type::device_qualifier;
 
         // usb specification number which device compies to
         uint16_t bcdUSB;
@@ -362,7 +364,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(bos);
 
         // the BOS descriptor type
-        const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::bos);
+        const descriptor_type bDescriptorType = descriptor_type::bos;
 
         // the length of this descriptor and all of
         // its sub descriptors
@@ -386,7 +388,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(capability<T>);
 
         // the device capability descriptor type
-        const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::device_capability);
+        const descriptor_type bDescriptorType = descriptor_type::device_capability;
 
         // device capability type (valid values are
         // listed in table 9-11)
@@ -407,7 +409,7 @@ namespace klib::usb::descriptor {
         const uint8_t bLength = sizeof(interface_association);
 
         // the device capability descriptor type
-        const uint8_t bDescriptorType = static_cast<uint8_t>(descriptor_type::interface_association);
+        const descriptor_type bDescriptorType = descriptor_type::interface_association;
 
         // first interface number of the next
         // descriptor
