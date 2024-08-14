@@ -73,7 +73,7 @@ namespace klib::max32625::io::detail::usb {
         volatile bool is_busy;
 
         // max size of the endpoint
-        uint8_t max_size;
+        uint16_t max_size;
 
         // requested size of the current endpoint
         uint32_t requested_size;

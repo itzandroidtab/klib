@@ -25,7 +25,7 @@ namespace klib::core::atsam4s::io::detail::usb {
         bool interrupt_pending;
 
         // max size of the endpoint
-        uint8_t max_size;
+        uint16_t max_size;
 
         // pointer to the data
         uint8_t *data;
