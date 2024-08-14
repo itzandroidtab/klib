@@ -429,13 +429,17 @@ namespace klib::core::lpc17xx::io {
             }
         }
 
+        template <bool Isochronous>
         static void endpoint_out_callback(const uint8_t endpoint) {
-            // check if we are busy.
-            if (!state[endpoint].is_busy) {
-                // set the flag we have a out interrupt pending
-                state[endpoint].interrupt_pending = true;
+            // only check if we are busy if we are not a iso endpoint
+            if constexpr (Isochronous) {
+                // check if we are busy.
+                if (!state[endpoint].is_busy) {
+                    // set the flag we have a out interrupt pending
+                    state[endpoint].interrupt_pending = true;
 
-                return;
+                    return;
+                }
             }
 
             // receive more data
@@ -463,6 +467,50 @@ namespace klib::core::lpc17xx::io {
                         endpoint, klib::usb::usb::endpoint_mode::out,
                         klib::usb::usb::error::no_error, transferred
                     );
+                }
+            }
+        }
+
+        static void isochronous_irq_handler() {
+            // we have a frame interrupt. Mark all the isochronous
+            // endpoints as not busy
+            for (uint32_t i = 0; i < (endpoint_count / 4); i++) {
+                // get a iso endpoint
+                const uint8_t ep = (i + 1) * 3;
+
+                // check if we are busy transmitting or receiving data
+                if (!state[ep].is_busy) {
+                    continue;
+                }
+
+                // get the current realized endpoints. If we allow
+                // in and out on the same endpoint this wont work
+                // but as we do not support that we can use this to
+                // determine if we are a in or a out endpoint
+                const uint32_t reep = (Usb::port->REEP >> (ep * 2)) & 0x3;
+
+                // check what direction is enabled. We check for in
+                // and out and if we do not have a match we call it
+                // disabled
+                const klib::usb::usb::endpoint_mode mode = (
+                    (reep == 0b01) ? klib::usb::usb::endpoint_mode::out : (
+                        (reep == 0b10) ? klib::usb::usb::endpoint_mode::in :
+                        klib::usb::usb::endpoint_mode::disabled
+                    )
+                );
+
+                // check what to do based on the mode
+                if (mode == klib::usb::usb::endpoint_mode::disabled) {
+                    // not something we can handle. Skip the endpoint
+                    continue;
+                }
+
+                // check how we need to handle the endpoint
+                if (mode == klib::usb::usb::endpoint_mode::out) {
+                    endpoint_out_callback<true>(ep);
+                }
+                else {
+                    endpoint_in_callback(ep);
                 }
             }
         }
@@ -531,7 +579,7 @@ namespace klib::core::lpc17xx::io {
                                 endpoint_in_callback(ep);
                                 break;
                             case klib::usb::usb::endpoint_mode::out:
-                                endpoint_out_callback(ep);
+                                endpoint_out_callback<false>(ep);
                                 break;
                         }
                     }
@@ -626,9 +674,17 @@ namespace klib::core::lpc17xx::io {
                 // we have a device status interrupt
                 device_status_irq();
             }
-            else if (masked_status & (0x1 << 2)) {
+
+            // check for a endpoint interrupt
+            if (masked_status & (0x1 << 2)) {
                 // we have a endpoint interrupt. Handle it in the data irq
                 data_irq_handler();
+            }
+
+            // check for a frame interrupt
+            if (masked_status & 0x1) {
+                // we have a frame interrupt. Handle it in the iso irq
+                isochronous_irq_handler();
             }
         }
 
@@ -813,6 +869,13 @@ namespace klib::core::lpc17xx::io {
 
             // clear the interrupt flag
             Usb::port->DEVINTCLR = 0x100;
+
+            // make sure the frame interrupt is enabled when a iso
+            // endpoint is confiugred
+            if (type == klib::usb::descriptor::transfer_type::isochronous) {
+                // enable the frame interrupt
+                Usb::port->DEVINTEN |= 0x1;
+            }
 
             // enable the endpoint
             write_command(command_phase::command,
