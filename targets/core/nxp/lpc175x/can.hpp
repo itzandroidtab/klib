@@ -15,6 +15,7 @@
 #include "port.hpp"
 
 namespace klib::core::lpc175x::io::detail {
+    template <uint32_t InterruptId>
     class can_interrupt {
     public:
         // using for the array of callbacks
@@ -28,13 +29,40 @@ namespace klib::core::lpc175x::io::detail {
         static inline interrupt_callback callbacks[can_count] = {nullptr, nullptr};
 
     public:
-        template <typename Can>
+        /**
+         * @brief Initialize the Can interrupt. This is needed to
+         * make sure all Can channel interrupts are called when a
+         * interrupt is triggered
+         *
+         */
         static void init() {
             // register the interrupt handler
-            target::irq::register_irq<Can::interrupt_id>(irq_handler);
+            target::irq::register_irq<InterruptId>(irq_handler);
 
             // enable the interrupt
-            target::enable_irq<Can::interrupt_id>();
+            target::enable_irq<InterruptId>();
+        }
+
+        /**
+         * @brief Deinit the Can interrupt if no interrupt
+         * callbacks are set
+         *
+         */
+        static void deinit() {
+            // check if any of the channels is still in use
+            for (uint32_t i = 0; i < can_count; i++) {
+                if (callbacks[i] != nullptr) {
+                    // channel is in use. Do not deinit
+                    return;
+                }
+            }
+
+            // no active channels. Unregister the Can interrupt
+            // and disable the interrupt
+            target::irq::unregister_irq<InterruptId>();
+
+            // enable the interrupt
+            target::disable_irq<InterruptId>();
         }
 
         /**
@@ -65,12 +93,13 @@ namespace klib::core::lpc175x::io::detail {
         }
 
         /**
-         * @brief Interrupt handler for the can hardware. This should only be
+         * @brief Interrupt handler for the Can hardware. This should only be
          * called from NVIC
          *
          */
         static void irq_handler() {
-            // call every callback we have
+            // call every callback we have so they can check if they
+            // have a interrupt
             for (uint32_t i = 0; i < can_count; i++) {
                 // check if we have a valid callback
                 if (callbacks[i]) {
@@ -374,10 +403,10 @@ namespace klib::core::lpc175x::io {
             (void)Can::port->ICR;
 
             // register the interrupt
-            detail::can_interrupt::template register_irq<Can::id>(irq_handler);
+            detail::can_interrupt<Can::interrupt_id>::template register_irq<Can::id>(irq_handler);
 
             // init the can interrupt
-            detail::can_interrupt::template init<Can>();
+            detail::can_interrupt<Can::interrupt_id>::init();
 
             // enable the can controller
             Can::port->MOD = 0x00;
