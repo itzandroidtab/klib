@@ -444,17 +444,36 @@ namespace klib::usb::descriptor {
     template <typename Base, uint8_t SubType>
     struct cs_interface {
         // size of the descriptor
-        const uint8_t bFunctionLength = sizeof(Base);
+        const uint8_t bLength = sizeof(Base);
 
         // the device class specific descriptor type
         const descriptor_type bDescriptorType = descriptor_type::cs_interface;
 
         // header functional descriptor subtype
-        const uint8_t bDescriptorSubtype = static_cast<uint8_t>(SubType);
+        const uint8_t bDescriptorSubType = SubType;
     };
 
     // make sure the size is correct
     static_assert(sizeof(cs_interface<uint8_t, 0x00>) == 0x03, "Class specific base descriptor size is wrong");
+
+    /**
+     * @brief Class specific endpoint descriptor
+     * 
+     */
+    struct cs_endpoint {
+        // size of the descriptor
+        const uint8_t bLength = sizeof(cs_endpoint);
+
+        // the device class specific descriptor type
+        const descriptor_type bDescriptorType = descriptor_type::cs_endpoint;
+
+        // header functional descriptor subtype
+        uint8_t bDescriptorSubType;
+
+        // maximum transfer size this endpoint is capable of sending or
+        // receiving
+        uint16_t wMaxTransferSize;
+    };
 }
 
 // release the old pack so the rest of the structs are not
