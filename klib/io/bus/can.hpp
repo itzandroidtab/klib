@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <klib/queue.hpp>
+#include <klib/ringbuffer.hpp>
 
 namespace klib::io::can {
     // max data size for the 11/29 bit can frame
@@ -47,9 +47,9 @@ namespace klib::io::can {
     template <typename Can, uint32_t TxSize = 32, uint32_t RxSize = 32>
     class helper {
     protected:
-        // queues to store the data
-        static inline queue<can::frame, TxSize, queue_optimization::read> transmit;
-        static inline queue<can::frame, RxSize, queue_optimization::write> receive;
+        // ringbuffers to store the data
+        static inline ringbuffer<can::frame, TxSize> transmit;
+        static inline ringbuffer<can::frame, RxSize> receive;
 
         // flag if we are already transmitting
         static inline bool is_sending = false;
