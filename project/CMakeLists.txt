@@ -1,5 +1,5 @@
 # set the sources
-set(SOURCES 
+set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 
     # example for including the startup.cpp
@@ -44,9 +44,9 @@ target_link_options(klib_project PUBLIC "-T${TARGET_LINKERSCRIPT}")
 set_target_properties(klib_project PROPERTIES LINK_DEPENDS ${TARGET_LINKERSCRIPT})
 
 # add the project directory to the include directories
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}) 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-# Custom commands for processing the build binary and show some statistics and debug info 
+# Custom commands for processing the build binary and show some statistics and debug info
 add_custom_command(TARGET klib_project DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-objcopy ARGS -O binary -R .bss -R .stack klib.elf klib.bin)
 add_custom_command(TARGET klib_project DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-objcopy ARGS -O ihex -R .bss -R .stack klib.elf klib.hex)
 add_custom_command(TARGET klib_project DEPENDS ${CMAKE_BINARY_DIR}/klib.elf POST_BUILD COMMAND arm-none-eabi-objdump ARGS -C -S klib.elf > klib.lss)
