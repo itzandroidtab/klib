@@ -249,7 +249,28 @@ namespace klib::max32660::io {
      * @tparam Timer
      */
     template <typename Timer>
-    using oneshot_timer = detail::timer::base_timer<Timer, detail::timer::mode::one_shot>;
+    class oneshot_timer: public detail::timer::base_timer<Timer, detail::timer::mode::one_shot> {
+    public:
+        /**
+         * @brief Flag if the oneshot timer is done
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool done() {
+            // get the current counter
+            const uint32_t c = detail::timer::base_timer<
+                Timer, detail::timer::mode::one_shot
+            >::get_counter();
+
+            // get the maximum value of the counter (this is calculated in
+            // init/set_frequency)
+            const uint32_t m = Timer::port->CMP;
+
+            // return if the register matches the RC register (match register 2)
+            return c >= m;
+        }
+    };
 
     /**
      * @brief Pin that uses a timer to toggle the output.

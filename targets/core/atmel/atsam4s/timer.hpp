@@ -81,6 +81,18 @@ namespace klib::core::atsam4s::io::detail::timer {
 
         /**
          * @brief Set the A/B/C register based on the channel
+         * 
+         */
+        static uint32_t get_register() {
+            // get a pointer to the first register
+            volatile uint32_t* reg = &(Timer::port->CH[Channel].RA);
+
+            // use the channel as a offset to the correct channel register
+            return reg[Match];
+        }
+
+        /**
+         * @brief Set the A/B/C register based on the channel
          *
          * @param value
          */
@@ -232,7 +244,7 @@ namespace klib::core::atsam4s::io {
      * @tparam Timer
      */
     template <typename Timer, uint32_t Channel, uint32_t Match = 2, uint32_t Div = 2>
-    class oneshot_timer: public detail::timer::base_timer<Timer, Channel, 2, detail::timer::mode::one_shot, Div> {
+    class oneshot_timer: public detail::timer::base_timer<Timer, Channel, Match, detail::timer::mode::one_shot, Div> {
     protected:
         // make sure the correct match register is used. For one shot we need to
         // turn off the channel. This can only be done when match register 2 is
@@ -254,6 +266,28 @@ namespace klib::core::atsam4s::io {
             detail::timer::base_timer<
                 Timer, Channel, Match, detail::timer::mode::one_shot, Div
             >::init_impl(irq, frequency);
+        }
+
+        /**
+         * @brief Flag if the oneshot timer is done
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool done() {
+            // get the current counter
+            const uint32_t c = detail::timer::base_timer<
+                Timer, Channel, Match, detail::timer::mode::one_shot, Div
+            >::get_counter();
+
+            // get the maximum value of the counter (this is calculated in
+            // init/set_frequency)
+            const uint32_t m = detail::timer::base_timer<
+                Timer, Channel, Match, detail::timer::mode::one_shot, Div
+            >::get_register();
+
+            // return if the register matches the RC register (match register 2)
+            return c >= m;
         }
     };
 
