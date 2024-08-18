@@ -51,6 +51,13 @@ int main() {
 }
 ```
 
+### Examples
+Another way to start a project is using one of the following examples:
+
+[2 factor authenticator dongle](https://github.com/itzandroidtab/totp)
+
+[mouse jiggler](https://github.com/itzandroidtab/mouse_jiggler)
+
 ### Constructors before running main
 C++ supports global constructors for objects. These objects will be constructed before main is executed. This is supported by klib. If you want to initialize hardware before these global constructors are called you need to add the attribute `__attribute__((__constructor__(x)))` to your function definition where x is a number above 101 (the first 100 are reserved by gcc and 101 is reserved for startup code by klib). This will make sure your function will be executed before any constructor is called.
 
