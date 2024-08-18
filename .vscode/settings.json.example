@@ -1,5 +1,11 @@
 {
+    // target cpu, should be the same as in the defined
+    // this can be used in the c_cpp_properties.json for
+    // intellisense
     "target_cpu": "lpc1756",
+
+    // target cpu to use when using launch.json
+    "target_cpu_debug": "lpc1756",
     "cmake.configureSettings": {
         "TARGET_CPU": "lpc1756",
         "TARGET_LOW_POWER_SLEEP": "1"
