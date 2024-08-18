@@ -14,7 +14,7 @@
             "type": "cortex-debug",
             "runToEntryPoint": "main",
             "servertype": "jlink",
-            "armToolchainPath": "TOOLCHAIN_PATH",
+            // "armToolchainPath": "TOOLCHAIN_PATH",
             "rttConfig": {
                 "enabled": true,
                 "address": "auto",
@@ -36,7 +36,7 @@
             "request": "attach",
             "type": "cortex-debug",
             "servertype": "jlink",
-            "armToolchainPath": "TOOLCHAIN_PATH",
+            // "armToolchainPath": "TOOLCHAIN_PATH",
             "rttConfig": {
                 "enabled": true,
                 "address": "auto",

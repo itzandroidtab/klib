@@ -46,3 +46,5 @@ cd ../klib/
 
 echo "Copying example settings.json"
 cp .vscode/settings.json.example .vscode/settings.json
+cp .vscode/launch.json.example .vscode/launch.json
+cp .vscode/c_cpp_properties.json.example .vscode/c_cpp_properties.json
