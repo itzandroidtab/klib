@@ -47,6 +47,15 @@ namespace klib::atsam4s2b::io {
 
     template <typename Pin>
     using pin_out = klib::core::atsam4s::io::pin_out<Pin>;
+
+    template <typename Pin>
+    using pin_in_out = klib::core::atsam4s::io::pin_in_out<Pin>;
+
+    template <typename Pin>
+    using pin_od = klib::core::atsam4s::io::pin_od<Pin>;
+
+    template <typename Pin>
+    using pin_in_out_od = klib::core::atsam4s::io::pin_in_out_od<Pin>;
 }
 
 #endif

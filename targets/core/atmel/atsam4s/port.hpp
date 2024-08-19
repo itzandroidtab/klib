@@ -172,6 +172,94 @@ namespace klib::core::atsam4s::io {
             }
         }
     };
+
+    template <typename Pin>
+    class pin_od {
+    public:
+        constexpr static void init() {
+            // init the pin using the pin_out 
+            pin_out<Pin>::init();
+
+            // enable the multi-driver open drain
+            Pin::port::port->MDER = detail::pins::mask<Pin>;
+        }
+
+        template <bool Val>
+        constexpr static void set() {
+            pin_out<Pin>::template set<Val>();
+        }
+
+        constexpr static void set(const bool val) {
+            pin_out<Pin>::set(val);
+        }
+    };
+
+    template <typename Pin>
+    class pin_in_out {
+    public:
+        constexpr static void init() {
+            // init using pin_out as we can read the pin anyway
+            pin_out<Pin>::init();
+        }
+
+        constexpr static bool get() {
+            // get the status of the pin
+            return pin_in<Pin>::get();
+        }
+
+        template <bool Val>
+        constexpr static void pullup_enable() {
+            pin_in<Pin>::template pullup_enable<Val>();
+        }
+
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            pin_in<Pin>::template pulldown_enable<Val>();
+        }
+
+        template <bool Val>
+        constexpr static void set() {
+            pin_out<Pin>::template set<Val>();
+        }
+
+        constexpr static void set(const bool val) {
+            pin_out<Pin>::set(val);
+        }
+    };
+
+    template <typename Pin>
+    class pin_in_out_od {
+    public:
+        constexpr static void init() {
+            // init using pin_od as we can read the pin anyway
+            pin_od<Pin>::init();
+        }
+
+        constexpr static bool get() {
+            // get the status of the pin
+            return pin_in<Pin>::get();
+        }
+
+        template <bool Val>
+        constexpr static void pullup_enable() {
+            pin_in<Pin>::template pullup_enable<Val>();
+        }
+
+        template <bool Val>
+        constexpr static void pulldown_enable() {
+            pin_in<Pin>::template pulldown_enable<Val>();
+        }
+
+        template <bool Val>
+        constexpr static void set() {
+            pin_od<Pin>::template set<Val>();
+        }
+
+        constexpr static void set(const bool val) {
+            pin_od<Pin>::set(val);
+        }
+    };
+
 }
 
 #endif
