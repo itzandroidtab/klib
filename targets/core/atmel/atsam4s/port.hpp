@@ -259,7 +259,6 @@ namespace klib::core::atsam4s::io {
             pin_od<Pin>::set(val);
         }
     };
-
 }
 
 #endif

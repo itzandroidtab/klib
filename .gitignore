@@ -22,5 +22,8 @@ build/
 # mac os x stuff
 .DS_Store
 
-# project main
+# target docs folder
+targets/chip/*/docs/*
+
+# project folder
 project/*
