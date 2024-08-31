@@ -19,14 +19,18 @@ namespace klib::core::lpc175x::io {
          * @param cal_value
          * @param cal_direction
          */
+        template <bool Override = false>
         static void init(const uint32_t cal_value = 0, const bool cal_direction = 1) {
             // enable the power for the rtc
             target::io::power_control::enable<Rtc>();
 
-            // check if the rtc is already on (and not in reset)
-            if (Rtc::port->CCR & 0x1 && !(Rtc::port->CCR & (0x1 << 1))) {
-                // rtc already on. No need for more configuration
-                return;
+            // check if we should always override any configuration
+            if constexpr (!Override) {
+                // check if the rtc is already on (and not in reset)
+                if (Rtc::port->CCR & 0x1 && !(Rtc::port->CCR & (0x1 << 1))) {
+                    // rtc already on. No need for more configuration
+                    return;
+                }
             }
 
             // disable the oscillator fail detect interrupt
