@@ -219,11 +219,11 @@ namespace klib::core::lpc175x::io::system {
             static_assert(PreDivider > 0, "Invalid pre-divider");
 
             // calculate the fcco frequency using the oscilator and multiplier
-            constexpr static uint32_t partial_freq = (Freq * 2 * Multiplier) / klib::exp2(static_cast<uint32_t>(PreDivider));
+            constexpr static uint32_t partial_freq = (Freq * 2 * Multiplier) / klib::exp2(static_cast<uint32_t>(PreDivider - 1));
 
             static_assert(
-                (Multiplier == 1) || (partial_freq >= 156'000'000 && partial_freq <= 320'000'000), 
-                "Invalid Fcco output. PLL frequency needs to be between 156 and 320mhz"
+                (Multiplier == 1) || (partial_freq >= 275'000'000 && partial_freq <= 550'000'000), 
+                "Invalid Fcco output. PLL frequency needs to be between 275 and 550mhz"
             );
 
             // calculate the final frequency
