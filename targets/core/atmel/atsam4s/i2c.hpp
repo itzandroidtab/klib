@@ -7,6 +7,7 @@
 #include <klib/io/core_clock.hpp>
 
 #include <io/power.hpp>
+#include <io/port.hpp>
 
 namespace klib::core::atsam4s::io {
     template <typename I2c>
