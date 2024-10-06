@@ -170,8 +170,8 @@ namespace klib::core::atsam4s::io {
             I2c::port->CR = (0x1 << 2) | (0x1 << 5);
 
             // configure the gpio pins
-            io::detail::pins::set_peripheral<typename I2c::sda::pin, typename I2c::sda::periph>();
-            io::detail::pins::set_peripheral<typename I2c::scl::pin, typename I2c::scl::periph>();
+            target::io::detail::pins::set_peripheral<typename I2c::sda::pin, typename I2c::sda::periph>();
+            target::io::detail::pins::set_peripheral<typename I2c::scl::pin, typename I2c::scl::periph>();
         }
 
         /**
