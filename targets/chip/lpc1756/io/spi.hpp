@@ -51,8 +51,21 @@ namespace klib::lpc1756::io::periph::lqfp_80 {
 }
 
 namespace klib::lpc1756::io {
+    /**
+     * @brief Legacy SPI hardware
+     * 
+     * @tparam Spi 
+     */
     template <typename Spi>
     using spi = core::lpc175x::io::spi<Spi>;
+
+    /**
+     * @brief Legacy SPI hardware in slave mode
+     * 
+     * @tparam Spi 
+     */
+    template <typename Spi>
+    using spi_slave = core::lpc175x::io::spi_slave<Spi>;
 }
 
 #endif

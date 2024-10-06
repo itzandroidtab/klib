@@ -208,6 +208,137 @@ namespace klib::core::lpc175x::io {
             return write_helper(data);
         }
     };
+
+    /**
+     * @brief Basic spi slave implementation
+     * 
+     * @tparam Spi 
+     */
+    template <typename Spi>
+    class spi_slave: private spi<Spi> {
+    public:
+        // using for the array of callbacks
+        using interrupt_callback = void(*)();
+
+    protected:
+        // callbacks
+        static inline interrupt_callback transmit_callback = nullptr;
+        static inline interrupt_callback receive_callback = nullptr;
+
+        /**
+         * @brief Irq handler that will call the provided callbacks
+         * 
+         */
+        static void irq_handler() {
+            // read the interrupt status register
+            const uint32_t interrupt_status = Spi::port->INT;
+
+            // get the spi status
+            const uint32_t status = Spi::port->SR;
+
+            // clear the interrupt bits
+            Spi::port->INT = interrupt_status;
+
+            // check if we have the spi interrupt flag set
+            if (!(interrupt_status & 0x1)) {
+                // no flag set, exit
+                return;
+            }
+
+            // check if we have a transfer complete interrupt
+            if (!(status & (0x1 << 7))) {
+                // transfer is not done. Do not continue
+                return;
+            }
+
+            // check if we have a receive callback
+            if (receive_callback != nullptr) {
+                // call the callback
+                receive_callback();
+            }
+
+            // check if we have a transmit callback
+            if (transmit_callback != nullptr) {
+                // call the callback
+                transmit_callback();
+            }
+        }
+
+    public:
+        template <
+            klib::io::spi::mode Mode = klib::io::spi::mode::mode0,
+            klib::io::spi::bits Bits = klib::io::spi::bits::bit_8
+        >
+        static void init(const interrupt_callback& transmit = nullptr, const interrupt_callback& receive = nullptr) {
+            // enable power to the spi peripheral
+            target::io::power_control::enable<Spi>();
+
+            // enable the clocks on the spi peripheral
+            clocks::set<Spi>();
+
+            // configure the gpio pins
+            io::detail::pins::set_peripheral<typename Spi::sck::pin, typename Spi::sck::periph>();
+            io::detail::pins::set_peripheral<typename Spi::mosi::pin, typename Spi::mosi::periph>();
+            io::detail::pins::set_peripheral<typename Spi::miso::pin, typename Spi::miso::periph>();
+            io::detail::pins::set_peripheral<typename Spi::cs0::pin, typename Spi::cs0::periph>();
+
+            // set the callbacks
+            transmit_callback = transmit;
+            receive_callback = receive;
+
+            // check if we need to use interrupts
+            const bool needs_irq = (transmit != nullptr && receive != nullptr);
+
+            // set the control register. Set the amount of bits per transfer, set
+            // the cpha and cpol and enable master mode
+            Spi::port->CR = (
+                (0x1 << 1) | (spi<Spi>::template convert_bits<Bits>() << 8) |
+                (klib::io::spi::get_cpha<Mode>() << 3) |
+                (klib::io::spi::get_cpol<Mode>() << 4) |
+                (needs_irq << 7)
+            );
+
+            // clear any errors we might have in the status register by reading it
+            (void) Spi::port->SR;
+
+            // check if we need to enable the interrupts
+            if (needs_irq) {
+                // register our interrupt if we are using a callback
+                target::irq::register_irq<Spi::interrupt_id>(irq_handler);
+
+                // enable the interrupts for the spi peripheral
+                target::enable_irq<Spi::interrupt_id>();
+            }
+            else {
+                // enable the interrupts for the spi peripheral
+                target::disable_irq<Spi::interrupt_id>();
+            }
+        }
+
+        /**
+         * @brief Write data to the spi bus
+         * 
+         * @warning. Can only be called if the buffer is empty
+         *
+         * @param data
+         */
+        static void write(const uint8_t data) {
+            // write the data 
+            Spi::port->DR = data;
+        }
+
+        /**
+         * @brief Read data to the spi bus
+         *
+         * @warning Can only be called when data has been received
+         * 
+         * @return uint16_t 
+         */
+        static uint16_t read() {
+            // read the data from the register
+            return Spi::port->DR;
+        }
+    };
 }
 
 #endif
