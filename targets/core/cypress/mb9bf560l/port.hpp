@@ -586,7 +586,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         );
 
         // always disable analog mode if we are not switching to analog mode
-        if (!std::is_same_v<Periph, io::detail::alternate::analog>) {
+        if constexpr (!std::is_same_v<Periph, io::detail::alternate::analog>) {
             // disable the analog mode if it is available on the pin
             if constexpr (has_analog) {
                 // disable the analog mode
