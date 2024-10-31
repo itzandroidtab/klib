@@ -18,15 +18,27 @@ namespace klib::io::peripheral::detail {
         // make sure we do not go out of the tuple bounds
         static_assert(Index < std::tuple_size<ValidPins>::value, "Pin is not supported in this peripheral");
 
-        // get the valid pin from the tuple
-        using valid = std::tuple_element_t<Index, ValidPins>::pin;
+        // check if we are inside of the tuple range. If we are
+        // not the static assert above here should error out. To
+        // prevent any other errors from occurring check if we are
+        // in range here as well.
+        if constexpr (Index < std::tuple_size<ValidPins>::value) {
+            // get the valid pin from the tuple
+            using valid = std::tuple_element_t<Index, ValidPins>::pin;
 
-        // check if we have a match
-        if constexpr(std::is_same<Pin, valid>::value) {
-            return Index;
+            // check if we have a match
+            if constexpr(std::is_same<Pin, valid>::value) {
+                return Index;
+            }
+            else {
+                // return the index if it d
+                return index<Index + 1, Pin, ValidPins>();
+            }
         }
-        else{
-            return index<Index + 1, Pin, ValidPins>();
+        else {
+            // return something to keep the compiler happy. We 
+            // should never reach this place
+            return 0x00;
         }
     }
 }
