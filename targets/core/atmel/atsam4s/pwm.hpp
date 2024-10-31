@@ -155,8 +155,7 @@ namespace klib::core::atsam4s::io {
      */
     template <
         typename Pin, typename Pwm, uint32_t Frequency, uint8_t Bits = 12,
-        detail::pwm::pwm_clock UseClock = detail::pwm::pwm_clock::mck,
-        typename PPin = std::tuple_element<klib::io::peripheral::get_index<Pin, typename Pwm::pwm_pins>(), typename Pwm::pwm_pins>::type
+        detail::pwm::pwm_clock UseClock = detail::pwm::pwm_clock::mck
     >
     class pwm {
     public:
@@ -164,8 +163,11 @@ namespace klib::core::atsam4s::io {
         constexpr static uint32_t frequency = Frequency;
 
     protected:
+        // helper using for the current pwm pin.
+        using PwmPin = std::tuple_element<klib::io::peripheral::get_index<Pin, typename Pwm::pwm_pins>(), typename Pwm::pwm_pins>::type;
+
         // make sure we have a valid match register
-        static_assert(static_cast<uint32_t>(PPin::channel) < Pwm::max_pwm_channels, "Pwm only has 4 channels");
+        static_assert(static_cast<uint32_t>(PwmPin::channel) < Pwm::max_pwm_channels, "Pwm only has 4 channels");
 
         // make sure the frequency is valid
         static_assert(Frequency != 0, "Pwm frequency cannot be 0");
@@ -190,13 +192,13 @@ namespace klib::core::atsam4s::io {
             // check if we only want to set the mck
             if constexpr (UseClock == detail::pwm::pwm_clock::mck) {
                 // set the prescale in the register
-                Pwm::port->CH[PPin::channel].CMR = static_cast<uint32_t>(clock.prescaler);
+                Pwm::port->CH[PwmPin::channel].CMR = static_cast<uint32_t>(clock.prescaler);
             }
             else {
                 // check if we realy need to use a additional clock
                 if (clock.divider <= 1) {
                     // no we dont. Use the prescale only
-                    Pwm::port->CH[PPin::channel].CMR = static_cast<uint32_t>(clock.prescaler);
+                    Pwm::port->CH[PwmPin::channel].CMR = static_cast<uint32_t>(clock.prescaler);
                 }
                 else {
                     // we need to use a additional clock. Configure the clock
@@ -214,7 +216,7 @@ namespace klib::core::atsam4s::io {
                     );
 
                     // Change the prescaler to either clka or clkb
-                    Pwm::port->CH[PPin::channel].CMR = (
+                    Pwm::port->CH[PwmPin::channel].CMR = (
                         static_cast<uint32_t>(detail::pwm::pwm_prescaler::clka) +
                         static_cast<uint32_t>(UseClock)
                     );
@@ -225,7 +227,7 @@ namespace klib::core::atsam4s::io {
             Pwm::port->SCM = (Pwm::port->SCM & (~(0x3 << 16))) | (0x1 << 16);
 
             // write to the cprd register when the channel is off
-            Pwm::port->CH[PPin::channel].CPRD = multiplier;
+            Pwm::port->CH[PwmPin::channel].CPRD = multiplier;
         }
 
         /**
@@ -235,7 +237,7 @@ namespace klib::core::atsam4s::io {
          */
         static void disable() {
             // disable the pwm
-            Pwm::port->DIS = klib::exp2(PPin::channel);
+            Pwm::port->DIS = klib::exp2(PwmPin::channel);
         }
 
         /**
@@ -245,7 +247,7 @@ namespace klib::core::atsam4s::io {
          */
         static void enable() {
             // enable the pwm
-            Pwm::port->ENA = klib::exp2(PPin::channel);
+            Pwm::port->ENA = klib::exp2(PwmPin::channel);
         }
 
         /**
@@ -261,14 +263,14 @@ namespace klib::core::atsam4s::io {
                 // disable the output to get a low level
                 set<false>();
             }
-            else if (Pwm::port->CH[PPin::channel].CDTY == Pwm::port->CH[PPin::channel].CPRD) {
+            else if (Pwm::port->CH[PwmPin::channel].CDTY == Pwm::port->CH[PwmPin::channel].CPRD) {
                 // reenable the pin when the pin was disabled
                 set<true>();
             }
 
             // set the new duty cycle in the shadow register
             // (duty cycle we write is inverted. Change it back)
-            Pwm::port->CH[PPin::channel].CDTYUPD = (multiplier - (Dutycycle & multiplier));
+            Pwm::port->CH[PwmPin::channel].CDTYUPD = (multiplier - (Dutycycle & multiplier));
         }
 
         /**
@@ -276,21 +278,21 @@ namespace klib::core::atsam4s::io {
          *
          * @param dutycycle
          */
-        static void dutycycle(uint16_t dutycycle) {
+        static void dutycycle(const uint16_t dutycycle) {
             // check if we need to disable the output or
             // reenable it
             if (!dutycycle) {
                 // disable the output to get a low level
                 set<false>();
             }
-            else if (Pwm::port->CH[PPin::channel].CDTY == Pwm::port->CH[PPin::channel].CPRD) {
+            else if (Pwm::port->CH[PwmPin::channel].CDTY == Pwm::port->CH[PwmPin::channel].CPRD) {
                 // reenable the pin when the pin was disabled
                 set<true>();
             }
 
             // set the new duty cycle in the shadow register
             // (duty cycle we write is inverted. Change it back)
-            Pwm::port->CH[PPin::channel].CDTYUPD = (multiplier - (dutycycle & multiplier));
+            Pwm::port->CH[PwmPin::channel].CDTYUPD = (multiplier - (dutycycle & multiplier));
         }
 
         /**
@@ -302,7 +304,7 @@ namespace klib::core::atsam4s::io {
         static void set() {
             // clear or set the pin to the peripheral
             if constexpr (Value) {
-                io::detail::pins::set_peripheral<Pin, typename PPin::periph>();
+                io::detail::pins::set_peripheral<Pin, typename PwmPin::periph>();
             }
             else {
                 // change the mode to a output pin
@@ -321,7 +323,7 @@ namespace klib::core::atsam4s::io {
         static void set(bool value) {
             // clear or set the pin to the peripheral
             if (value) {
-                io::detail::pins::set_peripheral<Pin, typename PPin::periph>();
+                io::detail::pins::set_peripheral<Pin, typename PwmPin::periph>();
             }
             else {
                 // change the mode to a output pin
