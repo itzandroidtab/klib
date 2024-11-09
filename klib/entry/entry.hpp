@@ -27,6 +27,9 @@ extern "C" {
     // address points to the correct location of the variable
     extern const uint32_t __heap_end;
 
+    // arm vector table. Can be used to override the weak symbol
+    extern void (*const volatile __vectors[])(void);
+
     /**
      * @brief Generic reset handler that initializes the .bss and .data
      * segments. It calls all the constructors and runs main. When code
