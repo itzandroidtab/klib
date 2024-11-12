@@ -41,6 +41,15 @@ SECTIONS
         . = ALIGN(4);
     } > rom
 
+    /* Meta data header. Required for the RP2350 bootloader to 
+       accept the firmware. Needs to be in the first 4k */
+    .metadata :
+    {
+        . = ALIGN(4);
+        KEEP(*(.metadata .metadata.*));
+        . = ALIGN(4);
+    } > rom
+
     /* Text segment, stores all user code */
     .text :
     {

@@ -40,6 +40,7 @@ target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-ta
 # cpu rp2350 target drivers 
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../../arm/vector_table/cortex-m33.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/metadata.cpp
 )
 
 set(HEADERS_PRIVATE 
