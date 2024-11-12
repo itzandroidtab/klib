@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        cpu: [atsam3x8e, atsam4s2b, lpc802, lpc1752, lpc1754, lpc1756, lpc1759, lpc1788, lpc55s66, max32625, max32660, mb9bf566k, stm32f103, stm32f407, stm32h723, tmpm373, rp2350]
+        cpu: [atsam3x8e, atsam4s2b, lpc802, lpc1752, lpc1754, lpc1756, lpc1759, lpc1788, lpc55s66, max32625, max32660, mb9bf566k, rp2350, stm32f103, stm32f407, stm32h723, tmpm373]
 
     steps:
       - uses: actions/checkout@v4
