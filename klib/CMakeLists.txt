@@ -26,6 +26,13 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/)
 
     # add the segger library source files
     set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/RTT/SEGGER_RTT.c)
+
+    # check if we need to include the systemview sources
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/)
+        # append the systemview sources
+        set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/SYSVIEW/SEGGER_SYSVIEW.c)
+        set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/SYSVIEW/SEGGER_SYSVIEW_Config_NoOS.c)
+    endif()
 else()
     message("Segger RTT support disabled")
 endif()
