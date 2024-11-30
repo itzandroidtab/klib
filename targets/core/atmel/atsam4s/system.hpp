@@ -21,6 +21,10 @@ namespace klib::core::atsam4s::io::system {
          * 5 = for up to 120Mhz (safe setting for all conditions as
          * it is the max cpu frequency)
          *
+         * Note: These values are with VDDCore at 1.2v and VDDIO at 2.7v - 3.6V
+         * 
+         * More info can be found in the datasheet at page 1203
+         * 
          * @tparam WaitState
          */
         template <uint8_t WaitState, bool Access64BitMode = false>
