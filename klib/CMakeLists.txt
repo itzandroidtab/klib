@@ -28,7 +28,7 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/)
     set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/RTT/SEGGER_RTT.c)
 
     # check if we need to include the systemview sources
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/)
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/SYSVIEW/)
         # append the systemview sources
         set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/SYSVIEW/SEGGER_SYSVIEW.c)
         set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/SYSVIEW/SEGGER_SYSVIEW_Config_NoOS.c)
