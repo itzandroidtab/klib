@@ -1,9 +1,3 @@
-# set minimum version of CMake.
-cmake_minimum_required(VERSION 3.22)
-
-# enable the folder property for the whole project
-set_property(GLOBAL PROPERTY USE_FOLDERS TRUE)
-
 # The Generic system name is used for embedded targets (targets without OS) in
 # CMake
 set(CMAKE_SYSTEM_NAME Generic)
@@ -13,8 +7,17 @@ set(CMAKE_SYSTEM_PROCESSOR ARM)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(BUILD_SHARED_LIBS OFF)
 
+# set minimum version of CMake.
+cmake_minimum_required(VERSION 3.22)
+
 # set project name and version
 project(klib VERSION 0.0.1)
+
+# enable the folder property for the whole project
+set_property(GLOBAL PROPERTY USE_FOLDERS TRUE)
+
+# provide the klib directory for the project
+set(KLIB_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # enable assembly
 enable_language(ASM)
@@ -48,7 +51,7 @@ if (DEFINED TARGET_CPU)
     message("Building for target: ${TARGET_CPU}")
 
     # add the target directory
-    add_subdirectory(${CMAKE_SOURCE_DIR}/targets/chip/${TARGET_CPU})
+    include(${KLIB_DIR}/targets/chip/${TARGET_CPU}/CMakeLists.txt)
 
     # check if the user configured the fpu
     if (DEFINED TARGET_FPU_ENABLED)
@@ -72,7 +75,4 @@ else()
 endif()
 
 # add the klib library
-add_subdirectory(${CMAKE_SOURCE_DIR}/klib)
-
-# add the project sources
-add_subdirectory(${CMAKE_SOURCE_DIR}/project)
+include(${KLIB_DIR}/klib/CMakeLists.txt)

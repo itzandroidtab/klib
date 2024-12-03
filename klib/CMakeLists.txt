@@ -1,37 +1,37 @@
 # set the sources
 set(SOURCES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/entry/entry.c
+    ${CMAKE_CURRENT_LIST_DIR}/entry/entry.c
 )
 
 set(HEADERS_PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/stream_base.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/combined_stream.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/istream.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/ostream.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/comm/streams/stream_base.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/comm/streams/combined_stream.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/comm/streams/istream.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/comm/streams/ostream.hpp
 )
 
 set(HEADERS_PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/irq.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/klib.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/stream.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/irq.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/klib.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/stream.hpp
 )
 
 # check if we need to add the segger rtt library
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/)
+if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/comm/segger/src/)
     message("Segger RTT support enabled")
 
     # append the header implementation to the public headers
-    set(HEADERS_PUBLIC ${HEADERS_PUBLIC} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/rtt.hpp)
-    set(HEADERS_PRIVATE ${HEADERS_PUBLIC} ${CMAKE_CURRENT_SOURCE_DIR}/comm/streams/rtt_stream.hpp)
+    set(HEADERS_PUBLIC ${HEADERS_PUBLIC} ${CMAKE_CURRENT_LIST_DIR}/comm/segger/rtt.hpp)
+    set(HEADERS_PRIVATE ${HEADERS_PUBLIC} ${CMAKE_CURRENT_LIST_DIR}/comm/streams/rtt_stream.hpp)
 
     # add the segger library source files
-    set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/RTT/SEGGER_RTT.c)
+    set(SOURCES ${SOURCES} ${CMAKE_CURRENT_LIST_DIR}/comm/segger/src/RTT/SEGGER_RTT.c)
 
     # check if we need to include the systemview sources
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/SYSVIEW/)
+    if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/comm/segger/src/SYSVIEW/)
         # append the systemview sources
-        set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/SYSVIEW/SEGGER_SYSVIEW.c)
-        set(SOURCES ${SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/SYSVIEW/SEGGER_SYSVIEW_Config_NoOS.c)
+        set(SOURCES ${SOURCES} ${CMAKE_CURRENT_LIST_DIR}/comm/segger/src/SYSVIEW/SEGGER_SYSVIEW.c)
+        set(SOURCES ${SOURCES} ${CMAKE_CURRENT_LIST_DIR}/comm/segger/src/SYSVIEW/SEGGER_SYSVIEW_Config_NoOS.c)
     endif()
 else()
     message("Segger RTT support disabled")
@@ -97,7 +97,7 @@ endif()
 
 # enabled segger support in the defines to prevent a 
 # include of the segger files
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/comm/segger/src/)
+if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/comm/segger/src/)
     target_compile_definitions(klib PUBLIC "KLIB_SEGGER_SUPPORT=1")
 else()
     target_compile_definitions(klib PUBLIC "KLIB_SEGGER_SUPPORT=0")
@@ -109,7 +109,7 @@ endif()
 #   - header location in project: ${CMAKE_CURRENT_BINARY_DIR}/generated_headers
 target_include_directories(
     klib PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>"
-        "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../>"
         "$<BUILD_INTERFACE:${GENERATED_HEADERS_DIR}>"
 )

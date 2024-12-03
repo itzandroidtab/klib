@@ -1,3 +1,21 @@
+# The Generic system name is used for embedded targets (targets without OS) in
+# CMake
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR ARM)
+
+# Supress Error when trying to test the compiler
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+set(BUILD_SHARED_LIBS OFF)
+
+# set minimum version of CMake.
+cmake_minimum_required(VERSION 3.22)
+
+# set project name and version
+project(klib VERSION 0.0.1)
+
+# include the klib library. Note: This needs to point to your klib installation folder
+include(../klib/CMakeLists.txt)
+
 # set the sources
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
@@ -38,6 +56,9 @@ target_link_libraries(klib_project PUBLIC target_cpu)
 
 # Libraries to link for all targets
 target_link_libraries(klib_project PUBLIC m)
+
+# get the linkerscript we should link against
+get_property(TARGET_LINKERSCRIPT GLOBAL PROPERTY TARGET_LINKERSCRIPT)
 
 # link to the linkerscript of the target cpu
 target_link_options(klib_project PUBLIC "-T${TARGET_LINKERSCRIPT}")
