@@ -287,7 +287,7 @@ namespace klib::core::lpc175x::io {
             receive_callback = receive;
 
             // check if we need to use interrupts
-            const bool needs_irq = (transmit != nullptr && receive != nullptr);
+            const bool needs_irq = ((transmit != nullptr) || (receive != nullptr));
 
             // set the control register. Set the amount of bits per transfer, set
             // the cpha and cpol and enable master mode
@@ -310,7 +310,7 @@ namespace klib::core::lpc175x::io {
                 target::enable_irq<Spi::interrupt_id>();
             }
             else {
-                // enable the interrupts for the spi peripheral
+                // disable the interrupts for the spi peripheral
                 target::disable_irq<Spi::interrupt_id>();
             }
         }
