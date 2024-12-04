@@ -7,7 +7,7 @@
 
 namespace klib::mb9bf566k {
     // irq for the mb9bf566k
-    using irq = klib::irq::KLIB_IRQ<0, 16 + 119>;
+    using irq = klib::irq::KLIB_IRQ<0, 16 + 127>;
 
     /**
      * @brief Get the current cpu id
