@@ -1056,7 +1056,6 @@ namespace klib::core::lpc17xx::io {
         static bool write(const klib::usb::usb::usb_callback callback, const uint8_t endpoint,
                           const klib::usb::usb::endpoint_mode mode, const std::span<const uint8_t>& data)
         {
-
             // get the size we can write in a single transmission
             const uint32_t s = klib::min(data.size(), state[endpoint].max_size);
 
