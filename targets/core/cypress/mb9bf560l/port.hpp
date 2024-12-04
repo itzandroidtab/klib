@@ -74,6 +74,11 @@ namespace klib::core::mb9bf560l::io::detail::alternate {
     // alternate functions the pin can be when changing
     // to another alternate function as this is not
     // cleared automaticly.
+
+    // The one that decided to make the gpio peripheral 
+    // this way should reconsider his job of making IP 
+    // blocks. This is extremly anoying as we need to 
+    // clear all the other functions this pin can have.
     namespace system_function {
         // register EPFR00
         // alternate function for trc3e
