@@ -47,7 +47,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         uint32_t reg = epfr[Periph::periph::id];
 
         // clear the amount of bits for the peripheral
-        reg &= (klib::exp2(Periph::periph::bits) - 1) << Periph::periph::offset;
+        reg &= ~((klib::exp2(Periph::periph::bits) - 1) << Periph::periph::offset);
 
         // write the value where we just cleared the data
         reg |= Periph::value << Periph::periph::offset;
