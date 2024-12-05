@@ -14,6 +14,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::mb9bf566k;
 
     // TODO: setup clocks
+    klib::io::clock::set(1'750'000);
 
     if constexpr (TARGET_FPU_ENABLED) {
         // using to make the access easier to the coprocessor
