@@ -310,7 +310,7 @@ namespace klib::core::mb9bf560l::io {
             const klib::usb::descriptor::transfer_type type, const uint32_t size)
         {
             // get the register we should write to (skip every other word)
-            volatile uint16_t *const epc = ((volatile uint16_t*)&Usb::port->EP0C)[endpoint * 2];
+            volatile uint16_t *const epc = (&Usb::port->EP0C)[endpoint * 2];
 
             // limit the size based on the endpoint number
             const uint16_t s = size & (endpoint == 0 ? 0x1ff : 0x7f);
@@ -378,7 +378,7 @@ namespace klib::core::mb9bf560l::io {
          */
         static void stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // get the register we should write to (skip every other word)
-            volatile uint16_t *const epc = ((volatile uint16_t*)&Usb::port->EP0C)[endpoint * 2];
+            volatile uint16_t *const epc = (&Usb::port->EP0C)[endpoint * 2];
 
             // set the stall bit
             (*epc) |= 0x1 << 9;
@@ -392,7 +392,7 @@ namespace klib::core::mb9bf560l::io {
          */
         static void un_stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // get the register we should write to (skip every other word)
-            volatile uint16_t *const epc = ((volatile uint16_t*)&Usb::port->EP0C)[endpoint * 2];
+            volatile uint16_t *const epc = (&Usb::port->EP0C)[endpoint * 2];
 
             // clear the stall bit
             (*epc) = (*epc) & (~(0x1 << 9));
@@ -408,7 +408,7 @@ namespace klib::core::mb9bf560l::io {
          */
         static bool is_stalled(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
             // get the register we should write to (skip every other word)
-            volatile uint16_t *const epc = ((volatile uint16_t*)&Usb::port->EP0C)[endpoint * 2];
+            volatile uint16_t *const epc = (&Usb::port->EP0C)[endpoint * 2];
 
             // return the endpoint stall bit
             return (*epc) & (0x1 << 9);
