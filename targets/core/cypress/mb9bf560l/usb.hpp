@@ -98,6 +98,76 @@ namespace klib::core::mb9bf560l::io {
         // struct with information about the state of a endpoint
         static inline volatile detail::usb::state state[endpoint_count] = {};
 
+        /**
+         * @brief Convert a mode to the correct raw value for the usb hardware
+         *
+         * @param mode
+         * @return uint8_t
+         */
+        constexpr static uint8_t transfer_type_to_raw(const klib::usb::descriptor::transfer_type type) {
+            // convert the type to raw data
+            switch (type) {
+                case klib::usb::descriptor::transfer_type::isochronous:
+                    return 0b01;
+                case klib::usb::descriptor::transfer_type::bulk:
+                    return 0b10;
+                case klib::usb::descriptor::transfer_type::interrupt:
+                    return 0b11;
+                default:
+                    return 0b00;
+            }
+        }
+
+        /**
+         * @brief Convert a mode to the correct raw value for the usb hardware
+         *
+         * @param mode
+         * @return uint8_t
+         */
+        constexpr static bool endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode) {
+            switch (mode) {
+                case klib::usb::usb::endpoint_mode::out:
+                    return false;
+                case klib::usb::usb::endpoint_mode::in:
+                case klib::usb::usb::endpoint_mode::control:
+                case klib::usb::usb::endpoint_mode::disabled:
+                default:
+                    return true;
+            }
+        }
+
+        static void clear_endpoint_state(const uint8_t endpoint) {
+            state[endpoint].is_busy = false;
+            state[endpoint].requested_size = 0;
+            state[endpoint].transferred_size = 0;
+            state[endpoint].callback = nullptr;
+            state[endpoint].data = nullptr;
+        }
+
+        /**
+         * @brief Reset the bus
+         *
+         */
+        static void reset() {
+            // reset the usb 
+            Usb::port->UDCC |= (0x1 << 7);
+
+            // change the power mode to self powered
+            Usb::port->UDCC |= 0x1;
+
+            // configure enpoint 0 endpoint size.
+            Usb::port->EP0C = max_endpoint_size;
+
+            // enable all the interrupts
+            Usb::port->UDCIE = 0x3f;
+
+            // check if we need to call the reset callback
+            if constexpr (has_bus_reset_callback) {
+                // call the device bus reset
+                device::template bus_reset<usb_type>();
+            }
+        }
+
     public:
         /**
          * @brief Interrupt handler for the usb driver
@@ -106,9 +176,22 @@ namespace klib::core::mb9bf560l::io {
          *
          */
         static void irq_handler() {
+            // get the status and the mask
+            const uint8_t status = Usb::port->UDCS;
+            const uint8_t mask = Usb::port->UDCIE;
 
+            // create the masked status
+            const uint32_t masked_status = status & mask;
+
+            // clear the interrupt status so we dont miss any
+            // interrupts while the user code is running. We
+            // clear a interrupt by setting it to zero. Invert 
+            // the mask to get this result
+            Usb::port->UDCS = (~masked_status);
+
+            
         }
-
+ 
     public:
         /**
          * @brief Initialize the usb hardware. This requires the usb pll to be enabled beforehand using
@@ -144,11 +227,26 @@ namespace klib::core::mb9bf560l::io {
                 state[i].callback = nullptr;
             }
 
+            // do a partial reset
+            reset();
+
             // register ourselfs with the interrupt controller
             target::irq::register_irq<Usb::interrupt_id>(irq_handler);
 
             // enable the usb interrupt
             target::enable_irq<Usb::interrupt_id>();
+            
+            // clear the device addess
+            set_device_address(0);
+
+            // init the device
+            device::template init<usb_type>();
+
+            // check if we should enable the usb connect feature
+            if constexpr (UsbConnect) {
+                // enable the usb connect pin to allow connections
+                connect();
+            }
         }
 
         /**
@@ -211,7 +309,17 @@ namespace klib::core::mb9bf560l::io {
             const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode,
             const klib::usb::descriptor::transfer_type type, const uint32_t size)
         {
-            
+            // get the register we should write to (skip every other word)
+            volatile uint16_t *const epc = ((volatile uint16_t*)&Usb::port->EP0C)[endpoint * 2];
+
+            // limit the size based on the endpoint number
+            const uint16_t s = size & (endpoint == 0 ? 0x1ff : 0x7f);
+
+            // set the endpoint configuration
+            epc = (
+                s | (endpoint_mode_to_raw(mode) << 12) |
+                (transfer_type_to_raw(type) << 13)
+            );
         }
 
         /**
@@ -269,7 +377,11 @@ namespace klib::core::mb9bf560l::io {
          * @param mode
          */
         static void stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
+            // get the register we should write to (skip every other word)
+            volatile uint16_t *const epc = ((volatile uint16_t*)&Usb::port->EP0C)[endpoint * 2];
 
+            // set the stall bit
+            (*epc) |= 0x1 << 9;
         }
 
         /**
@@ -279,7 +391,11 @@ namespace klib::core::mb9bf560l::io {
          * @param mode
          */
         static void un_stall(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
+            // get the register we should write to (skip every other word)
+            volatile uint16_t *const epc = ((volatile uint16_t*)&Usb::port->EP0C)[endpoint * 2];
 
+            // clear the stall bit
+            (*epc) = (*epc) & (~(0x1 << 9));
         }
 
         /**
@@ -291,7 +407,11 @@ namespace klib::core::mb9bf560l::io {
          * @return false
          */
         static bool is_stalled(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
-            return true;
+            // get the register we should write to (skip every other word)
+            volatile uint16_t *const epc = ((volatile uint16_t*)&Usb::port->EP0C)[endpoint * 2];
+
+            // return the endpoint stall bit
+            return (*epc) & (0x1 << 9);
         }
 
         /**
@@ -374,7 +494,20 @@ namespace klib::core::mb9bf560l::io {
          * @param mode
          */
         static void cancel(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
+            // get the callback
+            const auto callback = state[endpoint].callback;
 
+            // get the amount of data we have transferred
+            const auto transferred = state[endpoint].transferred_size;
+
+            // clear the state of the endpoint
+            clear_endpoint_state(endpoint);
+
+            // check if the callback is valid
+            if (callback) {
+                // call the callback
+                callback(endpoint, mode, klib::usb::usb::error::cancel, transferred);
+            }
         }
     };
 }
