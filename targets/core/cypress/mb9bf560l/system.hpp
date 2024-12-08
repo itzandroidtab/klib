@@ -127,11 +127,14 @@ namespace klib::core::mb9bf560l::io::system {
                 }
             }
 
-            // check if we need to configure the pll
-            if constexpr (Multiplier > 1) {
+            // check if we should enable the pll
+            if constexpr (Pll == pll::pll) {
                 static_assert(Multiplier > 0 && Multiplier < (0x3f + 1), "Invalid multiplier");
                 static_assert(Div > 0 && Div <= (0xf + 1), "Invalid divider");
                 static_assert(Source == source::main, "PLL is only supported for the main oscillator");
+
+                // calculate the frequency we are gonna run at
+                constexpr static uint32_t freq = (Freq * Multiplier) / Div;
 
                 // configure the PLL
                 CRG->PSW_TMR = 0x00;
@@ -149,16 +152,10 @@ namespace klib::core::mb9bf560l::io::system {
                 while (!(CRG->SCM_STR & (0x1 << 4))) {
                     // do nothing
                 }
-            }
 
-            // check if we need to switch the clock switch to
-            if constexpr (Pll == pll::pll) {
-                // calculate the frequency we are gonna run at
-                constexpr static uint32_t freq = (Freq * Multiplier) / Div;
-
-                // we have a pll. Make sure the internal clocks 
-                // are not to high. Add a prescaler if they are
-                // above 80 mhz (needed for apbc 0/2 and wdt)
+                // make sure the internal clocks are not to high. Add 
+                // a prescaler if they are above 80 mhz (needed for 
+                // apbc 0/2 and wdt)
                 if constexpr (freq >= 80'000'000) {
                     // calculate the divider required to go below 80mhz
                     constexpr uint8_t divider = calculate_divider_80mhz<freq>();
