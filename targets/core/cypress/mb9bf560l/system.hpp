@@ -95,7 +95,7 @@ namespace klib::core::mb9bf560l::io::system {
         enum class source {
             internal = 0,
             main = 1,
-            low_speed = 4,
+            internal_low_speed = 4,
             rtc = 5,
         };
 
