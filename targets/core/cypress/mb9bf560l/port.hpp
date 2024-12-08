@@ -595,7 +595,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
             // disable the analog mode if it is available on the pin
             if constexpr (has_analog) {
                 // disable the analog mode
-                Pin::port::port->ADE &= (~detail::pins::mask<Pin>);
+                Pin::port::port->ADE &= (~(0x1 << Pin::analog_number));
             }
         }
 
@@ -610,7 +610,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         }
         else if constexpr (std::is_same_v<Periph, io::detail::alternate::analog>) {
             // set the pin to analog mode
-            Pin::port::port->ADE |= detail::pins::mask<Pin>;
+            Pin::port::port->ADE |= (0x1 << Pin::analog_number);
         }
         else {
             // disable control using the PIO. Enables peripheral
