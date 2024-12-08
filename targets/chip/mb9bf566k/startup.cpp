@@ -5,6 +5,8 @@
 #include <klib/io/systick.hpp>
 #include <coprocessor/coprocessor.hpp>
 
+#include <io/system.hpp>
+
 // disable the constructor does not take arguments error in vscode
 #ifdef __INTELLISENSE__
     #pragma diag_suppress 1094
@@ -12,9 +14,15 @@
 
 void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::mb9bf566k;
+    namespace system = target::io::system;
 
-    // TODO: setup clocks
-    klib::io::clock::set(1'750'000);
+    // configure the flash accelerator up to 200 mhz
+    system::flash::setup<system::flash::waitstate::upto_200mhz, 0>();
+
+    // setup the clock to 156Mhz (in this example we are using a 12Mhz
+    // oscillator)
+    // (((12Mhz * 26) = 240Mhz) / 2) = 156Mhz
+    system::clock::set_main<system::clock::source::main, system::clock::pll::pll, 12'000'000, 26, 2>();
 
     if constexpr (TARGET_FPU_ENABLED) {
         // using to make the access easier to the coprocessor
