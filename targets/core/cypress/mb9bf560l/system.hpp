@@ -99,7 +99,16 @@ namespace klib::core::mb9bf560l::io::system {
             rtc = 5,
         };
 
-        template <source Source, pll Pll, uint32_t Freq, uint16_t Multiplier, uint32_t Div>
+        /**
+         * @brief Set the main clock source.
+         * 
+         * @tparam Source 
+         * @tparam Pll 
+         * @tparam Freq 
+         * @tparam Multiplier 
+         * @tparam Div 
+         */
+        template <source Source, pll Pll, uint32_t Freq, uint16_t Multiplier = 1, uint32_t Div = 1>
         static void set_main() {
             // make sure the input is valid
             static_assert(Freq > 0, "Invalid frequency");
@@ -173,26 +182,86 @@ namespace klib::core::mb9bf560l::io::system {
                     CRG->SWC_PSR = divider;
                 }
 
-                // switch to the main clock with pll
-                CRG->SCM_CTL = (CRG->SCM_CTL & ~(0b111 << 5)) | (0x2 << 5);
-
                 // set the clock speed
                 klib::io::clock::set(freq);
+
+                // switch to the main clock with pll
+                CRG->SCM_CTL = (CRG->SCM_CTL & ~(0b111 << 5)) | (0x2 << 5);
             }
             else {
+                // set the clock speed
+                klib::io::clock::set(Freq);
+
                 // switch to the provided source
                 CRG->SCM_CTL |= (
                     (CRG->SCM_CTL & ~(0b111 << 5)) | (static_cast<uint8_t>(Source) << 5)
                 );
-
-                // set the clock speed
-                klib::io::clock::set(Freq);
             }
 
             // wait until the master clock has been switched
             while ((CRG->SCM_STR & (0b111 << 5)) != (CRG->SCM_CTL & (0b111 << 5))) {
                 // do nothing
             }
+        }
+
+        /**
+         * @brief Configure the USB clock
+         *
+         * @tparam Pll
+         * @tparam OscillatorFreq
+         */
+        template <uint32_t OscillatorFreq, uint16_t Multiplier = 1, uint8_t PreDivider = 1, uint8_t Div = 1>
+        static void set_usb() {
+            // disable the usb clock outputs
+            USBCLK->UCCR = 0x00;
+
+            // wait until the clock outputs are disabled
+            while (USBCLK->UCCR) {
+                // do nothing
+            }
+
+            // check if we can use the oscillator straight away. If we 
+            // have a 48mhz oscillator we can use it straight away
+            if constexpr (OscillatorFreq != 48'000'000) {
+                // make sure the input is valid
+                static_assert(Multiplier >= 14 && Multiplier <= 100, "Invalid multiplier");
+                static_assert(Div > 0 && Div <= (0xf + 1), "Invalid divider");
+                static_assert(PreDivider > 0 && PreDivider <= 32, "Invalid pre-divider");
+
+                // make sure we have a valid 48mhz output from the pll
+                static_assert(
+                    (48'000'000 == ((((OscillatorFreq / PreDivider) * Multiplier) / Div))),
+                    "Invalid USB frequency calculation"
+                );
+
+                // switch to the pll output
+                USBCLK->UCCR |= (0x1 << 1);
+
+                // disable the pll and switch the input to the clkmo
+                USBCLK->UPCR1 = 0x00;
+
+                // disable the usb pll interrupt
+                USBCLK->UPINT_ENR = 0x00;
+
+                // setup the wait time for the pll to stabalize (to 1.02 ms)
+                USBCLK->UPCR2 = 0x2;
+
+                // setup the pll
+                USBCLK->UPCR3 = (PreDivider - 1);
+                USBCLK->UPCR4 = (Multiplier - 1);
+                USBCLK->UPCR5 = (Div - 1);
+
+                // enable the pll
+                USBCLK->UPCR1 |= 0x1;
+
+                // wait until the pll is stable
+                while (!(USBCLK->UP_STR & 0x1)) {
+                    // do nothing
+                }
+            }
+
+            // enable the clock output
+            USBCLK->UCCR |= (0x1 << 3) | 0x1;
         }
     };
 }

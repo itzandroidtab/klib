@@ -453,7 +453,7 @@ namespace klib::core::atsam4s::io::system {
 
             // make sure the output frequency is correct
             static_assert(
-                (48'000'000 % (((OscillatorFreq * Multiplier) / Div) / (UsbDiv & 0xf))) == 0,
+                (48'000'000 == (((OscillatorFreq * Multiplier) / Div) / (UsbDiv & 0xf))),
                 "Invalid external crystal frequency"
             );
 
