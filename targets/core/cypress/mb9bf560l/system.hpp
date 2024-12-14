@@ -220,6 +220,10 @@ namespace klib::core::mb9bf560l::io::system {
                 // do nothing
             }
 
+            // disable all the usb channels
+            USBCLK->USBEN0 = 0x0;
+            USBCLK->USBEN1 = 0x0;
+
             // check if we can use the oscillator straight away. If we 
             // have a 48mhz oscillator we can use it straight away
             if constexpr (OscillatorFreq != 48'000'000) {
@@ -228,14 +232,20 @@ namespace klib::core::mb9bf560l::io::system {
                 static_assert(Div > 0 && Div <= (0xf + 1), "Invalid divider");
                 static_assert(PreDivider > 0 && PreDivider <= 32, "Invalid pre-divider");
 
-                // make sure we have a valid 48mhz output from the pll
+                // calculate a part of the freqency
+                constexpr static uint32_t partial_freq = ((OscillatorFreq / PreDivider) * Multiplier);
+
+                // make sure the input is between the 240 and 288 mhz
                 static_assert(
-                    (48'000'000 == ((((OscillatorFreq / PreDivider) * Multiplier) / Div))),
-                    "Invalid USB frequency calculation"
+                    (partial_freq >= 240'000'000 && partial_freq <= 288'000'000), 
+                    "Invalid Fcco output. PLL frequency needs to be between 240 and 288mhz"
                 );
 
-                // switch to the pll output
-                USBCLK->UCCR |= (0x1 << 1);
+                // make sure we have a valid 48mhz output from the pll
+                static_assert(
+                    (48'000'000 == ((partial_freq / Div))),
+                    "Invalid USB frequency calculation"
+                );
 
                 // disable the pll and switch the input to the clkmo
                 USBCLK->UPCR1 = 0x00;
@@ -244,7 +254,7 @@ namespace klib::core::mb9bf560l::io::system {
                 USBCLK->UPINT_ENR = 0x00;
 
                 // setup the wait time for the pll to stabalize (to 1.02 ms)
-                USBCLK->UPCR2 = 0x2;
+                USBCLK->UPCR2 = 0x3;
 
                 // setup the pll
                 USBCLK->UPCR3 = (PreDivider - 1);
@@ -258,10 +268,14 @@ namespace klib::core::mb9bf560l::io::system {
                 while (!(USBCLK->UP_STR & 0x1)) {
                     // do nothing
                 }
-            }
 
-            // enable the clock output
-            USBCLK->UCCR |= (0x1 << 3) | 0x1;
+                // enable the clock output
+                USBCLK->UCCR = (0x1 << 3) | (0x1 << 1) | 0x1;
+            }
+            else {
+                // enable the clock output
+                USBCLK->UCCR = (0x1 << 3) | 0x1;
+            }
         }
     };
 }
