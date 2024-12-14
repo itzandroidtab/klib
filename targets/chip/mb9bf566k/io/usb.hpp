@@ -36,8 +36,13 @@ namespace klib::mb9bf566k::io::periph::lqfp_48 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 31;
 
-        // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 16 + 79;
+        // interrupt ids (including the arm vector table)
+        // we have 2 interrupts for usb. One interrupt that
+        // handles the states + ep0 and another that handles
+        // all the other interrupts
+        constexpr static uint32_t interrupt_id = 16 + 78;
+
+        constexpr static uint32_t interrupt_ep0_id = 16 + 79;
 
         // port to the usb hardware
         static inline USB0_Type *const port = USB0;
