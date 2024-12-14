@@ -546,7 +546,7 @@ namespace klib::usb {
          */
         template <typename Usb>
         static void handle_setup_packet(const setup_packet &packet) {
-            // ge the request type from the packet
+            // get the request type from the packet
             const auto type = static_cast<setup::request_type>((packet.bmRequestType >> 5) & 0x3);
 
             // check if the device has the class handler
