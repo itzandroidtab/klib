@@ -336,6 +336,18 @@ namespace klib::usb::device {
         }
 
         /**
+         * @brief Get the configuration of the config. Needed
+         * for some hardware
+         * 
+         * @tparam Usb
+         * @return uint16_t 
+         */
+        template <typename Usb>
+        static uint8_t get_configuration() {
+            return config.configuration.bConfigurationValue;
+        }
+
+        /**
          * @brief Called when the host is disconnected
          *
          * @tparam Usb
