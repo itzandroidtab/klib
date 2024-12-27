@@ -163,7 +163,7 @@ namespace klib::usb::device {
          * @tparam Usb
          */
         template <typename Usb>
-        void wakeup() {
+        static void wakeup() {
             // if not needed this function can be removed
         };
 
@@ -173,7 +173,7 @@ namespace klib::usb::device {
          * @tparam Usb
          */
         template <typename Usb>
-        void sleep() {
+        static void sleep() {
             // if not needed this function can be removed
         };
 
@@ -183,7 +183,7 @@ namespace klib::usb::device {
          * @tparam Usb
          */
         template <typename Usb>
-        void disconnected() {
+        static void disconnected() {
             configuration = 0x00;
         };
 
@@ -193,7 +193,7 @@ namespace klib::usb::device {
          * @tparam Usb
          */
         template <typename Usb>
-        void connected() {
+        static void connected() {
             // if not needed this function can be removed
         };
 
@@ -205,7 +205,7 @@ namespace klib::usb::device {
          * @tparam Usb
          */
         template <typename Usb>
-        void activity() {
+        static void activity() {
             // if not needed this function can be removed
         };
 
@@ -215,7 +215,7 @@ namespace klib::usb::device {
          * @tparam Usb
          */
         template <typename Usb>
-        void bus_reset() {
+        static void bus_reset() {
             configuration = 0x00;
         };
 
