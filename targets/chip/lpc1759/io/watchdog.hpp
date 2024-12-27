@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <targets/core/nxp/lpc175x/watchdog.hpp>
+#include <targets/core/nxp/lpc17xx/watchdog.hpp>
 
 namespace klib::lpc1759::io::periph {
     struct wdt0 {

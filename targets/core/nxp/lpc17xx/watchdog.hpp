@@ -51,8 +51,15 @@ namespace klib::core::lpc175x::io {
             // Set the period
             Wdt::port->TC = ResetPeriod;
 
-            // set the clocksource
-            Wdt::port->CLKSEL = ClkSource & 0x3;
+            // check if we have a clock selection (lpc1788 does not have this)
+            constexpr bool has_clocksel = requires() {
+                (void)Wdt::port->CLKSEL;
+            };
+
+            if constexpr (has_clocksel) {
+                // set the clocksource
+                Wdt::port->CLKSEL = ClkSource & 0x3;
+            }
 
             // enable the watchdog timer
             Wdt::port->MOD = (Reset << 1) | 0x1;
