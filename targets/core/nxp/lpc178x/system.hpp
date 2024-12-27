@@ -140,7 +140,7 @@ namespace klib::core::lpc178x::io::system {
             constexpr static uint32_t partial_freq = (Freq * 2 * Multiplier) / klib::exp2(static_cast<uint32_t>(PreDivider));
 
             // make sure the pll inputs are valid
-            static_assert(Multiplier > 0, "Invalid multiplier");
+            static_assert(Multiplier > 0 && Multiplier <= 32, "Invalid multiplier");
             static_assert(Div > 0, "Invalid divider");
             static_assert(
                 (Multiplier == 1) || (partial_freq >= 156'000'000 && partial_freq <= 320'000'000), 
@@ -214,15 +214,24 @@ namespace klib::core::lpc178x::io::system {
             pre_divider PreDivider
         >
         static void set_usb() {
-            static_assert((48'000'000 % Freq) == 0, "Invalid crystal frequency");
-
-            // calculate the frequency
+            // calculate the fcco frequency
             constexpr static uint32_t freq = ((Freq * Multiplier) / klib::exp2(static_cast<uint32_t>(PreDivider)));
 
-            static_assert((freq % 48'000'000) == 0, "Pll frequency needs to be 48, 96 or 144Mhz");
-            static_assert(freq <= 144'000'000, "Maximum USB pll frequency supported is 144Mhz");
-            static_assert(freq >= 48'000'000, "Minumim USB pll frequency supported is 48Mhz");
-            static_assert(Multiplier > 0, "Invalid multiplier");
+            // for some reason the datasheet mentions that pll0 and pll1 have 
+            // the same Fcco range between 156 and 320 mhz. The USBCLKSEL 
+            // register only accepts 48, 96 and 144 mhz. Also in the datasheet
+            // they have a * 2 in the Fcco calculation. On the USB pll side 
+            // this is not the case. 
+            // When using the calculation ((12 Mhz * 2 * 4) / 1) to calculate 
+            // the PLL and setting a divider of 2 in the USBCLKSEL the USB is 
+            // not working and only throwing errors in the interrupt. This is 
+            // why we use ((Freq * Multiplier) / divider) for the PLL 
+            // calculation
+            static_assert(
+                ((freq == 48'000'000) || (freq == 96'000'000) || (freq == 144'000'000)), 
+                "Pll frequency needs to be 48, 96 or 144Mhz"
+            );
+            static_assert((Multiplier > 0) && (Multiplier <= 32), "Invalid multiplier");
 
             // check if the crystal is stable and enabled
             if (!crystal::status()) {
