@@ -3,6 +3,7 @@
 
 #include <array>
 #include <span>
+#include <bit>
 
 #include <klib/klib.hpp>
 #include <klib/io/dma.hpp>
@@ -117,13 +118,13 @@ namespace klib::core::lpc175x::io {
         static inline irq_helper<Dma::max_channels> helper;
 
     public:
-        template <bool LittleEndian = true>
+        template <std::endian Endian = std::endian::little>
         static void init() {
             // enable the dma controller
             target::io::power_control::enable<Dma>();
 
             // enable the dma controller with the endianness
-            Dma::port->CONFIG = 0x1 | (LittleEndian << 1);
+            Dma::port->CONFIG = 0x1 | ((Endian == std::endian::little) << 1);
 
             // wait until the dma controller is enabled
             while (!(Dma::port->CONFIG & 0x1)) {
