@@ -14,8 +14,8 @@
 void __attribute__((__constructor__(101))) __target_startup() {
     namespace target = klib::rp2350;
 
-    // the default cpu speed is 48 mhz
-    klib::io::clock::set(48'000'000);
+    // the default cpu speed is around 11 mhz
+    klib::io::clock::set(10'920'000);
 
     // check if we need to enable the fpu
     if constexpr (TARGET_FPU_ENABLED) {
