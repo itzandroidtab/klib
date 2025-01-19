@@ -71,6 +71,7 @@ target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fconcepts>)
 target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-get-exception-ptr>)
 target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-atexit>)
+target_compile_options(klib PUBLIC $<$<COMPILE_LANGUAGE:ASM>:-x assembler-with-cpp>)
 
 # add other linker options
 target_link_options(klib PUBLIC "-nostdlib")
