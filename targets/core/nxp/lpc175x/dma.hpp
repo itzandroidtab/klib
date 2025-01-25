@@ -14,6 +14,9 @@
 #include "clocks.hpp"
 
 namespace klib::core::lpc175x::io::detail::dma {
+    // using to the interrupt callback in the transfer helper
+    using interrupt_callback = void(*)();
+
     /**
      * @brief Available transfer types
      *
@@ -39,6 +42,9 @@ namespace klib::core::lpc175x::io::detail::dma {
 
         // transmitted/received amount of data.
         uint32_t transferred_size;
+
+        // callback when the transmit/receive is done
+        interrupt_callback callback;
     };
 
     /**
@@ -201,6 +207,16 @@ namespace klib::core::lpc175x::io {
         static void irq_handler() {
             // make sure we have a valid pointer to data before we do anything
             if (!helper.data) [[unlikely]] {
+                // if the pointer is invalid it means we are finished with the
+                // transfer. Call the callback when this happens if we have one
+                if (helper.callback) {
+                    // call the callback
+                    helper.callback();
+
+                    // clear the callback so we dont call it again
+                    helper.callback = nullptr;
+                }
+
                 return;
             }
 
@@ -299,7 +315,7 @@ namespace klib::core::lpc175x::io {
          * @param size
          */
         template <bool MemoryIncrement = true, typename T>
-        static void write(const std::span<T>& source) {
+        static void write(const std::span<T>& source, const detail::dma::interrupt_callback callback = nullptr) {
             static_assert(std::is_same_v<Source, klib::io::dma::memory>, "Source needs to be memory for this function");
             static_assert(!std::is_same_v<Destination, klib::io::dma::memory>, "Destination needs to be a peripheral for this function");
 
@@ -313,6 +329,7 @@ namespace klib::core::lpc175x::io {
             helper.data = reinterpret_cast<const uint8_t*>(source.data());
             helper.requested_size = size;
             helper.transferred_size = 0x00;
+            helper.callback = callback;
 
             // setup the control register for the transfer
             Dma::port->CH[Channel].CONTROL = (
@@ -325,7 +342,7 @@ namespace klib::core::lpc175x::io {
             );
 
             // check if we need a interrupt
-            const bool irq = size > 0xfff;
+            const bool irq = (size > 0xfff) || (callback != nullptr);
 
             // if we are enabling the interrupt make sure we clear the previous flags
             // to prevent a interrupt from triggering straight after enabling it
@@ -352,7 +369,7 @@ namespace klib::core::lpc175x::io {
          * @param size
          */
         template <bool MemoryIncrement = true, typename T>
-        static void read(const std::span<T>& destination) {
+        static void read(const std::span<T>& destination, const detail::dma::interrupt_callback callback = nullptr) {
             static_assert(!std::is_same_v<Source, klib::io::dma::memory>, "Source needs to be a peripheral for this function");
             static_assert(std::is_same_v<Destination, klib::io::dma::memory>, "Destination needs to be memory for this function");
 
@@ -366,6 +383,7 @@ namespace klib::core::lpc175x::io {
             helper.data = reinterpret_cast<const uint8_t*>(destination.data());
             helper.requested_size = size;
             helper.transferred_size = 0x00;
+            helper.callback = callback;
 
             // setup the control register for the transfer
             Dma::port->CH[Channel].CONTROL = (
@@ -378,7 +396,7 @@ namespace klib::core::lpc175x::io {
             );
 
             // check if we need a interrupt
-            const bool irq = size > 0xfff;
+            const bool irq = (size > 0xfff) || (callback != nullptr);
 
             // if we are enabling the interrupt make sure we clear the previous flags
             // to prevent a interrupt from triggering straight after enabling it
