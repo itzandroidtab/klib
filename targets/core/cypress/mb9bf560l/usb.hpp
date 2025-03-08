@@ -276,7 +276,7 @@ namespace klib::core::mb9bf560l::io {
             volatile uint16_t* ep_status = get_endpoint_status(endpoint, mode);
          
             // clear the endpoint received data flag on the data we just read
-            (*ep_status) &= ~((0x1 << 10) | (0x1 << 15));
+            (*ep_status) &= ~(0x1 << 10);
 
             // return the amount of data we have read
             return count;
@@ -384,7 +384,7 @@ namespace klib::core::mb9bf560l::io {
             if (type == klib::usb::setup::request_type::uclass) {
                 if (packet.bRequest == 0x0a) {
                     // mark the set_idle as received
-                    Usb::port->EP0IS &= (~((0x1 << 10) | (0x1 << 15)));
+                    Usb::port->EP0IS &= (~(0x1 << 10));
                 }
             }
         }
@@ -576,7 +576,7 @@ namespace klib::core::mb9bf560l::io {
                         (void)(*ep);
 
                         // clear the endpoint interrupt
-                        Usb::port->EP0OS &= (~((0x1 << 10) | (0x1 << 15)));
+                        Usb::port->EP0OS &= (~(0x1 << 10));
                     }
                     else {
                         // no zlp. Process the endpoint normally
