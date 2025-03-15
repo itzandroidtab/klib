@@ -522,36 +522,29 @@ namespace klib::usb::device {
             report.key = code;
         }
 
-    public:
-        template <typename Usb, bool Async = false>
-        static bool write(const char *const data, const uint32_t size) {
+        template <typename Usb>
+        static bool is_invalid_or_busy() {
             // check if we are configured
             if (!configuration) {
-                return false;
-            }
-
-            // check if we have a valid size
-            if (size == 0) {
-                // return we are done. Nothing to do here
                 return true;
             }
 
             // check if a request is already pending
             if (is_busy<Usb>()) {
                 // a other request is already pending exit
-                return false;
+                return true;
             }
 
-            // encode the first report
-            encode_report(data[0], report);
+            // return we are not busy and we do not have a 
+            // invalid configuration
+            return false;
+        }
 
-            // set the data in the interrupt
-            irq_size = size - 1;
-            irq_data = data;
-
+        template <typename Usb, bool Async = false>
+        static bool write_impl(const report_data& r) {
             // write the first report to the endpoint
             if (!Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
+                usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&r), sizeof(r)}))
             {
                 return false;
             }
@@ -567,6 +560,57 @@ namespace klib::usb::device {
             }
 
             return true;
+        }
+
+    public:
+        template <typename Usb, bool Async = false>
+        static bool write(const char *const data, const uint32_t size) {
+            // check if we have a valid size
+            if (size == 0) {
+                // return we are done. Nothing to do here
+                return true;
+            }
+
+            // check if we are busy or not
+            if (is_invalid_or_busy<Usb>()) {
+                return false;
+            }
+
+            // encode the first report
+            encode_report(data[0], report);
+
+            // set the data in the interrupt
+            irq_size = size - 1;
+            irq_data = data;
+
+            // write the data
+            return write_impl<Usb, Async>(report);
+        }
+
+        template <typename Usb, bool Async = false>
+        static bool write(const key_t key) {
+            // static dummy data for the interrupt handler
+            // to signal if we are still busy
+            static char dummy;
+
+            // check if we are busy or not
+            if (is_invalid_or_busy<Usb>()) {
+                return false;
+            }
+
+            // set the report
+            report = {
+                .modifier = 0x00,
+                .reserved = 0x00,
+                .key = key
+            };
+
+            // set the data in the interrupt
+            irq_size = 0;
+            irq_data = &dummy;
+
+            // write the data
+            return write_impl<Usb, Async>(report);
         }
 
         /**
