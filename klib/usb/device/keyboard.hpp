@@ -329,8 +329,22 @@ namespace klib::usb::device {
         // flag if remote wakeup is supported
         static inline bool remote_wakeup = false;
 
+        // structure for the report
+        struct report_data {
+            // modifier keys (e.g. ctrl, shift)
+            uint8_t modifier;
+
+            // reserved value. Should be 0x00
+            uint8_t reserved;
+
+            // the current key that is pressed
+            key_t key;
+        };
+
+        static_assert(sizeof(report_data) == 3, "invalid report size");
+
         // storage for the keyboard hid messages
-        static inline uint8_t report_data[3] = {};
+        static inline report_data report = {};
 
         // static parameters with data to write to the host
         static inline const char *volatile irq_data = nullptr;
@@ -360,12 +374,12 @@ namespace klib::usb::device {
             if ((!irq_size) && (irq_data != nullptr)) {
                 // we have nothing more to send. Send a empty report
                 // with no keypresses
-                std::fill_n(report_data, sizeof(report_data), 0x00);
+                report = {};
 
                 // send the no key pressed to the host
                 Usb::write(
                     hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    mode, report_data
+                    mode, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}
                 );
 
                 // clear the data to notify we are done with the string
@@ -386,12 +400,12 @@ namespace klib::usb::device {
             if (irq_size > 0 && irq_data[0] == irq_data[1] && repeated_key == false) {
                 // we have detected a double character. Send a no keys
                 // pressed in between
-                std::fill_n(report_data, sizeof(report_data), 0x00);
+                report = {};
 
                 // send the report to the host
                 Usb::write(
                     hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    mode, report_data
+                    mode, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}
                 );
 
                 // mark we have send a no keys between two repeated keys
@@ -407,7 +421,7 @@ namespace klib::usb::device {
             irq_data++;
 
             // encode the next character
-            encode_report(irq_data[0], report_data);
+            encode_report(irq_data[0], report);
 
             // clear we have transmitted a no keys in between two repeated keys
             repeated_key = false;
@@ -415,26 +429,31 @@ namespace klib::usb::device {
             // send the report to the host
             Usb::write(
                 hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                mode, report_data
+                mode, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}
             );
 
             // return we are done
             return;
         }
 
-        static void encode_report(const char ch, uint8_t report[sizeof(report_data)]) {
+        static void encode_report(const char ch, report_data& report) {
+            // always clear the reserved data
+            report.reserved = 0x00;
+
             // check what data we have
             if (klib::string::is_character(ch)) {
+                // offset between the character (in the ascii table) and in the
+                // scan codes
+                const uint8_t offset = ('A' - static_cast<uint8_t>(key_t::key_a));
+
                 // we have a character. re-align to hid codes
                 if (klib::string::is_upper(ch)) {
-                    report[0] = 0x02;
-                    report[1] = 0x00;
-                    report[2] = ch - 0x3d;
+                    report.modifier = 0x02;
+                    report.key = static_cast<key_t>(ch - offset);
                 }
                 else {
-                    report[0] = 0x00;
-                    report[1] = 0x00;
-                    report[2] = klib::string::to_upper(ch) - 0x3d;
+                    report.modifier = 0x00;
+                    report.key = static_cast<key_t>(klib::string::to_upper(ch) - offset);
                 }
 
                 return;
@@ -442,63 +461,65 @@ namespace klib::usb::device {
 
             if (klib::string::is_digit(ch)) {
                 // set the first two bytes of the report
-                report[0] = 0x00;
-                report[1] = 0x00;
+                report.modifier = 0x00;
 
                 // we have a number
                 if (ch == '0') {
-                    report[2] = 0x27;
+                    report.key = key_t::key_0;
                 }
                 else {
-                    report[2] = ch - 0x13;
+                    report.key = static_cast<key_t>(ch - (static_cast<uint8_t>(key_t::key_1) - '1'));
                 }
 
                 return;
             }
 
             // temporary variables to store the code and the shift
-            uint8_t code;
+            key_t code;
             uint8_t shift = 0x00;
 
             // handle some of the other characters
             switch (ch) {
                 case '\r':
                 case '\n':
-                    code = 0x28;
+                    code = key_t::key_enter;
                     break;
                 case '\b':
-                    code = 0x2a;
+                    code = key_t::key_backspace;
                     break;
                 case '\e':
-                    code = 0x29;
+                    code = key_t::key_escape;
                     break;
                 case '\t':
-                    code = 0x2b;
+                    code = key_t::key_tab;
                     break;
                 case ' ':
-                    code = 0x2c;
+                    code = key_t::key_space;
                     break;
                 case ',':
-                    code = 0x36;
+                    code = key_t::key_comma;
                     break;
                 case '.':
-                    code = 0x37;
+                    code = key_t::key_period;
                 case '!':
                     shift = 0x02;
-                    code = 0x1e;
+
+                    // shift and key_1 == !, use a static cast
+                    // to signal this is not key_1
+                    code = static_cast<key_t>(0x1e);
                 default:
                     // all others are mapped to a question mark
                     shift = 0x02;
-                    code = 0x38;
+
+                    // shift and key_slash == ?, use a static cast
+                    // to signal this is not key_slash
+                    code = static_cast<key_t>(0x38);
                     break;
             }
 
             // set the code and the shift
-            report[0] = shift;
-            report[2] = code;
-
-            // always clear the 2nd byte
-            report[1] = 0x00;
+            report.modifier = shift;
+            report.key = code;
         }
 
     public:
@@ -522,7 +543,7 @@ namespace klib::usb::device {
             }
 
             // encode the first report
-            encode_report(data[0], report_data);
+            encode_report(data[0], report);
 
             // set the data in the interrupt
             irq_size = size - 1;
@@ -530,7 +551,7 @@ namespace klib::usb::device {
 
             // write the first report to the endpoint
             if (!Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                usb::endpoint_mode::in, report_data))
+                usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
             {
                 return false;
             }
@@ -781,7 +802,7 @@ namespace klib::usb::device {
                     usb::get_endpoint(config.endpoint.bEndpointAddress),
                     usb::endpoint_mode::in,
                     usb::get_transfer_type(config.endpoint.bmAttributes),
-                    sizeof(report_data)
+                    sizeof(report)
                 );
 
                 // store the configuration value
@@ -791,11 +812,11 @@ namespace klib::usb::device {
                 Usb::configured(true);
 
                 // prepare a inital report with no keys pressed
-                std::fill_n(report_data, sizeof(report_data), 0x00);
+                report = {};
 
                 // write the inital report
                 if (Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    usb::endpoint_mode::in, report_data))
+                    usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
                 {
                     // no issue for now ack
                     return usb::handshake::ack;
@@ -864,11 +885,11 @@ namespace klib::usb::device {
                 case hid::class_request::get_report:
                     // the host should not use this as a substitute for the Interrupt EP
                     // we simply send a "no keys" report to the host
-                    std::fill_n(report_data, sizeof(report_data), 0x00);
+                    report = {};
 
                     // write the data to the control endpoint
                     if (Usb::write(nullptr, usb::control_endpoint,
-                        usb::endpoint_mode::in, report_data))
+                        usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
                     {
                         // no issue for now ack
                         return usb::handshake::ack;
@@ -888,7 +909,7 @@ namespace klib::usb::device {
                     else {
                         // write the data to the control endpoint
                         if (Usb::write(nullptr, usb::control_endpoint, usb::endpoint_mode::in,
-                            report_data))
+                            {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
                         {
                             // no issue for now ack
                             return usb::handshake::ack;
