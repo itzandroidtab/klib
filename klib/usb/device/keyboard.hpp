@@ -69,7 +69,7 @@ namespace klib::usb::device {
         };
 
         // report descriptor for the hid keyboard
-        const __attribute__((aligned(4))) static inline uint8_t report[] = {
+        const __attribute__((aligned(4))) static inline uint8_t report_desc[] = {
             0x05, 0x01,   //  Usage Page (generic desktop)
             0x09, 0x06,   //  Usage (keyboard)
             0xa1, 0x01,   //  Collection
@@ -119,7 +119,7 @@ namespace klib::usb::device {
                 .bCountryCode = 0x00,
                 .bNumDescriptors = 0x01,
                 .bClassDescriptorType = hid::class_type::report,
-                .wDescriptorLength = sizeof(report)
+                .wDescriptorLength = sizeof(report_desc)
             },
             {
                 .bEndpointAddress = 0x80 | Endpoint,
@@ -550,7 +550,7 @@ namespace klib::usb::device {
                     return to_description(config.hid, config.hid.bLength);
                 case hid::class_type::report:
                     // return the raw report.
-                    return to_description(report, sizeof(report));
+                    return to_description(report_desc, sizeof(report_desc));
                 default:
                     // unkown class descriptor
                     break;
