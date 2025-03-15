@@ -4,7 +4,10 @@
 #include <tuple>
 #include <array>
 
+#include <klib/io/peripheral.hpp>
 #include <targets/core/nxp/lpc178x/emc.hpp>
+
+#include "pins.hpp"
 
 namespace klib::lpc1788::io::periph::detail::emc {
     enum class mode {
