@@ -8,6 +8,11 @@
 #include "math.hpp"
 #include "lookuptable.hpp"
 
+// set a default if the define is not set
+#ifndef TARGET_BREAK_AT_RESERVED_HANDLER
+    #define TARGET_BREAK_AT_RESERVED_HANDLER false
+#endif
+
 namespace klib::irq::detail {
     /**
      * @brief Available irq types. Flash irq types
@@ -112,10 +117,34 @@ namespace klib::irq {
         static volatile inline uint32_t *const vtor = ((volatile uint32_t*)0xE000ED08);
 
         /**
+         * @brief Internal function to trigger a debugger halt. Retrieves the 
+         * current interrupt number before it halts the debugger
+         * 
+         */
+        static void break_handler() {
+            // check if we need to break if this is called
+            if constexpr (TARGET_BREAK_AT_RESERVED_HANDLER) {
+                volatile uint32_t irq;
+
+                // get the interrupt status register
+                asm volatile("mrs %0, ipsr" : "=r"(irq));
+
+                // break so the debugger stops us
+                asm volatile("bkpt");
+                
+                (void)irq;
+            }
+        }
+
+        /**
          * @brief Reserved handler. Used to fill the vector table with a valid pointer
          *
          */
         static void reserved() {
+            // call the break handler. It will pause if the break at 
+            // reserved handler is set
+            break_handler();
+
             // loop as some arm interrupt has happend that is not registered. Probably
             // a hardfault, busfault or a usagefault.
             while (true) {}
@@ -126,6 +155,10 @@ namespace klib::irq {
          *
          */
         static void default_handler() {
+            // call the break handler. It will pause if the break at 
+            // reserved handler is set
+            break_handler();
+
             // return straight away
             return;
         }
