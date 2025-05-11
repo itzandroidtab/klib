@@ -172,11 +172,11 @@ namespace klib::lpc55s66::io::detail::pins {
 
         // set or clear based on the value
         if constexpr (Enabled) {
-            // set the open drain mode
+            // set the digimode bit
             (*pin_select) = (*pin_select) | 0x1 << 8;
         }
         else {
-            // clear the open drain bit
+            // clear the digimode bit
             (*pin_select) = ((*pin_select) & ~(0x1 << 8));
         }
     }
