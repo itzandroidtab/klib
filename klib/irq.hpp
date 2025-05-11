@@ -67,7 +67,7 @@ namespace klib::irq {
     /**
      * @brief IRQ handler that relocates the vector table.
      *
-     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
+     * @details Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
      *
@@ -249,10 +249,14 @@ namespace klib::irq {
      * @brief IRQ handler that relocates the vector table to a table in flash. This frees
      * the memory otherwise allocated for the vector table.
      *
-     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
+     * @details Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
      *
+     * @warning When using the flash interrupt handler it is not automaticly initialized. 
+     * Make sure to call the init before enabling any interrupts (systick is also not 
+     * automatically started during startup)
+     * 
      * @tparam CpuId
      * @tparam IrqCount
      * @tparam Alignment
@@ -363,7 +367,7 @@ namespace klib::irq {
     /**
      * @brief IRQ handler that allows for hooks when a interrupt is called. Uses irq_ram in the background.
      *
-     * @brief Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
+     * @details Minimum allignment is 32 words (128 bytes) this allows up to 16 interrupts (+
      * default arm interrupts). For more interrupts the amount should be aligned to the next
      * power of 2. E.g. 44 should get aligned by 64 words (256 bytes).
      *
