@@ -324,15 +324,15 @@ namespace klib::usb::device {
 
             // make sure the endpoints support bulk
             // endpoints
-            Usb::template is_valid_endpoint<
+            static_assert(Usb::template is_valid_endpoint<
                 InEndpoint,
                 klib::usb::descriptor::transfer_type::bulk
-            >();
+            >(), "invalid bulk endpoint selected");
 
-            Usb::template is_valid_endpoint<
+            static_assert(Usb::template is_valid_endpoint<
                 OutEndpoint,
                 klib::usb::descriptor::transfer_type::bulk
-            >();
+            >(), "invalid bulk endpoint selected");
         }
 
         /**

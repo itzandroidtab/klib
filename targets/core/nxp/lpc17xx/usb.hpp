@@ -777,33 +777,26 @@ namespace klib::core::lpc17xx::io {
          * @tparam type
          */
         template <uint8_t endpoint, klib::usb::descriptor::transfer_type type>
-        constexpr static void is_valid_endpoint() {
+        constexpr static bool is_valid_endpoint() {
             using transfer_type = klib::usb::descriptor::transfer_type;
 
             // make sure the endpoint is valid
-            static_assert(endpoint <= 0xf, "Invalid endpoint provided");
+            if (endpoint > 0xf) {
+                return false;
+            }
 
             // check if the endpoint supports the transfer type
             if constexpr (type == transfer_type::control) {
-                static_assert(endpoint == 0,
-                    "Endpoint does not support control mode"
-                );
+                return (endpoint == 0);
             }
             else if constexpr (type == transfer_type::interrupt) {
-                static_assert((0x1 << endpoint) & 0b10010010010010,
-                    "Endpoint does not support interrupt mode"
-                );
+                return ((0x1 << endpoint) & 0b10010010010010);
             }
             else if constexpr (type == transfer_type::isochronous) {
-                static_assert((0x1 << endpoint) & 0b1001001001000,
-                    "Endpoint does not support isochronous mode"
-                );
+                return ((0x1 << endpoint) & 0b1001001001000);
             }
             else {
-                static_assert(
-                    (0x1 << endpoint) & 0b110100100100100,
-                    "Endpoint does not support bulk mode"
-                );
+                return ((0x1 << endpoint) & 0b110100100100100);
             }
         }
 

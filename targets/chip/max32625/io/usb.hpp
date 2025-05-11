@@ -734,8 +734,9 @@ namespace klib::max32625::io {
          * @tparam type
          */
         template <uint8_t endpoint, klib::usb::descriptor::transfer_type type>
-        constexpr static void is_valid_endpoint() {
+        constexpr static bool is_valid_endpoint() {
             // TODO: implement this
+            return true;
         }
 
         /**

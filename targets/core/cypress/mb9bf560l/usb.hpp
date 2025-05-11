@@ -704,11 +704,13 @@ namespace klib::core::mb9bf560l::io {
          * @tparam type
          */
         template <uint8_t endpoint, klib::usb::descriptor::transfer_type type>
-        constexpr static void is_valid_endpoint() {
+        constexpr static bool is_valid_endpoint() {
             using transfer_type = klib::usb::descriptor::transfer_type;
 
             // make sure the endpoint is valid
-            static_assert(endpoint < endpoint_count, "Invalid endpoint provided");
+            if (endpoint >= endpoint_count) {
+                return false;
+            }
 
             // this chip has some weird rules. We can enable a Bulk/Interrupt 
             // on every channel except endpoint 0. 
@@ -719,19 +721,13 @@ namespace klib::core::mb9bf560l::io {
             
             // check if the endpoint supports the transfer type
             if constexpr (type == transfer_type::control) {
-                static_assert(endpoint == 0,
-                    "Endpoint does not support control mode"
-                );
+                return (endpoint == 0);
             }
             else if constexpr (type == transfer_type::interrupt || type == transfer_type::bulk) {
-                static_assert(endpoint != 0,
-                    "Endpoint does not support interrupt/bulk mode"
-                );
+                return (endpoint != 0);
             }
             else {
-                static_assert((endpoint == 2) || (endpoint == 4),
-                    "Endpoint does not support isochronous mode"
-                );
+                return ((endpoint == 2) || (endpoint == 4));
             }
         }
 

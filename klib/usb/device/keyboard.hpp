@@ -661,10 +661,10 @@ namespace klib::usb::device {
 
             // make sure the endpoint supports interrupt
             // endpoints
-            Usb::template is_valid_endpoint<
+            static_assert(Usb::template is_valid_endpoint<
                 Endpoint,
                 klib::usb::descriptor::transfer_type::interrupt
-            >();
+            >(), "invalid interrupt endpoint selected");
         }
 
         /**

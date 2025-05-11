@@ -413,20 +413,20 @@ namespace klib::usb::device {
         template <typename Usb>
         static void init() {
             // make sure the endpoints support the transfer types
-            Usb::template is_valid_endpoint<
+            static_assert(Usb::template is_valid_endpoint<
                 CmdEndpoint,
                 klib::usb::descriptor::transfer_type::interrupt
-            >();
+            >(), "invalid interrupt endpoint selected");
 
-            Usb::template is_valid_endpoint<
+            static_assert(Usb::template is_valid_endpoint<
                 InEndpoint,
                 klib::usb::descriptor::transfer_type::bulk
-            >();
+            >(), "invalid bulk endpoint selected");
 
-            Usb::template is_valid_endpoint<
+            static_assert(Usb::template is_valid_endpoint<
                 OutEndpoint,
                 klib::usb::descriptor::transfer_type::bulk
-            >();
+            >(), "invalid bulk endpoint selected");
         }
 
         /**

@@ -599,7 +599,7 @@ namespace klib::core::atsam4s::io {
          * @tparam type
          */
         template <uint8_t endpoint, klib::usb::descriptor::transfer_type type>
-        constexpr static void is_valid_endpoint() {
+        constexpr static bool is_valid_endpoint() {
             using transfer_type = klib::usb::descriptor::transfer_type;
 
             // make sure the endpoint is valid
@@ -607,18 +607,15 @@ namespace klib::core::atsam4s::io {
 
             // check if the endpoint supports the transfer type
             if constexpr (type == transfer_type::control) {
-                static_assert((endpoint == 0) || (endpoint == 3),
-                    "Endpoint does not support control mode"
-                );
+                return (endpoint == 0) || (endpoint == 3);
             }
             else if constexpr (type == transfer_type::isochronous) {
-                static_assert((0x1 << endpoint) & 0b11110110,
-                    "Endpoint does not support isochronous mode"
-                );
+                return ((0x1 << endpoint) & 0b11110110);
             }
 
             // every endpoint supports bulk and interrupt. Dont
             // bother checking them
+            return true;
         }
 
         /**

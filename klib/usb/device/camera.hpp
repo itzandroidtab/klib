@@ -518,14 +518,15 @@ namespace klib::usb::device {
         template <typename Usb>
         static void init() {
             // make sure the endpoint supports interrupt endpoints
-            Usb::template is_valid_endpoint<
+            static_assert(Usb::template is_valid_endpoint<
                 InterruptEndpoint,
                 klib::usb::descriptor::transfer_type::interrupt
-            >();
-            Usb::template is_valid_endpoint<
+            >(), "invalid interrupt selected");
+
+            static_assert(Usb::template is_valid_endpoint<
                 Endpoint,
                 klib::usb::descriptor::transfer_type::isochronous
-            >();
+            >(), "invalid isochronous selected");
         }
 
         /**
