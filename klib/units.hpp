@@ -162,7 +162,7 @@ namespace klib::time {
      * @brief Operators for all the time units
      *
      */
-    constexpr ns operator"" _ns(const unsigned long long int value) {
+    constexpr ns operator""_ns(const unsigned long long int value) {
         // get rid of the unsigned long long int straight away
         return ns(static_cast<uint32_t>(value));
     }
@@ -179,7 +179,7 @@ namespace klib::time {
         return (value / conversion_factor<ns, s>());
     }
 
-    constexpr us operator"" _us(const unsigned long long int value) {
+    constexpr us operator""_us(const unsigned long long int value) {
         // get rid of the unsigned long long int straight away
         return us(static_cast<uint32_t>(value));
     }
@@ -196,7 +196,7 @@ namespace klib::time {
         return (value / conversion_factor<us, s>());
     }
 
-    constexpr ms operator"" _ms(const unsigned long long int value) {
+    constexpr ms operator""_ms(const unsigned long long int value) {
         // get rid of the unsigned long long int straight away
         return ms(static_cast<uint32_t>(value));
     }
@@ -213,7 +213,7 @@ namespace klib::time {
         return (value / conversion_factor<ms, s>());
     }
 
-    constexpr s operator"" _s(const unsigned long long int value) {
+    constexpr s operator""_s(const unsigned long long int value) {
         // get rid of the unsigned long long int straight away
         return s(static_cast<uint32_t>(value));
     }
