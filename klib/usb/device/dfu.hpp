@@ -27,7 +27,7 @@ namespace klib::usb::device {
 
         // buffer for the firmware (data we are reading
         // should be 4 byte aligned as some devices requre
-        // this.
+        // this).
         static __attribute__((aligned(4))) inline uint8_t buffer[TransferSize] = {};
 
         // length of the current buffer
