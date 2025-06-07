@@ -2,23 +2,24 @@
 #define KLIB_MULTISPAN_HPP
 
 #include <cstdint>
+#include <type_traits>
 #include <span>
 #include <array>
 
 namespace klib {
     /**
-     * @brief Non owning wrapper to map two std::span in a single array
+     * @brief Base class to a multispan, implementation dependend
      *
      * @tparam T
      */
     template <typename T>
     class multispan {
     protected:
-        // amount of items in the buffer
-        constexpr static uint32_t Amount = 2;
-
-        // the two internal spans
-        std::array<std::span<T>, Amount> storage;
+        /**
+         * @brief Default constructor
+         * 
+         */
+        constexpr multispan() {};
 
     public:
         // member types (no iterators as it is not a continuous
@@ -33,33 +34,70 @@ namespace klib {
         using const_reference     = const element_type&;
 
         /**
-         * @brief Construct a new multispan object using a initializer list, raw
-         * array(not a pointer) or std::array
+         * @brief Operator to get data from the two spans
          *
-         * for raw pointers {ptr, size} should be used as a parameter
-         *
-         * @param first
-         * @param second
+         * @param index
+         * @return constexpr T&
          */
-        template <typename... E>
-        constexpr multispan(const std::span<T>& first, const std::span<T>& second):
-            storage{first, second}
-        {}
+        virtual reference operator[](const uint32_t index) const = 0;
 
         /**
-         * @brief Copy constructor for the multispan
+         * @brief Returns the total size of both spans
          *
+         * @return uint32_t
          */
-        constexpr multispan(const multispan&) noexcept = default;
+        virtual uint32_t size() const = 0;
 
         /**
-         * @brief Construct a multispan from a different multispan
+         * @brief Returns if the span is empty
          *
-         * @tparam G
+         * @return uint32_t
          */
-        template <typename G>
-        constexpr multispan(const multispan<G>& other) noexcept:
-            storage(other.store())
+        uint32_t empty() const {
+            return size() == 0;
+        }
+
+        /**
+         * @brief Returns the amount of bytes the combined spans use
+         *
+         * @return constexpr uint32_t
+         */
+        virtual uint32_t size_bytes() const = 0;
+    };
+
+    /**
+     * @brief Non owning wrapper for multiple arrays
+     *
+     * @tparam T
+     */
+    template <typename T, uint32_t Amount>
+    class span_array: public klib::multispan<T> {
+    protected:
+        std::array<std::span<T>, Amount> storage = {};
+
+    public:
+        /**
+         * @brief Span_array constructor from multple std::spans
+         * 
+         */
+        constexpr span_array(const std::initializer_list<std::span<T>>& list) {
+            uint32_t index = 0;
+
+            // copy the spans into the storage
+            for (const auto& l: list) {
+                storage[index] = l;
+                index++;
+            }
+        }
+
+        /**
+         * @brief Construct a multispan using variadic templates
+         * 
+         * @tparam Args 
+         */
+        template<typename... Args>
+        constexpr span_array(Args... args): 
+            span_array({args...})
         {}
 
         /**
@@ -68,7 +106,7 @@ namespace klib {
          * @param index
          * @return constexpr T&
          */
-        constexpr reference operator[](const uint32_t index) const {
+        constexpr klib::multispan<T>::reference operator[](const uint32_t index) const {
             uint32_t offset = 0;
 
             // check where we need to point to
@@ -91,7 +129,7 @@ namespace klib {
          *
          * @return uint32_t
          */
-        constexpr uint32_t size() const {
+        constexpr uint32_t size() const override {
             uint32_t count = 0;
 
             for (auto& s: storage) {
@@ -102,20 +140,11 @@ namespace klib {
         }
 
         /**
-         * @brief Returns if the span is empty
-         *
-         * @return uint32_t
-         */
-        constexpr uint32_t empty() const {
-            return size() == 0;
-        }
-
-        /**
          * @brief Returns the amount of bytes the combined spans use
          *
          * @return constexpr uint32_t
          */
-        constexpr uint32_t size_bytes() const {
+        constexpr uint32_t size_bytes() const override {
             uint32_t count = 0;
 
             for (auto& s: storage) {
@@ -137,6 +166,23 @@ namespace klib {
             return storage;
         }
     };
+
+    /**
+     * @brief Helper to create a span_array from multiple std::span. Uses the first 
+     * argument as the base type for all the elements
+     * 
+     * @tparam Args 
+     * @param args 
+     * @return auto 
+     */
+    template<typename... Args>
+    auto make_span_array(Args... args) {
+        // return a span_array with the correct size and initalize it
+        return klib::span_array<
+            typename std::tuple_element_t<0, std::tuple<Args...>>::element_type,
+            sizeof...(Args)
+        >(args...);
+    }
 }
 
 #endif
