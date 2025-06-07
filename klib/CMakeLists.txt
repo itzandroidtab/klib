@@ -49,7 +49,7 @@ set_target_properties(klib PROPERTIES FOLDER "klib")
 add_library(${PROJECT_NAME}::klib ALIAS klib)
 
 # enable C++20 support for the library
-target_compile_features(klib PUBLIC cxx_std_20)
+target_compile_features(klib PUBLIC cxx_std_23)
 
 # link to the traget_cpu_options to get all the cpu flags
 target_link_libraries(klib PUBLIC target_cpu_options)
