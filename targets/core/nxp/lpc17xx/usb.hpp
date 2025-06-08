@@ -51,8 +51,8 @@ namespace klib::core::lpc17xx::io {
         // amount of endpoints supported by the lpc1756
         constexpr static uint8_t endpoint_count = 16;
 
-        // max size in a single endpoint
-        constexpr static uint8_t max_endpoint_size = 64;
+        // max size in a control endpoint
+        constexpr static uint8_t max_control_endpoint_size = 64;
 
         // type to use in device functions
         using usb_type = usb<Usb, Device>;
@@ -178,9 +178,9 @@ namespace klib::core::lpc17xx::io {
 
         static void reset() {
             Usb::port->EPIND = 0;
-            Usb::port->MAXPSIZE = max_endpoint_size;
+            Usb::port->MAXPSIZE = max_control_endpoint_size;
             Usb::port->EPIND = 1;
-            Usb::port->MAXPSIZE = max_endpoint_size;
+            Usb::port->MAXPSIZE = max_control_endpoint_size;
 
             while ((Usb::port->DEVINTST & 0x100) == 0) {
                 // do nothing
@@ -733,7 +733,7 @@ namespace klib::core::lpc17xx::io {
             for (uint32_t i = 0; i < endpoint_count; i++) {
                 // set the endpoint to a known state
                 state[i].is_busy = false;
-                state[i].max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0);
+                state[i].max_size = static_cast<uint8_t>((i == 0) ? max_control_endpoint_size : 0);
                 state[i].data = nullptr;
                 state[i].requested_size = 0;
                 state[i].transferred_size = 0;
