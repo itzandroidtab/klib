@@ -127,7 +127,7 @@ namespace klib::crypt {
             uint32_t input[16];
             uint32_t offset = size % block_size;
 
-            for (size_t i = 0; i < length; i++) {
+            for (uint32_t i = 0; i < length; i++) {
                 buffer[offset++] = data[i];
                 if (offset % block_size == 0) {
                     for (int j = 0; j < 16; j++) {
