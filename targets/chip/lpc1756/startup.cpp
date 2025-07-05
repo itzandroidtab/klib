@@ -22,6 +22,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // oscillator)
     // ((16 * 2 * 12Mhz) / 1 = 384Mhz) / 4 = 96Mhz
     clock::set_main<clock::source::main, 12'000'000, 16, 1, 4>();
+    // clock::set_main<clock::source::rtc, 32768, 0, 0, 0>();
     // clock::set_main<clock::source::internal, 4'000'000, 48, 1, 4>();
 
     // setup the irq handler before main is called. This
