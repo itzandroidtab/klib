@@ -171,6 +171,18 @@ SECTIONS
         PROVIDE(__bss_end = .);
     } > ram
 
+    .periph :
+    {
+        . = ALIGN(4);
+        PROVIDE(__periph_start = .);
+
+        *(SORT_BY_ALIGNMENT(.periph))
+        *(SORT_BY_ALIGNMENT(.periph.*))
+        . = ALIGN(4);
+
+        PROVIDE(__periph_end = .);
+    } > ram1
+
     /* Heap segment */
     .heap (NOLOAD) :
     {
