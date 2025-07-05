@@ -19,10 +19,14 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // setup the flash wait state to 5 + 1 CPU clocks
     target::io::system::flash::setup<5>();
 
+    // change the internal rc frequency to 12 mhz
+    // clock::set_internal_rc<12'000'000>();
+
     // setup the clock to 120Mhz (in this example we are using a 12Mhz
     // oscillator)
     // (((12Mhz * 20) = 240Mhz) / 2) = 120Mhz
     clock::set_main<clock::source::main, clock::pll::plla, 12'000'000, 20, 2>();
+    // clock::set_main<clock::source::internal, clock::pll::plla, 12'000'000, 20, 2>();
 
     // setup the irq handler before main is called. This
     // moves the vector table to ram so it can be changed
