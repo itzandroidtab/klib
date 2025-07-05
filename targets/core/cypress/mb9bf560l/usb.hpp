@@ -4,10 +4,11 @@
 #include <span>
 
 #include <klib/klib.hpp>
-#include <klib/usb/usb/usb.hpp>
 #include <klib/math.hpp>
 #include <klib/irq_helper.hpp>
 #include <klib/usb/usb/setup.hpp>
+#include <klib/usb/usb/size.hpp>
+#include <klib/usb/usb/usb.hpp>
 
 #include <io/port.hpp>
 
@@ -51,8 +52,10 @@ namespace klib::core::mb9bf560l::io {
         // amount of endpoints supported by the lpc1756
         constexpr static uint8_t endpoint_count = 6;
 
-        // max size in a single endpoint
-        constexpr static uint8_t max_endpoint_size = 64;
+        // maximum endpoint sizes
+        constexpr static klib::usb::endpoint_size_endpoint<endpoint_count, 
+            64, 256, 64, 64, 64, 64
+        > max_endpoint_size = {};
 
         // type to use in device functions
         using usb_type = usb<Usb, Device>;
@@ -171,7 +174,7 @@ namespace klib::core::mb9bf560l::io {
             Usb::port->UDCC |= 0x1;
 
             // configure enpoint 0 endpoint size.
-            Usb::port->EP0C = max_endpoint_size;
+            Usb::port->EP0C = max_endpoint_size.size(0, klib::usb::descriptor::transfer_type::control);
 
             // clear the reset flag
             Usb::port->UDCC &= ~(0x1 << 7);
@@ -661,7 +664,9 @@ namespace klib::core::mb9bf560l::io {
             for (uint32_t i = 0; i < endpoint_count; i++) {
                 // set the endpoint to a known state
                 state[i].is_busy = false;
-                state[i].max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0);
+                state[i].max_size = static_cast<uint8_t>(
+                    (i == 0) ? max_endpoint_size.size(0, klib::usb::descriptor::transfer_type::control) : 0
+                );
                 state[i].data = nullptr;
                 state[i].requested_size = 0;
                 state[i].transferred_size = 0;
@@ -765,7 +770,7 @@ namespace klib::core::mb9bf560l::io {
             const uint16_t s = size & (endpoint == 1 ? 0x1ff : 0x7f);
 
             // set the new endpoint size
-            state[endpoint].max_size = s;
+            state[endpoint].max_size = klib::min(s, max_endpoint_size.size(endpoint, type));
 
             // set the endpoint configuration
             (*ep_control) = (

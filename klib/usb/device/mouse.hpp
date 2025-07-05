@@ -565,7 +565,7 @@ namespace klib::usb::device {
                     break;
                 case hid::class_request::set_report:
                     // check if the packet length is not above the max endpoint size
-                    if (packet.wLength > Usb::max_endpoint_size) {
+                    if (packet.wLength > Usb::max_endpoint_size.size(usb::control_endpoint, klib::usb::descriptor::transfer_type::control)) {
                         // invalid length
                         return usb::handshake::stall;
                     }

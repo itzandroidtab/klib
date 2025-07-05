@@ -5,6 +5,7 @@
 
 #include <klib/klib.hpp>
 #include <klib/usb/usb/usb.hpp>
+#include <klib/usb/usb/size.hpp>
 #include <klib/math.hpp>
 
 #include <io/power.hpp>
@@ -51,8 +52,8 @@ namespace klib::core::lpc17xx::io {
         // amount of endpoints supported by the lpc1756
         constexpr static uint8_t endpoint_count = 16;
 
-        // max size in a control endpoint
-        constexpr static uint8_t max_control_endpoint_size = 64;
+        // maximum endpoint sizes
+        constexpr static klib::usb::endpoint_size_type<64, 1023, 64, 64> max_endpoint_size = {};
 
         // type to use in device functions
         using usb_type = usb<Usb, Device>;
@@ -178,9 +179,9 @@ namespace klib::core::lpc17xx::io {
 
         static void reset() {
             Usb::port->EPIND = 0;
-            Usb::port->MAXPSIZE = max_control_endpoint_size;
+            Usb::port->MAXPSIZE = max_endpoint_size.size(0, klib::usb::descriptor::transfer_type::control);
             Usb::port->EPIND = 1;
-            Usb::port->MAXPSIZE = max_control_endpoint_size;
+            Usb::port->MAXPSIZE = max_endpoint_size.size(0, klib::usb::descriptor::transfer_type::control);
 
             while ((Usb::port->DEVINTST & 0x100) == 0) {
                 // do nothing
@@ -733,7 +734,9 @@ namespace klib::core::lpc17xx::io {
             for (uint32_t i = 0; i < endpoint_count; i++) {
                 // set the endpoint to a known state
                 state[i].is_busy = false;
-                state[i].max_size = static_cast<uint8_t>((i == 0) ? max_control_endpoint_size : 0);
+                state[i].max_size = static_cast<uint8_t>(
+                    (i == 0) ? max_endpoint_size.size(0, klib::usb::descriptor::transfer_type::control) : 0
+                );
                 state[i].data = nullptr;
                 state[i].requested_size = 0;
                 state[i].transferred_size = 0;
@@ -853,7 +856,7 @@ namespace klib::core::lpc17xx::io {
             Usb::port->MAXPSIZE = size;
 
             // set the new endpoint size
-            state[endpoint].max_size = size;
+            state[endpoint].max_size = klib::min(size, max_endpoint_size.size(ep, type));
 
             // wait until the flag is updated
             while ((Usb::port->DEVINTST & 0x100) == 0) {

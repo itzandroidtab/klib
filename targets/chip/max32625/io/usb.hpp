@@ -96,8 +96,8 @@ namespace klib::max32625::io {
         // amount of endpoints supported by the max32625
         constexpr static uint8_t endpoint_count = 8;
 
-        // max size in a single endpoint
-        constexpr static uint8_t max_endpoint_size = 64;
+        // maximum endpoint sizes
+        constexpr static klib::usb::endpoint_size_type<64, 64, 64, 64> max_endpoint_size = {};
 
         // type to use in device functions
         using usb_type = usb<Usb, Device>;
@@ -697,7 +697,9 @@ namespace klib::max32625::io {
                 // set the endpoint to a known state
                 state[i] = {
                     .is_busy = false,
-                    .max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0),
+                    .max_size = static_cast<uint8_t>(
+                        (i == 0) ? max_endpoint_size.size(0, klib::usb::descriptor::transfer_type::control) : 0
+                    ),
                     .requested_size = 0,
                     .transferred_size = 0,
                     .callback = nullptr
@@ -781,7 +783,7 @@ namespace klib::max32625::io {
             );
 
             // set the new endpoint size
-            state[endpoint].max_size = klib::min(max_endpoint_size, size);
+            state[endpoint].max_size = klib::min(size, max_endpoint_size.size(endpoint, type));
 
             // store the ctrl data in the endpoint
             (*ep) = ctrl;

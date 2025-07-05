@@ -51,8 +51,10 @@ namespace klib::core::atsam4s::io {
         // amount of endpoints supported by the atsam4s
         constexpr static uint8_t endpoint_count = 8;
 
-        // max size in a single endpoint
-        constexpr static uint8_t max_endpoint_size = 64;
+        // maximum endpoint sizes
+        constexpr static klib::usb::endpoint_size_endpoint<endpoint_count, 
+            64, 64, 64, 64, 512, 512, 64, 64
+        > max_endpoint_size = {};
 
         // type to use in device functions
         using usb_type = usb<Usb, Device>;
@@ -564,7 +566,9 @@ namespace klib::core::atsam4s::io {
             for (uint32_t i = 0; i < endpoint_count; i++) {
                 // set the endpoint to a known state
                 state[i].is_busy = false;
-                state[i].max_size = static_cast<uint8_t>((i == 0) ? max_endpoint_size : 0);
+                state[i].max_size = static_cast<uint8_t>(
+                    (i == 0) ? max_endpoint_size.size(0, klib::usb::descriptor::transfer_type::control) : 0
+                );
                 state[i].data = nullptr;
                 state[i].requested_size = 0;
                 state[i].transferred_size = 0;
@@ -649,7 +653,7 @@ namespace klib::core::atsam4s::io {
             const klib::usb::descriptor::transfer_type type, const uint32_t size)
         {
             // set the new endpoint size
-            state[endpoint].max_size = size;
+            state[endpoint].max_size = klib::min(size, max_endpoint_size.size(endpoint, type));
 
             // reset the endpoint
             reset(endpoint, mode);
