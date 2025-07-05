@@ -1,8 +1,10 @@
 #ifndef KLIB_NXP_LPC178X_EMAC_HPP
 #define KLIB_NXP_LPC178X_EMAC_HPP
 
-#include <klib/delay.hpp>
+#include <span>
+#include <algorithm>
 
+#include <klib/delay.hpp>
 #include <klib/multispan.hpp>
 #include <klib/io/core_clock.hpp>
 #include <klib/io/bus/ethernet.hpp>
@@ -14,6 +16,66 @@
 namespace klib::core::lpc178x::io {
     template <typename Emac, klib::io::ethernet::mii Mii, uint32_t MaxFrameLength = 1536>
     class emac {
+    public:
+        /**
+         * @brief Packet descriptor
+         * 
+         */
+        struct descriptor {
+            // pointer to the data buffer
+            uint8_t* packet;
+
+            // control of the descriptor
+            uint32_t control;
+        };
+
+        static_assert(sizeof(descriptor) == (2 * sizeof(uint32_t)), "Invalid RX descriptor size");
+
+        /**
+         * @brief Rx hash word
+         * 
+         */
+        struct receive_hash {
+            // source address hash crc
+            uint32_t source_address_crc: 9;
+
+            // unused bits
+            uint32_t padding0: 7;
+
+            // source address hash crc
+            uint32_t destination_address_crc: 9;
+
+            // unused bits
+            uint32_t padding1: 7;
+        };
+
+        static_assert(sizeof(receive_hash) == sizeof(uint32_t), "Invalid RX hash size");
+
+        /**
+         * @brief Rx status
+         * 
+         */
+        struct receive_status {
+            // the status info of the rx
+            uint32_t info;
+
+            // 2 concatenated 9 bit hashes
+            receive_hash hash_crc;
+        };
+
+        static_assert(sizeof(receive_status) == (2 * sizeof(uint32_t)), "Invalid RX status size");
+
+        /**
+         * @brief Tx status
+         * 
+         */
+        struct transmit_status {
+            // the status info of the rx
+            uint32_t info;
+        };
+
+        static_assert(sizeof(transmit_status) == sizeof(uint32_t), "Invalid TX status size");
+        
     protected:
         // make sure we have a valid media independent interface we support
         static_assert(
@@ -25,6 +87,12 @@ namespace klib::core::lpc178x::io {
             MaxFrameLength <= 0xffff, "Invalid max frame length"
         );
 
+        /**
+         * @brief Get the clk divider for the MIIM
+         * 
+         * @param clock 
+         * @return constexpr uint32_t 
+         */
         constexpr static uint32_t get_clk_divider(uint32_t clock) {
             // all the available dividers and frequencies
             constexpr std::array<std::array<uint8_t, 2>, 15> dividers = {{
@@ -82,7 +150,64 @@ namespace klib::core::lpc178x::io {
         }
 
     public:
-        static void init(const klib::io::ethernet::mac_address& mac) {
+        /**
+         * @brief Init the lpc178x emac peripheral.
+         * 
+         * @note Emac only has access to the peripheral ram. Providing a span to the 
+         * main sram will not work
+          * 
+          * @param mac 
+          * @param tx_descriptor 
+          * @param tx_status 
+          * @param tx_data 
+          * @param rx_descriptor 
+          * @param rx_status 
+          * @param rx_data 
+          * @return result
+          */
+        static bool init(
+            const klib::io::ethernet::mac_address& mac, 
+            const std::span<descriptor>& tx_descriptor, const std::span<transmit_status>& tx_status, const std::span<uint8_t>& tx_data, 
+            const std::span<descriptor>& rx_descriptor, const std::span<receive_status>& rx_status, const std::span<uint8_t>& rx_data
+        ) 
+        {
+            // make sure all the buffers are not empty
+            if ((!rx_descriptor.size()) || (!rx_status.size()) || 
+                (!tx_descriptor.size()) || (!tx_status.size())) 
+            {
+                return false;
+            }
+
+            // make sure the buffers are not empty
+            if (!tx_data.size() || !rx_data.size()) {
+                return false;
+            }
+
+            // make sure all the tx status and descriptor size match
+            if (tx_descriptor.size() != tx_status.size()) {
+                return false;
+            }
+
+            // make sure all the rx status and descriptor size match
+            if (rx_descriptor.size() != rx_status.size()) {
+                return false;
+            }
+
+            // the rx status needs to be 8 byte alligned 
+            if (reinterpret_cast<uint32_t>(rx_status.data()) & 0x7) {
+                return false;
+            }
+
+            // check for the other allignments
+            if ((reinterpret_cast<uint32_t>(tx_descriptor.data()) & 0x3) || 
+                (reinterpret_cast<uint32_t>(tx_status.data()) & 0x3) ||
+                (reinterpret_cast<uint32_t>(tx_data.data()) & 0x3) || 
+                (reinterpret_cast<uint32_t>(rx_descriptor.data()) & 0x3) || 
+                (reinterpret_cast<uint32_t>(rx_data.data()) & 0x3))
+            {
+                return false;
+            }
+
             // enable power to the peripheral
             target::io::power_control::enable<Emac>();
 
@@ -175,7 +300,65 @@ namespace klib::core::lpc178x::io {
             Emac::port->SA1 = mac[2] << 8 | mac[3];
             Emac::port->SA2 = mac[4] << 8 | mac[5];
 
-            // TODO: add descriptor initalisation
+            // get the rx info
+            const uint32_t rx_count = rx_descriptor.size();
+            const uint32_t rx_offset = rx_data.size() / rx_count;
+
+            // init the receive descriptor
+            for (uint32_t i = 0; i < rx_count; i++) {
+                // set the packet pointer
+                rx_descriptor[i].packet = rx_data.data() + (rx_offset * i);
+
+                // set the control register (set the size + enable the rx done interrupt)
+                rx_descriptor[i].control = ((0x1 << 31) | ((rx_offset - 1) & 0x7ff));
+
+                // clear the status
+                rx_status[i].info = 0;
+                rx_status[i].hash_crc = {};
+            }
+
+            // store the rx descriptors in the emac registers
+            Emac::port->RXDESCRIPTOR = reinterpret_cast<uint32_t>(rx_descriptor.data());
+            Emac::port->RXSTATUS = reinterpret_cast<uint32_t>(rx_status.data());
+            Emac::port->RXDESCRIPTORNUMBER = rx_count - 1;
+            Emac::port->RXCONSUMEINDEX = 0;
+
+            // get the tx info
+            const uint32_t tx_count = tx_descriptor.size();
+            const uint32_t tx_offset = tx_data.size() / tx_count;
+
+            // init the transmit descriptor
+            for (uint32_t i = 0; i < tx_count; i++) {
+                // set the packet pointer
+                tx_descriptor[i].packet = tx_data.data() + (tx_offset * i);
+
+                // clear the control register
+                tx_descriptor[i].control = 0;
+
+                // clear the status
+                tx_status[i].info = 0;
+            }
+
+            // store the rx descriptors in the emac registers
+            Emac::port->TXDESCRIPTOR = reinterpret_cast<uint32_t>(tx_descriptor.data());
+            Emac::port->TXSTATUS = reinterpret_cast<uint32_t>(tx_status.data());
+            Emac::port->TXDESCRIPTORNUMBER = tx_count - 1;
+            Emac::port->TXPRODUCEINDEX = 0;
+
+            // receive broadcast and perfect match packets
+            Emac::port->RXFILTERCTRL = (0x1 << 1) | (0x1 << 5);			 
+ 
+            // Enable interrupts MAC Module Control Interrupt Enable Register
+            ETHERNET->INTENABLE = (0x1 << 3) | (0x1 << 7);
+
+            // Reset all ethernet interrupts in MAC module
+            Emac::port->INTCLEAR  = 0xffffffff;
+
+            // Finally enable receive and transmit mode in ethernet core
+            ETHERNET->COMMAND |= (0x1 | 0x2);
+            ETHERNET->MAC1 |= 0x1;
+
+            return true;
         }
 
         /**
@@ -211,6 +394,94 @@ namespace klib::core::lpc178x::io {
                 (config.link_speed == klib::io::ethernet::speed::mbps_10) ?
                 0x0 : (0x1 << 8)
             );
+        }
+
+        /**
+         * @brief Returns if data is available in a rx buffer
+         * 
+         * @return true 
+         * @return false 
+         */
+        static bool has_data() {
+            // return if there is a difference between the rx produce and consume index
+            return Emac::port->RXPRODUCEINDEX != Emac::port->RXCONSUMEINDEX;
+        }
+
+        /**
+         * @brief Reads data into the provided buffer
+         * 
+         * @param rx 
+         * @return uint32_t 
+         */
+        static uint32_t read(const std::span<uint16_t> rx, const uint32_t offset) {
+            // get the consume index
+            const uint32_t index = Emac::port->RXCONSUMEINDEX;
+
+            // get the amount of bytes we received in this buffer
+            const uint32_t length = (klib::min(
+                static_cast<uint32_t>(
+                    (reinterpret_cast<receive_status*>(Emac::port->RXSTATUS)[index].info) & 0x7ff
+                ),
+                rx.size_bytes()
+            ));
+
+            // get the pointer to the buffer
+            const uint8_t* buffer = (
+                reinterpret_cast<descriptor*>(Emac::port->RXDESCRIPTOR)[index].packet
+            );
+
+            // copy all the data from the buffer into the user provided buffer
+            std::copy_n(buffer + offset, length, reinterpret_cast<uint8_t*>(rx.data()));
+
+            // return the full length of the packet
+            return length;
+        }
+
+        /**
+         * @brief Release a received frame
+         * 
+         */
+        static void release() {
+            // get the consume index
+            const uint32_t index = Emac::port->RXCONSUMEINDEX;
+
+            // move to the next index after reading
+            const auto max = (Emac::port->RXDESCRIPTORNUMBER + 1);
+            const auto next = index + 1;
+
+            // limit the index to the max indexes we have
+            Emac::port->RXCONSUMEINDEX = next % max;
+        }
+
+        /**
+         * @brief Write into a tx buffer
+         * 
+         * @param tx 
+         * @return result
+         */
+        static bool write(const std::span<uint16_t> tx) {
+            // get the produce index
+            const uint32_t index = Emac::port->TXPRODUCEINDEX;
+
+            // get a reference to the descriptor
+            descriptor& desc = (
+                reinterpret_cast<descriptor*>(Emac::port->TXDESCRIPTOR)[index]
+            );
+
+            // write the data to the buffer
+            std::copy_n(tx.data(), tx.size(), reinterpret_cast<uint16_t*>(desc.packet));
+
+            // write the size to the control
+            desc.control = (0x1 << 30) | tx.size_bytes();
+
+            // move to the next index after writing
+            const auto max = (Emac::port->TXDESCRIPTORNUMBER + 1);
+            const auto next = index + 1;
+
+            // limit the index to the max indexes we have
+            Emac::port->TXPRODUCEINDEX = next % max;
+
+            return true;
         }
 
     public:
