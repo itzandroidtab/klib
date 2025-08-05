@@ -366,7 +366,7 @@ namespace klib::core::lpc178x::io {
          * 
          * @param config 
          */
-        static void configure(const klib::io::ethernet::link_config config) {
+        static void configure(const klib::io::ethernet::link_config& config) {
             // configure the modes we received from the phy
             if (config.full_duplex) {
                 // enable full duplex on the MAC
@@ -408,21 +408,17 @@ namespace klib::core::lpc178x::io {
         }
 
         /**
-         * @brief Reads data into the provided buffer
+         * @brief Get a non owning span to the raw buffer we received
          * 
-         * @param rx 
-         * @return uint32_t 
+         * @return const std::span<const uint8_t> 
          */
-        static uint32_t read(const std::span<uint16_t> rx, const uint32_t offset) {
+        static const std::span<const uint8_t> read() {
             // get the consume index
             const uint32_t index = Emac::port->RXCONSUMEINDEX;
 
             // get the amount of bytes we received in this buffer
-            const uint32_t length = (klib::min(
-                static_cast<uint32_t>(
-                    (reinterpret_cast<receive_status*>(Emac::port->RXSTATUS)[index].info) & 0x7ff
-                ),
-                rx.size_bytes()
+            const uint32_t length = (static_cast<uint32_t>(
+                (reinterpret_cast<receive_status*>(Emac::port->RXSTATUS)[index].info) & 0x7ff
             ));
 
             // get the pointer to the buffer
@@ -430,11 +426,8 @@ namespace klib::core::lpc178x::io {
                 reinterpret_cast<descriptor*>(Emac::port->RXDESCRIPTOR)[index].packet
             );
 
-            // copy all the data from the buffer into the user provided buffer
-            std::copy_n(buffer + offset, length, reinterpret_cast<uint8_t*>(rx.data()));
-
             // return the full length of the packet
-            return length;
+            return {buffer, length};
         }
 
         /**
