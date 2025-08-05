@@ -34,7 +34,7 @@ namespace klib {
         using const_reference     = const element_type&;
 
         /**
-         * @brief Operator to get data from the two spans
+         * @brief Operator to get data from a multispan
          *
          * @param index
          * @return constexpr T&
