@@ -467,7 +467,7 @@ namespace klib::core::lpc178x::io {
          * @param tx 
          * @return result
          */
-        static bool write(const std::span<uint8_t> tx) {
+        static bool write(const std::span<const uint8_t> tx) {
             // get the produce index
             const uint32_t index = Emac::port->TXPRODUCEINDEX;
 
