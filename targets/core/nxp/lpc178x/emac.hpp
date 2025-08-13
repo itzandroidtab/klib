@@ -150,18 +150,49 @@ namespace klib::core::lpc178x::io {
         }
 
         /**
-         * @brief Helper to increment the tx producer after writing 
-         * to the buffer of the description
+         * @brief Helper function that implements the 
          * 
-         * @param index 
+         * @tparam CopyN 
+         * @tparam T 
+         * @param tx 
+         * @return true 
+         * @return false 
          */
-        static void increment_tx_producer(const uint32_t index) {
-            // move to the next index after writing
+        template <bool CopyN, typename T>
+        static bool write_impl(const T& tx) {
+            // get the produce index
+            const uint32_t index = Emac::port->TXPRODUCEINDEX;
+
+            // get a reference to the descriptor
+            descriptor& desc = (
+                reinterpret_cast<descriptor*>(Emac::port->TXDESCRIPTOR)[index]
+            );
+
+            // check how we can copy the data to the destination packet. For the 
+            // multispan we need to fall back to a for loop as the array subscripting 
+            // operator is overloaded as it can be non contiguous
+            if constexpr (CopyN) {
+                // write the data to the buffer
+                std::copy_n(tx.data(), tx.size(), reinterpret_cast<uint8_t*>(desc.packet));
+            }
+            else {
+                // write the data to the buffer
+                for (uint32_t i = 0; i < tx.size_bytes(); i++) {
+                    desc.packet[i] = tx[i];
+                }
+            }
+
+            // write the size to the control
+            desc.control = (0x1 << 30) | tx.size_bytes();
+
+            // increment the tx pruducer after writing
             const auto max = (Emac::port->TXDESCRIPTORNUMBER + 1);
             const auto next = index + 1;
 
             // limit the index to the max indexes we have
             Emac::port->TXPRODUCEINDEX = next % max;
+
+            return true;
         }
 
     public:
@@ -467,25 +498,8 @@ namespace klib::core::lpc178x::io {
          * @param tx 
          * @return result
          */
-        static bool write(const std::span<const uint8_t> tx) {
-            // get the produce index
-            const uint32_t index = Emac::port->TXPRODUCEINDEX;
-
-            // get a reference to the descriptor
-            descriptor& desc = (
-                reinterpret_cast<descriptor*>(Emac::port->TXDESCRIPTOR)[index]
-            );
-
-            // write the data to the buffer
-            std::copy_n(tx.data(), tx.size(), reinterpret_cast<uint8_t*>(desc.packet));
-
-            // write the size to the control
-            desc.control = (0x1 << 30) | tx.size_bytes();
-
-            // increment the tx pruducer after writing
-            increment_tx_producer(index);
-
-            return true;
+        static bool write(const std::span<const uint8_t>& tx) {
+            return write_impl<true>(tx);
         }
 
         /**
@@ -495,28 +509,7 @@ namespace klib::core::lpc178x::io {
          * @return result
          */
         static bool write(const multispan<const uint8_t>& tx) {
-            // get the produce index
-            const uint32_t index = Emac::port->TXPRODUCEINDEX;
-
-            // get a reference to the descriptor
-            descriptor& desc = (
-                reinterpret_cast<descriptor*>(Emac::port->TXDESCRIPTOR)[index]
-            );
-
-            // write the data to the buffer. For the multispan we need
-            // to fall back to a for loop as the array subscripting 
-            // operator is overloaded as it can be non contiguous
-            for (uint32_t i = 0; i < tx.size_bytes(); i++) {
-                desc.packet[i] = tx[i];
-            }
-
-            // write the size to the control
-            desc.control = (0x1 << 30) | tx.size_bytes();
-
-            // increment the tx pruducer after writing
-            increment_tx_producer(index);
-
-            return true;
+            return write_impl<false>(tx);
         }
 
     public:
