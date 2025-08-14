@@ -42,6 +42,8 @@ add_compile_options("-fsingle-precision-constant")
 # enable stack usage
 add_compile_options(-fstack-usage)
 
+# enable the static analyzer for the whole project
+add_compile_options(-fanalyzer)
 
 # include the target cpu and set a target board
 if (DEFINED TARGET_CPU)
