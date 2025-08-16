@@ -751,7 +751,7 @@ namespace klib::filesystem {
                         }
                     }
                     else {
-                        // check if we have a read function registered
+                        // check if we have a write function registered
                         if (virtual_media[i].write) {
                             virtual_media[i].write(media_offset, &data[data_offset], count);
                         }
@@ -862,12 +862,13 @@ namespace klib::filesystem {
          * @param size
          * @param read
          * @param write
+         * @return status
          */
-        static void create_file(const char* file_name, const uint32_t size, const read_callback read = nullptr, const write_callback write = nullptr) {
+        static bool create_file(const char* file_name, const uint32_t size, const read_callback read = nullptr, const write_callback write = nullptr) {
             // make sure we can create a file
             if ((directory_index + 1) >= (sizeof(virtual_media) / sizeof(virtual_media[0]))) {
                 // we cannot create more files
-                return;
+                return false;
             }
 
             const uint32_t clusters = (
@@ -882,7 +883,7 @@ namespace klib::filesystem {
                 // check if we have enough clusters to allocate for the file
                 if ((cluster_index + clusters) > ((sizeof(fat) * 8) / cluster::bits)) {
                     // we do not have enough clusters for the file exit
-                    return;
+                    return false;
                 }
 
                 // set the clusters in use
@@ -939,6 +940,8 @@ namespace klib::filesystem {
 
             // increment the amount of files we have
             directory_index++;
+
+            return true;
         }
 
         /**
