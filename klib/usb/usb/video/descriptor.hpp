@@ -718,6 +718,46 @@ namespace klib::usb::video {
     };
 
     static_assert(sizeof(video_mjpeg_frame<continuous_frame_intervals>) == 0x26, "Video mjpeg frame descriptor size is wrong");
+
+    /**
+     * @brief Video color format descriptor
+     * 
+     */
+    struct color_format {
+        // header of the descriptor
+        const detail::vs_header<color_format, detail::streaming_subtype::colorformat> header;
+
+        // color primaries
+        // 0x00 = unspecified
+        // 0x01 = BT.709, sRGB
+        // 0x02 = BT.470-2 (M)
+        // 0x03 = BT.470-2 (B, G)
+        // 0x04 = BT.SMPTE 170M
+        // 0x05 = BT.SMPTE 240M
+        uint8_t bColorPrimaries;
+
+        // optoelectronic transfer characteristic of the source picture also called the gamma function
+        // 0x00 = unspecified
+        // 0x01 = BT.709, sRGB
+        // 0x02 = BT.470-2 (M)
+        // 0x03 = BT.470-2 (B, G)
+        // 0x04 = BT.SMPTE 170M
+        // 0x05 = BT.SMPTE 240M
+        // 0x06 = Linear (V = LC)
+        // 0x07 = sRGB
+        uint8_t bTransferCharacteristics;
+
+        // Matrix used to compute luma and chroma values from the color primaries.
+        // 0x00 = unspecified
+        // 0x01 = BT.709,
+        // 0x02 = FCC
+        // 0x03 = BT.470-2 (B, G)
+        // 0x04 = SMPTE 170M
+        // 0x05 = SMPTE 240M
+        uint8_t bMatrixCoefficients;
+    };
+
+    static_assert(sizeof(color_format) == 0x06, "Color format descriptor size is wrong");
 }
 
 namespace klib::usb::video {
