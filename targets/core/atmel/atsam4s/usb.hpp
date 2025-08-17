@@ -102,6 +102,9 @@ namespace klib::core::atsam4s::io {
         // struct with information about the state of a endpoint
         static inline volatile detail::usb::state state[endpoint_count] = {};
 
+        // all the iso endpoints
+        constexpr static uint32_t iso_endpoints = 0b11110110;
+
         // address to change to if not zero.
         static inline volatile uint8_t device_address = 0;
 
@@ -614,7 +617,7 @@ namespace klib::core::atsam4s::io {
                 return (endpoint == 0) || (endpoint == 3);
             }
             else if constexpr (type == transfer_type::isochronous) {
-                return ((0x1 << endpoint) & 0b11110110);
+                return ((0x1 << endpoint) & iso_endpoints);
             }
 
             // every endpoint supports bulk and interrupt. Dont
