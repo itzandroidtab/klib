@@ -137,7 +137,7 @@ namespace klib::core::atsam4s::io {
             }
 
             // bit 3 sets if we have a in or out.
-            return static_cast<uint8_t>(type) | (mode != klib::usb::usb::endpoint_mode::out);
+            return static_cast<uint8_t>(type) | ((mode != klib::usb::usb::endpoint_mode::out) << 2);
         }
 
         constexpr static klib::usb::usb::endpoint_mode raw_to_endpoint_mode(const endpoint_mode mode) {
@@ -168,10 +168,10 @@ namespace klib::core::atsam4s::io {
             // configure endpoint 0 so we can receive
             // a setup packet (also enable it)
             Usb::port->CSR[klib::usb::usb::control_endpoint] = (
-                (0x1 << 15) | transfer_type_to_raw(
+                (0x1 << 15) | (transfer_type_to_raw(
                     klib::usb::usb::endpoint_mode::control,
                     klib::usb::descriptor::transfer_type::control
-                )
+                ) << 8)
             );
 
             // enable all the enpoint interrupts
@@ -663,7 +663,7 @@ namespace klib::core::atsam4s::io {
 
             // configure the selected endpoint
             Usb::port->CSR[endpoint] = (
-                (0x1 << 15) | transfer_type_to_raw(mode, type)
+                (0x1 << 15) | (transfer_type_to_raw(mode, type) << 8)
             );
         }
 
