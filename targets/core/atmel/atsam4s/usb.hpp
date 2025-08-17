@@ -322,18 +322,22 @@ namespace klib::core::atsam4s::io {
             }
         }
 
+        template <bool Isochronous>
         static void endpoint_out_callback(const uint8_t endpoint) {
-            // check if we are busy.
-            if (!state[endpoint].is_busy) {
-                // set the flag we have a out interrupt pending
-                state[endpoint].interrupt_pending = true;
+            // only check if we are busy if we are not a iso endpoint
+            if constexpr (!Isochronous) {
+                // check if we are busy.
+                if (!state[endpoint].is_busy) {
+                    // set the flag we have a out interrupt pending
+                    state[endpoint].interrupt_pending = true;
 
-                // disable the endpoint interrupt to prevent
-                // continuous triggers on the endpoint
-                Usb::port->IDR = (0x1 << endpoint);
+                    // disable the endpoint interrupt to prevent
+                    // continuous triggers on the endpoint
+                    Usb::port->IDR = (0x1 << endpoint);
 
-                // do not read anything
-                return;
+                    // do not read anything
+                    return;
+                }
             }
 
             // check both banks if the endpoint supports dual banks
@@ -419,7 +423,7 @@ namespace klib::core::atsam4s::io {
                     }
                     else {
                         // call the out callback
-                        endpoint_out_callback(endpoint);
+                        endpoint_out_callback<false>(endpoint);
                     }
                 }
                 else if (value & (0x1 << 3)) {
@@ -468,6 +472,53 @@ namespace klib::core::atsam4s::io {
             }
             else {
                 return 2;
+            }
+        }
+
+        static void isochronous_irq_handler() {
+            // get all the isochronous endpoints
+            uint32_t endpoints = iso_endpoints;
+
+            // amount of trailing zeros in the status register
+            uint8_t trailing_zeros = 0;
+
+            // we have a frame interrupt. Mark all the isochronous
+            // endpoints as not busy
+            while ((trailing_zeros = klib::ctz(endpoints)) < 32) {
+                // get the current endpoint
+                const uint8_t endpoint = trailing_zeros;
+
+                // clear the bit from the endpoints
+                endpoints &= ~(0x1 << endpoint);
+
+                // check if we are busy transmitting or receiving data
+                if (!state[endpoint].is_busy) {
+                    continue;
+                }
+
+                // check what kind of packet we have
+                const uint32_t value = Usb::port->CSR[endpoint];
+
+                // check if the endpoint is enabled
+                if (!(value & (0x1 << 15))) {
+                    continue;
+                }
+
+                // get the endpoint mode
+                const auto mode = static_cast<endpoint_mode>((value >> 8) & 0x7);
+
+                // check if the endpoint is isochronous
+                if (mode != endpoint_mode::iso_in && mode != endpoint_mode::iso_out) {
+                    continue;
+                }
+
+                // check how we need to handle the endpoint
+                if (raw_to_endpoint_mode(mode) == klib::usb::usb::endpoint_mode::out) {
+                    endpoint_out_callback<true>(endpoint);
+                }
+                else {
+                    endpoint_in_callback(endpoint);
+                }
             }
         }
 
@@ -524,7 +575,7 @@ namespace klib::core::atsam4s::io {
                     device::template sleep<usb_type>();
                 }
 
-                // enable the wakeup and resume interrupts
+                // enable the wakeup and resume interrupts 
                 Usb::port->IER = ((0x1 << 13) | (0x1 << 9));
 
                 // disable the suspend interrupt
@@ -542,6 +593,12 @@ namespace klib::core::atsam4s::io {
 
                 // disable the wakeup and resume interrupts
                 Usb::port->IDR = ((0x1 << 13) | (0x1 << 9));
+            }
+
+            // check for a frame interrupt
+            if (masked_status & (0x1 << 11)) {
+                // we have a frame interrupt. Handle it in the iso irq
+                isochronous_irq_handler();
             }
         }
 
@@ -666,6 +723,11 @@ namespace klib::core::atsam4s::io {
             Usb::port->CSR[endpoint] = (
                 (0x1 << 15) | (transfer_type_to_raw(mode, type) << 8)
             );
+
+            // check if we need to enable the iso interrupt
+            if (type == klib::usb::descriptor::transfer_type::isochronous) {
+                Usb::port->IER = (0x1 << 11);
+            }
         }
 
         /**
