@@ -5,6 +5,7 @@
 
 #include <klib/klib.hpp>
 #include <klib/usb/usb/usb.hpp>
+#include <klib/usb/usb/size.hpp>
 #include <klib/math.hpp>
 
 #include <io/power.hpp>
