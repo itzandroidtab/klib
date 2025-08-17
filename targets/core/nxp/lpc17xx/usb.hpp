@@ -433,7 +433,7 @@ namespace klib::core::lpc17xx::io {
         template <bool Isochronous>
         static void endpoint_out_callback(const uint8_t endpoint) {
             // only check if we are busy if we are not a iso endpoint
-            if constexpr (Isochronous) {
+            if constexpr (!Isochronous) {
                 // check if we are busy.
                 if (!state[endpoint].is_busy) {
                     // set the flag we have a out interrupt pending
