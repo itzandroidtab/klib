@@ -3,8 +3,6 @@
 
 #include <cstdint>
 
-#include <atsam3x8e.hpp>
-
 #include <targets/core/atmel/atsamxx/watchdog.hpp>
 
 namespace klib::atsam3x8e::io::periph {

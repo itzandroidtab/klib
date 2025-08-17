@@ -1,9 +1,9 @@
-#ifndef KLIB_ATMEL_ATSAM4S_POWER_CONTROL_HPP
-#define KLIB_ATMEL_ATSAM4S_POWER_CONTROL_HPP
+#ifndef KLIB_ATMEL_ATSAMXX_POWER_CONTROL_HPP
+#define KLIB_ATMEL_ATSAMXX_POWER_CONTROL_HPP
 
 #include <klib/klib.hpp>
 
-namespace klib::core::atsam4s::io {
+namespace klib::core::atsamxx::io {
     class power_control {
     public:
         /**

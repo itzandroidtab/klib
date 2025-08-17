@@ -27,13 +27,13 @@ namespace klib::core::atsam4s::io {
         template <id Ids>
         static void enable() {
             // disable the write protect
-            power_control::write_protect<false>();
+            target::io::power_control::write_protect<false>();
 
             // set the bit to enable the clock on the peripheral
             PMC->PMC_SCER = (0x1 << static_cast<uint8_t>(Ids));
 
             // enable the write protect again
-            power_control::write_protect<true>();
+            target::io::power_control::write_protect<true>();
         }
 
         /**
@@ -44,13 +44,13 @@ namespace klib::core::atsam4s::io {
         template <id Ids>
         static void disable() {
             // disable the write protect
-            power_control::write_protect<false>();
+            target::io::power_control::write_protect<false>();
 
             // set the bit to enable the clock on the peripheral
             PMC->PMC_SCDR = (0x1 << static_cast<uint8_t>(Ids));
 
             // enable the write protect again
-            power_control::write_protect<true>();
+            target::io::power_control::write_protect<true>();
         }
 
         /**
