@@ -10,7 +10,7 @@
 #include <klib/usb/usb/video/descriptor.hpp>
 
 namespace klib::usb::device {
-    template <uint32_t Width, uint32_t Height, uint32_t InterruptEndpoint = 6, uint32_t Endpoint = 8>
+    template <uint32_t Width, uint32_t Height, uint32_t InterruptEndpoint = 6, uint32_t IsoEndpoint = 8, uint32_t MaxIsoEndpointSize = 1023>
     class camera {
     protected:
         /**
@@ -228,7 +228,7 @@ namespace klib::usb::device {
                     sizeof(video::video_mjpeg_format) +
                     sizeof(video::video_mjpeg_frame<video::continuous_frame_intervals>)
                 ),
-                .bEndpointAddress = 0x80 | Endpoint,
+                .bEndpointAddress = 0x80 | IsoEndpoint,
                 .bmInfo = 0x00,
                 .bTerminalLink = static_cast<uint8_t>(unit_index::output_unit),
                 .bStillCaptureMethod = 0x01,
@@ -272,9 +272,9 @@ namespace klib::usb::device {
                 .iInterface = 0x00,
             },
             {
-                .bEndpointAddress = 0x80 | Endpoint,
+                .bEndpointAddress = 0x80 | IsoEndpoint,
                 .bmAttributes = static_cast<uint8_t>(klib::usb::descriptor::transfer_type::isochronous),
-                .wMaxPacketSize = 1023,
+                .wMaxPacketSize = MaxIsoEndpointSize,
                 .bInterval = 0x01
             }
         };
@@ -296,7 +296,7 @@ namespace klib::usb::device {
         // serial number string descriptor
         const __attribute__((aligned(4))) static inline auto serial = string_descriptor("00001337");
 
-        __attribute__((aligned(4))) static inline uint8_t video_buffer[1023] = {};
+        __attribute__((aligned(4))) static inline uint8_t video_buffer[MaxIsoEndpointSize] = {};
 
         // configuration value. Value is set in the set config function
         static inline uint8_t configuration = 0x00;
@@ -524,7 +524,7 @@ namespace klib::usb::device {
             >(), "invalid interrupt selected");
 
             static_assert(Usb::template is_valid_endpoint<
-                Endpoint,
+                IsoEndpoint,
                 klib::usb::descriptor::transfer_type::isochronous
             >(), "invalid isochronous selected");
         }
