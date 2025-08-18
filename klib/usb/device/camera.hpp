@@ -10,7 +10,17 @@
 #include <klib/usb/usb/video/descriptor.hpp>
 
 namespace klib::usb::device {
-    template <uint32_t Width, uint32_t Height, uint32_t InterruptEndpoint = 6, uint32_t IsoEndpoint = 8, uint32_t MaxIsoEndpointSize = 1023>
+    /**
+     * @brief USB camera 
+     * 
+     * @tparam Width width of the data in pixels
+     * @tparam Height height of the data in pixels
+     * @tparam Fps 
+     * @tparam InterruptEndpoint
+     * @tparam IsoEndpoint 
+     * @tparam MaxIsoEndpointSize size for the isochronous endpoint. Default should be fine for most devices.
+     */
+    template <uint32_t Width, uint32_t Height, uint32_t Fps = 10, uint32_t InterruptEndpoint = 6, uint32_t IsoEndpoint = 8, uint32_t MaxIsoEndpointSize = 1023>
     class camera {
     protected:
         /**
@@ -251,14 +261,14 @@ namespace klib::usb::device {
                 .bmCapabilities = 0x03,
                 .wWidth = Width,
                 .wHeight = Height,
-                .dwMinBitRate = 0x000dec00,
-                .dwMaxBitRate = 0x000dec00,
-                .dwMaxVideoFrameBufSize = 0x00009480,
-                .dwDefaultFrameInterval = 0x000a2c2a,
+                .dwMinBitRate = Width * Height * 16 * Fps,
+                .dwMaxBitRate = Width * Height * 16 * Fps,
+                .dwMaxVideoFrameBufSize = Width * Height * 16 / 8,
+                .dwDefaultFrameInterval = 10000000 / Fps,
                 .bFrameIntervalType = 0x00,
                 .interval = {
-                    .dwMinFrameInterval = 0x000a2c2a,
-                    .dwMaxFrameInterval = 0x000a2c2a,
+                    .dwMinFrameInterval = 10000000 / Fps,
+                    .dwMaxFrameInterval = 10000000 / Fps,
                     .dwFrameIntervalStep = 0x00000000,
                 },
             },
