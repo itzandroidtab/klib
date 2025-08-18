@@ -595,13 +595,18 @@ namespace klib::usb::device {
         // serial number string descriptor
         const __attribute__((aligned(4))) static inline auto serial = string_descriptor("00001337");
 
-        __attribute__((aligned(4))) static inline uint8_t video_buffer[VideoType::max_iso_endpoint_size] = {};
+        __attribute__((aligned(4))) static inline uint8_t video_buffer[VideoType::max_iso_endpoint_size] = {0x02, 0x80};
+
+        __attribute__((aligned(4))) static inline uint8_t end_of_frame_marker[2] = {0x02, 0x82};
 
         // configuration value. Value is set in the set config function
         static inline uint8_t configuration = 0x00;
 
         // the current alt mode
         static inline volatile uint8_t alt_mode = 0x00;
+
+        // a non owning buffer to the data from the user
+        static inline std::span<const uint8_t> buffer = {};
 
         template <typename Usb>
         static usb::handshake set_current_impl(const klib::usb::setup_packet &packet) {
@@ -722,6 +727,52 @@ namespace klib::usb::device {
             }
         }
 
+        template <typename Usb>
+        static void status_callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
+            // check if we have a nak. If we have do nothing
+            if (error_code == usb::error::nak) {
+                return;
+            }
+
+            // check if we have an error
+            if (error_code != usb::error::no_error) {
+                // something went wrong, stall the endpoint
+                Usb::stall(endpoint, mode);
+
+                // clear the buffer
+                buffer = {};
+                return;
+            }
+
+            // get the size we can transfer
+            const uint32_t size = klib::min(sizeof(video_buffer) - 2, buffer.size());
+
+            // check if we have any data left to send
+            if (!size) {
+                // no data left to send, clear the buffer
+                buffer = {};
+
+                // get the frame marker from the video buffer
+                end_of_frame_marker[1] = (end_of_frame_marker[1] & (~0x1)) | (video_buffer[1] & 0x1);
+
+                // send the last packet header
+                Usb::write(nullptr, usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
+                    usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress), end_of_frame_marker
+                );
+
+                return;
+            }
+
+            // copy the new data to the buffer
+            std::copy_n(buffer.begin(), size, &video_buffer[2]);
+
+            // move the buffer with the size
+            buffer = buffer.subspan(size);
+
+            // start a new write operation
+            Usb::write(status_callback<Usb>, endpoint, mode, {video_buffer, size + 2});
+        }
+
     public:
         /**
          * @brief Returns if the device is configured
@@ -747,60 +798,42 @@ namespace klib::usb::device {
         }
 
         /**
-         * @brief
-         *
-         * @note Write takes multiple cycles (every cycle is 1 ms) if data is
-         * larger than the iso endpoint size (1023 bytes)
+         * @brief Write a frame to the host
+         * 
+         * @warning Undefined behavior if the endpoint is busy. Can take multiple ms
+         * based on the size of the frame.
          *
          * @tparam Usb
          * @param data
          */
         template <typename Usb>
         static void write(std::span<const uint8_t> data) {
-            // setup the header
-            video_buffer[0] = 0x02;
-            video_buffer[1] |= 0x80;
-
-            // remove the end of frame marker
-            video_buffer[1] &= ~(0x1 << 1);
+            // store the span into our local buffer
+            buffer = data;
 
             // flip the bits to mark we have a new frame
             video_buffer[1] ^= 0x01;
 
-            uint32_t offset = 0;
+            // use the callback to start the write operation
+            status_callback<Usb>(
+                usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
+                usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress),
+                usb::error::no_error, 0
+            );
+        }
 
-            while (true) {
-                // wait until we can send data
-                if (Usb::is_pending(usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
-                    usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress)))
-                {
-                    continue;
-                }
-
-                // get the size we can transfer
-                const uint32_t size = klib::min(sizeof(video_buffer) - 2, data.size() - offset);
-
-                // check if we have any data left to send
-                if (!size) {
-                    break;
-                }
-
-                // copy the data to the video buffer
-                std::copy_n(&data[offset], size, &video_buffer[2]);
-
-                Usb::write(nullptr, usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
-                    usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress), {video_buffer, size + 2}
-                );
-
-                offset += size;
-            }
-
-            // mark the end of the frame
-            video_buffer[1] |= 0x02;
-
-            // send the last packet header
-            Usb::write(nullptr, usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
-                usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress), {video_buffer, 2}
+        /**
+         * @brief Returns if the endpoint is busy
+         * 
+         * @tparam Usb 
+         * @return busy
+         */
+        template <typename Usb>
+        static bool is_busy() {
+            // return if the endpoint is busy
+            return (!buffer.empty()) || Usb::is_pending(
+                usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
+                usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress)
             );
         }
 
