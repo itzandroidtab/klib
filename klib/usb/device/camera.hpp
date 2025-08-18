@@ -727,7 +727,7 @@ namespace klib::usb::device {
             }
         }
 
-        template <typename Usb>
+        template <typename Usb, bool Async>
         static void status_callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
             // check if we have a nak. If we have do nothing
             if (error_code == usb::error::nak) {
@@ -770,7 +770,12 @@ namespace klib::usb::device {
             buffer = buffer.subspan(size);
 
             // start a new write operation
-            Usb::write(status_callback<Usb>, endpoint, mode, {video_buffer, size + 2});
+            if constexpr (Async) {
+                Usb::write(status_callback<Usb, Async>, endpoint, mode, {video_buffer, size + 2});
+            }
+            else {
+                Usb::write(nullptr, endpoint, mode, {video_buffer, size + 2});
+            }
         }
 
     public:
@@ -803,10 +808,16 @@ namespace klib::usb::device {
          * @warning Undefined behavior if the endpoint is busy. Can take multiple ms
          * based on the size of the frame.
          *
+         * @details this class uses isochronous endpoints to write the data. This means
+         * we only write when the host reqeusts the data. This happens every 1 ms. The 
+         * throughput is limited to the size of the endpoint (1023 bytes by default). 
+         * This means that most likely it takes multiple ms to write a frame.
+         * 
          * @tparam Usb
+         * @tparam Async
          * @param data
          */
-        template <typename Usb>
+        template <typename Usb, bool Async = true>
         static void write(std::span<const uint8_t> data) {
             // store the span into our local buffer
             buffer = data;
@@ -814,12 +825,40 @@ namespace klib::usb::device {
             // flip the bits to mark we have a new frame
             video_buffer[1] ^= 0x01;
 
-            // use the callback to start the write operation
-            status_callback<Usb>(
-                usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
-                usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress),
-                usb::error::no_error, 0
-            );
+            // check if we are in async mode
+            if constexpr (Async) {
+                // use the callback to start the write operation
+                status_callback<Usb, Async>(
+                    usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
+                    usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress),
+                    usb::error::no_error, 0
+                );
+            }
+            else {
+                // not in async mode, write the data directly
+                while (!buffer.empty()) {
+                    // write using the callback. This is not blocking. We wait in the loop below
+                    // before we continue writing
+                    status_callback<Usb, Async>(
+                        usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
+                        usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress),
+                        usb::error::no_error, 0
+                    );
+
+                    // wait until the usb is not pending anymore
+                    while (true) {
+                        if (Usb::is_pending(
+                            usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
+                            usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress))) 
+                        {
+                            continue;
+                        }
+
+                        // done writing. Write the next data
+                        break;
+                    }
+                }
+            }
         }
 
         /**
