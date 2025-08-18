@@ -497,8 +497,8 @@ namespace klib::usb::device {
                 .bNumFormats = 0x01,
                 .wTotalLength = (
                     sizeof(video::video_streaming_header) +
-                    sizeof(video::video_mjpeg_format) +
-                    sizeof(video::video_mjpeg_frame<video::continuous_frame_intervals>)
+                    sizeof(video::video_uncompressed_format) +
+                    sizeof(video::video_uncompressed_frame<video::continuous_frame_intervals>)
                 ),
                 .bEndpointAddress = 0x80 | IsoEndpoint,
                 .bmInfo = 0x00,

@@ -720,6 +720,60 @@ namespace klib::usb::video {
     static_assert(sizeof(video_mjpeg_frame<continuous_frame_intervals>) == 0x26, "Video mjpeg frame descriptor size is wrong");
 
     /**
+     * @brief Uncompressed video frame descriptor
+     *
+     * @tparam FrameInterval
+     */
+    template <typename FrameInterval>
+    struct video_uncompressed_frame {
+        // header of the descriptor
+        const detail::vs_header<video_uncompressed_frame<FrameInterval>, detail::streaming_subtype::frame_uncompressed> header;
+
+        // index of this format descriptor
+        uint8_t bFrameIndex;
+
+        // bitfield with the capabilities
+        // b[0] = still image supported
+        // b[1] = fixed frame-rate
+        // b[2..7] = reserved
+        uint8_t bmCapabilities;
+
+        // width of the decoded bitmap frame in pixels
+        uint16_t wWidth;
+
+        // height of the decoded bitmap frame in pixels
+        uint16_t wHeight;
+
+        // minimum bitrate
+        uint32_t dwMinBitRate;
+
+        // maxmimum bitrate
+        uint32_t dwMaxBitRate;
+
+        // specifies the maximum number of bytes for a
+        // video (or still frame) the compressor will
+        // produce (is deprecated)
+        uint32_t dwMaxVideoFrameBufSize;
+
+        // specifies the frame interval the device would
+        // like to use
+        uint32_t dwDefaultFrameInterval;
+
+        // indicates how the fram e interval can be
+        // programmed.
+        // 0 = continous frame interval
+        // 1..255 = the number of discrete frame intervals
+        // supported
+        uint8_t bFrameIntervalType;
+
+        // the frame interval
+        FrameInterval interval;
+    };
+
+    static_assert(sizeof(video_mjpeg_frame<continuous_frame_intervals>) == 0x26, "Video mjpeg frame descriptor size is wrong");
+
+
+    /**
      * @brief Video color format descriptor
      * 
      */
