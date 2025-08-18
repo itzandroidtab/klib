@@ -770,7 +770,7 @@ namespace klib::usb::video {
         FrameInterval interval;
     };
 
-    static_assert(sizeof(video_mjpeg_frame<continuous_frame_intervals>) == 0x26, "Video mjpeg frame descriptor size is wrong");
+    static_assert(sizeof(video_uncompressed_frame<continuous_frame_intervals>) == 0x26, "Uncompressed frame descriptor size is wrong");
 
 
     /**

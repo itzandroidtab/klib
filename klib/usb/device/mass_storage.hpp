@@ -29,7 +29,7 @@ namespace klib::usb::device {
         #pragma pack(push, 1)
 
         /**
-         * @brief Config descriptor for the hid keyboard
+         * @brief Config descriptor for the mass storage device
          *
          * @details packed so we can write this whole descriptor
          * to the usb hardware in one go.
@@ -112,7 +112,7 @@ namespace klib::usb::device {
             .bNumConfigurations = 0x1
         };
 
-        // language descriptor for the keyboard
+        // language descriptor for the mass storage class
         const __attribute__((aligned(4))) static inline descriptor::string<1> language = {
             .bString = {0x0409}
         };

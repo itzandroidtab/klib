@@ -562,7 +562,7 @@ namespace klib::usb::device {
     template <typename VideoType>
     class camera {
     protected:
-        // device descriptor for the hid keyboard
+        // device descriptor for the camera
         const __attribute__((aligned(4))) static inline descriptor::device device = {
             .bcdUSB = static_cast<uint16_t>(setup::usb_version::usb_v1_1),
             .bDeviceClass = descriptor::class_type::application_specific,
@@ -581,7 +581,7 @@ namespace klib::usb::device {
         __attribute__((aligned(4))) static inline video::probe_control probe_control = {};
         __attribute__((aligned(4))) static inline video::probe_control commit_control = {};
 
-        // language descriptor for the keyboard
+        // language descriptor for the camera
         const __attribute__((aligned(4))) static inline descriptor::string<1> language = {
             .bString = {0x0409}
         };

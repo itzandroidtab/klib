@@ -46,7 +46,7 @@ namespace klib::usb::device {
         #pragma pack(push, 1)
 
         /**
-         * @brief Config descriptor for the hid keyboard
+         * @brief Config descriptor for the serial device
          *
          * @details packed so we can write this whole descriptor
          * to the usb hardware in one go.
@@ -82,7 +82,7 @@ namespace klib::usb::device {
         // affected by the pack(1)
         #pragma pack(pop)
 
-        // device descriptor for the hid keyboard
+        // device descriptor for the serial device
         const __attribute__((aligned(4))) static inline descriptor::device device = {
             .bcdUSB = static_cast<uint16_t>(setup::usb_version::usb_v2_0),
             .bDeviceClass = descriptor::class_type::communication_and_cdc,
@@ -162,7 +162,7 @@ namespace klib::usb::device {
             }
         };
 
-        // language descriptor for the keyboard
+        // language descriptor for the serial device
         const __attribute__((aligned(4))) static inline descriptor::string<1> language = {
             .bString = {0x0409}
         };
