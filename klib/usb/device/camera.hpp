@@ -606,7 +606,8 @@ namespace klib::usb::device {
         static inline volatile uint8_t alt_mode = 0x00;
 
         // a non owning buffer to the data from the user
-        static inline std::span<const uint8_t> buffer = {};
+        static inline const uint8_t *volatile buffer = nullptr;
+        static inline volatile uint32_t bytes_to_transfer = 0;
 
         template <typename Usb>
         static usb::handshake set_current_impl(const klib::usb::setup_packet &packet) {
@@ -740,17 +741,17 @@ namespace klib::usb::device {
                 Usb::stall(endpoint, mode);
 
                 // clear the buffer
-                buffer = {};
+                buffer = nullptr;
                 return;
             }
 
             // get the size we can transfer
-            const uint32_t size = klib::min(sizeof(video_buffer) - 2, buffer.size());
+            const uint32_t size = klib::min(sizeof(video_buffer) - 2, bytes_to_transfer);
 
             // check if we have any data left to send
             if (!size) {
                 // no data left to send, clear the buffer
-                buffer = {};
+                buffer = nullptr;
 
                 // get the frame marker from the video buffer
                 end_of_frame_marker[1] = (end_of_frame_marker[1] & (~0x1)) | (video_buffer[1] & 0x1);
@@ -764,10 +765,11 @@ namespace klib::usb::device {
             }
 
             // copy the new data to the buffer
-            std::copy_n(buffer.begin(), size, &video_buffer[2]);
+            std::copy_n(buffer, size, &video_buffer[2]);
 
             // move the buffer with the size
-            buffer = buffer.subspan(size);
+            buffer += size;
+            bytes_to_transfer -= size;
 
             // start a new write operation
             if constexpr (Async) {
@@ -820,10 +822,14 @@ namespace klib::usb::device {
         template <typename Usb, bool Async = true>
         static void write(std::span<const uint8_t> data) {
             // store the span into our local buffer
-            buffer = data;
+            buffer = data.data();
+            bytes_to_transfer = data.size();
 
-            // flip the bits to mark we have a new frame
-            video_buffer[1] ^= 0x01;
+            // flip the bits to mark we have a new frame.
+            // we get a reference to trick the compiler into 
+            // not optimizing this out
+            volatile uint8_t& marker = video_buffer[1];
+            marker ^= 0x01;
 
             // check if we are in async mode
             if constexpr (Async) {
@@ -836,7 +842,7 @@ namespace klib::usb::device {
             }
             else {
                 // not in async mode, write the data directly
-                while (!buffer.empty()) {
+                while (!bytes_to_transfer) {
                     // write using the callback. This is not blocking. We wait in the loop below
                     // before we continue writing
                     status_callback<Usb, Async>(
@@ -870,7 +876,7 @@ namespace klib::usb::device {
         template <typename Usb>
         static bool is_busy() {
             // return if the endpoint is busy
-            return (!buffer.empty()) || Usb::is_pending(
+            return bytes_to_transfer || Usb::is_pending(
                 usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
                 usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress)
             );
