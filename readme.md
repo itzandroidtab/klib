@@ -31,10 +31,23 @@ This configures the project for the specific target cpu. To change to a differen
 (When using vscode with the cmake plugin the following can be added to the `settings.json` to configure cmake for the max32660 evsys board)
 ```json
 {
-    "target_cpu": "max32660",
-    "cmake.configureArgs": [
-        "-DTARGET_CPU=max32660"
-    ],
+    // target cpu, should be the same as in the cmake 
+    // define this is used in the c_cpp_properties.json 
+    // for intellisense
+    "target_cpu": "atsam4s2b",
+
+    // target cpu to use when using launch.json
+    // note: this might be different from the define. 
+    // for example the "atsam4s2b" does not exist in
+    // the j-link software and requires us to use 
+    // "atsam4s2ba" instead. To find the correct name
+    // open j-link and search for your chip
+    "target_cpu_debug": "atsam4s2ba",
+    "cmake.configureSettings": {
+        "TARGET_CPU": "atsam4s2b",
+        "TARGET_LOW_POWER_SLEEP": "1",
+        "TARGET_BREAK_AT_RESERVED_HANDLER": "1"
+    },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
 }
 ```
