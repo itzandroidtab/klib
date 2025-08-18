@@ -230,7 +230,7 @@ namespace klib::usb::device {
                 ),
                 .bEndpointAddress = 0x80 | Endpoint,
                 .bmInfo = 0x00,
-                .bTerminalLink = 0x03,
+                .bTerminalLink = static_cast<uint8_t>(unit_index::output_unit),
                 .bStillCaptureMethod = 0x01,
                 .bTriggerSupport = 0x01,
                 .bTriggerUsage = 0x00,
