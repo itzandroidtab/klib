@@ -204,6 +204,11 @@ namespace klib::core::atsam4s::io {
 
             // mark we have a transfer
             Usb::port->CSR[endpoint] = (Usb::port->CSR[endpoint] | (0x1 << 4));
+
+            // check if we need to enable the iso interrupt
+            if (m != endpoint_mode::iso_in && m != endpoint_mode::iso_out) {
+                Usb::port->IER = (0x1 << 11);
+            }
         }
 
         static uint32_t read_impl(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode,
@@ -380,6 +385,14 @@ namespace klib::core::atsam4s::io {
                         );
                     }
                 }
+                else {
+                    // check if this is being called in a isochronous context. If it is we need to
+                    // turn on the interrupt again if we want to receive more data
+                    if constexpr (Isochronous) {
+                        // enable the interrupt again so we can receive more data
+                        Usb::port->IER = (0x1 << 11);
+                    }
+                }
             }
         }
 
@@ -481,6 +494,10 @@ namespace klib::core::atsam4s::io {
 
             // amount of trailing zeros in the status register
             uint8_t trailing_zeros = 0;
+
+            // disable the iso interrupt. If we have more to transmit it will
+            // be turned on again when we want to transmit or receive more data
+            Usb::port->IDR = (0x1 << 11);
 
             // we have a frame interrupt. Mark all the isochronous
             // endpoints as not busy
@@ -723,11 +740,6 @@ namespace klib::core::atsam4s::io {
             Usb::port->CSR[endpoint] = (
                 (0x1 << 15) | (transfer_type_to_raw(mode, type) << 8)
             );
-
-            // check if we need to enable the iso interrupt
-            if (type == klib::usb::descriptor::transfer_type::isochronous) {
-                Usb::port->IER = (0x1 << 11);
-            }
         }
 
         /**
@@ -899,6 +911,19 @@ namespace klib::core::atsam4s::io {
             // get the size we can write in a single transmission
             const uint32_t s = klib::min(data.size(), state[endpoint].max_size);
 
+            // convert the current mode to a klib endpoint mode
+            const auto m = static_cast<endpoint_mode>((Usb::port->CSR[endpoint] >> 8) & 0x7);
+
+            // check if we have a isochronous endpoint
+            const bool is_iso = (m == endpoint_mode::iso_in) || (m == endpoint_mode::iso_out);
+
+            // if we write to a isochronous endpoint we need to turn off the interrupt
+            // to prevent a race condition. It will be turned on again in the write_impl
+            if (is_iso) {
+                // disable the interrupt for the endpoint
+                Usb::port->IDR = (0x1 << 11);
+            }
+
             // set the endpoint callback and mark the endpoint as busy
             state[endpoint].is_busy = true;
             state[endpoint].callback = callback;
@@ -959,6 +984,19 @@ namespace klib::core::atsam4s::io {
                          const klib::usb::usb::endpoint_mode mode, uint8_t *const data,
                          const uint32_t min_size, const uint32_t max_size)
         {
+            // convert the current mode to a klib endpoint mode
+            const auto m = static_cast<endpoint_mode>((Usb::port->CSR[endpoint] >> 8) & 0x7);
+
+            // check if we have a isochronous endpoint
+            const bool is_iso = (m == endpoint_mode::iso_in) || (m == endpoint_mode::iso_out);
+
+            // if we have a isochronous endpoint we need to turn off the interrupt to prevent
+            // a race condition. It will be turned on again at the end of the function
+            if (is_iso) {
+                // disable the interrupt for the endpoint
+                Usb::port->IDR = (0x1 << 11);
+            }
+
             // set the endpoint callback
             state[endpoint].callback = callback;
             state[endpoint].data = data;
@@ -979,6 +1017,11 @@ namespace klib::core::atsam4s::io {
                 // process the data we already received by forcing a interrupt
                 // on the endpoint we are reading
                 Usb::port->IER = (0x1 << endpoint);
+            }
+
+            // check if we need to enable the iso interrupt
+            if (is_iso) {
+                Usb::port->IER = (0x1 << 11);
             }
 
             // notify everything is correct
