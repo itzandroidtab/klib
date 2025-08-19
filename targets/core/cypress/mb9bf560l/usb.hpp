@@ -228,10 +228,7 @@ namespace klib::core::mb9bf560l::io {
             // get the endpoint status register
             volatile uint16_t* ep_status = get_endpoint_status(endpoint, mode);
 
-            // enable the drqi interrupt
-            (*ep_status) |= (0x1 << 14);
-
-            // wait until the buffer is empty by checking the drqi flag
+            // wait until the buffer is empty by checking the drq flag
             while (!((*ep_status) & (0x1 << 10))) {
                 // do nothing
             }
@@ -251,7 +248,7 @@ namespace klib::core::mb9bf560l::io {
                 (*((volatile uint8_t*)ep_data)) = data[size - 1];
             }
 
-            // set the flag we have data to send
+            // clear the drq flag to mark we have written the data
             (*ep_status) &= (~(0x1 << 10));
         }
 
@@ -1017,6 +1014,12 @@ namespace klib::core::mb9bf560l::io {
 
             // call the write implementation
             write_impl(endpoint, mode, data.data(), s);
+
+            // get the endpoint status register
+            volatile uint16_t* ep_status = get_endpoint_status(endpoint, mode);
+
+            // enable the drqi interrupt
+            (*ep_status) |= (0x1 << 14);
 
             // notify everything is correct
             return true;
