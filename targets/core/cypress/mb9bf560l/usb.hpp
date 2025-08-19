@@ -147,6 +147,24 @@ namespace klib::core::mb9bf560l::io {
             }
         }
 
+        /**
+         * @brief Converts a raw value to the endpoint mode
+         * 
+         * @note The hardware only raports in and out endpoints and does 
+         * not report control endpoints this way
+         * 
+         * @param raw 
+         * @return constexpr klib::usb::usb::endpoint_mode 
+         */
+        constexpr static klib::usb::usb::endpoint_mode raw_to_endpoint_mode(const bool raw) {
+            if (raw) {
+                return klib::usb::usb::endpoint_mode::in;
+            }
+            else {
+                return klib::usb::usb::endpoint_mode::out;
+            }
+        }
+
         static void clear_endpoint_state(const uint8_t endpoint) {
             state[endpoint].is_busy = false;
             state[endpoint].requested_size = 0;
@@ -599,6 +617,9 @@ namespace klib::core::mb9bf560l::io {
         }
  
         static void irq_handler() {
+            // mask to check if the interrupt is a specific endpoint
+            constexpr static uint16_t mask = (0x1 << 10) | (0x1 << 14);
+
             // check all the endpoints for data
             for (uint32_t ep = 1; ep < endpoint_count; ep++) {
                 // get the endpoint control register
@@ -609,8 +630,20 @@ namespace klib::core::mb9bf560l::io {
                     continue;
                 }
 
+                // get the endpoint mode
+                const auto mode = raw_to_endpoint_mode(((*ep_control) >> 12) & 0x1);
+
+                // get the enpoint status register
+                volatile uint16_t *const ep_status = get_endpoint_status(ep, mode);
+                
+                // check if the endpoint interrupt is enabled and if the drq flag is set
+                if (((*ep_status) & mask) != mask) {
+                    // Interrupt not for this endpoint
+                    continue;
+                }
+
                 // check if we have a in or a out endpoint
-                if ((((*ep_control) >> 12) & 0x1) == endpoint_mode_to_raw(klib::usb::usb::endpoint_mode::out)) {
+                if (mode == klib::usb::usb::endpoint_mode::out) {
                     // we have a out endpoint.
                     endpoint_out_callback(ep);
                 }
