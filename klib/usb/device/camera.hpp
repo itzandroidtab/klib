@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <span>
+#include <atomic>
 
 #include <klib/string.hpp>
 #include <klib/usb/usb/device.hpp>
@@ -606,8 +607,8 @@ namespace klib::usb::device {
         static inline volatile uint8_t alt_mode = 0x00;
 
         // a non owning buffer to the data from the user
-        static inline const uint8_t *volatile buffer = nullptr;
-        static inline volatile uint32_t bytes_to_transfer = 0;
+        static inline std::atomic<const uint8_t*> buffer = nullptr;
+        static inline std::atomic<uint32_t> bytes_to_transfer = 0;
 
         template <typename Usb>
         static usb::handshake set_current_impl(const klib::usb::setup_packet &packet) {
@@ -746,7 +747,7 @@ namespace klib::usb::device {
             }
 
             // get the size we can transfer
-            const uint32_t size = klib::min(sizeof(video_buffer) - 2, bytes_to_transfer);
+            const uint32_t size = klib::min(sizeof(video_buffer) - 2, bytes_to_transfer.load());
 
             // check if we have any data left to send
             if (!size) {
@@ -765,7 +766,7 @@ namespace klib::usb::device {
             }
 
             // copy the new data to the buffer
-            std::copy_n(buffer, size, &video_buffer[2]);
+            std::copy_n(buffer.load(), size, &video_buffer[2]);
 
             // move the buffer with the size
             buffer += size;
