@@ -788,9 +788,14 @@ namespace klib::core::mb9bf560l::io {
                 (*ep_status) &= (~(0x1 << 15));
 
                 // enable the interrupt flag for the endpoint
-                if (mode != klib::usb::usb::endpoint_mode::out) {
+                if (mode == klib::usb::usb::endpoint_mode::out) {
                     // enable the packet transfer interrupt for the endpoint
-                    (*ep_status) |= 0x1 << 14;
+                    (*ep_status) |= (0x1 << 14);
+                }
+                else {
+                    // disable the interrupt for the in endpoint. When needed
+                    // we enable this in the write function
+                    (*ep_status) &= ~(0x1 << 14);
                 }
             }
         }
