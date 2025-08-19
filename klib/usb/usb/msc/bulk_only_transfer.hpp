@@ -25,8 +25,8 @@ namespace klib::usb::msc::bot {
         static inline uint8_t interface = 0;
 
         // command block and command status
-        static inline command_block_wrapper cbw = {};
-        static inline command_status_wrapper csw = {};
+        alignas(4) static inline command_block_wrapper cbw = {};
+        alignas(4) static inline command_status_wrapper csw = {};
 
         struct block {
             uint32_t address;
