@@ -149,8 +149,8 @@ namespace klib::core::mb9bf560l::io {
         /**
          * @brief Converts a raw value to the endpoint mode
          * 
-         * @note The hardware only raports in and out endpoints and does 
-         * not report control endpoints this way
+         * @note The hardware only reports in and out endpoints and does 
+         * not report disabled endpoints this way
          * 
          * @param raw 
          * @return constexpr klib::usb::usb::endpoint_mode 
