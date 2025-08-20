@@ -50,11 +50,17 @@ namespace klib::core::mb9bf560l::io {
      * @brief Usb driver for the Cypress MB9BF560L Family. 
      * 
      * @note As some parts of the USB specification are implemented in the hardware
-     * there are some limitations. The hardware does not support usb alt modes. This
-     * means for example the USB camera device does not work. Another limitation is
-     * that if you use a isochronous endpoint some endpoints will be disabled. Please
-     * refer to the "32-bit Microcontroller FM4 Family Peripheral Manual Communication"
-     * for more information.
+     * there are some limitations. The hardware has some weird quirks with usb alt
+     * modes. It only supports alt modes for isochronous endpoints and a maximum of
+     * 2 (idle and active).
+     * 
+     * If you want to use 1 isochronous endpoint you need to be sure to use endpoint 1.
+     * If you want to use 2 isochronous endpoints you need to use endpoint 1 and 2.
+     * The documentation mentions that you cannot use endpoint 2 for isochronous if 
+     * endpoint 1 is not used for iso
+     * 
+     * These limitations can be found in the documentation:
+     * "32-bit Microcontroller FM4 Family Peripheral Manual Communication"
      * 
      * The hardware also does not forward all the events to the software. There is no
      * way to get "nak" events. This means the MSC device cannot recover as it never
@@ -266,6 +272,11 @@ namespace klib::core::mb9bf560l::io {
 
             // clear the drq flag to mark we have written the data
             (*ep_status) &= (~(0x1 << 10));
+
+            // check if we need to enable the iso interrupt
+            if ((((*ep_status) >> 13) & 0x3) == transfer_type_to_raw(klib::usb::descriptor::transfer_type::isochronous)) {
+                Usb::port->UDCIE |= (0x1 << 4);
+            }
         }
 
         static uint32_t get_endpoint_byte_count(const uint8_t endpoint, const klib::usb::usb::endpoint_mode mode) {
@@ -325,7 +336,41 @@ namespace klib::core::mb9bf560l::io {
         }
 
         static void sof_irq() {
-            // TODO: do something here
+            // disable the SOF interrupt
+            Usb::port->UDCIE &= ~(0x1 << 4);
+
+            // check all the endpoints for data
+            for (uint32_t ep = 1; ep < endpoint_count; ep++) {
+                // get the endpoint control register
+                volatile uint16_t *const ep_control = &(&Usb::port->EP0C)[ep * 2];
+
+                // check if the endpoint is enabled
+                if (!((*ep_control) & (0x1 << 15))) [[likely]] {
+                    continue;
+                }
+
+                // get the endpoint mode
+                const auto mode = raw_to_endpoint_mode(((*ep_control) >> 12) & 0x1);
+
+                // get the enpoint status register
+                volatile uint16_t *const ep_status = get_endpoint_status(ep, mode);
+
+                // check if the endpoint is a isochronous endpoint
+                if ((((*ep_status) >> 13) & 0x3) != transfer_type_to_raw(klib::usb::descriptor::transfer_type::isochronous)) {
+                    // not a isochronous endpoint, skip it
+                    continue;
+                }
+
+                // check if we have a in or a out endpoint
+                if (mode == klib::usb::usb::endpoint_mode::out) {
+                    // we have a out endpoint.
+                    endpoint_out_callback<true>(ep);
+                }
+                else {
+                    // we have a in endpoint
+                    endpoint_in_callback(ep);
+                }
+            }
         }
 
         static void busreset_irq() {
@@ -524,18 +569,22 @@ namespace klib::core::mb9bf560l::io {
             }
         }
 
+        template <bool Isochronous>
         static void endpoint_out_callback(const uint8_t endpoint) {
-            // check if we are busy.
-            if (!state[endpoint].is_busy) {
-                // set the flag we have a out interrupt pending
-                state[endpoint].interrupt_pending = true;
+            // only check if we are busy if we are not a iso endpoint
+            if constexpr (!Isochronous) {
+                // check if we are busy.
+                if (!state[endpoint].is_busy) {
+                    // set the flag we have a out interrupt pending
+                    state[endpoint].interrupt_pending = true;
 
-                // disable the endpoint interrupt to prevent
-                // continuous triggers on the endpoint
-                (*get_endpoint_status(endpoint, klib::usb::usb::endpoint_mode::out)) &= ~(0x1 << 14);
+                    // disable the endpoint interrupt to prevent
+                    // continuous triggers on the endpoint
+                    (*get_endpoint_status(endpoint, klib::usb::usb::endpoint_mode::out)) &= ~(0x1 << 14);
 
-                // do not read anything
-                return;
+                    // do not read anything
+                    return;
+                }
             }
 
             // receive more data
@@ -563,6 +612,14 @@ namespace klib::core::mb9bf560l::io {
                         endpoint, klib::usb::usb::endpoint_mode::out,
                         klib::usb::usb::error::no_error, transferred
                     );
+                }
+            }
+            else {
+                // check if this is being called in a isochronous context. If it is we need to
+                // turn on the interrupt again if we want to receive more data
+                if constexpr (Isochronous) {
+                    // enable the interrupt again so we can receive more data
+                    Usb::port->UDCIE |= (0x1 << 4);
                 }
             }
         }
@@ -614,7 +671,7 @@ namespace klib::core::mb9bf560l::io {
                     }
                     else {
                         // no zlp. Process the endpoint normally
-                        endpoint_out_callback(0);
+                        endpoint_out_callback<false>(0);
                     }
                 }
             }
@@ -658,7 +715,7 @@ namespace klib::core::mb9bf560l::io {
                 // check if we have a in or a out endpoint
                 if (mode == klib::usb::usb::endpoint_mode::out) {
                     // we have a out endpoint.
-                    endpoint_out_callback(ep);
+                    endpoint_out_callback<false>(ep);
                 }
                 else {
                     // we have a in endpoint
@@ -778,7 +835,7 @@ namespace klib::core::mb9bf560l::io {
                 return (endpoint != 0);
             }
             else {
-                return ((endpoint == 2) || (endpoint == 4));
+                return ((endpoint == 1) || (endpoint == 2));
             }
         }
 
@@ -1081,6 +1138,19 @@ namespace klib::core::mb9bf560l::io {
                          const klib::usb::usb::endpoint_mode mode, uint8_t *const data,
                          const uint32_t min_size, const uint32_t max_size)
         {
+            // get the enpoint status register
+            volatile uint16_t *const ep_status = get_endpoint_status(endpoint, mode);
+
+            // check if we have a isochronous endpoint
+            const bool is_iso = (((*ep_status) >> 13) & 0x3) == transfer_type_to_raw(klib::usb::descriptor::transfer_type::isochronous);
+
+            // if we have a isochronous endpoint we need to turn off the interrupt to prevent
+            // a race condition. It will be turned on again at the end of the function
+            if (is_iso) {
+                // disable the SOF interrupt
+                Usb::port->UDCIE &= ~(0x1 << 4);
+            }
+
             // set the endpoint callback
             state[endpoint].callback = callback;
             state[endpoint].data = data;
@@ -1101,6 +1171,11 @@ namespace klib::core::mb9bf560l::io {
                 // process the data we already received by forcing a interrupt
                 // on the endpoint we are reading
                 (*get_endpoint_status(endpoint, klib::usb::usb::endpoint_mode::out)) |= (0x1 << 14);
+            }
+
+            // check if we need to enable the iso interrupt
+            if (is_iso) {
+                Usb::port->UDCIE |= (0x1 << 4);
             }
 
             // notify everything is correct
