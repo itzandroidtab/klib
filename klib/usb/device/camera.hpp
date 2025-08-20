@@ -843,7 +843,7 @@ namespace klib::usb::device {
             }
             else {
                 // not in async mode, write the data directly
-                while (!bytes_to_transfer) {
+                while (bytes_to_transfer) {
                     // write using the callback. This is not blocking. We wait in the loop below
                     // before we continue writing
                     status_callback<Usb, Async>(
