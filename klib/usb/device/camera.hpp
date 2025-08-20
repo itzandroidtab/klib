@@ -730,7 +730,7 @@ namespace klib::usb::device {
         }
 
         template <typename Usb, bool Async>
-        static void status_callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
+        static void camera_callback(const uint8_t endpoint, const usb::endpoint_mode mode, const usb::error error_code, const uint32_t transferred) {
             // check if we have a nak. If we have do nothing
             if (error_code == usb::error::nak) {
                 return;
@@ -774,7 +774,7 @@ namespace klib::usb::device {
 
             // start a new write operation
             if constexpr (Async) {
-                Usb::write(status_callback<Usb, Async>, endpoint, mode, {video_buffer, size + 2});
+                Usb::write(camera_callback<Usb, Async>, endpoint, mode, {video_buffer, size + 2});
             }
             else {
                 Usb::write(nullptr, endpoint, mode, {video_buffer, size + 2});
@@ -835,7 +835,7 @@ namespace klib::usb::device {
             // check if we are in async mode
             if constexpr (Async) {
                 // use the callback to start the write operation
-                status_callback<Usb, Async>(
+                camera_callback<Usb, Async>(
                     usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
                     usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress),
                     usb::error::no_error, 0
@@ -846,7 +846,7 @@ namespace klib::usb::device {
                 while (bytes_to_transfer) {
                     // write using the callback. This is not blocking. We wait in the loop below
                     // before we continue writing
-                    status_callback<Usb, Async>(
+                    camera_callback<Usb, Async>(
                         usb::get_endpoint(VideoType::config.endpoint1.bEndpointAddress),
                         usb::get_endpoint_mode(VideoType::config.endpoint1.bEndpointAddress),
                         usb::error::no_error, 0
