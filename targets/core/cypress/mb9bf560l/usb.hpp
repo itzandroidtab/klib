@@ -2,6 +2,7 @@
 #define KLIB_CYPRESS_MB9BF560L_USB_HPP
 
 #include <span>
+#include <atomic>
 
 #include <klib/klib.hpp>
 #include <klib/math.hpp>
@@ -131,6 +132,9 @@ namespace klib::core::mb9bf560l::io {
 
         // create a instance of the helper
         static inline auto helper = irq_helper();
+
+        // flag if the last request was a setup packet
+        static inline std::atomic<bool> setup_packet_received = false;
 
         /**
          * @brief Convert a mode to the correct raw value for the usb hardware
@@ -651,10 +655,14 @@ namespace klib::core::mb9bf560l::io {
             if (const uint16_t ep_status = Usb::port->EP0OS; ep_status & (0x1 << 10)) [[likely]]  {
                 // check if we have a setup packet
                 if (status & (0x1 << 1)) [[likely]] {
+                    setup_packet_received = true;
+
                     // we have a setup packet
                     setup_packet_irq();
                 }
                 else if (ep_status & (0x1 << 14)) {
+                    setup_packet_received = false;
+
                     // get the amount of bytes we received
                     const uint32_t count = get_endpoint_byte_count(0, klib::usb::usb::endpoint_mode::out);
 
@@ -974,6 +982,17 @@ namespace klib::core::mb9bf560l::io {
             // This is handled in hardware. No need to send a ack again. In some 
             // cases the hardware does not send a ack. For example the SET_IDLE.
             // We send this manually when we detect it.
+            if (endpoint == 0 && setup_packet_received.load()) {
+                // for endpoint 0 setup the hardware sends a ack automatically. Ignore these
+                return;
+            }
+
+            // get the endpoint status register
+            volatile uint16_t *const ep_status = get_endpoint_status(endpoint, mode);
+
+            // clear the drq flag to mark we have written/read the data to read the 
+            // zlp or write the zlp
+            (*ep_status) &= (~(0x1 << 10));
         }
 
         /**
