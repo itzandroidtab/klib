@@ -212,7 +212,6 @@ namespace klib::core::lpc17xx::io {
                 case klib::usb::usb::endpoint_mode::out:
                     return false;
                 case klib::usb::usb::endpoint_mode::in:
-                case klib::usb::usb::endpoint_mode::control:
                 case klib::usb::usb::endpoint_mode::disabled:
                 default:
                     return true;

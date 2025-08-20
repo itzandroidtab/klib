@@ -47,7 +47,6 @@ namespace klib::usb {
             disabled,
             out,
             in,
-            control
         };
 
         /**

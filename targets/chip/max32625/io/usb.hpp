@@ -293,18 +293,23 @@ namespace klib::max32625::io {
 
         /**
          * @brief Convert a mode to the correct raw value for the usb hardware
-         *
-         * @param mode
-         * @return uint8_t
+         * 
+         * @param mode 
+         * @param type 
+         * @return uint8_t 
          */
-        static uint8_t endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode) {
+        static uint8_t endpoint_mode_to_raw(const klib::usb::usb::endpoint_mode mode, const klib::usb::descriptor::transfer_type type) {
+            // special case for control endpoints
+            if (type == klib::usb::descriptor::transfer_type::control) {
+                // control endpoints are always in
+                return 3;
+            }
+
             switch (mode) {
                 case klib::usb::usb::endpoint_mode::out:
                     return 1;
                 case klib::usb::usb::endpoint_mode::in:
                     return 2;
-                case klib::usb::usb::endpoint_mode::control:
-                    return 3;
                 case klib::usb::usb::endpoint_mode::disabled:
                 default:
                     return 0;
@@ -778,7 +783,7 @@ namespace klib::max32625::io {
 
             // prepare the endpoint register
             const uint32_t ctrl = (
-                endpoint_mode_to_raw(mode) | (1 << 6) |
+                endpoint_mode_to_raw(mode, type) | (1 << 6) |
                 ((mode == klib::usb::usb::endpoint_mode::disabled) ? 0 : (1 << 4))
             );
 

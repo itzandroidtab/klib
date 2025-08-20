@@ -133,7 +133,7 @@ namespace klib::core::atsam4s::io {
             const klib::usb::descriptor::transfer_type type)
         {
             // special case for control endpoints
-            if (mode == klib::usb::usb::endpoint_mode::control) {
+            if (type == klib::usb::descriptor::transfer_type::control) {
                 return 0;
             }
 
@@ -144,7 +144,6 @@ namespace klib::core::atsam4s::io {
         constexpr static klib::usb::usb::endpoint_mode raw_to_endpoint_mode(const endpoint_mode mode) {
             switch (mode) {
                 case endpoint_mode::control:
-                    return klib::usb::usb::endpoint_mode::control;
                 case endpoint_mode::bulk_out:
                 case endpoint_mode::iso_out:
                 case endpoint_mode::int_out:
@@ -170,7 +169,7 @@ namespace klib::core::atsam4s::io {
             // a setup packet (also enable it)
             Usb::port->CSR[klib::usb::usb::control_endpoint] = (
                 (0x1 << 15) | (transfer_type_to_raw(
-                    klib::usb::usb::endpoint_mode::control,
+                    klib::usb::usb::endpoint_mode::out,
                     klib::usb::descriptor::transfer_type::control
                 ) << 8)
             );
@@ -191,7 +190,7 @@ namespace klib::core::atsam4s::io {
             const auto m = static_cast<endpoint_mode>((Usb::port->CSR[endpoint] >> 8) & 0x7);
 
             // set the endpoint direction for control endpoints
-            if (raw_to_endpoint_mode(m) == klib::usb::usb::endpoint_mode::control) {
+            if (m == endpoint_mode::control) {
                 // enable the DATA in for the control endpoint
                 Usb::port->CSR[endpoint] |= (0x1 << 7);
             }

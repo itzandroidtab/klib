@@ -140,7 +140,6 @@ namespace klib::core::mb9bf560l::io {
                 case klib::usb::usb::endpoint_mode::out:
                     return false;
                 case klib::usb::usb::endpoint_mode::in:
-                case klib::usb::usb::endpoint_mode::control:
                 case klib::usb::usb::endpoint_mode::disabled:
                 default:
                     return true;
@@ -569,9 +568,9 @@ namespace klib::core::mb9bf560l::io {
             Usb::port->UDCS = (~(status));
 
             // check if endpoint 0 is stalled. Manually unstall it here
-            if (is_stalled(0, klib::usb::usb::endpoint_mode::control)) [[unlikely]] {
+            if (is_stalled(0, klib::usb::usb::endpoint_mode::out)) [[unlikely]] {
                 // unstall the endpoint
-                un_stall(0, klib::usb::usb::endpoint_mode::control);
+                un_stall(0, klib::usb::usb::endpoint_mode::out);
             }
 
             // check what kind of interrupt we have (in or out)
