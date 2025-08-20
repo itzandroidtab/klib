@@ -648,13 +648,13 @@ namespace klib::core::mb9bf560l::io {
             }
 
             // check what kind of interrupt we have (in or out)
-            if (Usb::port->EP0OS & (0x1 << 10)) [[likely]]  {
+            if (const uint16_t ep_status = Usb::port->EP0OS; ep_status & (0x1 << 10)) [[likely]]  {
                 // check if we have a setup packet
                 if (status & (0x1 << 1)) [[likely]] {
                     // we have a setup packet
                     setup_packet_irq();
                 }
-                else {
+                else if (ep_status & (0x1 << 14)) {
                     // get the amount of bytes we received
                     const uint32_t count = get_endpoint_byte_count(0, klib::usb::usb::endpoint_mode::out);
 
@@ -666,7 +666,7 @@ namespace klib::core::mb9bf560l::io {
                         // do a read and discard the data
                         (void)(*ep);
 
-                        // clear the endpoint interrupt
+                        // clear the drq flag to signal we have read the data
                         Usb::port->EP0OS &= (~(0x1 << 10));
                     }
                     else {
@@ -676,8 +676,11 @@ namespace klib::core::mb9bf560l::io {
                 }
             }
 
+            // mask to check if the interrupt is a specific endpoint
+            constexpr static uint16_t mask = (0x1 << 10) | (0x1 << 14);
+
             // check if we have a in interrupt
-            if ((Usb::port->EP0IS & (0x1 << 10))) [[likely]] {                
+            if ((Usb::port->EP0IS & mask) == mask) [[likely]] {                
                 // we have a in interrupt.
                 endpoint_in_callback(0);
             }
