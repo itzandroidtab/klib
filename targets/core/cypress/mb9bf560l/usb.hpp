@@ -46,6 +46,23 @@ namespace klib::core::mb9bf560l::io::detail::usb {
 }
 
 namespace klib::core::mb9bf560l::io {
+    /**
+     * @brief Usb driver for the Cypress MB9BF560L Family. 
+     * 
+     * @note As some parts of the USB specification are implemented in the hardware
+     * there are some limitations. The hardware does not support usb alt modes. This
+     * means for example the USB camera device does not work. Another limitation is
+     * that if you use a isochronous endpoint some endpoints will be disabled. Please
+     * refer to the "32-bit Microcontroller FM4 Family Peripheral Manual Communication"
+     * for more information.
+     * 
+     * The hardware also does not forward all the events to the software. There is no
+     * way to get "nak" events. This means the MSC device cannot recover as it never
+     * knows when a nak has been received
+     * 
+     * @tparam Usb 
+     * @tparam Device 
+     */
     template <typename Usb, typename Device>
     class usb {
     public:
