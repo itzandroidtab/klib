@@ -806,8 +806,11 @@ namespace klib::max32625::io {
             // get the endpoint pointer
             auto *const ep = get_endpoint_ptr(endpoint);
 
-            // return if the endpoint is not disabled
-            return ((*ep) & 0x3) != endpoint_mode_to_raw(klib::usb::usb::endpoint_mode::disabled);
+            // return if the endpoint is not disabled (random transfer type here, not needed 
+            // in the endpoint_mode_to_raw function except for the control endpoint)
+            return ((*ep) & 0x3) != endpoint_mode_to_raw(
+                klib::usb::usb::endpoint_mode::disabled, klib::usb::descriptor::transfer_type::interrupt
+            );
         }
 
         /**
