@@ -683,7 +683,7 @@ namespace klib::core::mb9bf560l::io {
             }
 
             // handle the other flags
-            helper.handle_irq(status, 0xff);
+            helper.handle_irq(status, 0x3f);
         }
  
         static void irq_handler() {
