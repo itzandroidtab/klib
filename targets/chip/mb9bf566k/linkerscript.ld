@@ -10,7 +10,7 @@ OUTPUT_ARCH(arm);
 /* 
 The stack size used by the application. NOTE: you need to adjust according to your application. 
 */
-STACK_SIZE = 0x1000;
+STACK_SIZE = 0x2000;
 
 /*
 Memories definitions
@@ -21,8 +21,9 @@ MEMORY
     ram (rwx) : org = 0x1fff8000, len = 32k
 
     /* Note the following ranges are not on the I or D code bus */
-    ram1 (rwx) : org = 0x2003c000, len = 16k
-    ram2 (rwx) : org = 0x20040000, len = 16k
+    /* ram1 and ram2 in one continuous block */
+    ram1 (rwx) : org = 0x2003c000, len = 16k * 2
+    /* ram2 (rwx) : org = 0x20040000, len = 16k */
     rom1 (rx) : org = 0x200C0000, len = 32k
 }
 
@@ -167,6 +168,14 @@ SECTIONS
         PROVIDE(__heap_start = .);
         PROVIDE(__heap_end = (ORIGIN(ram) + LENGTH(ram)));
     } > ram
+
+    .ram1 :
+    {
+        . = ALIGN(4);
+        *(SORT_BY_ALIGNMENT(.ramfunc))
+        *(SORT_BY_ALIGNMENT(.ramfunc.*))
+        . = ALIGN(4);
+    } > ram1
 
     /* Remove information from the standard libraries */
     /DISCARD/ :
