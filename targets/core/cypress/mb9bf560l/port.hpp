@@ -132,21 +132,21 @@ namespace klib::core::mb9bf560l::io::detail::alternate {
 
     namespace multi_function_timer {
         // register EPFR01
-        // alternate function for i2c03s
+        // alternate function for ic03s
         template <uint8_t Value>
-        struct i2c03s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<1, 29, 3>, Value> {};
+        struct ic03s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<1, 29, 3>, Value> {};
 
-        // alternate function for i2c02s
+        // alternate function for ic02s
         template <uint8_t Value>
-        struct i2c02s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<1, 26, 3>, Value> {};
+        struct ic02s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<1, 26, 3>, Value> {};
 
-        // alternate function for i2c01s
+        // alternate function for ic01s
         template <uint8_t Value>
-        struct i2c01s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<1, 23, 3>, Value> {};
+        struct ic01s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<1, 23, 3>, Value> {};
 
-        // alternate function for i2c00s
+        // alternate function for ic00s
         template <uint8_t Value>
-        struct i2c00s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<1, 20, 3>, Value> {};
+        struct ic00s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<1, 20, 3>, Value> {};
 
         // alternate function for frck0s
         template <uint8_t Value>
