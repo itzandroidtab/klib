@@ -21,7 +21,7 @@ void __attribute__((__constructor__(101))) __target_startup() {
 
     // setup the clock to 156Mhz (in this example we are using a 12Mhz
     // oscillator)
-    // (((12Mhz * 26) = 240Mhz) / 2) = 156Mhz
+    // (((12Mhz * 26) = 312Mhz) / 2) = 156Mhz
     system::clock::set_main<system::clock::source::main, system::clock::pll::pll, 12'000'000, 26, 2>();
 
     if constexpr (TARGET_FPU_ENABLED) {
