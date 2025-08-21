@@ -75,7 +75,7 @@ namespace klib::core::atsam4s::io {
          */
         static void init() {
             // init the channel
-            Adc::port->CHER |= (0x1 << Pin::adc_number);
+            Adc::port->CHER |= (0x1 << Pin::analog_number);
         }
 
         /**
@@ -98,7 +98,7 @@ namespace klib::core::atsam4s::io {
          * @return status 
          */
         static bool is_busy() {
-            return !(Adc::port->ISR & (0x1 << Pin::adc_number));
+            return !(Adc::port->ISR & (0x1 << Pin::analog_number));
         }
 
         /**
@@ -124,7 +124,7 @@ namespace klib::core::atsam4s::io {
             }
 
             // return the result
-            return Adc::port->CDR[Pin::adc_number] & 0xffff;
+            return Adc::port->CDR[Pin::analog_number] & 0xffff;
         }
     };
 }

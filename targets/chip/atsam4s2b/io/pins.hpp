@@ -149,7 +149,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 0;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 4;
+        constexpr static uint32_t analog_number = 4;
     };
 
     struct pc7 {
@@ -160,7 +160,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 2;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 6;
+        constexpr static uint32_t analog_number = 6;
     };
 
     struct pc8 {
@@ -171,7 +171,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 1;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 5;
+        constexpr static uint32_t analog_number = 5;
     };
 
     struct pd1 {
@@ -234,7 +234,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 3;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 7;
+        constexpr static uint32_t analog_number = 7;
     };
 
     struct pe1 {
@@ -285,7 +285,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 18;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 1;
+        constexpr static uint32_t analog_number = 1;
     };
 
     struct pe7 {
@@ -296,7 +296,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 17;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 0;
+        constexpr static uint32_t analog_number = 0;
     };
 
     struct pe8 {
@@ -343,7 +343,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 22;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 9;
+        constexpr static uint32_t analog_number = 9;
     };
 
     struct pf7 {
@@ -354,7 +354,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 21;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 8;
+        constexpr static uint32_t analog_number = 8;
     };
 
     struct pf8 {
@@ -417,7 +417,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 19;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 2;
+        constexpr static uint32_t analog_number = 2;
     };
 
     struct ph1 {
@@ -476,7 +476,7 @@ namespace klib::atsam4s2b::pins::package::wlcsp_64 {
         constexpr static uint32_t number = 20;
 
         // bit number for the adc
-        constexpr static uint32_t adc_number = 3;
+        constexpr static uint32_t analog_number = 3;
     };
 }
 
