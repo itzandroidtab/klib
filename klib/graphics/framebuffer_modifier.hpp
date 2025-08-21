@@ -87,6 +87,9 @@ namespace klib::graphics {
         // mode for the framebuffer
         constexpr static graphics::mode mode = FrameBuffer::mode;
 
+        constexpr static uint32_t width = FrameBuffer::width;
+        constexpr static uint32_t height = FrameBuffer::height;
+
     protected:
         FrameBuffer &fb;
 
@@ -162,6 +165,9 @@ namespace klib::graphics {
     public:
         // mode for the framebuffer
         constexpr static graphics::mode mode = FrameBuffer::mode;
+
+        constexpr static uint32_t width = FrameBuffer::width;
+        constexpr static uint32_t height = FrameBuffer::height;
 
     protected:
         FrameBuffer &fb;
