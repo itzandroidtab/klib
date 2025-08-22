@@ -286,10 +286,7 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
             klib::core::mb9bf560l::io::detail::alternate::can_adc_trigger_qprc::adtrg0s<0b0011>,
             klib::core::mb9bf560l::io::detail::alternate::can_adc_trigger_qprc::adtrg1s<0b0011>,
             klib::core::mb9bf560l::io::detail::alternate::can_adc_trigger_qprc::adtrg2s<0b0011>,
-
-            // TODO: add EPFR16
-            // klib::core::mb9bf560l::io::detail::alternate::multi_functional_serial::scs6b<0b01>,
-
+            klib::core::mb9bf560l::io::detail::alternate::multi_functional_serial::scs6b<0b01>,
             klib::core::mb9bf560l::io::detail::alternate::base_timer::tiob4s<0b10>,
             klib::core::mb9bf560l::io::detail::alternate::external_interrupt::eint01s<0b10>,
             klib::core::mb9bf560l::io::detail::alternate::can_adc_trigger_qprc::qbin0s<0b11>,

@@ -679,6 +679,13 @@ namespace klib::core::mb9bf560l::io::detail::alternate {
         template <uint8_t Value>
         struct qain0s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 0, 2>, Value> {};
     };
+
+    namespace multi_functional_serial {
+        // register EPFR16
+        // alternate function for scs6b
+        template <uint8_t Value>
+        struct scs6b: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<16, 0, 2>, Value> {};
+    }
 }
 
 namespace klib::core::mb9bf560l::io::detail::pins {
