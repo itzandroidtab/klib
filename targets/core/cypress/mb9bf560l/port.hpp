@@ -41,7 +41,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         static_assert(Periph::periph::id <= 20, "Invalid peripheral id");
 
         // get the pointer to the pin select we need to write to
-        volatile uint32_t *const epfr = (reinterpret_cast<volatile uint32_t *const>(&Pin::port::port->EPFR00));
+        volatile uint32_t *const epfr = &Pin::port::port->EPFR00;
 
         // get the current value in the register
         uint32_t reg = epfr[Periph::periph::id];
@@ -52,7 +52,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         // write the value where we just cleared the data
         reg |= Periph::value << Periph::periph::offset;
 
-        // write the the offset provided in the peripheral
+        // write the data back into the register
         epfr[Periph::periph::id] = reg;
     }
 }
@@ -616,7 +616,6 @@ namespace klib::core::mb9bf560l::io::detail::alternate {
         template <uint8_t Value>
         struct qain0s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 0, 2>, Value> {};
     };
-
 }
 
 namespace klib::core::mb9bf560l::io::detail::pins {
@@ -656,7 +655,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         }
 
         // get the pointer to the pin select we need to write to
-        volatile uint32_t *const pfr = (reinterpret_cast<volatile uint32_t *const>(&Pin::port::port->PFR0));
+        volatile uint32_t *const pfr = &Pin::port::port->PFR0;
 
         // set the alternate function
         if constexpr (std::is_same_v<Periph, io::detail::alternate::none>) {
@@ -689,7 +688,7 @@ namespace klib::core::mb9bf560l::io {
             detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
 
             // get the pointer to the pin select we need to write to
-            volatile uint32_t *const ddr = (reinterpret_cast<volatile uint32_t *const>(&Pin::port::port->DDR0));
+            volatile uint32_t *const ddr = &Pin::port::port->DDR0;
 
             // disable the output on the pin
             ddr[Pin::port::id] &= (~detail::pins::mask<Pin>);
@@ -697,7 +696,7 @@ namespace klib::core::mb9bf560l::io {
 
         constexpr static bool get() {
             // get the pointer to the pin select we need to write to
-            volatile uint32_t *const pdir = (reinterpret_cast<volatile uint32_t *const>(&Pin::port::port->PDIR0));
+            volatile uint32_t *const pdir = &Pin::port::port->PDIR0;
 
             // get the status of the pin
             return pdir[Pin::port::id] & detail::pins::mask<Pin>;
@@ -706,7 +705,7 @@ namespace klib::core::mb9bf560l::io {
         template <bool Val>
         constexpr static void pullup_enable() {
             // get the pointer to the pin select we need to write to
-            volatile uint32_t *const pcr = (reinterpret_cast<volatile uint32_t *const>(&Pin::port::port->PCR0));
+            volatile uint32_t *const pcr = &Pin::port::port->PCR0;
 
             if constexpr (Val) {
                 pcr[Pin::port::id] |= detail::pins::mask<Pin>;
@@ -725,7 +724,7 @@ namespace klib::core::mb9bf560l::io {
             detail::pins::set_peripheral<Pin, io::detail::alternate::none>();
 
             // get the pointer to the pin select we need to write to
-            volatile uint32_t *const ddr = (reinterpret_cast<volatile uint32_t *const>(&Pin::port::port->DDR0));
+            volatile uint32_t *const ddr = &Pin::port::port->DDR0;
 
             // // enable the gpio output
             ddr[Pin::port::id] |= detail::pins::mask<Pin>;
@@ -734,7 +733,7 @@ namespace klib::core::mb9bf560l::io {
         template <bool Val>
         constexpr static void set() {
             // get the pointer to the pin select we need to write to
-            volatile uint32_t *const pdor = (reinterpret_cast<volatile uint32_t *const>(&Pin::port::port->PDOR0));
+            volatile uint32_t *const pdor = &Pin::port::port->PDOR0;
 
             if constexpr (Val) {
                 pdor[Pin::port::id] |= detail::pins::mask<Pin>;
@@ -746,7 +745,7 @@ namespace klib::core::mb9bf560l::io {
 
         constexpr static void set(const bool val) {
             // get the pointer to the pin select we need to write to
-            volatile uint32_t *const pdor = (reinterpret_cast<volatile uint32_t *const>(&Pin::port::port->PDOR0));
+            volatile uint32_t *const pdor = &Pin::port::port->PDOR0;
 
             if (val) {
                 pdor[Pin::port::id] |= detail::pins::mask<Pin>;
