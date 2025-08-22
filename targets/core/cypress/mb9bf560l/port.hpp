@@ -91,7 +91,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         if constexpr (alternate::periph::id == spsr_id) {
             // clear the alternate function if it is set
             peripheral_helper_clear_alternate(
-                &Pin::port::port->SPRS, alternate::periph::offset, alternate::periph::bits, alternate::value
+                &Pin::port::port->SPSR, alternate::periph::offset, alternate::periph::bits, alternate::value
             );
         }
         else {
@@ -158,7 +158,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         if constexpr (Periph::periph::id == spsr_id) {
             // set the value from the peripheral into the register
             peripheral_helper_set_alternate(
-                &Pin::port::port->SPRS, Periph::periph::offset, Periph::periph::bits, Periph::value
+                &Pin::port::port->SPSR, Periph::periph::offset, Periph::periph::bits, Periph::value
             );
         }
         else {
@@ -196,7 +196,7 @@ namespace klib::core::mb9bf560l::io::detail::alternate {
     // blocks. This is extremly anoying as we need to 
     // clear all the other functions this pin can have.
     namespace special {
-        // register SPRS (note we use ID 255 for this register)
+        // register SPSR (note we use ID 255 for this register)
         // alternate function for usb1c
         template <uint8_t Value>
         struct usb1c: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<detail::pins::spsr_id, 5, 1>, Value> {};

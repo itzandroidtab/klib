@@ -51,8 +51,8 @@ namespace klib::mb9bf566k::io::periph::lqfp_48 {
         using connect = detail::usb::usb<pins::package::lqfp_48::p43, detail::usb::mode::connect, core::mb9bf560l::io::detail::alternate::system_function::usbp0e<true>>;
 
         // these two pins are switched using the special port settings register
-        using dplus = detail::usb::usb<pins::package::lqfp_48::p47, detail::usb::mode::dplus, core::mb9bf560l::io::detail::alternate::none>;
-        using dminus = detail::usb::usb<pins::package::lqfp_48::p46, detail::usb::mode::dminus, core::mb9bf560l::io::detail::alternate::none>;
+        using dplus = detail::usb::usb<pins::package::lqfp_48::p47, detail::usb::mode::dplus, core::mb9bf560l::io::detail::alternate::special::usb0c<true>>;
+        using dminus = detail::usb::usb<pins::package::lqfp_48::p46, detail::usb::mode::dminus, core::mb9bf560l::io::detail::alternate::special::usb0c<true>>;
     };
 }
 

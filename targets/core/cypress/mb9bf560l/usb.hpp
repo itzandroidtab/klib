@@ -762,8 +762,9 @@ namespace klib::core::mb9bf560l::io {
             // enable power to the usb clock
             CLK_GATING->CKEN2 |= 0x1 << Usb::id;
 
-            // setup the io 
-            GPIO->SPSR = GPIO->SPSR | (0x1 << (Usb::id + 4));
+            // setup the io (note setting one of the pins sets both. We do it just in case)
+            target::io::detail::pins::set_peripheral<typename Usb::dplus::pin, typename Usb::dplus::periph>();
+            target::io::detail::pins::set_peripheral<typename Usb::dminus::pin, typename Usb::dminus::periph>();
 
             // check if we need to enable the USB connect pin
             if constexpr (UsbConnect) {
