@@ -561,6 +561,62 @@ namespace klib::core::mb9bf560l::io::detail::alternate {
         template <uint8_t Value>
         struct rts4e: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<8, 0, 2>, Value> {};
     }
+
+    namespace can_adc_trigger_qprc {
+        // register EPFR09
+        // alternate function for ctx1e
+        template <uint8_t Value>
+        struct ctx1e: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 30, 2>, Value> {};
+
+        // alternate function for crx1s
+        template <uint8_t Value>
+        struct crx1s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 28, 2>, Value> {};
+
+        // alternate function for ctx0e
+        template <uint8_t Value>
+        struct ctx0e: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 26, 2>, Value> {};
+
+        // alternate function for crx0s
+        template <uint8_t Value>
+        struct crx0s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 24, 2>, Value> {};
+
+        // alternate function for adtrg2s
+        template <uint8_t Value>
+        struct adtrg2s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 20, 4>, Value> {};
+
+        // alternate function for adtrg1s
+        template <uint8_t Value>
+        struct adtrg1s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 16, 4>, Value> {};
+
+        // alternate function for adtrg0s
+        template <uint8_t Value>
+        struct adtrg0s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 12, 4>, Value> {};
+
+        // alternate function for qzin1s
+        template <uint8_t Value>
+        struct qzin1s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 10, 2>, Value> {};
+
+        // alternate function for qbin1s
+        template <uint8_t Value>
+        struct qbin1s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 8, 2>, Value> {};
+
+        // alternate function for qain1s
+        template <uint8_t Value>
+        struct qain1s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 6, 2>, Value> {};
+
+        // alternate function for qzin0s
+        template <uint8_t Value>
+        struct qzin0s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 4, 2>, Value> {};
+
+        // alternate function for qbin0s
+        template <uint8_t Value>
+        struct qbin0s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 2, 2>, Value> {};
+
+        // alternate function for qain0s
+        template <uint8_t Value>
+        struct qain0s: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<9, 0, 2>, Value> {};
+    };
+
 }
 
 namespace klib::core::mb9bf560l::io::detail::pins {
