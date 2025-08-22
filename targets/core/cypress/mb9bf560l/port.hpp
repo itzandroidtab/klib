@@ -78,8 +78,9 @@ namespace klib::core::mb9bf560l::io::detail::pins {
      * 
      * @tparam Index 
      * @tparam Pin
+     * @tparam IgnorePeriph
      */
-    template <uint32_t Index, typename Pin>
+    template <uint32_t Index, typename Pin, typename IgnorePeriph>
     static void peripheral_helper_clear_alternate_functions() {
         // go through all items in the alternate functions tuple
         using alternate = std::tuple_element_t<Index, typename Pin::alternate>;
@@ -87,27 +88,30 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         // make sure the input id is valid
         static_assert(alternate::periph::id <= 20 || alternate::periph::id == spsr_id, "Invalid peripheral id");
 
-        // check what peripheral id we need to clear
-        if constexpr (alternate::periph::id == spsr_id) {
-            // clear the alternate function if it is set
-            peripheral_helper_clear_alternate(
-                &Pin::port::port->SPSR, alternate::periph::offset, alternate::periph::bits, alternate::value
-            );
-        }
-        else {
-            // get the pointer to the pin select we need to write to
-            volatile uint32_t *const epfr = &Pin::port::port->EPFR00;
+        // check if we can ignore this peripheral
+        if constexpr (!std::is_same_v<alternate, IgnorePeriph>) {
+            // check what peripheral id we need to clear
+            if constexpr (alternate::periph::id == spsr_id) {
+                // clear the alternate function if it is set
+                peripheral_helper_clear_alternate(
+                    &Pin::port::port->SPSR, alternate::periph::offset, alternate::periph::bits, alternate::value
+                );
+            }
+            else {
+                // get the pointer to the pin select we need to write to
+                volatile uint32_t *const epfr = &Pin::port::port->EPFR00;
 
-            // clear the alternate function if it is set
-            peripheral_helper_clear_alternate(
-                &epfr[alternate::periph::id], alternate::periph::offset, alternate::periph::bits, alternate::value
-            );
+                // clear the alternate function if it is set
+                peripheral_helper_clear_alternate(
+                    &epfr[alternate::periph::id], alternate::periph::offset, alternate::periph::bits, alternate::value
+                );
+            }
         }
 
         // check the next index
         if constexpr ((Index + 1) < std::tuple_size<typename Pin::alternate>::value) {
             // call the function again with the next pin
-            peripheral_helper_clear_alternate_functions<Index + 1, Pin>();
+            peripheral_helper_clear_alternate_functions<Index + 1, Pin, IgnorePeriph>();
         }
     }
 
@@ -152,7 +156,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         // new one. This is only needed when the user application switches 
         // the alternate function of a pin more than once. We do it here just
         // in case to make sure we do not have any issues with other peripherals
-        peripheral_helper_clear_alternate_functions<0, Pin>();
+        peripheral_helper_clear_alternate_functions<0, Pin, Periph>();
 
         // check what peripheral id we need to set
         if constexpr (Periph::periph::id == spsr_id) {
