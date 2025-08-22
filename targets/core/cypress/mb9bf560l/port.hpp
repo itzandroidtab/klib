@@ -7,6 +7,16 @@
 #include <klib/math.hpp>
 
 namespace klib::core::mb9bf560l::io::detail::pins {
+    // special case for the special port settings register
+    constexpr static uint8_t spsr_id = 255;
+
+    /**
+     * @brief Helper struct for the peripheral helper
+     * 
+     * @tparam Id 
+     * @tparam Offset 
+     * @tparam Bits 
+     */
     template <uint8_t Id, uint32_t Offset, uint8_t Bits>
     struct peripheral_helper_impl {
         // the target peripheral
@@ -19,6 +29,12 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         constexpr static uint32_t bits = Bits;
     };
 
+    /**
+     * @brief Helper struct to define a peripheral alternate function
+     * 
+     * @tparam Periph 
+     * @tparam Value 
+     */
     template <typename Periph, uint32_t Value>
     struct peripheral_helper {
         // using to get the register
@@ -33,19 +49,14 @@ namespace klib::core::mb9bf560l::io::detail::pins {
      * @brief Helper function to clear a specific alternate function. Note this 
      * does not check for any valid inputs as it is only run on runtime
      * 
-     * @tparam Port 
      * @param id 
      * @param offset 
      * @param bits 
      * @param value 
      */
-    template <typename Port>
-    static void peripheral_helper_clear_alternate(const uint32_t id, const uint32_t offset, const uint32_t bits, const uint32_t value) {
-        // get the pointer to the pin select we need to write to
-        volatile uint32_t *const epfr = &Port::port->EPFR00;
-
+    static void peripheral_helper_clear_alternate(volatile uint32_t *const ptr, const uint32_t offset, const uint32_t bits, const uint32_t value) {
         // get the current value in the register
-        uint32_t reg = epfr[id];
+        uint32_t reg = (*ptr);
 
         // get the value from the register
         uint32_t v = (reg >> offset) & (klib::exp2(bits) - 1);
@@ -56,7 +67,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
             reg &= ~((klib::exp2(bits) - 1) << offset);
     
             // write the data back into the register
-            epfr[id] = reg;
+            (*ptr) = reg;
         }
     }
 
@@ -66,7 +77,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
      * @note expects a pin with alternate functions
      * 
      * @tparam Index 
-     * @tparam Pin 
+     * @tparam Pin
      */
     template <uint32_t Index, typename Pin>
     static void peripheral_helper_clear_alternate_functions() {
@@ -74,16 +85,56 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         using alternate = std::tuple_element_t<Index, typename Pin::alternate>;
 
         // make sure the input id is valid
-        static_assert(alternate::periph::id <= 20, "Invalid peripheral id");
+        static_assert(alternate::periph::id <= 20 || alternate::periph::id == spsr_id, "Invalid peripheral id");
 
-        // clear the alternate function if it is set
-        peripheral_helper_clear_alternate<typename Pin::port>(alternate::periph::id, alternate::periph::offset, alternate::periph::bits, alternate::value);
+        // check what peripheral id we need to clear
+        if constexpr (alternate::periph::id == spsr_id) {
+            // clear the alternate function if it is set
+            peripheral_helper_clear_alternate(
+                &Pin::port::port->SPRS, alternate::periph::offset, alternate::periph::bits, alternate::value
+            );
+        }
+        else {
+            // get the pointer to the pin select we need to write to
+            volatile uint32_t *const epfr = &Pin::port::port->EPFR00;
+
+            // clear the alternate function if it is set
+            peripheral_helper_clear_alternate(
+                &epfr[alternate::periph::id], alternate::periph::offset, alternate::periph::bits, alternate::value
+            );
+        }
 
         // check the next index
         if constexpr ((Index + 1) < std::tuple_size<typename Pin::alternate>::value) {
             // call the function again with the next pin
             peripheral_helper_clear_alternate_functions<Index + 1, Pin>();
         }
+    }
+
+    /**
+     * @brief Helper function to write set a alterernate function. Note this 
+     * does not check for any valid inputs as it is only run on runtime
+     * 
+     * @param ptr 
+     * @param offset 
+     * @param bits 
+     * @param value 
+     */
+    static void peripheral_helper_set_alternate(volatile uint32_t *const ptr, const uint32_t offset, const uint32_t bits, const uint32_t value) {
+        // get the current value in the register
+        uint32_t reg = (*ptr);
+
+        // get the value from the register
+        uint32_t v = (reg >> offset) & (klib::exp2(bits) - 1);
+
+        // we have a match, set the alternate function to the default (0)
+        reg &= ~((klib::exp2(bits) - 1) << offset);
+
+        // write the value where we just cleared the data
+        reg |= value << offset;
+
+        // write the data back into the register
+        (*ptr) = reg;
     }
 
     /**
@@ -95,7 +146,7 @@ namespace klib::core::mb9bf560l::io::detail::pins {
     template <typename Pin, typename Periph>
     static void peripheral_helper_setup() {
         // make sure the input id is valid
-        static_assert(Periph::periph::id <= 20, "Invalid peripheral id");
+        static_assert(Periph::periph::id <= 20 || Periph::periph::id == spsr_id, "Invalid peripheral id");
 
         // clear any other alternate functions for this pin before we set the 
         // new one. This is only needed when the user application switches 
@@ -103,20 +154,22 @@ namespace klib::core::mb9bf560l::io::detail::pins {
         // in case to make sure we do not have any issues with other peripherals
         peripheral_helper_clear_alternate_functions<0, Pin>();
 
-        // get the pointer to the pin select we need to write to
-        volatile uint32_t *const epfr = &Pin::port::port->EPFR00;
+        // check what peripheral id we need to set
+        if constexpr (Periph::periph::id == spsr_id) {
+            // set the value from the peripheral into the register
+            peripheral_helper_set_alternate(
+                &Pin::port::port->SPRS, Periph::periph::offset, Periph::periph::bits, Periph::value
+            );
+        }
+        else {
+            // get the pointer to the pin select we need to write to
+            volatile uint32_t *const epfr = &Pin::port::port->EPFR00;
 
-        // get the current value in the register
-        uint32_t reg = epfr[Periph::periph::id];
-
-        // clear the amount of bits for the peripheral
-        reg &= ~((klib::exp2(Periph::periph::bits) - 1) << Periph::periph::offset);
-
-        // write the value where we just cleared the data
-        reg |= Periph::value << Periph::periph::offset;
-
-        // write the data back into the register
-        epfr[Periph::periph::id] = reg;
+            // set the value from the peripheral into the register
+            peripheral_helper_set_alternate(
+                &epfr[Periph::periph::id], Periph::periph::offset, Periph::periph::bits, Periph::value
+            );
+        }
     }
 }
 
@@ -142,6 +195,25 @@ namespace klib::core::mb9bf560l::io::detail::alternate {
     // this way should reconsider his job of making IP 
     // blocks. This is extremly anoying as we need to 
     // clear all the other functions this pin can have.
+    namespace special {
+        // register SPRS (note we use ID 255 for this register)
+        // alternate function for usb1c
+        template <uint8_t Value>
+        struct usb1c: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<detail::pins::spsr_id, 5, 1>, Value> {};
+
+        // alternate function for usb0c
+        template <uint8_t Value>
+        struct usb0c: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<detail::pins::spsr_id, 4, 1>, Value> {};
+
+        // alternate function for mainxc
+        template <uint8_t Value>
+        struct mainxc: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<detail::pins::spsr_id, 2, 2>, Value> {};
+
+        // alternate function for subxc
+        template <uint8_t Value>
+        struct subxc: public detail::pins::peripheral_helper<detail::pins::peripheral_helper_impl<detail::pins::spsr_id, 0, 2>, Value> {};
+    }
+
     namespace system_function {
         // register EPFR00
         // alternate function for trc3e

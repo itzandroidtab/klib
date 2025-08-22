@@ -189,7 +189,11 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // bit number in port
         constexpr static uint32_t number = 6;
 
-        // TODO: add SPSR X0A SUBXC
+        // all the alternate functions of this pin
+        using alternate = std::tuple<
+            klib::core::mb9bf560l::io::detail::alternate::special::subxc<0b01>,
+            klib::core::mb9bf560l::io::detail::alternate::special::subxc<0b11>
+        >;
     };
 
     struct p14 {
@@ -199,7 +203,10 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // bit number in port
         constexpr static uint32_t number = 7;
 
-        // TODO: add SPSR X1A SUBXC
+        // all the alternate functions of this pin
+        using alternate = std::tuple<
+            klib::core::mb9bf560l::io::detail::alternate::special::subxc<0b01>
+        >;
     };
 
     struct p15 {
@@ -241,7 +248,11 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // bit number in port
         constexpr static uint32_t number = 2;
 
-        // TODO: add SPSR X0 MAINXC
+        // all the alternate functions of this pin
+        using alternate = std::tuple<
+            klib::core::mb9bf560l::io::detail::alternate::special::mainxc<0b01>,
+            klib::core::mb9bf560l::io::detail::alternate::special::mainxc<0b11>
+        >;
     };
 
     struct p23 {
@@ -251,7 +262,10 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // bit number in port
         constexpr static uint32_t number = 3;
 
-        // TODO: add SPSR X1 MAINXC
+        // all the alternate functions of this pin
+        using alternate = std::tuple<
+            klib::core::mb9bf560l::io::detail::alternate::special::mainxc<0b01>
+        >;
     };
 
     struct p24 {
@@ -440,7 +454,7 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // WARNING: changing this pin will turn off debugging support if you are sure
         // you should uncomment the following lines
         // using alternate = std::tuple<
-        //     klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen0b<true>,
+        //     klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen0b<true>
         // >;
     };
 
@@ -455,7 +469,7 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // WARNING: changing this pin will turn off debugging support if you are sure
         // you should uncomment the following lines
         // using alternate = std::tuple<
-        //     klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen0b<true>,
+        //     klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen0b<true>
         // >;
     };
 
@@ -469,7 +483,7 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // WARNING: changing this pin will turn off support for JTAG debugging
         // all the alternate functions of this pin
         using alternate = std::tuple<
-            klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen1s<true>,
+            klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen1s<true>
         >;
     };
 
@@ -484,7 +498,7 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // WARNING: changing this pin will turn off debugging support if you are sure
         // you should uncomment the following lines
         // using alternate = std::tuple<
-        //     klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen0b<true>,
+        //     klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen0b<true>
         // >;
     };
 
@@ -499,7 +513,7 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // WARNING: changing this pin will turn off debugging support if you are sure
         // you should uncomment the following lines
         // using alternate = std::tuple<
-        //     klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen1s<true>,
+        //     klib::core::mb9bf560l::io::detail::alternate::system_function::jtagen1s<true>
         // >;
     };
 
@@ -537,9 +551,7 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
             klib::core::mb9bf560l::io::detail::alternate::can_adc_trigger_qprc::adtrg2s<0b0110>,
             klib::core::mb9bf560l::io::detail::alternate::multi_functional_serial::sot1b<0b10>,
             klib::core::mb9bf560l::io::detail::alternate::external_interrupt::eint15s<0b10>,
-
-            // TODO: add support for SPSR UHCONX0
-            
+            klib::core::mb9bf560l::io::detail::alternate::system_function::usbp0e<true>,
             klib::core::mb9bf560l::io::detail::alternate::multi_function_timer::ic00s<0b011>
         >;
     };
@@ -570,7 +582,10 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // bit number in port
         constexpr static uint32_t number = 0;
 
-        // TODO: add support for SPSR UDM0
+        // all the alternate functions of this pin
+        using alternate = std::tuple<
+            klib::core::mb9bf560l::io::detail::alternate::special::usb0c<true>
+        >;
     };
 
     struct p47 {
@@ -580,7 +595,10 @@ namespace klib::mb9bf566k::pins::package::lqfp_48 {
         // bit number in port
         constexpr static uint32_t number = 1;
 
-        // TODO: add support for SPSR UDP0
+        // all the alternate functions of this pin
+        using alternate = std::tuple<
+            klib::core::mb9bf560l::io::detail::alternate::special::usb0c<true>
+        >;
     };
 
     struct p48 {
