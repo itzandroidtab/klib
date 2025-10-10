@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <targets/core/atmel/atsam4s/timer.hpp>
+#include "pins.hpp"
 
 namespace klib::atsam4s2b::io::periph::detail::timer {
     // get the first few modes from the driver and add the
