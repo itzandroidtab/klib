@@ -260,4 +260,10 @@ namespace klib::io {
     };
 }
 
+namespace klib::TARGET_CPU::io {
+    // import the systick class into the target namespace 
+    // so it is with the other peripherals
+    using klib::io::systick;
+}
+
 #endif
