@@ -623,7 +623,10 @@ namespace klib::usb::device {
         template <typename Usb>
         static bool is_busy() {
             // return if the endpoint is still pending
-            return irq_data != nullptr;
+            return irq_data != nullptr || Usb::is_pending(
+                usb::get_endpoint(config.endpoint.bEndpointAddress), 
+                usb::get_endpoint_mode(config.endpoint.bEndpointAddress)
+            );
         }
 
         /**
