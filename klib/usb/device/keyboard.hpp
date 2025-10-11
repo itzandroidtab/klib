@@ -544,7 +544,7 @@ namespace klib::usb::device {
         static bool write_impl(const report_data& r) {
             // write the first report to the endpoint
             if (!Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&r), sizeof(r)}))
+                usb::get_endpoint_mode(config.endpoint.bEndpointAddress), {reinterpret_cast<const uint8_t*>(&r), sizeof(r)}))
             {
                 return false;
             }
@@ -847,7 +847,7 @@ namespace klib::usb::device {
                 // configure the endpoint for our report data
                 Usb::configure(
                     usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    usb::endpoint_mode::in,
+                    usb::get_endpoint_mode(config.endpoint.bEndpointAddress),
                     usb::get_transfer_type(config.endpoint.bmAttributes),
                     sizeof(report)
                 );
@@ -862,8 +862,10 @@ namespace klib::usb::device {
                 report = {};
 
                 // write the inital report
-                if (Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
+                if (Usb::write(
+                    hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
+                    usb::get_endpoint_mode(config.endpoint.bEndpointAddress), 
+                    {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
                 {
                     // no issue for now ack
                     return usb::handshake::ack;
@@ -882,7 +884,7 @@ namespace klib::usb::device {
                     // reset the endpoint
                     Usb::reset(
                         usb::get_endpoint(config.endpoint.bEndpointAddress),
-                        usb::endpoint_mode::in
+                        usb::get_endpoint_mode(config.endpoint.bEndpointAddress)
                     );
                 }
 
