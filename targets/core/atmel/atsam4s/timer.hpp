@@ -94,6 +94,9 @@ namespace klib::core::atsam4s::io::detail::timer {
         /**
          * @brief Set the A/B/C register based on the channel
          *
+         * @note for some mcu's this is a 16 bit register. Check the manual 
+         * for the MCU you are using
+         * 
          * @param value
          */
         static void set_register(const uint32_t value) {
