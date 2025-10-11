@@ -324,7 +324,7 @@ namespace klib::usb::device {
         const __attribute__((aligned(4))) static inline auto serial = string_descriptor("00001337");
 
         // configuration value. Value is set in the set config function
-        static inline uint8_t configuration = 0x00;
+        static inline volatile uint8_t configuration = 0x00;
 
         // flag if remote wakeup is supported
         static inline bool remote_wakeup = false;
@@ -817,7 +817,7 @@ namespace klib::usb::device {
             const auto result = Usb::write(
                 usb::status_callback<Usb>, usb::control_endpoint,
                 usb::endpoint_mode::in,
-                {&configuration, sizeof(configuration)}
+                {const_cast<uint8_t*>(&configuration), sizeof(configuration)}
             );
 
             // check if something went wrong already
