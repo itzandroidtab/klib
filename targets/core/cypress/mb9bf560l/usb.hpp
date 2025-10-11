@@ -73,7 +73,7 @@ namespace klib::core::mb9bf560l::io {
     template <typename Usb, typename Device>
     class usb {
     public:
-        // amount of endpoints supported by the lpc1756
+        // amount of endpoints supported by the mb9bf560l
         constexpr static uint8_t endpoint_count = 6;
 
         // maximum endpoint sizes

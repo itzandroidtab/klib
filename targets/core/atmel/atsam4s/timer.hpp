@@ -35,7 +35,7 @@ namespace klib::core::atsam4s::io::detail::timer {
     };
 
     /**
-     * @brief Base timer for the lpc1756
+     * @brief Base timer for the atsam4s
      *
      * @tparam Timer
      * @tparam Mode
