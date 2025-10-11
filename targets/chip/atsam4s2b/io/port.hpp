@@ -5,6 +5,7 @@
 #include <cstddef>
 
 #include <targets/core/atmel/atsam4s/port.hpp>
+#include <targets/core/atmel/atsam4s/port_interrupt.hpp>
 
 // global peripherals, not affected by chip package
 namespace klib::atsam4s2b::io::periph {
@@ -56,6 +57,9 @@ namespace klib::atsam4s2b::io {
 
     template <typename Pin>
     using pin_in_out_od = klib::core::atsam4s::io::pin_in_out_od<Pin>;
+
+    template <typename Pin>
+    using pin_interrupt = klib::core::atsam4s::io::pin_interrupt<Pin>;
 }
 
 #endif
