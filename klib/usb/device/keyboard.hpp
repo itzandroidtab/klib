@@ -203,6 +203,14 @@ namespace klib::usb::device {
             serial = 3
         };
 
+        /**
+         * @brief All the report ids we have in our descriptor
+         * 
+         */
+        enum class report_id: uint8_t {
+            keyboard = 1,
+        };
+
         // Push the current pack to the stack and set the pack to 1
         // as all these structs have specific sizes
         #pragma pack(push, 1)
@@ -250,28 +258,27 @@ namespace klib::usb::device {
 
         // report descriptor for the hid keyboard
         const __attribute__((aligned(4))) static inline uint8_t report_desc[] = {
-            0x05, 0x01,   //  Usage Page (generic desktop)
-            0x09, 0x06,   //  Usage (keyboard)
-            0xa1, 0x01,   //  Collection
-            0x05, 0x07,   //    Usage Page 7 (keyboard/keypad)
-            0x19, 0xe0,   //    Usage Minimum = 224
-            0x29, 0xe7,   //    Usage Maximum = 231
-            0x15, 0x00,   //    Logical Minimum = 0
-            0x25, 0x01,   //    Logical Maximum = 1
-            0x75, 0x01,   //    Report Size = 1
-            0x95, 0x08,   //    Report Count = 8
-            0x81, 0x02,   //   Input(Data,Variable,Absolute)
-            0x95, 0x01,   //    Report Count = 1
-            0x75, 0x08,   //    Report Size = 8
-            0x81, 0x01,   //   Input(Constant)
-            0x19, 0x00,   //    Usage Minimum = 0
-            0x29, 0x65,   //    Usage Maximum = 101
-            0x15, 0x00,   //    Logical Minimum = 0
-            0x25, 0x65,   //    Logical Maximum = 101
-            0x75, 0x08,   //    Report Size = 8
-            0x95, 0x01,   //    Report Count = 1
-            0x81, 0x00,   //   Input(Data,Variable,Array)
-            0xc0          //  End Collection
+            // Keyboard report (Report ID 1)
+            0x05, 0x01,        // Usage Page (Generic Desktop)
+            0x09, 0x06,        // Usage (Keyboard)
+            0xa1, 0x01,        // Collection (Application)
+                0x85, 0x01,        // Report ID (1)
+                0x05, 0x07,        // Usage Page (Keyboard/Keypad)
+                0x19, 0xe0,        // Usage Minimum (224)
+                0x29, 0xe7,        // Usage Maximum (231)
+                0x15, 0x00,        // Logical Minimum (0)
+                0x25, 0x01,        // Logical Maximum (1)
+                0x75, 0x01,        // Report Size (1)
+                0x95, 0x08,        // Report Count (8)
+                0x81, 0x02,        // Input (Data, Variable, Absolute) ; Modifier byte
+                0x19, 0x00,        // Usage Minimum (0)
+                0x29, 0x65,        // Usage Maximum (101)
+                0x15, 0x00,        // Logical Minimum (0)
+                0x25, 0x65,        // Logical Maximum (101)
+                0x75, 0x08,        // Report Size (8)
+                0x95, 0x01,        // Report Count (1)
+                0x81, 0x00,        // Input (Data, Array) ; Keycode byte
+            0xc0,              // End Collection
         };
 
         // configuration descriptor
@@ -329,22 +336,27 @@ namespace klib::usb::device {
         // flag if remote wakeup is supported
         static inline bool remote_wakeup = false;
 
-        // structure for the report
-        struct report_data {
-            // modifier keys (e.g. ctrl, shift)
+        // Push the current pack to the stack and set the pack to 1
+        // as the following structs have specific sizes
+        #pragma pack(push, 1)
+
+        struct keycode_report_t {
+            // fixed report id for the keyboard
+            const report_id id = report_id::keyboard;
+
+            // key data
             uint8_t modifier;
-
-            // reserved value. Should be 0x00
-            uint8_t reserved;
-
-            // the current key that is pressed
             key_t key;
         };
 
-        static_assert(sizeof(report_data) == 3, "invalid report size");
+        static_assert(sizeof(keycode_report_t) == 3, "invalid keyboard report size");
+
+        // release the old pack so the rest of the structs are not
+        // affected by the pack(1)
+        #pragma pack(pop)
 
         // storage for the keyboard hid messages
-        static inline report_data report = {};
+        static inline keycode_report_t keycode_report = {};
 
         // static parameters with data to write to the host
         static inline const char *volatile irq_data = nullptr;
@@ -374,12 +386,13 @@ namespace klib::usb::device {
             if ((!irq_size) && (irq_data != nullptr)) {
                 // we have nothing more to send. Send a empty report
                 // with no keypresses
-                report = {};
+                keycode_report.modifier = 0x00;
+                keycode_report.key = key_t::key_none;
 
                 // send the no key pressed to the host
                 Usb::write(
                     hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    mode, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}
+                    mode, {reinterpret_cast<const uint8_t*>(&keycode_report), sizeof(keycode_report)}
                 );
 
                 // clear the data to notify we are done with the string
@@ -400,12 +413,13 @@ namespace klib::usb::device {
             if (irq_size > 0 && irq_data[0] == irq_data[1] && repeated_key == false) {
                 // we have detected a double character. Send a no keys
                 // pressed in between
-                report = {};
+                keycode_report.modifier = 0x00;
+                keycode_report.key = key_t::key_none;
 
                 // send the report to the host
                 Usb::write(
                     hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                    mode, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}
+                    mode, {reinterpret_cast<const uint8_t*>(&keycode_report), sizeof(keycode_report)}
                 );
 
                 // mark we have send a no keys between two repeated keys
@@ -421,7 +435,7 @@ namespace klib::usb::device {
             irq_data++;
 
             // encode the next character
-            encode_report(irq_data[0], report);
+            encode_report(irq_data[0], keycode_report);
 
             // clear we have transmitted a no keys in between two repeated keys
             repeated_key = false;
@@ -429,17 +443,14 @@ namespace klib::usb::device {
             // send the report to the host
             Usb::write(
                 hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
-                mode, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}
+                mode, {reinterpret_cast<const uint8_t*>(&keycode_report), sizeof(keycode_report)}
             );
 
             // return we are done
             return;
         }
 
-        static void encode_report(const char ch, report_data& report) {
-            // always clear the reserved data
-            report.reserved = 0x00;
-
+        static void encode_report(const char ch, keycode_report_t& report) {
             // check what data we have
             if (klib::string::is_character(ch)) {
                 // offset between the character (in the ascii table) and in the
@@ -540,8 +551,8 @@ namespace klib::usb::device {
             return false;
         }
 
-        template <typename Usb, bool Async = false>
-        static bool write_impl(const report_data& r) {
+        template <typename Usb, bool Async = false, typename T = keycode_report_t>
+        static bool write_impl(const T& r) {
             // write the first report to the endpoint
             if (!Usb::write(hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
                 usb::get_endpoint_mode(config.endpoint.bEndpointAddress), {reinterpret_cast<const uint8_t*>(&r), sizeof(r)}))
@@ -577,14 +588,14 @@ namespace klib::usb::device {
             }
 
             // encode the first report
-            encode_report(data[0], report);
+            encode_report(data[0], keycode_report);
 
             // set the data in the interrupt
             irq_size = size - 1;
             irq_data = data;
 
             // write the data
-            return write_impl<Usb, Async>(report);
+            return write_impl<Usb, Async, true>(keycode_report);
         }
 
         template <typename Usb, bool Async = false>
@@ -599,18 +610,15 @@ namespace klib::usb::device {
             }
 
             // set the report
-            report = {
-                .modifier = 0x00,
-                .reserved = 0x00,
-                .key = key
-            };
+            keycode_report.modifier = 0x00;
+            keycode_report.key = key;
 
             // set the data in the interrupt
             irq_size = 0;
             irq_data = &dummy;
 
             // write the data
-            return write_impl<Usb, Async>(report);
+            return write_impl<Usb, Async>(keycode_report);
         }
 
         /**
@@ -849,7 +857,7 @@ namespace klib::usb::device {
                     usb::get_endpoint(config.endpoint.bEndpointAddress),
                     usb::get_endpoint_mode(config.endpoint.bEndpointAddress),
                     usb::get_transfer_type(config.endpoint.bmAttributes),
-                    sizeof(report)
+                    sizeof(keycode_report)
                 );
 
                 // store the configuration value
@@ -859,13 +867,14 @@ namespace klib::usb::device {
                 Usb::configured(true);
 
                 // prepare a inital report with no keys pressed
-                report = {};
+                keycode_report.modifier = 0x00;
+                keycode_report.key = key_t::key_none;
 
                 // write the inital report
                 if (Usb::write(
                     hid_callback<Usb>, usb::get_endpoint(config.endpoint.bEndpointAddress),
                     usb::get_endpoint_mode(config.endpoint.bEndpointAddress), 
-                    {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
+                    {reinterpret_cast<const uint8_t*>(&keycode_report), sizeof(keycode_report)}))
                 {
                     // no issue for now ack
                     return usb::handshake::ack;
@@ -934,11 +943,12 @@ namespace klib::usb::device {
                 case hid::class_request::get_report:
                     // the host should not use this as a substitute for the Interrupt EP
                     // we simply send a "no keys" report to the host
-                    report = {};
+                    keycode_report.modifier = 0x00;
+                    keycode_report.key = key_t::key_none;
 
                     // write the data to the control endpoint
                     if (Usb::write(nullptr, usb::control_endpoint,
-                        usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
+                        usb::endpoint_mode::in, {reinterpret_cast<const uint8_t*>(&keycode_report), sizeof(keycode_report)}))
                     {
                         // no issue for now ack
                         return usb::handshake::ack;
@@ -949,24 +959,23 @@ namespace klib::usb::device {
                     }
                     break;
                 case hid::class_request::get_idle:
-                    // TODO: add support for report id != 0
-                    // for now we only support report id == 0
-                    if ((packet.wValue & 0xff) != 0x00) {
-                        // not supported for now
-                        return usb::handshake::stall;
-                    }
-                    else {
-                        // write the data to the control endpoint
-                        if (Usb::write(nullptr, usb::control_endpoint, usb::endpoint_mode::in,
-                            {reinterpret_cast<const uint8_t*>(&report), sizeof(report)}))
-                        {
-                            // no issue for now ack
-                            return usb::handshake::ack;
-                        }
-                        else {
-                            // something went wrong stall for now
+                    switch (static_cast<report_id>(packet.wValue & 0xff)) {
+                        case report_id::keyboard:
+                            // write the data to the control endpoint
+                            if (Usb::write(nullptr, usb::control_endpoint, usb::endpoint_mode::in,
+                                {reinterpret_cast<const uint8_t*>(&keycode_report), sizeof(keycode_report)}))
+                            {
+                                // no issue for now ack
+                                return usb::handshake::ack;
+                            }
+                            else {
+                                // something went wrong stall for now
+                                return usb::handshake::stall;
+                            }
+                            break;
+                        default:
+                            // not supported for now
                             return usb::handshake::stall;
-                        }
                     }
                     break;
                 case hid::class_request::set_report:
