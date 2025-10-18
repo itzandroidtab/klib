@@ -1,7 +1,7 @@
 # export our linkerscript
 set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
 
-# set the atsam4s2b cpu options as a seperate target so the driver layer can link agains klib
+# set the mb9bf566k cpu options as a seperate target so the driver layer can link agains klib
 add_library(target_cpu_options INTERFACE)
 set_target_properties(target_cpu_options PROPERTIES FOLDER "klib")
 
@@ -39,7 +39,7 @@ target_compile_options(target_cpu_options INTERFACE "-fno-exceptions")
 target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-tables")
 
 
-# cpu atsam4s2b target drivers 
+# cpu mb9bf566k target drivers 
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../../arm/vector_table/cortex-m4.cpp
 )
