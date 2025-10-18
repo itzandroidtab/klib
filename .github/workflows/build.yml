@@ -12,9 +12,6 @@ env:
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
 
     strategy:
@@ -80,7 +77,7 @@ jobs:
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: CC=arm-none-eabi-gcc CXX=arm-none-eabi-g++ cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTARGET_CPU=${{matrix.cpu}}
+        run: CC=arm-none-eabi-gcc CXX=arm-none-eabi-g++ cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTARGET_CPU=${{matrix.cpu}} -Wno-dev
 
       - name: Build
         # Build your program with the given configuration
@@ -99,3 +96,65 @@ jobs:
             ${{github.workspace}}/build/project/klib.hex
             ${{github.workspace}}/build/project/klib.bin
             ${{github.workspace}}/targets/chip/${{matrix.cpu}}/${{matrix.cpu}}.h
+
+  individual-header-build:
+    name: Build each header individually
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: arm-none-eabi-gcc install
+        uses: carlosperate/arm-none-eabi-gcc-action@v1.10.1
+        with:
+          release: '13.2.Rel1'
+
+      - name: arm-none-eabi-gcc version
+        run: arm-none-eabi-gcc --version
+
+      - name: getting arm headers
+        uses: actions/checkout@v4
+        with:
+          repository: ARM-software/CMSIS_5
+          ref: 'develop'
+          fetch-depth: '1'
+          path: './CMSIS'
+
+      - name: moving arm headers
+        run: |
+          cp ${{github.workspace}}/CMSIS/CMSIS/Core/Include/* ${{github.workspace}}/targets/arm/
+
+      - name: generating header
+        run: |
+          mkdir -p ${{github.workspace}}/targets/chip/lpc1756/docs
+          wget -q -O ${{github.workspace}}/targets/chip/lpc1756/docs/lpc1756.svd https://raw.githubusercontent.com/itzandroidtab/klib-svd/master/lpc1756.svd
+          wget -q -O ${{github.workspace}}/svdconv.tbz2 https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.44/svdconv-3.3.44-linux64-amd64.tbz2
+          tar -xf ${{github.workspace}}/svdconv.tbz2 
+          chmod +x ${{github.workspace}}/svdconv
+          
+          ${{github.workspace}}/svdconv ${{github.workspace}}/targets/chip/lpc1756/docs/lpc1756.svd --suppress-warnings --generate=header -o ${{github.workspace}}/targets/chip/lpc1756/ || true
+          sed -i '/#include "system_/d' ${{github.workspace}}/targets/chip/lpc1756/lpc1756.h
+
+      - name: Find all header files and build individually
+        run: |
+          mkdir -p ${{github.workspace}}/project
+          HEADER_DIR="${{github.workspace}}/klib/"
+          BUILD_DIR="${{github.workspace}}/build"
+
+          # Find all header files (.hpp and .h)
+          find "$HEADER_DIR" -type f \( -name "*.hpp" -o -name "*.h" \) | while read header_file; do
+            # Get a safe name for the build (basename + replace / with _)
+            header_name=$(basename "$header_file")
+            safe_name=$(echo "$header_file" | sed 's/[^a-zA-Z0-9]/_/g')
+
+            # Create a main.cpp that only includes this header
+            echo "#include \"${header_file#$HEADER_DIR/}\"" > ${{github.workspace}}/project/main.cpp
+            echo "int main() { return 0; }" >> ${{github.workspace}}/project/main.cpp
+            cat ${{github.workspace}}/project/main.cpp
+
+            # Optionally: show which header we're building
+            echo "Building for header: $header_file"
+
+            # Configure and build
+            CC=arm-none-eabi-gcc CXX=arm-none-eabi-g++ cmake -B "$BUILD_DIR/$safe_name" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTARGET_CPU=lpc1756 -Wno-dev
+            cmake --build "$BUILD_DIR/$safe_name" --config ${{env.BUILD_TYPE}}
+          done
