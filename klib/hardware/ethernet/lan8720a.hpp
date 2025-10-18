@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+#include <klib/io/systick.hpp>
 #include <klib/io/bus/ethernet.hpp>
 
 namespace klib::hardware::ethernet::phy {
