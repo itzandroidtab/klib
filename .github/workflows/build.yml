@@ -154,6 +154,6 @@ jobs:
             echo "Building for header: $header_file"
 
             # Configure and build
-            CC=arm-none-eabi-gcc CXX=arm-none-eabi-g++ cmake -B "$BUILD_DIR/$safe_name" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -S ${{github.workspace}}
+            CC=arm-none-eabi-gcc CXX=arm-none-eabi-g++ cmake -B "$BUILD_DIR/$safe_name" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTARGET_CPU=lpc1756
             cmake --build "$BUILD_DIR/$safe_name" --config ${{env.BUILD_TYPE}}
           done
