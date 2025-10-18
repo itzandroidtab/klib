@@ -206,6 +206,8 @@ namespace klib::usb::device {
             key_media_eject = 0xb8,
         };
 
+        static_assert(sizeof(consumer_key_t) == sizeof(uint16_t), "invalid consumer keys size");
+
     protected:
         /**
          * @brief Enum with the string descriptor indexes
@@ -272,7 +274,8 @@ namespace klib::usb::device {
             .bNumConfigurations = 0x1
         };
 
-        // report descriptor for the hid keyboard
+        // report descriptor for the hid keyboard. We need 2 report ids
+        // so windows recognizes both the keyboard and consumer control
         const __attribute__((aligned(4))) static inline uint8_t report_desc[] = {
             // Keyboard report (Report ID 1)
             0x05, 0x01,        // Usage Page (Generic Desktop)
@@ -397,6 +400,7 @@ namespace klib::usb::device {
             // fixed report id for the consumer control
             const report_id id = report_id::consumer;
 
+            // key data
             consumer_key_t key;
         };
 
