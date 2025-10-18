@@ -98,7 +98,7 @@ jobs:
             ${{github.workspace}}/targets/chip/${{matrix.cpu}}/${{matrix.cpu}}.h
 
   individual-header-build:
-    name: Build each header in its own main.cpp
+    name: Build each header individually
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
