@@ -149,6 +149,7 @@ jobs:
             # Create a main.cpp that only includes this header
             echo "#include \"${header_file#$HEADER_DIR/}\"" > ${{github.workspace}}/project/main.cpp
             echo "int main() { return 0; }" >> ${{github.workspace}}/project/main.cpp
+            cat ${{github.workspace}}/project/main.cpp
 
             # Optionally: show which header we're building
             echo "Building for header: $header_file"
