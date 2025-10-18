@@ -4,6 +4,7 @@
 #include <array>
 #include <span>
 
+#include <klib/vector2.hpp>
 #include <klib/io/dma.hpp>
 #include <klib/graphics/color.hpp>
 
