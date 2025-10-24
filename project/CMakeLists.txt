@@ -25,7 +25,7 @@ target_compile_definitions(klib PUBLIC "KLIB_IRQ=irq_ram")
 target_compile_definitions(klib PUBLIC "KLIB_DEFAULT_COUT=rtt")
 target_compile_definitions(klib PUBLIC "KLIB_DEFAULT_CIN=rtt")
 
-# override the rtt buffer size (not required and not used when segger rtt is not used)
+# override the rtt buffer size (not required and not used when no segger rtt is used)
 target_compile_definitions(klib PUBLIC "BUFFER_SIZE_UP=256")
 target_compile_definitions(klib PUBLIC "BUFFER_SIZE_DOWN=16")
 
