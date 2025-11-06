@@ -1,6 +1,7 @@
 #ifndef KLIB_CYPRESS_MB9BF560L_PORT_HPP
 #define KLIB_CYPRESS_MB9BF560L_PORT_HPP
 
+#include <tuple>
 #include <cstdint>
 
 #include <klib/klib.hpp>
