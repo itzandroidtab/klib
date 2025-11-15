@@ -77,10 +77,31 @@ void __attribute__((__noreturn__, __naked__)) __reset_handler() {
  * @brief Default handler that locks the cpu. 
  * 
  */
-void __default_handler() {
+void __attribute__((noreturn)) __default_handler() {
     // do nothing and wait
     while (true) {}
 }
 
 // called when a vft entry is not yet filled in
 void __attribute__((weak)) __cxa_pure_virtual() {}
+
+// when optimization is off we need to provide these 
+// functions for some standard library features. These
+// are just stubs that call the default handler. When
+// optimization is on these are not needed as they do
+// not do anything.
+#if __OPTIMIZATION_LEVEL__ == 0
+void __attribute__((weak)) _exit(int) { 
+    __default_handler();
+}
+
+void __attribute__((weak)) _kill() { 
+    __default_handler();
+}
+
+int __attribute__((weak)) _getpid() { 
+    return 1; 
+}
+
+void __attribute__((weak)) _fini() {}
+#endif
