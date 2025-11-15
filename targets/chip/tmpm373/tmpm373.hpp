@@ -61,6 +61,38 @@ namespace klib::tmpm373 {
     static void disable_irq() {
         __disable_irq();
     }
+
+    /**
+     * @brief Set the priority of a interrupt
+     *
+     * @tparam Irq
+     */
+    template <irq::arm_vector Irq, uint8_t Priority>
+    static void interrupt_priority() {
+        static_assert(static_cast<uint32_t>(Irq) >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to set priority");
+        static_assert(Priority < (1U << __NVIC_PRIO_BITS), "Invalid priority given to set priority");
+
+        // set the priority
+        NVIC_SetPriority(
+            static_cast<IRQn_Type>(
+                static_cast<uint32_t>(Irq) - static_cast<uint32_t>(irq::arm_vector::count)), 
+            Priority
+        );
+    }
+
+    /**
+     * @brief Set the priority of a interrupt
+     *
+     * @tparam Irq
+     */
+    template <uint32_t Irq, uint8_t Priority>
+    static void interrupt_priority() {
+        static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to set priority");
+        static_assert(Priority < (1U << __NVIC_PRIO_BITS), "Invalid priority given to set priority");
+
+        // set the priority
+        NVIC_SetPriority(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)), Priority);
+    }
 }
 
 #endif
