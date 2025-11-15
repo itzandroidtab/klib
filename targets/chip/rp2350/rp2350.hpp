@@ -67,15 +67,33 @@ namespace klib::rp2350 {
      *
      * @tparam Irq
      */
-    template <irq::arm_vector Irq, uint8_t Priority>
+    template <irq0::arm_vector Irq, uint8_t Priority>
     static void interrupt_priority() {
-        static_assert(static_cast<uint32_t>(Irq) >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to set priority");
+        static_assert(static_cast<uint32_t>(Irq) >= static_cast<uint32_t>(irq0::arm_vector::count), "Invalid IRQ given to set priority");
         static_assert(Priority < (1U << __NVIC_PRIO_BITS), "Invalid priority given to set priority");
 
         // set the priority
         NVIC_SetPriority(
             static_cast<IRQn_Type>(
-                static_cast<uint32_t>(Irq) - static_cast<uint32_t>(irq::arm_vector::count)), 
+                static_cast<uint32_t>(Irq) - static_cast<uint32_t>(irq0::arm_vector::count)), 
+            Priority
+        );
+    }
+
+    /**
+     * @brief Set the priority of a interrupt
+     *
+     * @tparam Irq
+     */
+    template <irq1::arm_vector Irq, uint8_t Priority>
+    static void interrupt_priority() {
+        static_assert(static_cast<uint32_t>(Irq) >= static_cast<uint32_t>(irq1::arm_vector::count), "Invalid IRQ given to set priority");
+        static_assert(Priority < (1U << __NVIC_PRIO_BITS), "Invalid priority given to set priority");
+
+        // set the priority
+        NVIC_SetPriority(
+            static_cast<IRQn_Type>(
+                static_cast<uint32_t>(Irq) - static_cast<uint32_t>(irq1::arm_vector::count)), 
             Priority
         );
     }
@@ -87,11 +105,11 @@ namespace klib::rp2350 {
      */
     template <uint32_t Irq, uint8_t Priority>
     static void interrupt_priority() {
-        static_assert(Irq >= static_cast<uint32_t>(irq::arm_vector::count), "Invalid IRQ given to set priority");
+        static_assert(Irq >= static_cast<uint32_t>(irq0::arm_vector::count), "Invalid IRQ given to set priority");
         static_assert(Priority < (1U << __NVIC_PRIO_BITS), "Invalid priority given to set priority");
 
         // set the priority
-        NVIC_SetPriority(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq::arm_vector::count)), Priority);
+        NVIC_SetPriority(static_cast<IRQn_Type>(Irq - static_cast<uint32_t>(irq0::arm_vector::count)), Priority);
     }
 }
 
