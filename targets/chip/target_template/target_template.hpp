@@ -51,6 +51,26 @@ namespace klib::template {
     static void disable_irq() {
         // globally disable the interrupts
     }
+
+    /**
+     * @brief Set the priority of a interrupt
+     *
+     * @tparam Irq
+     */
+    template <irq::arm_vector Irq, uint8_t Priority>
+    static void interrupt_priority() {
+        // set the priority of a interrupt
+    }
+
+    /**
+     * @brief Set the priority of a interrupt
+     *
+     * @tparam Irq
+     */
+    template <uint32_t Irq, uint8_t Priority>
+    static void interrupt_priority() {
+        // set the priority of a interrupt
+    }
 }
 
 #endif
