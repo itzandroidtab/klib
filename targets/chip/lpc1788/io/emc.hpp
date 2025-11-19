@@ -70,10 +70,10 @@ namespace klib::lpc1788::io::periph::lqfp_208 {
 
         // all the sdram chip selects
         using dynamic_cs_pins = std::tuple<
-            detail::emc::emc<pins::package::lqfp_208::p73, detail::emc::mode::cs, core::lpc178x::io::detail::alternate::func_1>, // cynamic_cs0
-            detail::emc::emc<pins::package::lqfp_208::p81, detail::emc::mode::cs, core::lpc178x::io::detail::alternate::func_1>, // cynamic_cs1
-            detail::emc::emc<pins::package::lqfp_208::p85, detail::emc::mode::cs, core::lpc178x::io::detail::alternate::func_1>, // cynamic_cs2
-            detail::emc::emc<pins::package::lqfp_208::p64, detail::emc::mode::cs, core::lpc178x::io::detail::alternate::func_1> // cynamic_cs3
+            detail::emc::emc<pins::package::lqfp_208::p73, detail::emc::mode::cs, core::lpc178x::io::detail::alternate::func_1>, // dynamic_cs0
+            detail::emc::emc<pins::package::lqfp_208::p81, detail::emc::mode::cs, core::lpc178x::io::detail::alternate::func_1>, // dynamic_cs1
+            detail::emc::emc<pins::package::lqfp_208::p85, detail::emc::mode::cs, core::lpc178x::io::detail::alternate::func_1>, // dynamic_cs2
+            detail::emc::emc<pins::package::lqfp_208::p64, detail::emc::mode::cs, core::lpc178x::io::detail::alternate::func_1> // dynamic_cs3
         >;
 
         // all the clock enable pins
