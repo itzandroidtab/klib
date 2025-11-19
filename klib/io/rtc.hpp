@@ -144,7 +144,7 @@ namespace klib::io::rtc {
 
             // check if we have more days than the
             // current month has
-            if (days < (klib::io::rtc::month_days[i] + leap_month)) {
+            if (days < static_cast<uint32_t>(klib::io::rtc::month_days[i] + leap_month)) {
                 break;
             }
 
