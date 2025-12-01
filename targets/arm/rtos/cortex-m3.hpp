@@ -51,7 +51,33 @@ namespace klib::rtos::cortex_m3 {
         software_context software;
         hardware_context hardware;
     };
+}
 
+namespace klib::rtos::cortex_m3::detail {
+    /**
+     * @brief helper function to store up to 4 parameters in the 
+     * hardware context. Values not used are set to 0
+     */
+    template <typename... Args>
+    constexpr void fill_function_parameters(hardware_context &regs, Args... args) {
+        // make sure we have at most 4 arguments
+        static_assert(sizeof...(Args) <= 4, "A maximum of 4 arguments can be assigned to r0-r3");
+
+        // check if the arguments are not bigger than uint32_t
+        static_assert((... && (sizeof(Args) <= sizeof(uint32_t))), "All argument types must be less than or equal to 4 bytes");
+
+        // create an array with the argument values casted to uint32_t using bit_cast
+        const uint32_t values[sizeof...(Args)] = { std::bit_cast<uint32_t>(args)... };
+
+        // assign the values to the registers, missing values are set to 0
+        regs.r0 = (sizeof...(Args) > 0) ? values[0] : 0;
+        regs.r1 = (sizeof...(Args) > 1) ? values[1] : 0;
+        regs.r2 = (sizeof...(Args) > 2) ? values[2] : 0;
+        regs.r3 = (sizeof...(Args) > 3) ? values[3] : 0;
+    }
+}
+
+namespace klib::rtos::cortex_m3 {
     /**
      * @brief Setup the task stack with the initial context
      * 
