@@ -21,6 +21,30 @@ namespace klib::rtos {
         // stack for this task
         size_t stack[StackSize] = {};
 
+        /**
+         * @brief Helper trampoline function that calls the actual task function
+         * after the function has returned we delete the task from the scheduler
+         * 
+         * @tparam Args 
+         * @param func 
+         * @param task 
+         * @param parameters 
+         */
+        template <typename... Args>
+        static void task_trampoline(rtos::detail::base_task* task, void (*func)(Args...), Args... parameters) {
+            // call the function with the parameter
+            func(parameters...);
+
+            // mark the task for deletion
+            task->marked_for_deletion = true;
+
+            // TODO: yield to the scheduler to delete this task
+            while (true) {
+                // wait for the scheduler to delete this task
+                asm volatile("wfi");
+            }
+        }
+
     public:
         /**
          * @brief Construct a task that runs the given function. When the function 
@@ -34,11 +58,17 @@ namespace klib::rtos {
         task(void (*func)(Args...), Args&&... parameters) {
             static_assert(sizeof...(parameters) <= 4, "A maximum of 4 parameters are supported for task functions");
 
-            // type alias for type deduction
-            using func_t = void (*)(Args...);
+            // type aliases for clarity
+            using trampoline_t = void (*)(rtos::detail::base_task*, void (*)(Args...), Args...);
 
             // initialize the stack with default values and update the stack pointer
-            klib::target::rtos::detail::setup_task_stack(static_cast<func_t>(func), stack, StackSize, std::forward<Args>(parameters)...);
+            stack_pointer = klib::target::rtos::detail::setup_task_stack(
+                static_cast<trampoline_t>(task_trampoline<Args...>), 
+                stack, StackSize, 
+                static_cast<rtos::detail::base_task*>(this),
+                static_cast<void (*)(Args...)>(func), 
+                std::forward<Args>(parameters)...
+            );
         }
     };
 }
