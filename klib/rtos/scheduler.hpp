@@ -54,6 +54,18 @@ namespace klib::rtos {
                 }
             }
 
+            // remove tasks that are marked for deletion. We move backwards
+            // to not mess up the indexing when erasing. Note this is something
+            // that is specific to our dynamic array implementation. 
+            // TODO: update this when changing away from the dynamic array
+            if (tasks.size() > 0) {
+                for (auto it = tasks.end() - 1; it != tasks.begin(); it--) {
+                    if ((*it)->marked_for_deletion) {
+                        tasks.erase(it);
+                    }
+                }
+            }
+
             // call the scheduler to pick the next task
             schedule();
         }

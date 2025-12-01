@@ -22,6 +22,9 @@ namespace klib::rtos::detail {
 
         // priority of the task
         uint8_t priority;
+
+        // mark the task for deletion
+        bool marked_for_deletion = false;
     };
 }
 
