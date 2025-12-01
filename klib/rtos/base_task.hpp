@@ -2,6 +2,7 @@
 #define KLIB_RTOS_BASE_TASK_HPP
 
 #include <cstdint>
+#include <cstdlib>
 
 #include <klib/units.hpp>
 
