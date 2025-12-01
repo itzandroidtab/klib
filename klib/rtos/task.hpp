@@ -23,29 +23,22 @@ namespace klib::rtos {
 
     public:
         /**
-         * @brief Construct a new task with parameter for the function
+         * @brief Construct a task that runs the given function. When the function 
+         * exits the task is deleted.
          * 
-         * @tparam T 
+         * @tparam Args 
          * @param func 
-         * @param parameter 
+         * @param parameters 
          */
-        template <typename T>
-        task(void (*func)(T arg), const T parameter) {
-            // ensure the parameter fits in a register
-            static_assert(sizeof(T) <= 4, "Parameter size must be less than or equal to 4 bytes");
+        template <typename... Args>
+        task(void (*func)(Args...), Args&&... parameters) {
+            static_assert(sizeof...(parameters) <= 4, "A maximum of 4 parameters are supported for task functions");
+
+            // type alias for type deduction
+            using func_t = void (*)(Args...);
 
             // initialize the stack with default values and update the stack pointer
-            stack_pointer = klib::target::rtos::detail::setup_task_stack(func, parameter, stack, StackSize);
-        }
-
-        /**
-         * @brief Construct a new task without parameter for the function
-         * 
-         * @param func 
-         */
-        task(void (*func)()) {
-            // initialize the stack with default values and update the stack pointer
-            stack_pointer = klib::target::rtos::detail::setup_task_stack(reinterpret_cast<void(*)(int)>(func), 0, stack, StackSize);
+            klib::target::rtos::detail::setup_task_stack(static_cast<func_t>(func), stack, StackSize, std::forward<Args>(parameters)...);
         }
     };
 }

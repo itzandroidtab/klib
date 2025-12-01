@@ -88,21 +88,20 @@ namespace klib::rtos::cortex_m3 {
      * @param stack_size 
      * @return uint32_t*
      */
-    template <typename T, typename = std::enable_if_t<sizeof(T) <= 4>>
-    size_t* setup_task_stack(void (*func)(T arg), T parameter, size_t* stack, const size_t stack_size) {
+    template <typename... Args>
+    size_t* setup_task_stack(void (*func)(Args...), size_t* stack, const size_t stack_size, Args&&... parameters) {
         // Point to the top of the aligned stack
         full_context* context = reinterpret_cast<full_context*>(
             reinterpret_cast<uint8_t*>(stack) + (stack_size * sizeof(size_t)) - sizeof(full_context)
         );
 
+        // fill in the function parameters into r0-r3
+        detail::fill_function_parameters(context->hardware, parameters...);
+
         // initialize the hardware context
-        context->hardware.r0 = parameter;
-        context->hardware.r1 = 1;
-        context->hardware.r2 = 2;
-        context->hardware.r3 = 3;
         context->hardware.r12 = 12;
         context->hardware.lr = thread_return;
-        context->hardware.pc = reinterpret_cast<uint32_t>(func);
+        context->hardware.pc = std::bit_cast<uint32_t>(func);
 
         // for the cortex m3 make we need to set the thumb bit in the xPSR register
         context->hardware.xpsr = 0x1 << 24;
