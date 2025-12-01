@@ -56,7 +56,6 @@ namespace klib::io {
             // clear the systick value
             port->value = 0;
 
-
             // register our handler
             Irq::template register_irq<Irq::arm_vector::systick>(irq_handler);
 
