@@ -130,8 +130,8 @@ namespace klib::rtos::cortex_m3 {
      * @param next_task
      */
     static void __attribute__((naked)) switch_task(
-        detail::base_task** current_task,
-        detail::base_task** next_task
+        rtos::detail::base_task** current_task,
+        rtos::detail::base_task** next_task
     ) {
         __asm__ volatile(
             // save context of current and next task is not a nullptr
@@ -164,7 +164,7 @@ namespace klib::rtos::cortex_m3 {
             // return
             "bx lr\n"
             :
-            : "I" (offsetof(detail::base_task, stack_pointer))
+            : "I" (offsetof(rtos::detail::base_task, stack_pointer))
             : "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "memory"
         );
     }
