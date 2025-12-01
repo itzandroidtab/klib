@@ -2,7 +2,7 @@
 #define KLIB_RTOS_HPP
 
 #include <klib/io/systick.hpp>
-#include <klib/ringbuffer.hpp>
+#include <klib/dynamic_array.hpp>
 #include <klib/units.hpp>
 
 #include <rtos/rtos.hpp>
@@ -17,7 +17,7 @@ namespace klib::rtos {
         static_assert(SYSTICK_CALLBACK_ENABLED, "Systick callback needs to be enabled to switch tasks");
 
         // all the task we have
-        static inline klib::ringbuffer<detail::base_task*, 16> tasks = {};
+        static inline klib::dynamic_array<detail::base_task*, 16> tasks = {};
 
         // current and next task index
         static inline detail::base_task* current_task = nullptr;
@@ -144,7 +144,7 @@ namespace klib::rtos {
          */
         static void create_task(detail::base_task* task) {
             // add the task to the queue
-            tasks.push(task);
+            tasks.push_back(task);
         }
 
         /**
