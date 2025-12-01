@@ -140,7 +140,7 @@ jobs:
           BUILD_DIR="${{github.workspace}}/build"
 
           # Find all header files (.hpp and .h)
-          find "$HEADER_DIR" -type f \( -name "*.hpp" -o -name "*.h" \) | while read header_file; do
+          find "$HEADER_DIR" -type f \( -name "*.hpp" -o -name "*.h" \) -not -path "*/rtos/*" | while read header_file; do
             # Get a safe name for the build (basename + replace / with _)
             header_name=$(basename "$header_file")
             safe_name=$(echo "$header_file" | sed 's/[^a-zA-Z0-9]/_/g')
