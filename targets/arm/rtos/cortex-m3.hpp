@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <type_traits>
+#include <bit>
 
 #include <klib/klib.hpp>
 #include <klib/rtos/base_task.hpp>
