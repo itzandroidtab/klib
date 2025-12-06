@@ -56,7 +56,7 @@ namespace klib::rtos {
          */
         template <typename... Args>
         task(void (*func)(Args...), Args&&... parameters) {
-            static_assert(sizeof...(parameters) <= 4, "A maximum of 4 parameters are supported for task functions");
+            static_assert(sizeof...(parameters) <= 2, "A maximum of 2 parameters are supported for task functions");
 
             // type aliases for clarity
             using trampoline_t = void (*)(rtos::detail::base_task*, void (*)(Args...), Args...);
