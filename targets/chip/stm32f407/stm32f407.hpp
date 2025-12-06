@@ -9,6 +9,9 @@ namespace klib::stm32f407 {
     // irq for the stm32f407
     using irq = klib::irq::KLIB_IRQ<0, 16 + 72>;
 
+    // amount of cpu cores
+    constexpr static uint32_t cpu_cores = 1;
+
     /**
      * @brief Get the current cpu id
      * 

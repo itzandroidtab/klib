@@ -10,6 +10,9 @@ namespace klib::rp2350 {
     using irq0 = klib::irq::KLIB_IRQ<0, 16 + 52>;
     using irq1 = klib::irq::KLIB_IRQ<1, 16 + 52>;
 
+    // amount of cpu cores
+    constexpr static uint32_t cpu_cores = 2;
+
     /**
      * @brief Get the current cpu id
      *

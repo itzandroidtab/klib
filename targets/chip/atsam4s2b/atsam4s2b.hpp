@@ -9,6 +9,9 @@ namespace klib::atsam4s2b {
     // irq for the atsam4s2b
     using irq = klib::irq::KLIB_IRQ<0, 16 + 35>;
 
+    // amount of cpu cores
+    constexpr static uint32_t cpu_cores = 1;
+
     /**
      * @brief Get the current cpu id
      *

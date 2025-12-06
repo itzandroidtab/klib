@@ -9,6 +9,9 @@ namespace klib::stm32h723 {
     // irq for the stm32h723
     using irq = klib::irq::KLIB_IRQ<0, 16 + 162>;
 
+    // amount of cpu cores
+    constexpr static uint32_t cpu_cores = 1;
+
     /**
      * @brief Get the current cpu id
      * 

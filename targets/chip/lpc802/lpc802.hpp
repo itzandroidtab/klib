@@ -9,6 +9,9 @@ namespace klib::lpc802 {
     // irq for the lpc802
     using irq = klib::irq::KLIB_IRQ<0, 16 + 28>;
 
+    // amount of cpu cores
+    constexpr static uint32_t cpu_cores = 1;
+
     /**
      * @brief Get the current cpu id
      *

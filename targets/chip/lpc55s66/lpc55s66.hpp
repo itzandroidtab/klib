@@ -10,6 +10,9 @@ namespace klib::lpc55s66 {
     using irq0 = klib::irq::KLIB_IRQ<0, 16 + 40>;
     using irq1 = klib::irq::KLIB_IRQ<1, 16 + 40>;
 
+    // amount of cpu cores
+    constexpr static uint32_t cpu_cores = 2;
+
     /**
      * @brief Get the current cpu id
      *

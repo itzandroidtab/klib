@@ -7,6 +7,9 @@ namespace klib::template {
     // irq for the target cpu
     using irq = klib::irq::KLIB_IRQ<0, 16 + 16>;
 
+    // amount of cpu cores
+    constexpr static uint32_t cpu_cores = 1;
+
     /**
      * @brief Get the current cpu id
      *

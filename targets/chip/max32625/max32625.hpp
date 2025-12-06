@@ -9,6 +9,9 @@ namespace klib::max32625 {
     // irq for the max32625
     using irq = klib::irq::KLIB_IRQ<0, 16 + 49>;
 
+    // amount of cpu cores
+    constexpr static uint32_t cpu_cores = 1;
+
     /**
      * @brief Get the current cpu id
      *
