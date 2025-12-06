@@ -253,7 +253,8 @@ namespace klib::rtos::cortex_m3 {
             "mov r2, %[arg2]\n"
             "mov r3, %[arg3]\n"
             "svc #0\n"
-            : "=r"(ret)
+            "mov %[ret], r0\n"
+            : [ret]"=r"(ret)
             : 
                 [number]"r"(syscall_number), 
                 [arg1]"r"(values[0]), 
