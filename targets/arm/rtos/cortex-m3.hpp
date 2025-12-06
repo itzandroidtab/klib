@@ -168,6 +168,30 @@ namespace klib::rtos::cortex_m3 {
             : "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "memory"
         );
     }
+
+    /**
+     * @brief Start the scheduler by switching to unprivileged mode and 
+     * switching to the process stack pointer
+     * 
+     */
+    static void scheduler_start() {
+        // set the stack pointer so we dont access any wrong memory
+        // before starting the scheduler. Wrong memory in this case
+        // is whatever is left in the process stack pointer
+        uint32_t psp_stack[32] = {};
+        
+        // switch to the array for the process stack pointer
+        __set_PSP(reinterpret_cast<uint32_t>(&psp_stack[(sizeof(psp_stack) / sizeof(psp_stack[0]))]));
+
+        // switch to the process stack pointer and start executing in unprivileged mode
+        asm volatile(
+            "msr control, %0\n"
+            "isb\n"
+            :
+            : "r" (0x3) // unprivileged, use PSP
+            : "memory"
+        );
+    }
 }
 
 #endif

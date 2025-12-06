@@ -123,22 +123,8 @@ namespace klib::rtos {
             // add the idle task to the scheduler. This task is always ready to run
             create_task(&idle_task);
 
-            // set the stack pointer so we dont access any wrong memory
-            // before starting the scheduler. Wrong memory in this case
-            // is whatever is left in the process stack pointer
-            uint32_t psp_stack[32] = {};
-            
-            // switch to the array for the process stack pointer
-            __set_PSP(reinterpret_cast<uint32_t>(&psp_stack[(sizeof(psp_stack) / sizeof(psp_stack[0]))]));
-
-            // switch to the process stack pointer and start executing in unprivileged mode
-            asm volatile(
-                "msr control, %0\n"
-                "isb\n"
-                :
-                : "r" (0x3) // unprivileged, use PSP
-                : "memory"
-            );
+            // start the scheduler from the target
+            klib::target::rtos::detail::scheduler_start();
 
             // endless loop to wait on the start of the scheduler
             while (true) {
