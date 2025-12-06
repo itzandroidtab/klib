@@ -7,7 +7,7 @@
 #include <bit>
 
 #include <klib/klib.hpp>
-#include <klib/rtos/base_task.hpp>
+#include <rtos/base_task.hpp>
 
 namespace klib::rtos::cortex_m3 {
     // data to tell the handler to return from either the PSP or the MSP
@@ -191,6 +191,87 @@ namespace klib::rtos::cortex_m3 {
             : "r" (0x3) // unprivileged, use PSP
             : "memory"
         );
+
+        // endless loop to wait on the start of the scheduler
+        while (true) {
+            // wait for a interrupt. The systick callback
+            // should schedule what task to run
+            asm volatile("wfi");
+        }
+    }
+
+    template <typename Scheduler>
+    static __attribute__((naked)) void sycall_handler() {
+        // get the values from r0-r3 and the syscall number from r4
+        __asm__ volatile(
+            // store the link register and r4
+            "push {r4, lr}\n"
+
+            // get the r0-r3 values from the process stack
+            "mrs r4, psp\n"
+            "ldr r0, [r4, #0]\n"
+            "ldr r1, [r4, #4]\n"
+            "ldr r2, [r4, #8]\n"
+            "ldr r3, [r4, #12]\n"
+
+            // call the scheduler syscall handler
+            "blx %[syscall_handler]\n"
+
+            // copy the result (in r0) to the process stack so it is
+            // returned to the caller
+            "str r0, [r4, #0]\n"
+
+            // pop r4 and the link register
+            "pop {r4, lr}\n"
+
+            // return from exception
+            "bx lr\n"
+            :
+            : [syscall_handler]"r"(Scheduler::syscall_handler)
+            : "r0", "r1", "r2", "r3", "r4", "memory"
+        );
+    }
+
+    template <typename Return, typename... Args>
+    static Return syscall_invoke(uint8_t syscall_number, Args... args) {
+        // make sure we have at most 3 arguments
+        static_assert(sizeof...(Args) <= 3, "A maximum of 3 arguments can be used in a syscall");
+
+        // check if the arguments are not bigger than uint32_t
+        static_assert((... && (sizeof(Args) <= sizeof(uint32_t))), "All argument types must be less than or equal to 4 bytes");
+
+        // convert the arguments to uint32_t values
+        const uint32_t values[3] = { std::bit_cast<uint32_t>(args)... };
+    
+        // invoke the syscall
+        uint32_t ret;
+
+        // call the svc instruction - use svc #0 and pass syscall number in r7 (common convention)
+        asm volatile(
+            "mov r0, %[number]\n"
+            "mov r1, %[arg1]\n"
+            "mov r2, %[arg2]\n"
+            "mov r3, %[arg3]\n"
+            "svc #0\n"
+            : "=r"(ret)
+            : 
+                [number]"r"(syscall_number), 
+                [arg1]"r"(values[0]), 
+                [arg2]"r"(values[1]), 
+                [arg3]"r"(values[2])
+            : "r0", "r1", "r2", "r3", "memory"
+        );
+    
+        // convert the return value based on type
+        if constexpr (std::is_void_v<Return>) {
+            return;
+        } else if constexpr (std::is_same_v<Return, bool>) {
+            return static_cast<bool>(ret);
+        } else if constexpr (sizeof(Return) == sizeof(uint32_t)) {
+            return std::bit_cast<Return>(ret);
+        } else {
+            return static_cast<Return>(ret);
+        }
     }
 }
 

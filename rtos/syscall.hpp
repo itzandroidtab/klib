@@ -1,0 +1,54 @@
+#ifndef KLIB_RTOS_SYSCALL_HPP
+#define KLIB_RTOS_SYSCALL_HPP
+
+#include <cstdint>
+
+#include <klib/units.hpp>
+
+#include "base_task.hpp"
+
+namespace klib::rtos::syscall {
+    /**
+     * @brief Create a task object
+     * 
+     * @param task 
+     * @return successful creation
+     */
+    bool create_task(detail::base_task* task);
+
+    /**
+     * @brief Delete a task
+     * 
+     * @param task 
+     * @return true 
+     * @return false 
+     */
+    bool delete_task(detail::base_task* task);
+
+    /**
+     * @brief Yield the CPU to the next task in the scheduler
+     * 
+     */
+    void yield();
+
+    /**
+     * @brief Sleep the current task for the given time
+     * 
+     * @param time 
+     */
+    void sleep(klib::time::ms time);
+
+    /**
+     * @brief Allocate size amount of memory
+     * 
+     */
+    void* malloc(uint32_t size);
+
+    /**
+     * @brief Free the memory pointer by ptr
+     * 
+     */
+    void free(const void *const ptr);
+}
+
+#endif

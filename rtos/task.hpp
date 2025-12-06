@@ -5,6 +5,7 @@
 #include <rtos/rtos.hpp>
 
 #include "base_task.hpp"
+#include "syscall.hpp"
 
 namespace klib::rtos {
     /**
@@ -12,11 +13,8 @@ namespace klib::rtos {
      * 
      * @tparam StackSize 
      */
-    template <uint32_t StackSize = 128>
+    template <uint8_t Priority = 0, uint32_t StackSize = 128>
     class task: public detail::base_task {
-    public:
-        using task_func = void(*)();
-
     protected:
         // stack for this task
         size_t stack[StackSize] = {};
@@ -36,13 +34,7 @@ namespace klib::rtos {
             func(parameters...);
 
             // mark the task for deletion
-            task->marked_for_deletion = true;
-
-            // TODO: yield to the scheduler to delete this task
-            while (true) {
-                // wait for the scheduler to delete this task
-                asm volatile("wfi");
-            }
+            syscall::delete_task(task);
         }
 
     public:
@@ -55,7 +47,9 @@ namespace klib::rtos {
          * @param parameters 
          */
         template <typename... Args>
-        task(void (*func)(Args...), Args&&... parameters) {
+        task(void (*func)(Args...), Args&&... parameters): 
+            detail::base_task(Priority)
+        {
             static_assert(sizeof...(parameters) <= 2, "A maximum of 2 parameters are supported for task functions");
 
             // type aliases for clarity
