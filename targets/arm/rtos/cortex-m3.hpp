@@ -133,6 +133,7 @@ namespace klib::rtos::cortex_m3 {
         rtos::detail::base_task** current_task,
         rtos::detail::base_task** next_task
     ) {
+        // r0 contains current_task, r1 contains next_task
         __asm__ volatile(
             // save context of current and next task is not a nullptr
             "ldr r2, [r0]\n"
@@ -146,7 +147,7 @@ namespace klib::rtos::cortex_m3 {
 
             // store the stack pointer with the offset in %0
             "ldr r3, [r0]\n"
-            "str r2, [r3, %0]\n"
+            "str r2, [r3, %[offset]]\n"
 
             "switch_task_next_task:\n"
 
@@ -155,7 +156,7 @@ namespace klib::rtos::cortex_m3 {
             "str r3, [r0]\n"
 
             // get the stack pointer of the next task
-            "ldr r2, [r3, %0]\n"
+            "ldr r2, [r3, %[offset]]\n"
 
             // pop the registers from the stack that are not saved by hardware
             "ldmia r2!, {r4-r11}\n" 
@@ -164,8 +165,8 @@ namespace klib::rtos::cortex_m3 {
             // return
             "bx lr\n"
             :
-            : "I" (offsetof(rtos::detail::base_task, stack_pointer))
-            : "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "memory"
+            : [current]"r"(current_task), [next]"r"(next_task), [offset]"I" (offsetof(rtos::detail::base_task, stack_pointer))
+            : "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "memory", "cc"
         );
     }
 
