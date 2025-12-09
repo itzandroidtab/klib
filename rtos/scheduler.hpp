@@ -139,7 +139,7 @@ namespace klib::rtos {
             Irq::template register_irq<Irq::arm_vector::pendsv>(pendsv);
 
             // register the syscall handler
-            Irq::template register_irq<Irq::arm_vector::svcall>(klib::target::rtos::detail::sycall_handler<scheduler>);
+            Irq::template register_irq<Irq::arm_vector::svcall>(klib::target::rtos::detail::syscall_handler<scheduler>);
 
             // add the idle task to the scheduler. This task is always ready to run
             create_task(&idle_task);

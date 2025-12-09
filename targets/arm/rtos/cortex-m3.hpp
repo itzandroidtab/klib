@@ -202,7 +202,7 @@ namespace klib::rtos::cortex_m3 {
     }
 
     template <typename Scheduler>
-    static __attribute__((naked)) void sycall_handler() {
+    static __attribute__((naked)) void syscall_handler() {
         // get the values from r0-r3 and the syscall number from r4
         __asm__ volatile(
             // store the link register and r4
@@ -228,7 +228,7 @@ namespace klib::rtos::cortex_m3 {
             // return from exception
             "bx lr\n"
             :
-            : [syscall_handler]"r"(Scheduler::syscall_handler)
+            : [syscall_handler]"i"(Scheduler::syscall_handler)
             : "r0", "r1", "r2", "r3", "r4", "memory"
         );
     }
