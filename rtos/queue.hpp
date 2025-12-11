@@ -5,8 +5,8 @@
 
 #include <klib/ringbuffer.hpp>
 
-#include "waitable.hpp"
 #include "mutex.hpp"
+#include "semaphore.hpp"
 
 namespace klib::rtos {
     /**
@@ -15,46 +15,47 @@ namespace klib::rtos {
      * @tparam Size 
      */
     template <typename T, size_t MaxSize>
-    class queue: public waitable {
+    class queue {
     protected:
-        std::atomic_bool waiting;
-
         // mutex to protect access to the queue
         rtos::mutex mutex;
 
+        // semaphore to count available data and available space
+        rtos::semaphore data_available;
+        rtos::semaphore space_available;
+        
         // ringbuffer to store the data
         klib::ringbuffer<T, MaxSize> buffer;
 
     public:
         /**
+         * @brief Construct a new queue object
+         * 
+         */
+        queue():
+            mutex(),
+            data_available(0),
+            space_available(MaxSize),
+            buffer()
+        {}
+
+        /**
          * @brief Add an item to the queue.
          *
          * @param val
          */
-        constexpr void push(const T &val) {
-            mutex.lock();
-
+        void push(const T &val) {
             // wait until we have space in the buffer
-            while (buffer.full()) {
-                // mark as waiting
-                waiting.store(true);
+            space_available.decrement();
 
-                // unlock the mutex while waiting
-                mutex.unlock();
-
-                // yield to other tasks
-                rtos::syscall::yield(*this);
-
-                // lock the mutex again
-                mutex.lock();
-            }
+            // lock the mutex while accessing the buffer
+            mutex.lock();
 
             // push the item to the buffer
             buffer.push(val);
 
-            // clear the waiting flag for the other side if it was waiting
-            // on data to be available in the buffer
-            waiting.store(false);
+            // signal that data is available
+            data_available.increment();
 
             // unlock the mutex
             mutex.unlock();
@@ -65,31 +66,18 @@ namespace klib::rtos {
          *
          * @return
          */
-        constexpr T copy_and_pop() {
+        T copy_and_pop() {
+            // wait until we have data in the buffer
+            data_available.decrement();
+
             // lock the mutex while accessing the buffer
             mutex.lock();
-
-            // wait until we have data in the buffer
-            while (buffer.empty()) {
-                // mark as waiting
-                waiting.store(true);
-
-                // unlock the mutex while waiting
-                mutex.unlock();
-
-                // yield to other tasks
-                rtos::syscall::yield(*this);
-
-                // lock the mutex again
-                mutex.lock();
-            }
 
             // copy and pop the item
             T item = buffer.copy_and_pop();
 
-            // clear the waiting flag for the other side if it was waiting 
-            // on space in the buffer
-            waiting.store(false);
+            // signal that space is available
+            space_available.increment();
 
             // unlock the mutex
             mutex.unlock();
@@ -175,16 +163,6 @@ namespace klib::rtos {
          */
         constexpr size_t max_size() const {
             return MaxSize;
-        }
-
-        /**
-         * @brief 
-         * 
-         * @return true 
-         * @return false 
-         */
-        virtual bool is_waiting() const override {
-            return waiting.load();
         }
     };
 }
