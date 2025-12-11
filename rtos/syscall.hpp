@@ -8,6 +8,22 @@
 #include "base_task.hpp"
 #include "waitable.hpp"
 
+namespace klib::rtos::detail {
+    /**
+     * @brief All the available syscalls
+     * 
+     */
+    enum class syscalls {
+        create_task,
+        delete_task,
+        yield,
+        sleep,
+        get_time,
+        malloc,
+        free,
+    };
+}
+
 namespace klib::rtos::syscall {
     /**
      * @brief Create a task object
@@ -45,6 +61,13 @@ namespace klib::rtos::syscall {
      * @param time 
      */
     void sleep(klib::time::ms time);
+
+    /**
+     * @brief Get the time object
+     * 
+     * @return klib::time::ms 
+     */
+    klib::time::ms get_time();
 
     /**
      * @brief Allocate size amount of memory

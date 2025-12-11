@@ -11,21 +11,8 @@
 #include "syscall.hpp"
 
 namespace klib::rtos {
+    template <uint32_t CpuId, typename Irq>
     class scheduler {
-    public:
-        /**
-         * @brief All the available syscalls
-         * 
-         */
-        enum class syscalls {
-            create_task = 0,
-            delete_task = 1,
-            yield = 2,
-            sleep = 3,
-            malloc = 4,
-            free = 5
-        };
-
     protected:
         // make sure we can register our callback with the systick handler
         static_assert(SYSTICK_CALLBACK_ENABLED, "Systick callback needs to be enabled to switch tasks");
@@ -67,14 +54,6 @@ namespace klib::rtos {
                 return;
             }
 
-            // TODO: implement tick count for tasks
-            // decrement sleep time for all tasks
-            for (size_t i = 0; i < tasks.size(); i++) {
-                if (tasks[i]->time_to_sleep.value > 0) {
-                    tasks[i]->time_to_sleep.value--;
-                }
-            }
-
             // call the scheduler to pick the next task
             schedule();
         }
@@ -85,41 +64,67 @@ namespace klib::rtos {
          *
          */
         static void schedule() {
+            // get the current time
+            const auto now = io::systick<CpuId, SYSTICK_CALLBACK_ENABLED>::get_runtime();
+
             // schedule the next task. We use the priority to pick
             // the next task to run. We always pick the first task
             // with the highest priority that is not sleeping. If no
             // task is ready we run the idle task.
-            next_task = (current_task == nullptr ? &idle_task : (
-                current_task->time_to_sleep.value == 0 ? current_task : &idle_task
-            ));
+            if (current_task == nullptr) {
+                next_task = &idle_task;
+            }
+            else if (current_task->is_sleeping && current_task->wakup_time > now) {
+                // current task is sleeping, switch to idle
+                next_task = &idle_task;
+            }
+            else if (current_task->waitable != nullptr) {
+                next_task = &idle_task;
+            }
+            else {
+                next_task = current_task;
+            }
 
             // TODO: implement a better scheduling algorithm
             for (size_t i = 0; i < tasks.size(); i++) {
-                if (tasks[i]->time_to_sleep.value > 0) {
-                    // task is sleeping
-                    continue;
-                }
-                
-                // do not check the current task again
-                if (tasks[i] == current_task) {
+                // get a reference to the task
+                auto& task = *tasks[i];
+
+                // no need to check the next_task again. We checked
+                // it above to determine if we need to switch to the
+                // idle task
+                if (&task == next_task) {
                     continue;
                 }
 
+                // check if the task is sleeping
+                if (task.is_sleeping) {
+                    // check if the sleep time has elapsed
+                    if (task.wakup_time <= now) {
+                        // wake up the task
+                        task.is_sleeping = false;
+                    }
+                    else {
+                        // task is still sleeping
+                        continue;
+                    }
+                }
+
                 // check if the task is waiting on a waitable
-                if (tasks[i]->waitable != nullptr) {
-                    if (tasks[i]->waitable->is_waiting()) {
+                if (task.waitable != nullptr) {
+                    if (task.waitable->is_waiting()) {
                         // task is waiting on a waitable
                         continue;
                     }
                     else {
                         // clear the waitable as it is no longer waiting
-                        tasks[i]->waitable = nullptr;
+                        task.waitable = nullptr;
                     }
                 }
 
                 // task is not sleeping, check priority
-                if (tasks[i]->current_priority >= next_task->current_priority) {
-                    next_task = tasks[i];
+                if (task.current_priority >= next_task->current_priority) {
+                    next_task = &task;
                     break;
                 }
             }
@@ -147,7 +152,6 @@ namespace klib::rtos {
          * @brief Start the scheduler
          *
          */
-        template <uint32_t CpuId, typename Irq>
         static void start() {
             // update the callback to our scheduler
             io::systick<CpuId, SYSTICK_CALLBACK_ENABLED>::set_callback(schedule_irq);
@@ -189,14 +193,14 @@ namespace klib::rtos {
          * @param arg2 
          * @return uint32_t 
          */
-        static uint32_t syscall_handler(syscalls number, uint32_t arg0, uint32_t arg1, uint32_t arg2) {
+        static uint32_t syscall_handler(detail::syscalls number, uint32_t arg0, uint32_t arg1, uint32_t arg2) {
             switch (number) {
-                case syscalls::create_task:
+                case detail::syscalls::create_task:
                     // add the task to the scheduler
                     tasks.push_back(reinterpret_cast<detail::base_task*>(arg0));
                     break;
 
-                case syscalls::delete_task:
+                case detail::syscalls::delete_task:
                     // find and remove the task from the scheduler. We move backwards
                     // to not mess up the indexing when erasing. Note this is something
                     // that is specific to our dynamic array implementation. 
@@ -224,21 +228,31 @@ namespace klib::rtos {
                     // task not found
                     return false;
 
-                case syscalls::yield:
+                case detail::syscalls::sleep:
+                    // set the time to sleep for the current task
+                    current_task->wakup_time = (
+                        io::systick<CpuId, SYSTICK_CALLBACK_ENABLED>::get_runtime() + 
+                        klib::time::ms(arg0)
+                    );
+
+                    // mark the task as sleeping
+                    current_task->is_sleeping = true;
+
+                    // switch to the next task
+                    schedule();
+                    break;
+
+                case detail::syscalls::yield:
                     // yield the cpu to the next task
                     current_task->waitable = reinterpret_cast<rtos::waitable*>(arg0);
 
                     // switch to the next task
                     schedule();
                     break;
-
-                case syscalls::sleep:
-                    // set the time to sleep for the current task
-                    current_task->time_to_sleep.value = arg0;
-
-                    // switch to the next task
-                    schedule();
-                    break;
+                    
+                case detail::syscalls::get_time:
+                    // get the current time in ms
+                    return io::systick<CpuId, SYSTICK_CALLBACK_ENABLED>::get_runtime().value;
             }
 
             return true;

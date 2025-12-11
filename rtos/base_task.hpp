@@ -19,8 +19,11 @@ namespace klib::rtos::detail {
         // pointer to a waitable object the task is waiting on
         klib::rtos::waitable* waitable;
 
-        // time to sleep for the task
-        volatile klib::time::ms time_to_sleep;
+        // flag indicating if the task is sleeping
+        bool is_sleeping;
+
+        // wakeup time for the task
+        klib::time::ms wakup_time;
 
         // pointer to the current stack position
         size_t* stack_pointer;
@@ -38,7 +41,8 @@ namespace klib::rtos::detail {
          */
         base_task(uint8_t priority = 0): 
             waitable(nullptr),
-            time_to_sleep(0),
+            is_sleeping(false),
+            wakup_time(0),
             stack_pointer(nullptr),
             current_priority(priority),
             priority(priority)
