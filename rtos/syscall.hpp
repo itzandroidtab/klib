@@ -6,6 +6,7 @@
 #include <klib/units.hpp>
 
 #include "base_task.hpp"
+#include "waitable.hpp"
 
 namespace klib::rtos::syscall {
     /**
@@ -30,6 +31,13 @@ namespace klib::rtos::syscall {
      * 
      */
     void yield();
+
+    /**
+     * @brief Yield the CPU and wait on a waitable object
+     * 
+     * @param waitable 
+     */
+    void yield(rtos::waitable& waitable);
 
     /**
      * @brief Sleep the current task for the given time

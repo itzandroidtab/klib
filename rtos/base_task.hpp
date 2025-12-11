@@ -6,6 +6,8 @@
 
 #include <klib/units.hpp>
 
+#include "waitable.hpp"
+
 namespace klib::rtos::detail {
     /**
      * @brief Task to run in the RTOS
@@ -14,6 +16,9 @@ namespace klib::rtos::detail {
      */
     class base_task {
     public:
+        // pointer to a waitable object the task is waiting on
+        klib::rtos::waitable* waitable;
+
         // time to sleep for the task
         volatile klib::time::ms time_to_sleep;
 
@@ -32,6 +37,7 @@ namespace klib::rtos::detail {
          * @param priority 
          */
         base_task(uint8_t priority = 0): 
+            waitable(nullptr),
             time_to_sleep(0),
             stack_pointer(nullptr),
             current_priority(priority),

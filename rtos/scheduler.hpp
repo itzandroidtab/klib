@@ -99,9 +99,26 @@ namespace klib::rtos {
                     // task is sleeping
                     continue;
                 }
+                
+                // do not check the current task again
+                if (tasks[i] == current_task) {
+                    continue;
+                }
+
+                // check if the task is waiting on a waitable
+                if (tasks[i]->waitable != nullptr) {
+                    if (tasks[i]->waitable->is_waiting()) {
+                        // task is waiting on a waitable
+                        continue;
+                    }
+                    else {
+                        // clear the waitable as it is no longer waiting
+                        tasks[i]->waitable = nullptr;
+                    }
+                }
 
                 // task is not sleeping, check priority
-                if (tasks[i]->current_priority > next_task->current_priority) {
+                if (tasks[i]->current_priority >= next_task->current_priority) {
                     next_task = tasks[i];
                     break;
                 }
@@ -209,6 +226,9 @@ namespace klib::rtos {
 
                 case syscalls::yield:
                     // yield the cpu to the next task
+                    current_task->waitable = reinterpret_cast<rtos::waitable*>(arg0);
+
+                    // switch to the next task
                     schedule();
                     break;
 

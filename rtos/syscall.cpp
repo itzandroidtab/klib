@@ -33,10 +33,20 @@ namespace klib::rtos::syscall {
 
     void yield() {
         // invoke the yield syscall
-        syscall_invoke<void>(scheduler::syscalls::yield);
+        syscall_invoke<void, rtos::waitable*>(scheduler::syscalls::yield, nullptr);
+    }
+
+    void yield(rtos::waitable& waitable) {
+        // invoke the yield syscall
+        syscall_invoke<void, rtos::waitable*>(scheduler::syscalls::yield, &waitable);
     }
 
     void sleep(klib::time::ms time) {
+        if (time.value == 0) {
+            // no need to sleep
+            return;
+        }
+
         // invoke the sleep syscall
         syscall_invoke<void, klib::time::ms>(scheduler::syscalls::sleep, time.value);
     }
