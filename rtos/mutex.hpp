@@ -58,6 +58,9 @@ namespace klib::rtos {
         void unlock() {
             // unlock the mutex
             locked.store(false);
+
+            // yield to higher priority tasks waiting on this mutex
+            rtos::syscall::wakeup_highest_priority_waiter(*this);
         }
 
         /**

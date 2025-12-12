@@ -249,7 +249,35 @@ namespace klib::rtos {
                     // switch to the next task
                     schedule();
                     break;
-                    
+
+                case detail::syscalls::wakeup_highest_priority_waiter:
+                    // yield only if a higher priority task is waiting
+                    next_task = current_task;
+
+                    // TODO: change to a better data structure for tasks
+                    for (const auto& t: tasks) {
+                        // skip our current task and skip all tasks that are
+                        // sleeping or not waiting
+                        if (t == next_task || t->is_sleeping || t->waitable == nullptr) {
+                            continue;
+                        }
+
+                        // check if the task is waiting on the provided waitable
+                        if (t->waitable == reinterpret_cast<rtos::waitable*>(arg0)) {
+                            // check if the task has a higher priority
+                            if (t->current_priority > next_task->current_priority) {
+                                next_task = t;
+                            }
+                        }
+                    }
+
+                    // check if we found a higher priority task
+                    if (next_task != current_task) {
+                        // switch to the new task by triggering the pendsv interrupt
+                        SCB->ICSR = (0x1 << 28);
+                    }
+                    break;
+
                 case detail::syscalls::get_time:
                     // get the current time in ms
                     return io::systick<CpuId, SYSTICK_CALLBACK_ENABLED>::get_runtime().value;

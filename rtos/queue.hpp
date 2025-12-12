@@ -98,6 +98,10 @@ namespace klib::rtos {
             // clear the buffer
             buffer.clear();
 
+            // clear the semaphores
+            space_available = rtos::semaphore(MaxSize);
+            data_available = rtos::semaphore(0);
+
             // unlock the mutex
             mutex.unlock();
         }

@@ -64,6 +64,9 @@ namespace klib::rtos {
          */
         void increment() {
             count.fetch_add(1);
+
+            // yield to higher priority tasks waiting on this semaphore
+            rtos::syscall::wakeup_highest_priority_waiter(*this);
         }
 
         /**

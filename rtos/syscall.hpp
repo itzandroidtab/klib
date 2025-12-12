@@ -17,6 +17,7 @@ namespace klib::rtos::detail {
         create_task,
         delete_task,
         yield,
+        wakeup_highest_priority_waiter,
         sleep,
         get_time,
         malloc,
@@ -54,6 +55,13 @@ namespace klib::rtos::syscall {
      * @param waitable 
      */
     void yield(rtos::waitable& waitable);
+
+    /**
+     * @brief Yield the CPU if a higher priority task is waiting on the waitable
+     * 
+     * @param waitable 
+     */
+    void wakeup_highest_priority_waiter(rtos::waitable& waitable);
 
     /**
      * @brief Sleep the current task for the given time

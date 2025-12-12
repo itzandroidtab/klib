@@ -40,6 +40,11 @@ namespace klib::rtos::syscall {
         syscall_invoke<void, rtos::waitable*>(detail::syscalls::yield, &waitable);
     }
 
+    void wakeup_highest_priority_waiter(rtos::waitable& waitable) {
+        // invoke the yield syscall
+        syscall_invoke<void, rtos::waitable*>(detail::syscalls::wakeup_highest_priority_waiter, &waitable);
+    }
+
     void sleep(klib::time::ms time) {
         if (time.value == 0) {
             // no need to sleep
