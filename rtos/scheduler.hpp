@@ -201,28 +201,40 @@ namespace klib::rtos {
                     break;
 
                 case detail::syscalls::delete_task:
+                    // check if we have any tasks
+                    if (tasks.empty()) {
+                        // no tasks to delete
+                        return false;
+                    }
+
                     // find and remove the task from the scheduler. We move backwards
                     // to not mess up the indexing when erasing. Note this is something
                     // that is specific to our dynamic array implementation. 
                     // TODO: update this when changing away from the dynamic array
-                    for (size_t i = 0; i < tasks.size(); i++) {
-                        if (tasks[i] == reinterpret_cast<detail::base_task*>(arg0)) {
-                            // erase the provided task
-                            tasks.erase(tasks.begin() + i);
+                    for (uint32_t i = tasks.size(); i > 0; i--) {
+                        // get the index
+                        const uint32_t index = i - 1;
 
-                            // check if we are running the task we are deleting
-                            if (current_task == reinterpret_cast<detail::base_task*>(arg0)) {
-                                // clear the current task and switch to the 
-                                // next one
-                                current_task = nullptr;
-
-                                // switch to the next task
-                                schedule();
-                            }
-                            
-                            // task found and deleted
-                            return true;
+                        // check if this is the task we want to delete
+                        if (tasks[index] != reinterpret_cast<detail::base_task*>(arg0)) {
+                            continue;
                         }
+
+                        // erase the provided task
+                        tasks.erase(tasks.begin() + index);
+
+                        // check if we are running the task we are deleting
+                        if (current_task == reinterpret_cast<detail::base_task*>(arg0)) {
+                            // clear the current task and switch to the 
+                            // next one
+                            current_task = nullptr;
+
+                            // switch to the next task
+                            schedule();
+                        }
+                        
+                        // task found and deleted
+                        return true;
                     }
 
                     // task not found
