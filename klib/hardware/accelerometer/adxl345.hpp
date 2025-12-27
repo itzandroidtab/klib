@@ -244,15 +244,18 @@ namespace klib::hardware::accelerometer {
         detail::adxl345_base::range get_range() {
             // read the data format register
             const uint8_t reg = static_cast<uint8_t>(reg::DATA_FORMAT) | (0b10 << 6);
-            uint8_t data_format = 0;
+
+            // buffer to hold the data. First byte is the 
+            // register write and should be ignored
+            uint8_t data_format[sizeof(reg) + 1] = {};
 
             // read from the bus
             Bus::write_read(
-                std::span{&reg, sizeof(reg)}, std::span<uint8_t>{&data_format, sizeof(data_format)}
+                std::span{&reg, sizeof(reg)}, data_format
             );
 
             // extract the range bits and return
-            return static_cast<detail::adxl345_base::range>(data_format & 0x03);
+            return static_cast<detail::adxl345_base::range>(data_format[1] & 0x03);
         }
 
         /**
