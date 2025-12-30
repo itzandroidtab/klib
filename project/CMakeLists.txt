@@ -1,3 +1,6 @@
+# include the linkerscript generator needed to preprocess the linkerscripts
+include (${CMAKE_SOURCE_DIR}/targets/arm/linkerscript/linkerscript.cmake)
+
 # set the sources
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
@@ -40,8 +43,7 @@ target_link_libraries(klib_project PUBLIC target_cpu)
 target_link_libraries(klib_project PUBLIC m)
 
 # link to the linkerscript of the target cpu
-target_link_options(klib_project PUBLIC "-T${TARGET_LINKERSCRIPT}")
-set_target_properties(klib_project PROPERTIES LINK_DEPENDS ${TARGET_LINKERSCRIPT})
+add_linkerscript(klib_project ${TARGET_LINKERSCRIPT} "")
 
 # add the project directory to the include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
