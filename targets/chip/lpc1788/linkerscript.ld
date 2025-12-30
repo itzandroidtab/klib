@@ -10,7 +10,7 @@ OUTPUT_ARCH(arm);
 /* 
 The stack size used by the application. NOTE: you need to adjust according to your application. 
 */
-STACK_SIZE = 0x4000;
+STACK_SIZE = 0x2000;
 
 /*
 Memories definitions
@@ -20,6 +20,18 @@ MEMORY
     rom (rx) : org = 0x00000000, len = 512k
     ram (rwx) : org = 0x10000000, len = 64k
     ram1 (rwx) : org = 0x20000000, len = 32k
+
+    /* static memory regions, len is the maximum. Not the actual size */
+    static0 (rwx) : org = 0x80000000, len = 256m
+    static1 (rwx) : org = 0x90000000, len = 128m
+    static2 (rwx) : org = 0x98000000, len = 64m
+    static3 (rwx) : org = 0x9c000000, len = 64m
+
+    /* dynamic memory regions, len is the maximum. Not the actual size */
+    dynamic0 (rwx) : org = 0xa0000000, len = 256m
+    dynamic1 (rwx) : org = 0xb0000000, len = 256m
+    dynamic2 (rwx) : org = 0xc0000000, len = 256m
+    dynamic3 (rwx) : org = 0xd0000000, len = 256m
 }
 
 /*
@@ -171,17 +183,62 @@ SECTIONS
         PROVIDE(__bss_end = .);
     } > ram
 
-    .periph :
+    /* additional ram segment of the lpc1788 */
+    .ram1 :
     {
-        . = ALIGN(4);
-        PROVIDE(__periph_start = .);
-
-        *(SORT_BY_ALIGNMENT(.periph))
-        *(SORT_BY_ALIGNMENT(.periph.*))
-        . = ALIGN(4);
-
-        PROVIDE(__periph_end = .);
+        *(SORT_BY_ALIGNMENT(.ram1))
+        *(SORT_BY_ALIGNMENT(.ram1.*))
     } > ram1
+
+    /* static memory, note: not loaded by default. No startup code loads the segments */
+    .static0 (NOLOAD) :
+    {
+        *(SORT_BY_ALIGNMENT(.static0));
+        *(SORT_BY_ALIGNMENT(.static0.*));
+    } > static0
+
+    .static1 (NOLOAD) :
+    {
+        *(SORT_BY_ALIGNMENT(.static1));
+        *(SORT_BY_ALIGNMENT(.static1.*));
+    } > static1
+
+    .static2 (NOLOAD) :
+    {
+        *(SORT_BY_ALIGNMENT(.static2));
+        *(SORT_BY_ALIGNMENT(.static2.*));
+    } > static2
+
+    .static3 (NOLOAD) :
+    {
+        *(SORT_BY_ALIGNMENT(.static3));
+        *(SORT_BY_ALIGNMENT(.static3.*));
+    } > static3
+
+    /* dynamic memory, note: not loaded by default. No startup code loads the segments */
+    .dynamic0 (NOLOAD) :
+    {
+        *(SORT_BY_ALIGNMENT(.dynamic0));
+        *(SORT_BY_ALIGNMENT(.dynamic0.*));
+    } > dynamic0
+
+    .dynamic1 (NOLOAD) :
+    {
+        *(SORT_BY_ALIGNMENT(.dynamic1));
+        *(SORT_BY_ALIGNMENT(.dynamic1.*));
+    } > dynamic1
+
+    .dynamic2 (NOLOAD) :
+    {
+        *(SORT_BY_ALIGNMENT(.dynamic2));
+        *(SORT_BY_ALIGNMENT(.dynamic2.*));
+    } > dynamic2
+
+    .dynamic3 (NOLOAD) :
+    {
+        *(SORT_BY_ALIGNMENT(.dynamic3));
+        *(SORT_BY_ALIGNMENT(.dynamic3.*));
+    } > dynamic3
 
     /* Heap segment */
     .heap (NOLOAD) :
