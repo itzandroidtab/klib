@@ -34,13 +34,7 @@ SECTIONS
 {
     /* Vector table. Has the initial stack pointer and the initial 
        structure for the arm interrupts */
-    .vectors :
-    {
-        . = ALIGN(4);
-        /* vector table */
-        KEEP(*(.vectors .vectors.*));
-        . = ALIGN(4);
-    } > rom
+    VECTORS() > rom
 
     .crp 0x000002fc :
     {
@@ -82,51 +76,13 @@ SECTIONS
     } > rom
 
     /* Read only data */
-    .rodata : 
-    {
-        . = ALIGN(4);
-
-        /* Constands, strings, etc */
-        *(.rodata .rodata.* .gnu.linkonce.r.*);
-
-        . = ALIGN(4);
-    } > rom
+    RODATA() > rom
 
     /* Support C constructors, and C destructors in both user code
        and the C library. This also provides support for C++ code. */    
-    .preinit_array :
-    {
-        . = ALIGN(4);
-        PROVIDE(__preinit_array_start = .);
-
-        KEEP(*(SORT(.preinit_array.*)))
-        KEEP(*(SORT(.preinit_array)))
-
-        PROVIDE(__preinit_array_end = .);
-    } > rom
-
-    .init_array :
-    {
-        . = ALIGN(4);
-        PROVIDE(__init_array_start = .);
-
-        KEEP(*(SORT(.init_array.*)))
-        KEEP(*(SORT(.init_array)))
-
-        PROVIDE(__init_array_end = .);
-    } > rom
-
-    .fini_array :
-    {
-        . = ALIGN(4);
-        PROVIDE(__fini_array_start = .);
-
-        KEEP(*(SORT(.fini_array.*)))
-        KEEP(*(SORT(.fini_array)))
-        
-        PROVIDE(__fini_array_end = .);
-    } > rom
-
+    INIT_ARRAY(preinit_array) > rom
+    INIT_ARRAY(init_array) > rom
+    INIT_ARRAY(fini_array) > rom
     /* Stack segment */
     .stack (NOLOAD) :
     {
