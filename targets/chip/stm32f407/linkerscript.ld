@@ -70,16 +70,7 @@ SECTIONS
     CONSTRUCTOR_SECTION(fini_array) > rom
 
     /* Stack segment */
-    .stack (NOLOAD) :
-    {
-        . = ALIGN(4);
-        PROVIDE(__stack_start = .);
-
-        . = . + STACK_SIZE;
-        . = ALIGN(4);
-        
-        PROVIDE(__stack_end = .);
-    } > ram
+    STACK(STACK_SIZE) > ram
 
     /* Data that needs to be initialized to a value different than 0 */
     .data :
