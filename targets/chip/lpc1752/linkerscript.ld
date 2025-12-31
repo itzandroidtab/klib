@@ -51,7 +51,7 @@ SECTIONS
     } > rom
 
     /* Text segment, stores all user code */
-    .text :
+    .text (READONLY) :
     {
         . = ALIGN(4);
         /* text segment */
