@@ -41,8 +41,8 @@ namespace klib::entry {
                 break;
             }
 
-            // get the length of the segment
-            const uint32_t length = ((segment->end - segment->start) + (sizeof(uint32_t) - 1)) / sizeof(uint32_t);
+            // get the length of the segment in elements
+            const uint32_t length = (segment->end - segment->start);
 
             // check if we have any length to copy
             if (!length) {
@@ -63,8 +63,8 @@ namespace klib::entry {
                 break;
             }
 
-            // get the length of the segment
-            const uint32_t length = ((segment->end - segment->start) + (sizeof(uint32_t) - 1)) / sizeof(uint32_t);
+            // get the length of the segment in elements
+            const uint32_t length = (segment->end - segment->start);
 
             // check if we have any length to copy
             if (!length) {
