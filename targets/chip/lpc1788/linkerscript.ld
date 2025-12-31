@@ -92,9 +92,9 @@ SECTIONS
 
     /* Support C constructors, and C destructors in both user code
        and the C library. This also provides support for C++ code. */    
-    INIT_ARRAY(preinit_array) > rom
-    INIT_ARRAY(init_array) > rom
-    INIT_ARRAY(fini_array) > rom
+    CONSTRUCTOR_SECTION(preinit_array) > rom
+    CONSTRUCTOR_SECTION(init_array) > rom
+    CONSTRUCTOR_SECTION(fini_array) > rom
 
     /* Stack segment */
     .stack (NOLOAD) :

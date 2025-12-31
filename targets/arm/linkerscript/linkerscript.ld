@@ -24,7 +24,7 @@
     }
 
 /* macro to define a init array. Array name is passed as an argument */
-#define INIT_ARRAY(name) \
+#define CONSTRUCTOR_SECTION(name) \
     .name : \
     { \
         . = ALIGN(4); \
