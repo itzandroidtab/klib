@@ -73,3 +73,69 @@
         KEEP(*(SORT(.name))) \
         PROVIDE(COMBINE_STR3(__,name,_end) = .); \
     }
+
+/* macro to define a data section. Note: this section is not automaticly loaded. 
+   The secondary loaded needs to be enabled to load this at startup after the 
+   startup code */
+#define DATA_SECTION(name, region, storage) \
+    COMBINE_STR2(.name,_data) : \
+    { \
+        . = ALIGN(4); \
+        PROVIDE(COMBINE_STR3(__,name,_data_rom_start) = LOADADDR(COMBINE_STR2(.name,_data))); \
+        PROVIDE(COMBINE_STR3(__,name,_data_start) = .); \
+        *(SORT_BY_ALIGNMENT(COMBINE_STR2(.name,_data))); \
+        *(SORT_BY_ALIGNMENT(COMBINE_STR2(.name,_data.*))); \
+        . = ALIGN(4); \
+        PROVIDE(COMBINE_STR3(__,name,_data_end) = .); \
+    } > region AT > storage
+
+/* data section entry for the multi section table */
+#define DATA_SECTION_ENTRY(name) \
+    LONG(COMBINE_STR3(__,name,_data_rom_start)); \
+    LONG(COMBINE_STR3(__,name,_data_start)); \
+    LONG(COMBINE_STR3(__,name,_data_end));
+
+/* end marker for the multi section table */
+#define DATA_SECTION_ENTRY_END() \
+    LONG(0); \
+    LONG(0); \
+    LONG(0);
+
+/* multisection table to automaticly load the data into the section location */
+#define DATA_MULTISECTION_TABLE(entries) \
+    ALLIGNED_READONLY_SECTION( \
+        multisection_data, 4, \
+        PROVIDE(__multisection_data_start = .); \
+        entries \
+        PROVIDE(__multisection_data_end = .); \
+    )
+
+#define BSS_SECTION(name, region) \
+    COMBINE_STR2(.name,_bss) (NOLOAD) : \
+    { \
+        . = ALIGN(4); \
+        PROVIDE(COMBINE_STR3(__,name,_bss_start) = .); \
+        *(SORT_BY_ALIGNMENT(COMBINE_STR2(.name,_bss))); \
+        *(SORT_BY_ALIGNMENT(COMBINE_STR2(.name,_bss.*))); \
+        . = ALIGN(4); \
+        PROVIDE(COMBINE_STR3(__,name,_bss_end) = .); \
+    } > region
+
+/* bss section entry for the multi section table */
+#define BSS_SECTION_ENTRY(name) \
+    LONG(COMBINE_STR3(__,name,_bss_start)); \
+    LONG(COMBINE_STR3(__,name,_bss_end));
+
+/* end marker for the multi section table */
+#define BSS_SECTION_ENTRY_END() \
+    LONG(0); \
+    LONG(0);
+
+/* multisection table to automaticly load all the bss sections to zero */
+#define BSS_MULTISECTION_TABLE(entries) \
+    ALLIGNED_READONLY_SECTION( \
+        multisection_bss, 4, \
+        PROVIDE(__multisection_bss_start = .); \
+        entries \
+        PROVIDE(__multisection_bss_end = .); \
+    )

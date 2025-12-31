@@ -132,61 +132,48 @@ SECTIONS
     } > ram
 
     /* additional ram segment of the lpc1788 */
-    .ram1 :
-    {
-        *(SORT_BY_ALIGNMENT(.ram1))
-        *(SORT_BY_ALIGNMENT(.ram1.*))
-    } > ram1
+    DATA_SECTION(ram1, ram1, rom)
+    BSS_SECTION(ram1, ram1)
 
-    /* static memory, note: not loaded by default. No startup code loads the segments */
-    .static0 (NOLOAD) :
-    {
-        *(SORT_BY_ALIGNMENT(.static0));
-        *(SORT_BY_ALIGNMENT(.static0.*));
-    } > static0
+    /* static memory */
+    DATA_SECTION(static0, static0, rom)
+    DATA_SECTION(static1, static1, rom)
+    DATA_SECTION(static2, static2, rom)
+    DATA_SECTION(static3, static3, rom)
+    BSS_SECTION(static0, static0)
+    BSS_SECTION(static1, static1)
+    BSS_SECTION(static2, static2)
+    BSS_SECTION(static3, static3)
 
-    .static1 (NOLOAD) :
-    {
-        *(SORT_BY_ALIGNMENT(.static1));
-        *(SORT_BY_ALIGNMENT(.static1.*));
-    } > static1
+    /* dynamic memory */
+    DATA_SECTION(dynamic0, dynamic0, rom)
+    DATA_SECTION(dynamic1, dynamic1, rom)
+    DATA_SECTION(dynamic2, dynamic2, rom)
+    DATA_SECTION(dynamic3, dynamic3, rom)
+    BSS_SECTION(dynamic0, dynamic0)
+    BSS_SECTION(dynamic1, dynamic1)
+    BSS_SECTION(dynamic2, dynamic2)
+    BSS_SECTION(dynamic3, dynamic3)
 
-    .static2 (NOLOAD) :
-    {
-        *(SORT_BY_ALIGNMENT(.static2));
-        *(SORT_BY_ALIGNMENT(.static2.*));
-    } > static2
+    /* create a table to initialize the data sections on a secondary memory */
+    DATA_MULTISECTION_TABLE(
+        DATA_SECTION_ENTRY(ram1)
+        DATA_SECTION_ENTRY(dynamic0)
+        DATA_SECTION_ENTRY(dynamic1)
+        DATA_SECTION_ENTRY(dynamic2)
+        DATA_SECTION_ENTRY(dynamic3)
+        DATA_SECTION_ENTRY_END()
+    ) > rom
 
-    .static3 (NOLOAD) :
-    {
-        *(SORT_BY_ALIGNMENT(.static3));
-        *(SORT_BY_ALIGNMENT(.static3.*));
-    } > static3
-
-    /* dynamic memory, note: not loaded by default. No startup code loads the segments */
-    .dynamic0 (NOLOAD) :
-    {
-        *(SORT_BY_ALIGNMENT(.dynamic0));
-        *(SORT_BY_ALIGNMENT(.dynamic0.*));
-    } > dynamic0
-
-    .dynamic1 (NOLOAD) :
-    {
-        *(SORT_BY_ALIGNMENT(.dynamic1));
-        *(SORT_BY_ALIGNMENT(.dynamic1.*));
-    } > dynamic1
-
-    .dynamic2 (NOLOAD) :
-    {
-        *(SORT_BY_ALIGNMENT(.dynamic2));
-        *(SORT_BY_ALIGNMENT(.dynamic2.*));
-    } > dynamic2
-
-    .dynamic3 (NOLOAD) :
-    {
-        *(SORT_BY_ALIGNMENT(.dynamic3));
-        *(SORT_BY_ALIGNMENT(.dynamic3.*));
-    } > dynamic3
+    /* create a table to initialize the bss sections on a secondary memory */
+    BSS_MULTISECTION_TABLE(
+        BSS_SECTION_ENTRY(ram1)
+        BSS_SECTION_ENTRY(dynamic0)
+        BSS_SECTION_ENTRY(dynamic1)
+        BSS_SECTION_ENTRY(dynamic2)
+        BSS_SECTION_ENTRY(dynamic3)
+        BSS_SECTION_ENTRY_END()
+    ) > rom
 
     /* Heap segment */
     .heap (NOLOAD) :
