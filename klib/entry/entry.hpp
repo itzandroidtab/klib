@@ -1,7 +1,7 @@
 #ifndef KLIB_ENTRY_HPP
 #define KLIB_ENTRY_HPP
 
-#include <stdint.h>
+#include <cstdint>
 
 // extern c for c linkage in c++. No ifdef cplusplus as targets
 // should be implemented using c++
