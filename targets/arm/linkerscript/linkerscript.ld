@@ -23,6 +23,7 @@
         name, \
         . = ALIGN(align); \
         data \
+        . = ALIGN(align); \
     )
 
 /* helper macro to create a alligned readonly section */
@@ -32,6 +33,7 @@
         READONLY, \
         . = ALIGN(align); \
         data \
+        . = ALIGN(align); \
     )
 
 /* macro to define the vectors section. Should be pointed to the correct memory region */
