@@ -1,6 +1,7 @@
 # set the sources
 set(SOURCES 
     ${CMAKE_CURRENT_SOURCE_DIR}/entry/entry.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/entry/secondary.cpp
 )
 
 set(HEADERS_PRIVATE 
