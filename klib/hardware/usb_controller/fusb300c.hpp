@@ -50,10 +50,10 @@ namespace klib::hardware::usb_controller {
          */
         static bool write_reg(const reg command, const std::span<const uint8_t> data) {
             // create a multispan to send
-            klib::multispan<const uint8_t> buffer = {
-                {reinterpret_cast<const uint8_t*>(&command), sizeof(command)},
+            const auto buffer = make_span_array(
+                std::span<const uint8_t>{reinterpret_cast<const uint8_t*>(&command), sizeof(command)},
                 data
-            };
+            );
 
             // write the buffer to the fusb300c
             return Bus::write(Address, buffer);
