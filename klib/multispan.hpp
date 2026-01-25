@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <span>
 #include <array>
+#include <tuple>
 
 namespace klib {
     /**
