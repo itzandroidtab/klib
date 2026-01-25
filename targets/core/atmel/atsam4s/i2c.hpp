@@ -54,13 +54,13 @@ namespace klib::core::atsam4s::io {
          * @brief Internal write implementation
          * 
          * @note software doesnt check if stop is correctly send
-         *
-         * @tparam SendStop
-         * @param address
-         * @param data
-         * @param size
-         * @return true
-         * @return false
+         * 
+         * @tparam SendStop 
+         * @tparam std::span<const uint8_t> 
+         * @param address 
+         * @param data 
+         * @return true 
+         * @return false 
          */
         template <bool SendStop = true, typename T = std::span<const uint8_t>>
         constexpr static bool write_impl(const uint8_t address, const T& data) {
@@ -116,22 +116,36 @@ namespace klib::core::atsam4s::io {
          * @note software doesnt check if stop is correctly send
          * 
          * @tparam SendStop 
+         * @tparam RepeatedStart
          * @tparam std::span<const uint8_t> 
          * @param address 
          * @param data 
          * @return true 
          * @return false 
          */
-        template <bool SendStop = true, typename T = std::span<const uint8_t>>
-        constexpr static bool read_impl(const uint8_t address, const T& data) {
+        template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<uint8_t>>
+        constexpr static bool read_impl(const uint8_t address, const T& data, const uint32_t device_address = 0, const uint8_t device_address_size = 0) {
             // hardware does not writes with less than 1 byte
             if (!data.size()) {
                 // return we could not transmit the data
                 return false;
             }
 
-            // set the address we want to read from
-            read_write_set_address<true>(address);
+            // check if we have a repeated start condition
+            if constexpr (RepeatedStart) {
+                // make sure the SendStop flag is true
+                static_assert(SendStop, "Repeated starts require the SendStop flag to be enabled");
+
+                // set the address we want to read from
+                read_write_set_address<true>(address, device_address_size);
+
+                // set the data to transmit
+                I2c::port->IADR = device_address;
+            }
+            else {
+                // set the address we want to read from
+                read_write_set_address<true>(address);
+            }
 
             // start the transaction
             I2c::port->CR = 0x1;
@@ -162,6 +176,23 @@ namespace klib::core::atsam4s::io {
 
             // wait until we are done with the transaction
             return (wait_for_status(mask) & mask) == 0x1;
+        }
+
+        template <typename T = std::span<uint8_t>, typename G = std::span<uint8_t>>
+        constexpr static bool write_read_impl(const uint8_t address, const T& tx, const G& rx) {
+            // check if data is out of range
+            if (tx.size() > 3) {
+                return false;
+            }
+
+            // get the device address
+            uint32_t addr = 0;
+            for (uint8_t i = 0; i < tx.size(); i++) {
+                addr = (addr << 8) | tx[i];
+            }
+
+            // read the data
+            return read_impl<true, true>(address, rx, addr, tx.size());
         }
 
     public:
@@ -243,6 +274,38 @@ namespace klib::core::atsam4s::io {
         template <bool SendStop = true>
         constexpr static bool write(const uint8_t address, const multispan<const uint8_t>& data) {
             return write_impl<SendStop>(address, data);
+        }
+
+        /**
+         * @brief Write up to 3 bytes and read data. This 
+         * uses the repeated start in the i2c protocol. If
+         * you do not want to use repeated start use 
+         * write/read instead
+         * 
+         * @param address 
+         * @param tx 
+         * @param rx 
+         * @return true 
+         * @return false 
+         */
+        constexpr static bool write_read(const uint8_t address, const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_impl(address, tx, rx);
+        }
+
+        /**
+         * @brief Write up to 3 bytes and read data. This 
+         * uses the repeated start in the i2c protocol. If
+         * you do not want to use repeated start use 
+         * write/read instead
+         * 
+         * @param address 
+         * @param tx 
+         * @param rx 
+         * @return true 
+         * @return false 
+         */
+        constexpr static bool write_read(const uint8_t address, const std::span<const uint8_t>& tx, const klib::multispan<uint8_t>& rx) {
+            return write_read_impl(address, tx, rx);
         }
     };
 }
