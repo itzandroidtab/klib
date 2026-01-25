@@ -133,12 +133,17 @@ namespace klib::core::atsam4s::io {
             // set the address we want to read from
             read_write_set_address<true>(address);
 
-            // start the transaction (also set the end flag
-            // if we have less or equal than 1 byte)
-            I2c::port->CR = 0x1 | ((data.size() <= 1 && SendStop) ? (0x1 << 1) : 0x00);
+            // start the transaction
+            I2c::port->CR = 0x1;
 
             // read all the data
             for (uint32_t i = 0; i < data.size(); i++) {
+                // check if this is the last byte
+                if ((i + 1) >= data.size() && SendStop) {
+                    // mark the next byte is the last
+                    I2c::port->CR |= (0x1 << 1);
+                }
+
                 // wait until a nack or we have received data
                 const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 1));
 
@@ -150,12 +155,6 @@ namespace klib::core::atsam4s::io {
 
                 // read the data into the array
                 data[i] = I2c::port->RHR & 0xff;
-
-                // check if we need to send the stop condition
-                if ((data.size() > 1) && ((i + 1) >= data.size()) && SendStop) {
-                    // mark the next byte is the last
-                    I2c::port->CR = (0x1 << 1);
-                }
             }
 
             // mask to check for
