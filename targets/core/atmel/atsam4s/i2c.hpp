@@ -18,11 +18,12 @@ namespace klib::core::atsam4s::io {
          *
          * @tparam Read
          * @param address
+         * @param device_address_size
          */
         template <bool Read>
-        constexpr static void read_write_set_address(const uint8_t address) {
+        constexpr static void read_write_set_address(const uint8_t address, const uint8_t device_address_size = 0) {
             // set the address we want to write to
-            I2c::port->MMR = ((address & 0x7f) << 16) | (Read << 12);
+            I2c::port->MMR = ((address & 0x7f) << 16) | (Read << 12) | ((device_address_size & 0x3) << 8);
         }
 
         /**
@@ -51,18 +52,19 @@ namespace klib::core::atsam4s::io {
 
         /**
          * @brief Internal write implementation
+         * 
+         * @note software doesnt check if stop is correctly send
          *
          * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
          * @param size
          * @return true
          * @return false
          */
-        template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<const uint8_t>>
+        template <bool SendStop = true, typename T = std::span<const uint8_t>>
         constexpr static bool write_impl(const uint8_t address, const T& data) {
-            // hardware does not writes with less than 1 byte
+            // hardware does not support writes with less than 1 byte
             if (!data.size()) {
                 // return we could not transmit the data
                 return false;
@@ -73,7 +75,7 @@ namespace klib::core::atsam4s::io {
 
             // start the transaction (also set the end flag
             // if we have less or equal than 1 byte)
-            I2c::port->CR = 0x1 | (data.size() <= 1 ? (0x1 << 1) : 0x00);
+            I2c::port->CR = 0x1 | ((data.size() <= 1 && SendStop) ? (0x1 << 1) : 0x00);
 
             // wait until we can write into the transmit holding register
             const uint32_t s = wait_for_status((0x1 << 8) | (0x1 << 2));
@@ -100,7 +102,7 @@ namespace klib::core::atsam4s::io {
             }
 
             // do not send the stop again if less or equal to 1 byte
-            if (data.size() > 1) {
+            if (data.size() > 1 && SendStop) {
                 // mark we are done transmitting (by setting the stop bit)
                 I2c::port->CR = (0x1 << 1);
             }
@@ -112,7 +114,19 @@ namespace klib::core::atsam4s::io {
             return (wait_for_status(mask) & mask) == 0x1;
         }
 
-        template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<const uint8_t>>
+        /**
+         * @brief Internal read implementation
+         * 
+         * @note software doesnt check if stop is correctly send
+         * 
+         * @tparam SendStop 
+         * @tparam std::span<const uint8_t> 
+         * @param address 
+         * @param data 
+         * @return true 
+         * @return false 
+         */
+        template <bool SendStop = true, typename T = std::span<const uint8_t>>
         constexpr static bool read_impl(const uint8_t address, const T& data) {
             // hardware does not writes with less than 1 byte
             if (!data.size()) {
@@ -125,7 +139,7 @@ namespace klib::core::atsam4s::io {
 
             // start the transaction (also set the end flag
             // if we have less or equal than 1 byte)
-            I2c::port->CR = 0x1 | (data.size() <= 1 ? (0x1 << 1) : 0x00);
+            I2c::port->CR = 0x1 | ((data.size() <= 1 && SendStop) ? (0x1 << 1) : 0x00);
 
             // read all the data
             for (uint32_t i = 0; i < data.size(); i++) {
@@ -142,7 +156,7 @@ namespace klib::core::atsam4s::io {
                 data[i] = I2c::port->RHR & 0xff;
 
                 // check if we need to send the stop condition
-                if ((data.size() > 1) && ((i + 1) >= data.size())) {
+                if ((data.size() > 1) && ((i + 1) >= data.size()) && SendStop) {
                     // mark the next byte is the last
                     I2c::port->CR = (0x1 << 1);
                 }
@@ -156,6 +170,11 @@ namespace klib::core::atsam4s::io {
         }
 
     public:
+        /**
+         * @brief Init the i2c bus
+         * 
+         * @tparam Speed 
+         */
         template <klib::io::i2c::speed Speed = klib::io::i2c::speed::fast>
         constexpr static void init() {
             // enable the clocks on the i2c peripheral
@@ -179,69 +198,56 @@ namespace klib::core::atsam4s::io {
          * @brief Read from a device on the i2c bus
          *
          * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
          * @param size
          * @return state if read was successfull
          */
-        template <bool SendStop = true, bool RepeatedStart = false>
+        template <bool SendStop = true>
         constexpr static bool read(const uint8_t address, const std::span<uint8_t>& data) {
-            return read_impl<SendStop, RepeatedStart>(address, data);
+            return read_impl<SendStop>(address, data);
         }
 
         /**
          * @brief Read from a device on the i2c bus
          *
          * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
          * @param size
          * @return state if read was successfull
          */
-        template <bool SendStop = true, bool RepeatedStart = false>
+        template <bool SendStop = true>
         constexpr static bool read(const uint8_t address, const multispan<uint8_t>& data) {
-            return read_impl<SendStop, RepeatedStart>(address, data);
+            return read_impl<SendStop>(address, data);
         }
 
         /**
          * @brief Write to a device on the i2c bus
          *
          * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
          * @param size
          * @return state if read was successfull
          */
-        template <bool SendStop = true, bool RepeatedStart = false>
+        template <bool SendStop = true>
         constexpr static bool write(const uint8_t address, const std::span<const uint8_t>& data) {
-            return write_impl<SendStop, RepeatedStart>(address, data);
+            return write_impl<SendStop>(address, data);
         }
 
         /**
          * @brief Write to a device on the i2c bus
          *
          * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
          * @param size
          * @return state if read was successfull
          */
-        template <bool SendStop = true, bool RepeatedStart = false>
+        template <bool SendStop = true>
         constexpr static bool write(const uint8_t address, const multispan<const uint8_t>& data) {
-            return write_impl<SendStop, RepeatedStart>(address, data);
-        }
-
-        /**
-         * @brief Stop a transmission that has been started did
-         * not send a stop
-         *
-         */
-        constexpr static void stop() {
-
+            return write_impl<SendStop>(address, data);
         }
     };
 }
