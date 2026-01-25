@@ -73,10 +73,6 @@ namespace klib::core::atsam4s::io {
             // set the address we want to write to
             read_write_set_address<false>(address);
 
-            // start the transaction (also set the end flag
-            // if we have less or equal than 1 byte)
-            I2c::port->CR = 0x1 | ((data.size() <= 1 && SendStop) ? (0x1 << 1) : 0x00);
-
             // wait until we can write into the transmit holding register
             const uint32_t s = wait_for_status((0x1 << 8) | (0x1 << 2));
 
