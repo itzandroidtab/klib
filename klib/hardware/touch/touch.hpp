@@ -83,7 +83,7 @@ namespace klib::hardware::touch {
         static uint32_t active() {
             uint32_t m = 0;
 
-            // unpress all the touch points
+            // get all the active touch points
             for (uint8_t i = 0; i < Points; i++) {
                 if (data[i].pressed) {
                     m |= (0x1 << i);
