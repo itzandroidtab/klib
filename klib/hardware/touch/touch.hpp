@@ -119,9 +119,9 @@ namespace klib::hardware::touch {
             else {
                 // scale the x and y to the display width/height
                 const vector2<uint16_t> xy = (
-                    (position * vector2<uint16_t>{DisplayWidth, DisplayHeight}) /
-                    vector2<uint16_t>{Width, Height}
-                );
+                    (position.cast<uint32_t>() * vector2<uint32_t>{DisplayWidth, DisplayHeight}) /
+                    vector2<uint32_t>{Width, Height}
+                ).cast<uint16_t>();
 
                 // update the id in the array
                 data[id] = {
