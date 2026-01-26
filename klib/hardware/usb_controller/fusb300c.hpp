@@ -79,13 +79,9 @@ namespace klib::hardware::usb_controller {
          * @return status
          */
         static bool read_reg(const reg command, std::span<uint8_t> data) {
-            // write the register we want to read
-            if (!Bus::write(Address, {reinterpret_cast<const uint8_t*>(&command), sizeof(command)})) {
-                return false;
-            }
-
-            // start a read
-            return Bus::read(Address, data);
+            return Bus::write_read(
+                Address, {reinterpret_cast<const uint8_t*>(&command), sizeof(command)}, data
+            );
         }
 
         /**
