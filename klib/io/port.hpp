@@ -11,11 +11,37 @@ namespace klib::io {
     template <bool Value = false>
     class pin_dummy {
     public:
+        // using for the array of callbacks
+        using interrupt_callback = void(*)();
+
+        /**
+         * @brief Enum for the dummy edge interrupts
+         * 
+         */
+        enum class edge {
+            falling,
+            rising,
+            dual_edge,
+            low_level,
+            high_level,
+        };
+
         /**
          * @brief Init the fake pin
          * 
          */
         constexpr static void init() {}
+
+        /**
+         * @brief Init the fake pin using a edge trigger
+         * 
+         * @note Will not do anything
+         * 
+         * @tparam Edge 
+         * @param callback 
+         */
+        template <edge Edge>
+        constexpr static void init(interrupt_callback callback) {}
 
         /**
          * @brief Get the value of the pin
