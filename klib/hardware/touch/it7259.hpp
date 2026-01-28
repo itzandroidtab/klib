@@ -3,7 +3,10 @@
 
 #include <optional>
 #include <algorithm>
+#include <array>
 
+#include <klib/vector2.hpp>
+#include <klib/multispan.hpp>
 #include <klib/math.hpp>
 #include <klib/delay.hpp>
 
