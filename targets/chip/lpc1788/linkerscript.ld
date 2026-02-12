@@ -158,6 +158,10 @@ SECTIONS
     /* create a table to initialize the data sections on a secondary memory */
     DATA_MULTISECTION_TABLE(
         DATA_SECTION_ENTRY(ram1)
+        DATA_SECTION_ENTRY(static0)
+        DATA_SECTION_ENTRY(static1)
+        DATA_SECTION_ENTRY(static2)
+        DATA_SECTION_ENTRY(static3)
         DATA_SECTION_ENTRY(dynamic0)
         DATA_SECTION_ENTRY(dynamic1)
         DATA_SECTION_ENTRY(dynamic2)
@@ -168,6 +172,10 @@ SECTIONS
     /* create a table to initialize the bss sections on a secondary memory */
     BSS_MULTISECTION_TABLE(
         BSS_SECTION_ENTRY(ram1)
+        BSS_SECTION_ENTRY(static0)
+        BSS_SECTION_ENTRY(static1)
+        BSS_SECTION_ENTRY(static2)
+        BSS_SECTION_ENTRY(static3)
         BSS_SECTION_ENTRY(dynamic0)
         BSS_SECTION_ENTRY(dynamic1)
         BSS_SECTION_ENTRY(dynamic2)
