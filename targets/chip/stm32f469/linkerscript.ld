@@ -113,6 +113,10 @@ SECTIONS
         PROVIDE(__bss_end = .);
     } > ram0
 
+    /* ccm memory */
+    DATA_SECTION(ccm, ccm, rom)
+    BSS_SECTION(ccm, ccm)
+
     /* fmc memory */
     DATA_SECTION(fmc0, fmc0, rom)
     DATA_SECTION(fmc1, fmc1, rom)
@@ -125,6 +129,7 @@ SECTIONS
 
     /* create a table to initialize the data sections on a secondary memory */
     DATA_MULTISECTION_TABLE(
+        DATA_SECTION_ENTRY(ccm)
         DATA_SECTION_ENTRY(fmc0)
         DATA_SECTION_ENTRY(fmc1)
         DATA_SECTION_ENTRY(fmc2)
@@ -134,6 +139,7 @@ SECTIONS
 
     /* create a table to initialize the bss sections on a secondary memory */
     BSS_MULTISECTION_TABLE(
+        BSS_SECTION_ENTRY(ccm)
         BSS_SECTION_ENTRY(fmc0)
         BSS_SECTION_ENTRY(fmc1)
         BSS_SECTION_ENTRY(fmc2)
