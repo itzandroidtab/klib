@@ -3,7 +3,6 @@
 
 #include <cstdint>
 
-#include <targets/core/stm/stm32f4xx/ltdc.hpp>
 #include <klib/io/peripheral.hpp>
 
 #include <io/pins.hpp>
