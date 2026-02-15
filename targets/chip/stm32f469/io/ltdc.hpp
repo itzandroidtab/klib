@@ -58,7 +58,7 @@ namespace klib::stm32f469::io::periph {
         typename B4 = pins::package::tfbga216::pc3,
         typename B5 = pins::package::tfbga216::pd3,
         typename B6 = pins::package::tfbga216::pa7,
-        typename B = pins::package::tfbga216::pb47
+        typename B7 = pins::package::tfbga216::pb4
     >
     struct ltdc0 {
         // peripheral id (e.g ltdc0, ltdc1)
@@ -74,156 +74,156 @@ namespace klib::stm32f469::io::periph {
         static inline LTDC_Type *const port = LTDC;
 
         using clk_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::ph3, detail::ltdc::mode::clk, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pj14, detail::ltdc::mode::clk, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp11, detail::ltdc::mode::clk, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::ph3, detail::ltdc::mode::clk, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pj14, detail::ltdc::mode::clk, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp11, detail::ltdc::mode::clk, io::detail::alternate::func_14>
         >;
         using hsync_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pd5, detail::ltdc::mode::hsync, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pe3, detail::ltdc::mode::hsync, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::ph15, detail::ltdc::mode::hsync, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pd5, detail::ltdc::mode::hsync, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pe3, detail::ltdc::mode::hsync, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::ph15, detail::ltdc::mode::hsync, io::detail::alternate::func_14>
         >;
         using vsync_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pe4, detail::ltdc::mode::vsync, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pg3, detail::ltdc::mode::vsync, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pn4, detail::ltdc::mode::vsync, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pe4, detail::ltdc::mode::vsync, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pg3, detail::ltdc::mode::vsync, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pn4, detail::ltdc::mode::vsync, io::detail::alternate::func_14>
         >;
         using de_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pc4, detail::ltdc::mode::de, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pl1, detail::ltdc::mode::de, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr12, detail::ltdc::mode::de, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pc4, detail::ltdc::mode::de, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pl1, detail::ltdc::mode::de, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr12, detail::ltdc::mode::de, io::detail::alternate::func_14>
         >;
 
         // red data lines
         using r0_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb3, detail::ltdc::mode::r0, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pg4, detail::ltdc::mode::r0, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pk4, detail::ltdc::mode::r0, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb3, detail::ltdc::mode::r0, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pg4, detail::ltdc::mode::r0, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pk4, detail::ltdc::mode::r0, io::detail::alternate::func_14>
         >;
         using r1_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pj4, detail::ltdc::mode::r1, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp2, detail::ltdc::mode::r1, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr6, detail::ltdc::mode::r1, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pj4, detail::ltdc::mode::r1, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp2, detail::ltdc::mode::r1, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr6, detail::ltdc::mode::r1, io::detail::alternate::func_14>
         >;
         using r2_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb14, detail::ltdc::mode::r2, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pn2, detail::ltdc::mode::r2, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp14, detail::ltdc::mode::r2, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr7, detail::ltdc::mode::r2, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb14, detail::ltdc::mode::r2, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pn2, detail::ltdc::mode::r2, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp14, detail::ltdc::mode::r2, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr7, detail::ltdc::mode::r2, io::detail::alternate::func_14>
         >;
         using r3_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pn14, detail::ltdc::mode::r3, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp7, detail::ltdc::mode::r3, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr5, detail::ltdc::mode::r3, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pn14, detail::ltdc::mode::r3, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp7, detail::ltdc::mode::r3, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr5, detail::ltdc::mode::r3, io::detail::alternate::func_9>
         >;
         using r4_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pc15, detail::ltdc::mode::r4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pn8, detail::ltdc::mode::r4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp4, detail::ltdc::mode::r4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp15, detail::ltdc::mode::r4, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pc15, detail::ltdc::mode::r4, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pn8, detail::ltdc::mode::r4, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp4, detail::ltdc::mode::r4, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp15, detail::ltdc::mode::r4, io::detail::alternate::func_14>
         >;
         using r5_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb15, detail::ltdc::mode::r5, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pm2, detail::ltdc::mode::r5, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pm9, detail::ltdc::mode::r5, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pn15, detail::ltdc::mode::r5, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb15, detail::ltdc::mode::r5, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pm2, detail::ltdc::mode::r5, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pm9, detail::ltdc::mode::r5, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pn15, detail::ltdc::mode::r5, io::detail::alternate::func_14>
         >;
         using r6_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pf15, detail::ltdc::mode::r6, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pm14, detail::ltdc::mode::r6, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pm15, detail::ltdc::mode::r6, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr4, detail::ltdc::mode::r6, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pf15, detail::ltdc::mode::r6, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pm14, detail::ltdc::mode::r6, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pm15, detail::ltdc::mode::r6, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr4, detail::ltdc::mode::r6, io::detail::alternate::func_9>
         >;
         using r7_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pj15, detail::ltdc::mode::r7, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr6, detail::ltdc::mode::r7, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr11, detail::ltdc::mode::r7, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pj15, detail::ltdc::mode::r7, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr6, detail::ltdc::mode::r7, io::detail::alternate::func_9>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr11, detail::ltdc::mode::r7, io::detail::alternate::func_14>
         >;
 
         // green data lines
         using g0_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb1, detail::ltdc::mode::g0, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr4, detail::ltdc::mode::g0, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb1, detail::ltdc::mode::g0, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr4, detail::ltdc::mode::g0, io::detail::alternate::func_14>
         >;
         using g1_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb2, detail::ltdc::mode::g1, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr5, detail::ltdc::mode::g1, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb2, detail::ltdc::mode::g1, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr5, detail::ltdc::mode::g1, io::detail::alternate::func_14>
         >;
         using g2_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pe12, detail::ltdc::mode::g2, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pg4, detail::ltdc::mode::g2, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp3, detail::ltdc::mode::g2, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pe12, detail::ltdc::mode::g2, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pg4, detail::ltdc::mode::g2, io::detail::alternate::func_9>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp3, detail::ltdc::mode::g2, io::detail::alternate::func_14>
         >;
         using g3_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb10, detail::ltdc::mode::g3, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc8, detail::ltdc::mode::g3, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pe13, detail::ltdc::mode::g3, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp10, detail::ltdc::mode::g3, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb10, detail::ltdc::mode::g3, io::detail::alternate::func_9>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc8, detail::ltdc::mode::g3, io::detail::alternate::func_9>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pe13, detail::ltdc::mode::g3, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp10, detail::ltdc::mode::g3, io::detail::alternate::func_14>
         >;
         using g4_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb9, detail::ltdc::mode::g4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pd13, detail::ltdc::mode::g4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::ph4, detail::ltdc::mode::g4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pp12, detail::ltdc::mode::g4, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb9, detail::ltdc::mode::g4, io::detail::alternate::func_9>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pd13, detail::ltdc::mode::g4, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::ph4, detail::ltdc::mode::g4, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pp12, detail::ltdc::mode::g4, io::detail::alternate::func_14>
         >;
         using g5_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pe14, detail::ltdc::mode::g5, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::ph4, detail::ltdc::mode::g5, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr13, detail::ltdc::mode::g5, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pe14, detail::ltdc::mode::g5, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::ph4, detail::ltdc::mode::g5, io::detail::alternate::func_9>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr13, detail::ltdc::mode::g5, io::detail::alternate::func_14>
         >;
         using g6_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pd14, detail::ltdc::mode::g6, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pf3, detail::ltdc::mode::g6, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pg15, detail::ltdc::mode::g6, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pd14, detail::ltdc::mode::g6, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pf3, detail::ltdc::mode::g6, io::detail::alternate::func_9>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pg15, detail::ltdc::mode::g6, io::detail::alternate::func_14>
         >;
         using g7_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pa8, detail::ltdc::mode::g7, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc11, detail::ltdc::mode::g7, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc14, detail::ltdc::mode::g7, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::ph14, detail::ltdc::mode::g7, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pa8, detail::ltdc::mode::g7, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc11, detail::ltdc::mode::g7, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc14, detail::ltdc::mode::g7, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::ph14, detail::ltdc::mode::g7, io::detail::alternate::func_14>
         >;
 
         // blue data lines
         using b0_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pa1, detail::ltdc::mode::b0, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pa4, detail::ltdc::mode::b0, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pb10, detail::ltdc::mode::b0, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pa1, detail::ltdc::mode::b0, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pa4, detail::ltdc::mode::b0, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pb10, detail::ltdc::mode::b0, io::detail::alternate::func_14>
         >;
         using b1_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb9, detail::ltdc::mode::b1, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc7, detail::ltdc::mode::b1, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb9, detail::ltdc::mode::b1, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc7, detail::ltdc::mode::b1, io::detail::alternate::func_14>
         >;
         using b2_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb11, detail::ltdc::mode::b2, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc8, detail::ltdc::mode::b2, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc9, detail::ltdc::mode::b2, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr2, detail::ltdc::mode::b2, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb11, detail::ltdc::mode::b2, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc8, detail::ltdc::mode::b2, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc9, detail::ltdc::mode::b2, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr2, detail::ltdc::mode::b2, io::detail::alternate::func_9>
         >;
         using b3_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb8, detail::ltdc::mode::b3, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pd10, detail::ltdc::mode::b3, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pk15, detail::ltdc::mode::b3, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb8, detail::ltdc::mode::b3, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pd10, detail::ltdc::mode::b3, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pk15, detail::ltdc::mode::b3, io::detail::alternate::func_14>
         >;
         using b4_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pc3, detail::ltdc::mode::b4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc7, detail::ltdc::mode::b4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pd8, detail::ltdc::mode::b4, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr10, detail::ltdc::mode::b4, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pc3, detail::ltdc::mode::b4, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc7, detail::ltdc::mode::b4, io::detail::alternate::func_9>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pd8, detail::ltdc::mode::b4, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr10, detail::ltdc::mode::b4, io::detail::alternate::func_14>
         >;
         using b5_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pd3, detail::ltdc::mode::b5, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pd7, detail::ltdc::mode::b5, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pr2, detail::ltdc::mode::b5, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pd3, detail::ltdc::mode::b5, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pd7, detail::ltdc::mode::b5, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pr2, detail::ltdc::mode::b5, io::detail::alternate::func_14>
         >;
         using b6_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pa7, detail::ltdc::mode::b6, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc6, detail::ltdc::mode::b6, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pd6, detail::ltdc::mode::b6, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pa7, detail::ltdc::mode::b6, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc6, detail::ltdc::mode::b6, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pd6, detail::ltdc::mode::b6, io::detail::alternate::func_14>
         >;
         using b7_pins = std::tuple<
-            detail::ltdc::ltdc<pins::package::tfbga216::pb4, detail::ltdc::mode::b7, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pc5, detail::ltdc::mode::b7, io::detail::alternate::>,
-            detail::ltdc::ltdc<pins::package::tfbga216::pd4, detail::ltdc::mode::b7, io::detail::alternate::>
+            detail::ltdc::ltdc<pins::package::tfbga216::pb4, detail::ltdc::mode::b7, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pc5, detail::ltdc::mode::b7, io::detail::alternate::func_14>,
+            detail::ltdc::ltdc<pins::package::tfbga216::pd4, detail::ltdc::mode::b7, io::detail::alternate::func_14>
         >;
 
         // control signals
