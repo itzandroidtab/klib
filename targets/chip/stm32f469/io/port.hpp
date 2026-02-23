@@ -18,6 +18,9 @@ namespace klib::stm32f469::io::periph {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 0;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 0;
+
         // port to the gpio hardware
         static inline GPIOA_Type *const port = GPIOA;
     };
@@ -25,6 +28,9 @@ namespace klib::stm32f469::io::periph {
     struct gpio1 {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 1;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 1;
 
         // port to the gpio hardware
         static inline GPIOB_Type *const port = GPIOB;
@@ -34,6 +40,9 @@ namespace klib::stm32f469::io::periph {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 2;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 2;
+
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOC;
     };
@@ -41,6 +50,9 @@ namespace klib::stm32f469::io::periph {
     struct gpio3 {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 3;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 3;
 
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOD;
@@ -50,6 +62,9 @@ namespace klib::stm32f469::io::periph {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 4;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 4;
+
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOE;
     };
@@ -57,6 +72,9 @@ namespace klib::stm32f469::io::periph {
     struct gpio5 {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 5;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 5;
 
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOF;
@@ -66,6 +84,9 @@ namespace klib::stm32f469::io::periph {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 6;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 6;
+
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOG;
     };
@@ -73,6 +94,9 @@ namespace klib::stm32f469::io::periph {
     struct gpio7 {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 7;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 7;
 
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOH;
@@ -82,6 +106,9 @@ namespace klib::stm32f469::io::periph {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 8;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 8;
+
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOI;
     };
@@ -90,6 +117,9 @@ namespace klib::stm32f469::io::periph {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 9;
 
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 9;
+
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOJ;
     };
@@ -97,6 +127,9 @@ namespace klib::stm32f469::io::periph {
     struct gpio10 {
         // peripheral id (e.g gpio0, gpio1)
         constexpr static uint32_t id = 10;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = 10;
 
         // port to the gpio hardware
         static inline GPIOK_Type *const port = GPIOK;

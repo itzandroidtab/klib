@@ -5,6 +5,8 @@
 
 #include <klib/klib.hpp>
 
+#include <io/clocks.hpp>
+
 namespace klib::core::stm32f4xx::io::detail::alternate {
     // alternate functions for all the gpio
     // default function (view reference manual for
@@ -277,6 +279,9 @@ namespace klib::core::stm32f4xx::io {
          * 
          */
         constexpr static void init() {
+            // init the gpio port clock
+            target::io::clocks::set<typename Pin::port>();
+            
             // set the pin to input mode
             detail::pins::set_direction_mode<Pin, detail::pins::direction_mode::input>();
         }
@@ -325,6 +330,9 @@ namespace klib::core::stm32f4xx::io {
          * 
          */
         constexpr static void init() {
+            // init the gpio port clock
+            target::io::clocks::set<typename Pin::port>();
+
             // set the pin to output mode
             detail::pins::set_direction_mode<Pin, detail::pins::direction_mode::output>();
         }
