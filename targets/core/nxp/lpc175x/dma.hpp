@@ -263,7 +263,7 @@ namespace klib::core::lpc175x::io {
             }
 
             // set the amount of data we will transfer
-            Dma::port->CH[Channel].CONTROL |= current_transfer;
+            Dma::port->CH[Channel].CONTROL = (Dma::port->CH[Channel].CONTROL & (~0xfff)) | current_transfer;
 
             // check if we need a irq after the current
             if (!needs_irq) [[unlikely]] {
