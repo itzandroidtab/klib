@@ -297,7 +297,12 @@ namespace klib::core::lpc17xx::io {
         template <bool Enable, bool Read>
         static void dma_enable() {
             // set the new state
-            Ssp::port->DMACR = (Ssp::port->DMACR & ~(0x1 << Read)) | (Enable << Read);
+            if constexpr (Read) {
+                Ssp::port->DMACR = (Ssp::port->DMACR & (~0x1)) | Enable; 
+            }
+            else {
+                Ssp::port->DMACR = (Ssp::port->DMACR & (~(0x1 << 1))) | (Enable << 1); 
+            }
         }
 
         /**
@@ -325,7 +330,7 @@ namespace klib::core::lpc17xx::io {
         /**
          * @brief Returns the read/write transfer width of the ssp
          *
-         * @return uint32_t* const
+         * @return uint32_t
          */
         template <bool Read>
         static uint32_t dma_width() {
