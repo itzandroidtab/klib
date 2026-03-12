@@ -130,7 +130,7 @@ namespace klib::core::lpc175x::io {
             target::io::power_control::enable<Dma>();
 
             // enable the dma controller with the endianness
-            Dma::port->CONFIG = 0x1 | ((Endian == std::endian::little) << 1);
+            Dma::port->CONFIG = 0x1 | ((Endian != std::endian::little) << 1);
 
             // wait until the dma controller is enabled
             while (!(Dma::port->CONFIG & 0x1)) {
