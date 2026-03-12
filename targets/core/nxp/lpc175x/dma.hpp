@@ -35,7 +35,7 @@ namespace klib::core::lpc175x::io::detail::dma {
      */
     struct transfer_helper {
         // pointer to the start of the data
-        const uint8_t* data;
+        uint8_t* data;
 
         // requested size of the current endpoint
         uint32_t requested_size;
@@ -326,7 +326,9 @@ namespace klib::core::lpc175x::io {
             Dma::port->CH[Channel].DESTADDR = reinterpret_cast<uint32_t>(Destination::template dma_data<0>());
 
             // update the helper data with the information about the transfer
-            helper.data = reinterpret_cast<const uint8_t*>(source.data());
+            // we know we are not writing to it so we can remove the const here
+            // for the helper data
+            helper.data = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(source.data()));
             helper.requested_size = size;
             helper.transferred_size = 0x00;
             helper.callback = callback;
@@ -380,7 +382,7 @@ namespace klib::core::lpc175x::io {
             Dma::port->CH[Channel].SRCADDR = reinterpret_cast<uint32_t>(Source::template dma_data<1>());
 
             // update the helper data with the information about the transfer
-            helper.data = reinterpret_cast<const uint8_t*>(destination.data());
+            helper.data = reinterpret_cast<uint8_t*>(destination.data());
             helper.requested_size = size;
             helper.transferred_size = 0x00;
             helper.callback = callback;
