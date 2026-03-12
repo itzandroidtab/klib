@@ -62,7 +62,7 @@ namespace klib::core::lpc175x::io::detail::dma {
             // check if the current value matches the burst size
             // from the data
             if (size >= values[i - 1]) {
-                return i;
+                return i - 1;
             }
         }
 
@@ -103,7 +103,7 @@ namespace klib::core::lpc175x::io::detail::dma {
             // check if the current value matches the burst size
             // from the data
             if (size >= values[i - 1]) {
-                return i;
+                return i - 1;
             }
         }
 
@@ -293,13 +293,13 @@ namespace klib::core::lpc175x::io {
             // enable dma on the source peripheral
             if constexpr (!std::is_same_v<Source, klib::io::dma::memory>) {
                 // enable the dma on the source
-                Source::template dma_enable<true, 1>();
+                Source::template dma_enable<true, true>();
             }
 
             // enable dma on the destination peripheral
             if constexpr (!std::is_same_v<Destination, klib::io::dma::memory>) {
                 // enable the dma on the destination
-                Destination::template dma_enable<true, 0>();
+                Destination::template dma_enable<true, false>();
             }
 
             // register our irq handler for the current channel
