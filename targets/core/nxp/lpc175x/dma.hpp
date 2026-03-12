@@ -354,7 +354,7 @@ namespace klib::core::lpc175x::io {
 
             // setup the channel
             Dma::port->CH[Channel].CONFIG = (
-                (Destination::template dma_id<0>() << 6) | (irq) << 15 |
+                (Destination::template dma_id<0>() << 6) | (irq << 15) |
                 (static_cast<uint32_t>(detail::dma::transfer_type::memory_to_peripheral) << 11)
             );
 
@@ -408,7 +408,7 @@ namespace klib::core::lpc175x::io {
 
             // setup the channel
             Dma::port->CH[Channel].CONFIG = (
-                (Source::template dma_id<1>() << 6) | (irq) << 15 |
+                (Source::template dma_id<1>() << 1) | (irq << 15) |
                 (static_cast<uint32_t>(detail::dma::transfer_type::peripheral_to_memory) << 11)
             );
 
