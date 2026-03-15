@@ -335,7 +335,7 @@ namespace klib::string::detail {
             }
         }
 
-        while (static_cast<uint32_t>(value) > 0) {
+        while (static_cast<std::make_unsigned_t<T>>(value) > 0) {
             chars += 1;
 
             if constexpr (B == base::BIN) {
@@ -471,7 +471,7 @@ namespace klib::string::detail {
         // loop until we dont have any more characters left
         for (uint32_t i = 0; i < count; i++) {
             // get the remainder
-            const T remainder = static_cast<uint32_t>(value) % b;
+            const T remainder = static_cast<std::make_unsigned_t<T>>(value) % b;
 
             // add the letter to the string
             if (remainder > 9) {
