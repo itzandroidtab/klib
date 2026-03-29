@@ -310,6 +310,10 @@ namespace klib::string::detail {
         return 0;
     }
 
+    // helper to avoid make_unsigned_t<bool> which is ill-formed in C++17 and later
+    template <typename T>
+    using safe_unsigned_t = std::make_unsigned_t<std::conditional_t<std::is_same_v<T, bool>, uint8_t, T>>;
+
     template <
         base B = _default_base,
         typename T = int,
@@ -335,7 +339,7 @@ namespace klib::string::detail {
             }
         }
 
-        while (static_cast<std::make_unsigned_t<T>>(value) > 0) {
+        while (static_cast<safe_unsigned_t<T>>(value) > 0) {
             chars += 1;
 
             if constexpr (B == base::BIN) {
@@ -415,11 +419,16 @@ namespace klib::string::detail {
         }
     }
 
-    template <base B = _default_base, bool BoolAlpha = _default_boolalpha, typename T = int>
+    template <
+        base B = _default_base,
+        bool BoolAlpha = _default_boolalpha,
+        typename T = int,
+        typename = std::enable_if_t<std::is_integral_v<T>>
+    >
     constexpr void itoa_impl(T value, char *const str) {
         // handle the boolalpha case first
         if constexpr (BoolAlpha) {
-            if (value == 0) {
+            if (!value) {
                 strcpy(str, "false");
             }
             else {
@@ -471,7 +480,7 @@ namespace klib::string::detail {
         // loop until we dont have any more characters left
         for (uint32_t i = 0; i < count; i++) {
             // get the remainder
-            const T remainder = static_cast<std::make_unsigned_t<T>>(value) % b;
+            const T remainder = static_cast<safe_unsigned_t<T>>(value) % b;
 
             // add the letter to the string
             if (remainder > 9) {
