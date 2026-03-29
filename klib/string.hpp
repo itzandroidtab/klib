@@ -512,6 +512,12 @@ namespace klib::string::detail {
         else {
             int i = 0, k = 0;
 
+            // handle negative values
+            if (value < static_cast<T>(0.f)) {
+                str[k++] = '-';
+                value *= -1;
+            }
+
             do {
                 value /= 10;
                 i++;
@@ -519,7 +525,7 @@ namespace klib::string::detail {
             while (static_cast<int>(value) > 0);
 
             // add the decimal seperator
-            *(str + i) = '.';
+            *(str + k + i) = '.';
 
             value *= 10;
             auto n = static_cast<int>(value);
