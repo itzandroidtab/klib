@@ -425,17 +425,17 @@ namespace klib::string::detail {
         typename T = int,
         typename = std::enable_if_t<std::is_integral_v<T>>
     >
-    constexpr void itoa_impl(T value, char *const str) {
+    constexpr uint32_t itoa_impl(T value, char *const str) {
         // handle the boolalpha case first
         if constexpr (BoolAlpha) {
             if (!value) {
                 strcpy(str, "false");
+                return strlen("false");
             }
             else {
                 strcpy(str, "true");
+                return strlen("true");
             }
-
-            return;
         }
 
         // Handle 0 explicitly, otherwise 0 is not printed
@@ -444,12 +444,10 @@ namespace klib::string::detail {
             const auto added = add_prefix<B>(str);
 
             // add 0 after the prefix
-            str[added] = '0';
+            strcat(str, "0");
 
-            // add the null terminator
-            str[added + 1] = '\0';
-
-            return;
+            // return the string length
+            return strlen("0") + added;
         }
 
         uint32_t index = 0;
@@ -463,7 +461,7 @@ namespace klib::string::detail {
                 // add a minus sign
                 str[index] = '-';
 
-                // go to the next character
+                // go to the next position
                 index++;
             }
         }
@@ -494,59 +492,92 @@ namespace klib::string::detail {
             value /= b;
         }
 
+        const uint32_t pos = index + count;
+
         // add a null terminator
         str[index + count] = '\0';
+
+        return pos;
     }
 
     template <uint32_t Digits, typename T = int>
-    constexpr void stoa_impl(T value, char *const str) {
+    constexpr uint32_t ftoa_impl(T value, char *const str) {
+        // handle the special cases and return
         if (klib::isnan(value)) {
             strcpy(str, "NaN");
+            return strlen("NaN");
         }
         else if (klib::isinf(value)) {
             strcpy(str, "Inf");
+            return strlen("Inf");
         }
         else if (value == static_cast<T>(0.f)) {
             strcpy(str, "0");
+            return strlen("0");
         }
-        else {
-            int i = 0, k = 0;
 
-            // handle negative values
-            if (value < static_cast<T>(0.f)) {
-                str[k++] = '-';
-                value *= -1;
-            }
+        uint32_t index = 0;
 
-            do {
-                value /= 10;
-                i++;
-            }
-            while (static_cast<int>(value) > 0);
-
-            // add the decimal seperator
-            *(str + k + i) = '.';
-
-            value *= 10;
-            auto n = static_cast<int>(value);
-            value -= n;
-
-            while ((k - i) <= static_cast<int>(Digits)) {
-                if (k == i) {
-                    k++;
-                }
-
-                *(str + k) = '0' + n;
-
-                value *= 10;
-                n = static_cast<int>(value);
-                value -= n;
-                k++;
-            }
-
-            // Null-terminate the string
-            *(str + k) = '\0';
+        // handle negative values
+        if (value < static_cast<T>(0.f)) {
+            str[index++] = '-';
+            value *= -1;
         }
+
+        uint32_t count = 0;
+        T tmp = value;
+
+        // count the characters needed without the 
+        // fractional part
+        do {
+            tmp /= 10;
+            count++;
+        }
+        while (static_cast<int>(tmp) > 0);
+
+        // save the fractional part before modifying 
+        // the value
+        T frac = value - klib::floor(value);
+
+        // write the integer digits using the original
+        // value
+        for (int p = 0; p < count; p++) {
+            // get the current digit
+            const auto digit = static_cast<uint32_t>(value) % 10;
+
+            // store the digit
+            str[index + (count - p - 1)] = '0' + digit;
+
+            // remove the digit from the value
+            value /= 10;
+        }
+
+        // increment the index with the digit count
+        index += count;
+
+        // check if we need to add a seperator and
+        // the fractional values
+        if constexpr (Digits) {
+            // add the decimal separator
+            str[index++] = '.';
+    
+            // add all the digits after the seperator
+            for (uint32_t d = 0; d < Digits; d++) {
+                // get the first digit after the seperator, store 
+                // it and remove it from the value
+                frac *= 10;
+                const auto n = static_cast<int>(frac);
+                frac -= n;
+    
+                // store the digit
+                str[index++] = '0' + n;
+            }
+        }
+
+        // Null-terminate the string
+        str[index] = '\0';
+
+        return index;
     }
 }
 
@@ -573,12 +604,13 @@ namespace klib::string {
      * @tparam typename
      * @param value
      * @param str
+     * @return characters in buffer
      */
     template <
         base B = _default_base, bool Boolalpha = _default_boolalpha,
         typename T = int, typename = std::enable_if_t<std::is_integral_v<T>>
     >
-    constexpr void itoa(const T value, char *const str) {
+    constexpr uint32_t itoa(const T value, char *const str) {
         // return the implementation
         return detail::itoa_impl<B, Boolalpha, T>(value, str);
     }
@@ -592,14 +624,15 @@ namespace klib::string {
      * typename
      * @param value
      * @param str
+     * @return characters in buffer
      */
     template <
         uint32_t Digits = 5, typename T = float,
         typename = std::enable_if_t<std::is_floating_point_v<T>>
     >
-    constexpr void stoa(const T value, char *const str) {
+    constexpr uint32_t ftoa(const T value, char *const str) {
         // return the implementation
-        return detail::stoa_impl<Digits, T>(value, str);
+        return detail::ftoa_impl<Digits, T>(value, str);
     }
 }
 

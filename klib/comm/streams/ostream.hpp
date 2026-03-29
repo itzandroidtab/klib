@@ -146,7 +146,7 @@ namespace klib {
         char buf[Digits + (sizeof(T) * 8) + sizeof("  ")] = {};
         
         // convert the value to a string
-        string::stoa<Digits>(v, buf);
+        string::ftoa<Digits>(v, buf);
 
         // write the buffer to the stream
         str << buf;
