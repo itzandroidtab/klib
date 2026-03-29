@@ -218,33 +218,16 @@ namespace klib {
         typename = std::enable_if_t<std::is_floating_point_v<T>>
     >
     constexpr T ceil(T arg) {
-        if (isinf(arg)) [[unlikely]] {
-            return arg;
+        // use the build in ceil functions
+        if constexpr (sizeof(T) <= sizeof(float)) {
+            return __builtin_ceilf(arg);
         }
-
-        if (arg == 0.0) [[unlikely]] {
-            return arg;
+        else if constexpr (sizeof(T) <= sizeof(double)) {
+            return __builtin_ceil(arg);
         }
-
-        if (isnan(arg)) [[unlikely]] {
-            return arg;
+        else {
+            return __builtin_ceill(arg);
         }
-
-        if (static_cast<int64_t>(arg) == arg) {
-            return arg;
-        }
-
-        // Negative ceiling
-        if (arg < 0.0) {
-            return static_cast<T>(
-                static_cast<int64_t>(arg)
-            );
-        }
-
-        // Positive ceiling
-        return static_cast<T>(
-            static_cast<int64_t>(arg) + 1
-        );
     }
 
     /**
@@ -262,33 +245,16 @@ namespace klib {
         typename = std::enable_if_t<std::is_floating_point_v<T>>
     >
     constexpr T floor(const T arg) {
-        if (isinf(arg)) [[unlikely]] {
-            return arg;
+        // use the build in floor functions
+        if constexpr (sizeof(T) <= sizeof(float)) {
+            return __builtin_floorf(arg);
         }
-
-        if (arg == 0.0) [[unlikely]] {
-            return arg;
+        else if constexpr (sizeof(T) <= sizeof(double)) {
+            return __builtin_floor(arg);
         }
-
-        if (isnan(arg)) [[unlikely]] {
-            return arg;
+        else {
+            return __builtin_floorl(arg);
         }
-
-        if (static_cast<int64_t>(arg) == arg) {
-            return arg;
-        }
-
-        // Negative flooring
-        if (arg < 0.0) {
-            return static_cast<T>(
-                static_cast<int64_t>(arg) - 1
-            );
-        }
-
-        // Positive flooring
-        return static_cast<T>(
-            static_cast<int64_t>(arg)
-        );
     }
 
     /**
