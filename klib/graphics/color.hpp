@@ -55,6 +55,12 @@ namespace klib::graphics {
     /**
      * @brief Different display modes. Not all modes are supported for all displays
      *
+     * @note 
+     * lum = luminance
+     * a = alpha
+     * r = red
+     * g = green
+     * b = blue
      */
     enum class mode {
         mono,
@@ -66,6 +72,12 @@ namespace klib::graphics {
         bgr565,
         rgb666,
         rgb888,
+        argb8888,
+        argb4444,
+        argb1555,
+        lum8,
+        alum44,
+        alum88,
     };
 }
 
