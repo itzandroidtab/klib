@@ -143,7 +143,7 @@ namespace klib {
         bool LowPowerSleep = TARGET_LOW_POWER_SLEEP,
         typename T = time::ms
     >
-    static void delay(const T time) {
+    static void delay(const T time) requires time::is_time_unit<T> {
         // get the amount of seconds in the time
         const auto sec = static_cast<time::s>(time);
 
