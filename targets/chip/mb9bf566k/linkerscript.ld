@@ -117,13 +117,21 @@ SECTIONS
         PROVIDE(__heap_end = (ORIGIN(ram) + LENGTH(ram)));
     } > ram
 
-    .ram1 :
-    {
-        . = ALIGN(4);
-        *(SORT_BY_ALIGNMENT(.ramfunc))
-        *(SORT_BY_ALIGNMENT(.ramfunc.*))
-        . = ALIGN(4);
-    } > ram1
+    /* additional ram segment */
+    DATA_SECTION(ram1, ram1, rom)
+    BSS_SECTION(ram1, ram1)
+
+    /* create a table to initialize the data sections on a secondary memory */
+    DATA_MULTISECTION_TABLE(
+        DATA_SECTION_ENTRY(ram1)
+        DATA_SECTION_ENTRY_END()
+    ) > rom
+
+    /* create a table to initialize the bss sections on a secondary memory */
+    BSS_MULTISECTION_TABLE(
+        BSS_SECTION_ENTRY(ram1)
+        BSS_SECTION_ENTRY_END()
+    ) > rom
 
     /* Remove information from the standard libraries */
     /DISCARD/ :

@@ -105,7 +105,7 @@ SECTIONS
         
         PROVIDE(__data_end = .);
         PROVIDE(__data_init_end = LOADADDR(.data));
-    } > ram1 AT > rom
+    } > ram AT > rom
 
     /* Data that needs to be initialized to 0 */
     .bss (NOLOAD) :
@@ -120,15 +120,31 @@ SECTIONS
         . = ALIGN(4);
 
         PROVIDE(__bss_end = .);
-    } > ram1
+    } > ram
 
     /* Heap segment */
     .heap (NOLOAD) :
     {
         . = ALIGN(4);
         PROVIDE(__heap_start = .);
-        PROVIDE(__heap_end = (ORIGIN(ram1) + LENGTH(ram1)));
-    } > ram1
+        PROVIDE(__heap_end = (ORIGIN(ram) + LENGTH(ram)));
+    } > ram
+
+    /* additional ram segment */
+    DATA_SECTION(ram1, ram1, rom)
+    BSS_SECTION(ram1, ram1)
+
+    /* create a table to initialize the data sections on a secondary memory */
+    DATA_MULTISECTION_TABLE(
+        DATA_SECTION_ENTRY(ram1)
+        DATA_SECTION_ENTRY_END()
+    ) > rom
+
+    /* create a table to initialize the bss sections on a secondary memory */
+    BSS_MULTISECTION_TABLE(
+        BSS_SECTION_ENTRY(ram1)
+        BSS_SECTION_ENTRY_END()
+    ) > rom
 
     /* Remove information from the standard libraries */
     /DISCARD/ :
