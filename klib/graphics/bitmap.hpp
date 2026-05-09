@@ -189,7 +189,7 @@ namespace klib::graphics {
         template <typename Fb>
         void draw(Fb& framebuffer, const klib::vector2i& position, const klib::graphics::color foreground, const klib::graphics::color background) const {
             // skip drawing if both colors are transparant
-            if (foreground.transparant && background.transparant) {
+            if ((foreground.alpha != 0xff) && (background.alpha != 0xff)) {
                 return;
             }
 
