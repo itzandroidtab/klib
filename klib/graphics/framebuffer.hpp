@@ -174,7 +174,7 @@ namespace klib::graphics {
 
         constexpr void set_pixel(const klib::vector2u &position, const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
-            if (col.transparant) {
+            if (col.alpha != 0xff) {
                 return;
             }
 
@@ -197,7 +197,7 @@ namespace klib::graphics {
 
         constexpr void clear(const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
-            if (col.transparant) {
+            if (col.alpha != 0xff) {
                 return;
             }
 
@@ -458,7 +458,7 @@ namespace klib::graphics {
          */
         constexpr void set_pixel(const klib::vector2u &position, const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
-            if (col.transparant) {
+            if (col.alpha != 0xff) {
                 return;
             }
 
@@ -487,7 +487,7 @@ namespace klib::graphics {
          */
         constexpr void clear(const klib::graphics::color &col) {
             // check if the pixel is transparant. Skip if it is
-            if (col.transparant) {
+            if (col.alpha != 0xff) {
                 return;
             }
 
