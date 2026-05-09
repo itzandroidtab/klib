@@ -2,6 +2,7 @@
 #define KLIB_COLOR_HPP
 
 #include <cstdint>
+#include <span>
 
 #include <klib/math.hpp>
 
@@ -21,9 +22,12 @@ namespace klib::graphics {
         // blue color
         uint8_t blue;
 
-        // is pixel is transparant
-        bool transparant;
+        // alpha channel
+        uint8_t alpha;
     };
+
+    // validate the size of the color struct is the correct size
+    static_assert(sizeof(color) == sizeof(uint32_t), "Invalid size for color structure");
 
     // some default colors
     [[maybe_unused]]
@@ -172,9 +176,19 @@ namespace klib::graphics::detail {
         constexpr static uint32_t bits = 24;
     };
 
+    // specialization for argb8888
+    template <>
+    struct pixel_conversion<mode::argb8888> {
+        using type = uint32_t;
+
+        // amount of bits used in type
+        constexpr static uint32_t bits = 32;
+    };
+
     /**
-     * @brief Generic Conversion from a klib color to a display mode. Transparant
-     * pixels are not handled in this conversion
+     * @brief Generic Conversion from a klib color to a display mode. The alpha
+     * channel is not handled in this conversion for color types except the 
+     * A versions
      *
      * @tparam Mode
      * @param col
@@ -207,6 +221,9 @@ namespace klib::graphics::detail {
         else if constexpr (Mode == mode::rgb666) {
             return ((col.blue >> 2) << 12) | ((col.green >> 2) << 6) | (col.red >> 2);
         }
+        else if constexpr (Mode == mode::argb8888) {
+            return (col.alpha << 24) | (col.red << 16) | (col.green << 8) | (col.blue);
+        }
         else {
             // return rgb888 when not in other cases
             return (col.red << 16) | (col.green << 8) | (col.blue);
@@ -226,7 +243,7 @@ namespace klib::graphics::detail {
                 .red = klib::map(static_cast<uint8_t>((raw >> 4) & 0x3), 0, 0x3, 0, 255),
                 .green = klib::map(static_cast<uint8_t>((raw >> 2) & 0x3), 0, 0x3, 0, 255),
                 .blue = klib::map(static_cast<uint8_t>(raw & 0x3), 0, 0x3, 0, 255),
-                .transparant = false
+                .alpha = 0xff,
             };
         }
         else if constexpr (Mode == mode::rgb232) {
@@ -235,7 +252,7 @@ namespace klib::graphics::detail {
                 .red = klib::map(static_cast<uint8_t>((raw >> 5) & 0x3), 0, 0x3, 0, 255),
                 .green = klib::map(static_cast<uint8_t>((raw >> 2) & 0x7), 0, 0x7, 0, 255),
                 .blue = klib::map(static_cast<uint8_t>(raw & 0x3), 0, 0x3, 0, 255),
-                .transparant = false
+                .alpha = 0xff,
             };
         }
         else if constexpr (Mode == mode::rgb242) {
@@ -244,7 +261,7 @@ namespace klib::graphics::detail {
                 .red = klib::map(static_cast<uint8_t>((raw >> 6) & 0x3), 0, 0x3, 0, 255),
                 .green = klib::map(static_cast<uint8_t>((raw >> 2) & 0xf), 0, 0xf, 0, 255),
                 .blue = klib::map(static_cast<uint8_t>(raw & 0x3), 0, 0x3, 0, 255),
-                .transparant = false
+                .alpha = 0xff,
             };
         }
         else if constexpr (Mode == mode::rgb444) {
@@ -252,7 +269,7 @@ namespace klib::graphics::detail {
                 .red = klib::map(static_cast<uint8_t>((raw >> 8) & 0xf), 0, 0xf, 0, 255),
                 .green = klib::map(static_cast<uint8_t>((raw >> 4) & 0xf), 0, 0xf, 0, 255),
                 .blue = klib::map(static_cast<uint8_t>(raw & 0xf), 0, 0xf, 0, 255),
-                .transparant = false
+                .alpha = 0xff,
             };
         }
         else if constexpr (Mode == mode::rgb565) {
@@ -260,7 +277,7 @@ namespace klib::graphics::detail {
                 .red = klib::map(static_cast<uint8_t>((raw >> 11) & 0x1f), 0, 0x1f, 0, 255),
                 .green = klib::map(static_cast<uint8_t>((raw >> 5) & 0x3f), 0, 0x3f, 0, 255),
                 .blue = klib::map(static_cast<uint8_t>(raw & 0x1f), 0, 0x1f, 0, 255),
-                .transparant = false
+                .alpha = 0xff,
             };
         }
         else if constexpr (Mode == mode::bgr565) {
@@ -268,7 +285,7 @@ namespace klib::graphics::detail {
                 .red = klib::map(static_cast<uint8_t>(raw & 0x1f), 0, 0x1f, 0, 255),
                 .green = klib::map(static_cast<uint8_t>((raw >> 5) & 0x3f), 0, 0x3f, 0, 255),
                 .blue = klib::map(static_cast<uint8_t>((raw >> 11) & 0x1f), 0, 0x1f, 0, 255),
-                .transparant = false
+                .alpha = 0xff,
             };
         }
         else if constexpr (Mode == mode::rgb666) {
@@ -276,7 +293,15 @@ namespace klib::graphics::detail {
                 .red = klib::map(static_cast<uint8_t>((raw >> 12) & 0x3f), 0, 0x3f, 0, 255),
                 .green = klib::map(static_cast<uint8_t>((raw >> 6) & 0x3f), 0, 0x3f, 0, 255),
                 .blue = klib::map(static_cast<uint8_t>(raw & 0x3f), 0, 0x3f, 0, 255),
-                .transparant = false
+                .alpha = 0xff,
+            };
+        }
+        else if constexpr (Mode == mode::argb8888) {
+            return {
+                .red = (static_cast<uint8_t>((raw >> 16) & 0xff)),
+                .green = (static_cast<uint8_t>((raw >> 8) & 0xff)),
+                .blue = (static_cast<uint8_t>(raw & 0xff)),
+                .alpha = (static_cast<uint8_t>((raw >> 24) & 0xff)),
             };
         }
         else {
@@ -285,7 +310,7 @@ namespace klib::graphics::detail {
                 .red = (static_cast<uint8_t>((raw >> 16) & 0xff)),
                 .green = (static_cast<uint8_t>((raw >> 8) & 0xff)),
                 .blue = (static_cast<uint8_t>(raw & 0xff)),
-                .transparant = false
+                .alpha = 0xff
             };
         }
     }
