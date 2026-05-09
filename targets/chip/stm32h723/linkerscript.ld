@@ -113,6 +113,34 @@ SECTIONS
         PROVIDE(__heap_end = (ORIGIN(ram) + LENGTH(ram)));
     } > ram
 
+    /* additional ram segment */
+    DATA_SECTION(ram1, ram1, rom)
+    DATA_SECTION(ram2, ram2, rom)
+    DATA_SECTION(itcram, itcram, rom)
+    DATA_SECTION(dtcram, dtcram, rom)
+    BSS_SECTION(ram1, ram1)
+    BSS_SECTION(ram2, ram2)
+    BSS_SECTION(itcram, itcram)
+    BSS_SECTION(dtcram, dtcram)
+
+    /* create a table to initialize the data sections on a secondary memory */
+    DATA_MULTISECTION_TABLE(
+        DATA_SECTION_ENTRY(ram1)
+        DATA_SECTION_ENTRY(ram2)
+        DATA_SECTION_ENTRY(itcram)
+        DATA_SECTION_ENTRY(dtcram)
+        DATA_SECTION_ENTRY_END()
+    ) > rom
+
+    /* create a table to initialize the bss sections on a secondary memory */
+    BSS_MULTISECTION_TABLE(
+        BSS_SECTION_ENTRY(ram1)
+        BSS_SECTION_ENTRY(ram2)
+        BSS_SECTION_ENTRY(itcram)
+        BSS_SECTION_ENTRY(dtcram)
+        BSS_SECTION_ENTRY_END()
+    ) > rom
+
     /* Remove information from the standard libraries */
     /DISCARD/ :
     {

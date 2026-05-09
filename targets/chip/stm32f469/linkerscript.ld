@@ -19,8 +19,8 @@ MEMORY
 {
     rom (rx) : org = 0x00000000, len = 2m
     ccm (rwx) : org = 0x10000000, len = 64k
-    /* ram0, ram1 and ram2 in one continuous block */
-    ram0 (rwx) : org = 0x20000000, len = 320k
+    /* ram, ram1 and ram2 in one continuous block */
+    ram (rwx) : org = 0x20000000, len = 320k
     /* ram1 (rwx) : org = 0x20028000, len = 32k */
     /* ram2 (rwx) : org = 0x20030000, len = 128k */
 
@@ -79,7 +79,7 @@ SECTIONS
     CONSTRUCTOR_SECTION(fini_array) > rom
 
     /* Stack segment */
-    STACK(STACK_SIZE) > ram0
+    STACK(STACK_SIZE) > ram
 
     /* Data that needs to be initialized to a value different than 0 */
     .data :
@@ -96,7 +96,7 @@ SECTIONS
         
         PROVIDE(__data_end = .);
         PROVIDE(__data_init_end = LOADADDR(.data));
-    } > ram0 AT > rom
+    } > ram AT > rom
 
     /* Data that needs to be initialized to 0 */
     .bss (NOLOAD) :
@@ -111,7 +111,7 @@ SECTIONS
         . = ALIGN(4);
 
         PROVIDE(__bss_end = .);
-    } > ram0
+    } > ram
 
     /* ccm memory */
     DATA_SECTION(ccm, ccm, rom)
@@ -152,8 +152,8 @@ SECTIONS
     {
         . = ALIGN(4);
         PROVIDE(__heap_start = .);
-        PROVIDE(__heap_end = (ORIGIN(ram0) + LENGTH(ram0)));
-    } > ram0
+        PROVIDE(__heap_end = (ORIGIN(ram) + LENGTH(ram)));
+    } > ram
 
     /* Remove information from the standard libraries */
     /DISCARD/ :
