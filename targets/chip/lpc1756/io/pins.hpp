@@ -32,6 +32,9 @@ namespace klib::lpc1756::pins::package::lqfp_80 {
 
         // bit number in port
         constexpr static uint32_t number = 26;
+
+        // bit number for the adc
+        constexpr static uint32_t analog_number = 3;
     };
 
     struct p7 {
@@ -40,6 +43,9 @@ namespace klib::lpc1756::pins::package::lqfp_80 {
 
         // bit number in port
         constexpr static uint32_t number = 25;
+
+        // bit number for the adc
+        constexpr static uint32_t analog_number = 2;
     };
 
     struct p8 {
@@ -84,6 +90,9 @@ namespace klib::lpc1756::pins::package::lqfp_80 {
 
         // bit number in port
         constexpr static uint32_t number = 31;
+
+        // bit number for the adc
+        constexpr static uint32_t analog_number = 5;
     };
 
     struct p18 {
@@ -92,6 +101,9 @@ namespace klib::lpc1756::pins::package::lqfp_80 {
 
         // bit number in port
         constexpr static uint32_t number = 30;
+
+        // bit number for the adc
+        constexpr static uint32_t analog_number = 4;
     };
 
     struct p19 {
@@ -524,6 +536,9 @@ namespace klib::lpc1756::pins::package::lqfp_80 {
 
         // bit number in port
         constexpr static uint32_t number = 2;
+
+        // bit number for the adc
+        constexpr static uint32_t analog_number = 7;
     };
 
     struct p80 {
@@ -532,6 +547,9 @@ namespace klib::lpc1756::pins::package::lqfp_80 {
 
         // bit number in port
         constexpr static uint32_t number = 3;
+
+        // bit number for the adc
+        constexpr static uint32_t analog_number = 6;
     };
 }
 
