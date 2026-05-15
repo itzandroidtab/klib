@@ -15,6 +15,14 @@ namespace klib::core::lpc175x::io {
         // amount of bits in the ADC
         constexpr static uint32_t bits = 12;
 
+        // using for the array of callbacks
+        using interrupt_callback = void (*)();
+
+    protected:
+        // callback when a adc interrupt
+        static inline interrupt_callback adc_callback = nullptr;
+
+    public:
         /**
          * @brief Start sampling the input pins
          * 
@@ -34,17 +42,13 @@ namespace klib::core::lpc175x::io {
         }
 
         /**
-         * @brief Returns if the adc is busy sampling. Only valid after starting 
-         * a sample request.
-         * 
-         * @warning Undefined value is returned if calling this function before
-         * starting a measurement
+         * @brief Returns if the adc has data to read.
          * 
          * @note This value is cleared after reading
          * 
          * @return status
          */
-        static bool is_busy() {
+        static bool has_data() {
             return !(Adc::port->GDR & (0x1 << 31));
         }
 
@@ -63,11 +67,70 @@ namespace klib::core::lpc175x::io {
             // bit. 
             Adc::port->CR = (0x1 << 21);
 
+            // disable the interrupts the adc might trigger
+            Adc::port->INTEN = 0x00;
+
             // Configure the ADC FreeRun enables burst mode. 
             // That will allow conversions up to 200 kHz
             Adc::port->CR = (
                 (Divider << 8) | (0x1 << 21) | (FreeRun << 16)
             );
+        }
+
+        /**
+         * @brief Init the adc peripheral with a interrupt callback
+         * 
+         * @tparam FreeRun 
+         * @tparam Divider 
+         * @param callback 
+         */
+        template <bool FreeRun = false, uint8_t Divider = 0>
+        static void init(const interrupt_callback& callback) {
+            init<FreeRun, Divider>();
+
+            if constexpr (!FreeRun) {
+                // register the global done interrupt
+                Adc::port->INTEN = 0x1 << 8;
+            }
+            else {
+                // register all the individual channels
+                Adc::port->INTEN = 0xff;
+            }
+
+            // set the callback
+            adc_callback = callback;
+
+            // register the interrupt
+            target::irq::register_irq<Adc::interrupt_id>(interrupt_handler);
+
+            // enable the interrupt
+            target::enable_irq<Adc::interrupt_id>();
+        }
+
+    public:
+        /**
+         * @brief Interrupt handler for the ADC
+         * 
+         */
+        static void interrupt_handler() {
+            if (adc_callback) {
+                adc_callback();
+            }
+
+            // clear interrupt by reading the data register(s)
+            if (Adc::port->CR & (0x1 << 16)) {
+                // burst/freerun: read each enabled channel DR to clear DONE flags
+                const uint32_t channels = Adc::port->CR & 0xff;
+                for (uint32_t i = 0; i < 8; i++) {
+                    if (channels & (0x1 << i)) {
+                        (void)Adc::port->DR[i];
+                    }
+                }
+            }
+            else {
+                // single conversion: read GDR to clear global DONE interrupt
+                (void)Adc::port->GDR;
+            }
         }
     };
 
@@ -114,16 +177,14 @@ namespace klib::core::lpc175x::io {
         }
 
         /**
-         * @brief Returns if the adc is busy sampling. Only valid after starting 
-         * a sample request.
+         * @brief Returns if the adc channel has data to read.
          * 
-         * @warning Undefined value is returned if calling this function before
-         * starting a measurement
+         * @note This value is cleared after reading
          * 
          * @return status
          */
-        static bool is_busy() {
-            return !(Adc::port->STAT & (0x1 << Pin::analog_number));
+        static bool has_data() {
+            return (Adc::port->STAT & (0x1 << Pin::analog_number));
         }
 
         /**
@@ -143,7 +204,7 @@ namespace klib::core::lpc175x::io {
                 sample();
 
                 // wait until the current channel is done
-                while (is_busy()) {
+                while (!has_data()) {
                     // do nothing
                 }
             }
