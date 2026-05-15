@@ -60,8 +60,11 @@ namespace klib::core::lpc175x::io {
             target::io::power_control::enable<Adc>();
 
             // make the adc operational by setting the pdn 
-            // bit. FreeRun enables burst mode. That will
-            // allow conversions up to 200 kHz
+            // bit. 
+            Adc::port->CR = (0x1 << 21);
+
+            // Configure the ADC FreeRun enables burst mode. 
+            // That will allow conversions up to 200 kHz
             Adc::port->CR = (
                 (Divider << 8) | (0x1 << 21) | (FreeRun << 16)
             );
@@ -85,8 +88,12 @@ namespace klib::core::lpc175x::io {
             // switch the gpio to adc mode
             target::io::detail::pins::set_peripheral<typename pin::pin, typename pin::periph>();
 
-            // init the channel
-            Adc::port->CR |= (0x1 << Pin::analog_number);
+            // check if we are in burst/freerun mode. If we are we need 
+            // to register our channel during init
+            if (Adc::port->CR & (0x1 << 16)) {
+                // init the channel
+                Adc::port->CR |= (0x1 << Pin::analog_number);
+            }
         }
 
         /**
@@ -94,6 +101,14 @@ namespace klib::core::lpc175x::io {
          * 
          */
         static void sample() {
+            // check if we are in burst/freerun mode. If we are we
+            // are not we need to clear any other channel before
+            // starting a sample
+            if (!(Adc::port->CR & (0x1 << 16))) {
+                // init the channel and clear all the other channels
+                Adc::port->CR = (Adc::port->CR & (~0xff)) | (0x1 << Pin::analog_number);
+            }
+
             // Note: we sample all the enabled channels with this request
             adc<Adc>::sample();
         }
