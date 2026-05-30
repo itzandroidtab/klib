@@ -29,7 +29,7 @@ namespace klib::stm32f469::io::periph::detail::ltdc {
 }
 
 // global peripherals, not affected by chip package
-namespace klib::stm32f469::io::periph {
+namespace klib::stm32f469::io::periph::tfbga216 {
     template <
         typename Clk = pins::package::tfbga216::ph3,
         typename Hsync = pins::package::tfbga216::pd5,
@@ -69,6 +69,9 @@ namespace klib::stm32f469::io::periph {
 
         // error interrupt id (including the arm vector table)
         constexpr static uint32_t error_interrupt_id = 16 + 89;
+
+        // peripheral clock bit position
+        constexpr static uint32_t clock_id = (4 * 32) + 26;
 
         // port to the LTDC hardware
         static inline LTDC_Type *const port = LTDC;
