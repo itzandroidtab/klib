@@ -425,10 +425,10 @@ namespace klib::core::lpc178x::io {
                 Emac::port->IPGT = 0x15;
             }
             else {
-                // enable full duplex on the MAC
+                // disable full duplex on the MAC
                 Emac::port->MAC2 &= (~0x1);
 
-                // enable full duplex in the command register
+                // disable full duplex in the command register
                 Emac::port->COMMAND &= (~(0x1 << 10));
 
                 // change the packet to packet gap register
