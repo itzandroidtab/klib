@@ -167,7 +167,7 @@ namespace klib::core::lpc178x::io {
             enum {
                 normal = 0x0,
                 mode = 0x1,
-                pall = 0x2,
+                precharge_all = 0x2,
                 nop = 0x3,
             };
         };
@@ -515,8 +515,8 @@ namespace klib::core::lpc178x::io {
             // wait 200us
             klib::delay(klib::time::us(200));
 
-            // issue a pall command
-            Emc::port->DYNAMICCONTROL = (dyn_cmd::pall << 7) | (0b11);
+            // issue a precharge_all command
+            Emc::port->DYNAMICCONTROL = (dyn_cmd::precharge_all << 7) | (0b11);
 
             // set the refresh period if it is higher than the current one. We 
             // need to set the worst case value for all the chip selects
@@ -535,7 +535,7 @@ namespace klib::core::lpc178x::io {
             Memory::setup(address);
 
             // issue a normal command
-            Emc::port->DYNAMICCONTROL = dyn_cmd::normal; 
+            Emc::port->DYNAMICCONTROL = (dyn_cmd::normal << 7); 
 
             // enable the buffers with the same config
             dyn->config = config | (0x1 << 19);
