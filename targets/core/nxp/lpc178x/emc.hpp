@@ -88,6 +88,17 @@ namespace klib::core::lpc178x::io {
         };
 
         /**
+         * @brief dynamic memory read stategy
+         *
+         */
+        enum class read_strategy: uint8_t {
+            clock_out_delayed = 0x0,
+            command_delayed = 0x1,
+            command_delayed_plus_one = 0x2,
+            command_delayed_plus_two = 0x3,
+        };
+
+        /**
          * @brief Configuration for dynamic memory
          * 
          */
@@ -129,6 +140,9 @@ namespace klib::core::lpc178x::io {
 
             // flag if we are using low power sdram
             bool low_power_sdram = false;
+
+            // read data strategy
+            read_strategy read;
         };
 
         /**
@@ -288,6 +302,13 @@ namespace klib::core::lpc178x::io {
             if (res > value) {
                 Emc::port->DYNAMICDAL = res;
             }
+
+            // check if the read stategy we have in this memory is worse
+            // than the current one. Update it as well. Note this doesnt
+            // use the timing but clocks
+            if (static_cast<uint32_t>(memory.read) > Emc::port->DYNAMICREADCONFIG) {
+                Emc::port->DYNAMICREADCONFIG = static_cast<uint32_t>(memory.read);
+            }
         }
 
         constexpr static uint32_t calculate_dynamic_period_cycles(const uint32_t ps_per_cycle, const klib::time::ns period) {
@@ -439,6 +460,7 @@ namespace klib::core::lpc178x::io {
             Emc::port->DYNAMICRRD = 0x00;
             Emc::port->DYNAMICMRD = 0x00;
             Emc::port->DYNAMICREFRESH = 0x00;
+            Emc::port->DYNAMICREADCONFIG = 0x00;
         }
 
         /**
@@ -492,9 +514,6 @@ namespace klib::core::lpc178x::io {
 
             // setup the ras and cas latencies
             dyn->ras_cas = static_cast<uint32_t>(memory.ras) | (static_cast<uint32_t>(memory.cas) << 8);
-
-            // set the memory configuration to use the command delayed strategy
-            Emc::port->DYNAMICREADCONFIG = 0x1;
 
             // calculate the clocks based on the current clock frequency
             const auto current_clock = klib::io::clock::get();
