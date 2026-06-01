@@ -59,6 +59,9 @@ namespace klib::lpc1788::io::periph::lqfp_208 {
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 0;
 
+        // interrupt id (including the arm vector table)
+        constexpr static uint32_t interrupt_id = 37 + 16;
+
         // port to the LCD hardware
         static inline LCD_Type *const port = LCD;
 
