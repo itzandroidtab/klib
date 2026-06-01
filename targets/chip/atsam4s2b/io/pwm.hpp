@@ -2,6 +2,7 @@
 #define KLIB_ATSAM4S2B_PWM_HPP
 
 #include <cstdint>
+#include <tuple>
 
 #include <targets/core/atmel/atsam4s/pwm.hpp>
 
