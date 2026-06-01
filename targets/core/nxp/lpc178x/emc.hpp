@@ -103,8 +103,10 @@ namespace klib::core::lpc178x::io {
          * 
          */
         struct dynamic_memory {
-            // flag if we are using 32 bit external address mapping
-            bool bit32;
+            // flag if we are using 32 bit external bus address mapping.
+            // this selects the AM[1] address mapping scheme and is
+            // independent of the actual data bus width
+            bool bit32_address_mapping;
 
             // column row mapping
             column_row_mapping mapping;
@@ -510,7 +512,7 @@ namespace klib::core::lpc178x::io {
             const uint32_t config = (
                 (memory.low_power_sdram << 3) | (static_cast<uint32_t>(memory.width) << 7) | 
                 (static_cast<uint32_t>(memory.size) << 9) | (static_cast<uint32_t>(memory.mapping) << 12) | 
-                (memory.bit32 << 14)
+                (memory.bit32_address_mapping << 14)
             );
 
             // set the memory configuration (with the buffer disabled)
