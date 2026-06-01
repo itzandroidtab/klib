@@ -6,6 +6,8 @@
 
 #include <targets/core/atmel/atsam4s/pwm.hpp>
 
+#include "pins.hpp"
+
 namespace klib::atsam4s2b::io::periph::detail::pwm {
     enum class mode {
         pwmh = 0,
