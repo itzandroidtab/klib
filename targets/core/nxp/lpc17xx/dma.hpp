@@ -1,5 +1,5 @@
-#ifndef KLIB_NXP_LPC175X_DMA_HPP
-#define KLIB_NXP_LPC175X_DMA_HPP
+#ifndef KLIB_NXP_LPC17XX_DMA_HPP
+#define KLIB_NXP_LPC17XX_DMA_HPP
 
 #include <array>
 #include <span>
@@ -11,9 +11,7 @@
 
 #include <io/power.hpp>
 
-#include "clocks.hpp"
-
-namespace klib::core::lpc175x::io::detail::dma {
+namespace klib::core::lpc17xx::io::detail::dma {
     // using to the interrupt callback in the transfer helper
     using interrupt_callback = void(*)();
 
@@ -112,7 +110,7 @@ namespace klib::core::lpc175x::io::detail::dma {
     }
 }
 
-namespace klib::core::lpc175x::io {
+namespace klib::core::lpc17xx::io {
     template <typename Dma>
     class dma {
     public:

@@ -1,17 +1,17 @@
-#ifndef KLIB_LPC1756_DMA_HPP
-#define KLIB_LPC1756_DMA_HPP
+#ifndef KLIB_LPC1788_DMA_HPP
+#define KLIB_LPC1788_DMA_HPP
 
 #include <array>
 
 #include <targets/core/nxp/lpc17xx/dma.hpp>
 
-namespace klib::lpc1756::io::periph {
+namespace klib::lpc1788::io::periph {
     struct dma0 {
         // peripheral id (e.g dma0, dma1)
         constexpr static uint32_t id = 0;
 
         // interrupt id (including the arm vector table)
-        constexpr static uint32_t interrupt_id = 42;
+        constexpr static uint32_t interrupt_id = 26 + 16;
 
         // peripheral clock bit position
         constexpr static uint32_t clock_id = 29;
@@ -24,7 +24,7 @@ namespace klib::lpc1756::io::periph {
     };
 }
 
-namespace klib::lpc1756::io {
+namespace klib::lpc1788::io {
     template <typename Dma>
     using dma = core::lpc17xx::io::dma<Dma>;
 
