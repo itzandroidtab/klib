@@ -20,6 +20,9 @@ namespace klib::core::lpc178x::io {
     template <typename Lcd, graphics::mode Mode = graphics::mode::rgb565>
     class lcd {
     public:
+        // using for the array of callbacks
+        using interrupt_callback = void(*)();
+
         /**
          * @brief The clock source for the LCD clock
          * 
@@ -88,6 +91,9 @@ namespace klib::core::lpc178x::io {
             "Invalid graphics mode for controller or not supported"
         );
 
+        // pointer to a callback
+        static inline interrupt_callback lcd_callback = nullptr;
+
         constexpr static uint8_t graphics_to_raw() {
             // get the bits the mode supports
             constexpr static uint32_t bits = graphics::detail::pixel_conversion<Mode>::bits;
@@ -106,13 +112,30 @@ namespace klib::core::lpc178x::io {
             }
         }
 
+        static void interrupt_handler() {
+            // get the mask and status
+            const uint32_t mask = Lcd::port->INTMSK;
+            const uint32_t status = Lcd::port->INTRAW;
+            
+            // get the masked status
+            const uint32_t masked = status & mask;
+
+            // clear the interrupt bits
+            Lcd::port->INTCLR = masked;
+
+            // call the callback
+            if (lcd_callback) {
+                lcd_callback();
+            }
+        }
+
     public:
         template <
             std::endian ByteEndian = std::endian::native, 
             std::endian PixelEndian = std::endian::native, 
             clock_source Source = clock_source::cclk
         >
-        static bool init(const timing_config& config, const io_polarity& polarity) {
+        static bool init(const timing_config& config, const io_polarity& polarity, const interrupt_callback& callback = nullptr) {
             // check for correct values in the active height and width fields
             if (config.active_width < 16 || config.active_width > 1024 || !config.hsync) {
                 return false;
@@ -228,6 +251,25 @@ namespace klib::core::lpc178x::io {
                 ((static_cast<uint32_t>(vfp) & 0xff) << 16) |
                 ((config.vbp & 0xff) << 24)
             );
+
+            // check if we need any interrupt or not
+            if (callback) {
+                // register our handler if we have a callback
+                lcd_callback = callback;
+                target::irq::register_irq<Lcd::interrupt_id>(interrupt_handler);
+
+                // enable the interrupt
+                target::enable_irq<Lcd::interrupt_id>();
+
+                // enable the lnbuin interrupt
+                Lcd::port->INTMSK = 0x1 << 2;
+            }
+            else {
+                target::disable_irq<Lcd::interrupt_id>();
+
+                // clear all the enabled interrupts
+                Lcd::port->INTMSK = 0;
+            }
 
             // set the control register
             Lcd::port->CTRL = (
