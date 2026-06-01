@@ -79,7 +79,7 @@ namespace klib::core::lpc178x::io {
 
         /**
          * @brief Allowed emc latencies for the ras and cas
-         * 
+         *
          */
         enum class latency: uint8_t {
             one_cycle = 0x1,
@@ -132,7 +132,12 @@ namespace klib::core::lpc178x::io {
             klib::time::ns trrd;
             klib::time::ns tmrd;
 
-            // the refresh period
+            // interval between two refresh commands. Each auto-refresh
+            // refreshes one row. So this should be refresh period / rows
+            // from the datasheet.
+            // 
+            // For a 64 ms refresh with 8k of rows you use use a 7.8 us
+            // refresh (64 ms / 8192 = 7.8125 us)
             klib::time::ns refresh_period;
 
             // flag if the memory is write protected
@@ -297,7 +302,7 @@ namespace klib::core::lpc178x::io {
             // special case for the tdal as that does not have + 1 cycle in hardware
             const uint32_t res = ns_to_cycles(memory.tdal, ps_per_cycle);
             const uint32_t value = Emc::port->DYNAMICDAL;
-        
+
             // only update the value if it is higher than the one in the register
             if (res > value) {
                 Emc::port->DYNAMICDAL = res;
@@ -312,10 +317,9 @@ namespace klib::core::lpc178x::io {
         }
 
         constexpr static uint32_t calculate_dynamic_period_cycles(const uint32_t ps_per_cycle, const klib::time::ns period) {
-            // get the amount of cycles in the period. We need to convert the ns to ps
-            // but we need to do a divide by 1000 afterwards so no need to do it. 
-            // Afterwards we do a divide by 16 as the hardware does a multiply by 16
-            const uint32_t p = ((period.value / ps_per_cycle) / 16);
+            // period.value * 1000 converts ns to ps to match ps_per_cycle.
+            // divide by 16 because the hardware scales the register by 16 cycles
+            const uint64_t p = ((static_cast<uint64_t>(period.value) * 1000) / ps_per_cycle) / 16;
 
             if (p > 0x7ff) {
                 return 0x7ff;
@@ -537,11 +541,14 @@ namespace klib::core::lpc178x::io {
             // issue a precharge_all command
             Emc::port->DYNAMICCONTROL = (dyn_cmd::precharge_all << 7) | (0b11);
 
-            // set the refresh period if it is higher than the current one. We 
+            // set the refresh period if it is lower than the current one. We 
             // need to set the worst case value for all the chip selects
-            Emc::port->DYNAMICREFRESH = klib::max(
-                calculate_dynamic_period_cycles(ps, memory.refresh_period),
-                Emc::port->DYNAMICREFRESH
+            Emc::port->DYNAMICREFRESH = (Emc::port->DYNAMICREFRESH ?
+                klib::min(
+                    calculate_dynamic_period_cycles(ps, memory.refresh_period),
+                    Emc::port->DYNAMICREFRESH
+                ) :
+                calculate_dynamic_period_cycles(ps, memory.refresh_period)
             );
 
             // issue a mode command
