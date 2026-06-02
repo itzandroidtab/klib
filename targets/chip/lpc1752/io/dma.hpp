@@ -3,7 +3,7 @@
 
 #include <array>
 
-#include <targets/core/nxp/lpc175x/dma.hpp>
+#include <targets/core/nxp/lpc17xx/dma.hpp>
 
 namespace klib::lpc1752::io::periph {
     struct dma0 {
@@ -26,10 +26,10 @@ namespace klib::lpc1752::io::periph {
 
 namespace klib::lpc1752::io {
     template <typename Dma>
-    using dma = core::lpc175x::io::dma<Dma>;
+    using dma = core::lpc17xx::io::dma<Dma>;
 
     template <typename Dma, uint8_t Channel, typename Source, typename Destination>
-    using dma_channel = core::lpc175x::io::dma_channel<Dma, Channel, Source, Destination>;
+    using dma_channel = core::lpc17xx::io::dma_channel<Dma, Channel, Source, Destination>;
 }
 
 #endif
