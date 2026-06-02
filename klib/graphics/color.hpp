@@ -31,28 +31,28 @@ namespace klib::graphics {
 
     // some default colors
     [[maybe_unused]]
-    constexpr color white = {0xff, 0xff, 0xff, false};
+    constexpr color white = {0xff, 0xff, 0xff, 0xff};
 
     [[maybe_unused]]
-    constexpr color black = {0x00, 0x00, 0x00, false};
+    constexpr color black = {0x00, 0x00, 0x00, 0xff};
 
     [[maybe_unused]]
-    constexpr color grey = {0xa0, 0xa0, 0xa0, false};
+    constexpr color grey = {0xa0, 0xa0, 0xa0, 0xff};
 
     [[maybe_unused]]
-    constexpr color red = {0xff, 0x00, 0x00, false};
+    constexpr color red = {0xff, 0x00, 0x00, 0xff};
 
     [[maybe_unused]]
-    constexpr color green = {0x00, 0xff, 0x00, false};
+    constexpr color green = {0x00, 0xff, 0x00, 0xff};
 
     [[maybe_unused]]
-    constexpr color blue = {0x00, 0x00, 0xff, false};
+    constexpr color blue = {0x00, 0x00, 0xff, 0xff};
 
     [[maybe_unused]]
-    constexpr color yellow = {0xff, 0xff, 0x00, false};
+    constexpr color yellow = {0xff, 0xff, 0x00, 0xff};
 
     [[maybe_unused]]
-    constexpr color transparent = {0x00, 0x00, 0x00, true};
+    constexpr color transparent = {0x00, 0x00, 0x00, 0xff};
 }
 
 namespace klib::graphics {
