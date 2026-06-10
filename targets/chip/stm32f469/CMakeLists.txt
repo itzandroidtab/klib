@@ -59,7 +59,7 @@ add_library(${PROJECT_NAME}::target_cpu ALIAS target_cpu)
 target_compile_features(target_cpu PUBLIC cxx_std_20)
 
 # set the target_cpu for klib
-get_filename_component(TARGET_CPU_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+get_filename_component(TARGET_CPU_FOLDER ${CMAKE_CURRENT_LIST_DIR} NAME)
 set(TARGET_CPU ${TARGET_CPU_FOLDER} PARENT_SCOPE)
 target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=${TARGET_CPU}")
 
