@@ -1,12 +1,34 @@
-# include the linkerscript generator needed to preprocess the linkerscripts
-include (${CMAKE_SOURCE_DIR}/targets/arm/linkerscript/linkerscript.cmake)
+# The Generic system name is used for embedded targets (targets without OS) in
+# CMake
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR ARM)
+
+# Supress Error when trying to test the compiler
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+set(BUILD_SHARED_LIBS OFF)
+
+# set minimum version of CMake.
+cmake_minimum_required(VERSION 3.22)
+
+# set project name and version
+project(klib VERSION 0.0.1)
+
+# provide the klib directory for the project (repo root, one level up)
+set(KLIB_DIR ${CMAKE_CURRENT_LIST_DIR}/..)
+
+# include klib and all common toolchain + target setup from the klib repo root.
+# This configures the build-type flags, includes the target cpu (creating the
+# target_cpu / target_cpu_options targets), defines the add_linkerscript()
+# helper and builds the klib library target.
+# Note: KLIB_DIR needs to point to your klib installation folder.
+include(${KLIB_DIR}/CMakeLists.txt)
 
 # set the sources
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 
     # example for including the startup.cpp
-    # ${CMAKE_SOURCE_DIR}/targets/chip/${TARGET_CPU}/startup.cpp
+    # ${KLIB_DIR}/targets/chip/${TARGET_CPU}/startup.cpp
 )
 
 set(HEADERS)
@@ -41,6 +63,9 @@ target_link_libraries(klib_project PUBLIC target_cpu)
 
 # Libraries to link for all targets
 target_link_libraries(klib_project PUBLIC m)
+
+# get the linkerscript we should link against
+get_property(TARGET_LINKERSCRIPT GLOBAL PROPERTY TARGET_LINKERSCRIPT)
 
 # link to the linkerscript of the target cpu
 add_linkerscript(klib_project ${TARGET_LINKERSCRIPT} "")

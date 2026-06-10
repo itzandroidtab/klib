@@ -1,5 +1,5 @@
 # export our linkerscript
-set(TARGET_LINKERSCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/linkerscript.ld" PARENT_SCOPE)
+set_property(GLOBAL PROPERTY TARGET_LINKERSCRIPT "${CMAKE_CURRENT_LIST_DIR}/linkerscript.ld")
 
 # set the stm32f407 cpu options as a seperate target so the driver layer can link agains klib
 add_library (target_cpu_options INTERFACE)
@@ -8,7 +8,7 @@ add_library (target_cpu_options INTERFACE)
 add_library(${PROJECT_NAME}::target_cpu_options ALIAS target_cpu_options)
 
 # include the arm directory for all the cmsis files
-target_include_directories(target_cpu_options INTERFACE ${CMAKE_SOURCE_DIR}/targets/arm/)
+target_include_directories(target_cpu_options INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../../arm/)
 
 # set the cpu options for the compiler
 target_compile_options(target_cpu_options INTERFACE "-mcpu=cortex-m4")
@@ -38,7 +38,7 @@ target_compile_options(target_cpu_options INTERFACE "-fno-asynchronous-unwind-ta
 
 # cpu stm32f407 target drivers 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../arm/vector_table/cortex-m4.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../../arm/vector_table/cortex-m4.cpp
 )
 
 set(HEADERS_PRIVATE 
@@ -63,8 +63,8 @@ add_library(${PROJECT_NAME}::target_cpu ALIAS target_cpu)
 target_compile_features(target_cpu PUBLIC cxx_std_20)
 
 # set the target_cpu for klib
-get_filename_component(TARGET_CPU_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-set(TARGET_CPU ${TARGET_CPU_FOLDER} PARENT_SCOPE)
+get_filename_component(TARGET_CPU_FOLDER ${CMAKE_CURRENT_LIST_DIR} NAME)
+set_property(GLOBAL PROPERTY TARGET_CPU ${TARGET_CPU_FOLDER})
 target_compile_definitions(target_cpu PUBLIC "TARGET_CPU=${TARGET_CPU}")
 
 # other compile options
@@ -80,7 +80,6 @@ target_link_libraries(target_cpu PUBLIC klib)
 #   - header location in project: ${CMAKE_CURRENT_BINARY_DIR}/generated_headers
 target_include_directories(
     target_cpu PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
         "$<BUILD_INTERFACE:${GENERATED_HEADERS_DIR}>"
 )

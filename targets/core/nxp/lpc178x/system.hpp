@@ -3,6 +3,7 @@
 
 #include <klib/klib.hpp>
 #include <io/port.hpp>
+#include <klib/io/core_clock.hpp>
 
 namespace klib::core::lpc178x::io::system {
     class crystal {

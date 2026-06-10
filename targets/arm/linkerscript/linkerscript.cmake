@@ -3,7 +3,7 @@
 # macroes, conditionals, etc)
 function(add_linkerscript target linkerscript options)
     set(output "${CMAKE_BINARY_DIR}/linkerscript.ld")
-    set(CURRENT_DIR "${CMAKE_SOURCE_DIR}/targets/arm/linkerscript")
+    set(CURRENT_DIR "${KLIB_DIR}/targets/arm/linkerscript")
 
     # run the preprocessor on the linkerscript
     add_custom_command(
