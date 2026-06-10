@@ -2,7 +2,6 @@
 #define KLIB_NXP_LPC17XX_SYSTEM_HPP
 
 #include <klib/klib.hpp>
-#include <klib/io/core_clock.hpp>
 
 namespace klib::core::lpc17xx::io::system {
     class flash {
