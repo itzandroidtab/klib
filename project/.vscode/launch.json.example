@@ -7,7 +7,7 @@
         {
             "name": "Upload Core #0",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/project/klib.elf",
+            "executable": "${workspaceFolder}/build/klib.elf",
             "device": "${config:target_cpu_debug}",
             "interface": "swd",
             "request": "launch",
@@ -30,7 +30,7 @@
         {
             "name": "Attach Core #0",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/project/klib.elf",
+            "executable": "${workspaceFolder}/build/klib.elf",
             "device": "${config:target_cpu_debug}",
             "interface": "swd",
             "request": "attach",
