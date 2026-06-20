@@ -1,12 +1,12 @@
-#ifndef KLIB_STM32F469_HPP
-#define KLIB_STM32F469_HPP
+#ifndef KLIB_STM32F429_HPP
+#define KLIB_STM32F429_HPP
 
 #include <klib/irq.hpp>
 
 #include "stm32f429.h"
 
-namespace klib::stm32f469 {
-    // irq for the stm32f469
+namespace klib::stm32f429 {
+    // irq for the stm32f429
     using irq = klib::irq::KLIB_IRQ<0, 16 + 91>;
 
     /**
