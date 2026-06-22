@@ -4,6 +4,7 @@
 
 #include <klib/io/systick.hpp>
 #include <klib/io/core_clock.hpp>
+#include <coprocessor/coprocessor.hpp>
 #include <io/system.hpp>
 
 // disable the constructor does not take arguments error in vscode
@@ -23,6 +24,15 @@ void __attribute__((__constructor__(101))) __target_startup() {
     // ((8Mhz * 360) / 8 = 360Mhz) / 2 = 180Mhz
     target::io::system::clock::set_main<target::io::system::crystal::source::external, 8'000'000, 360, 8, 2>();
     // target::io::system::clock::set_main<target::io::system::crystal::source::internal, 16'000'000, 360, 16, 2>();
+
+    if constexpr (TARGET_FPU_ENABLED) {
+        // using to make the access easier to the coprocessor
+        using coprocessor = klib::arm::coprocessor;
+
+        // enable the floating point coprocessors
+        coprocessor::set<10>(coprocessor::access::full, &SCB->CPACR);
+        coprocessor::set<11>(coprocessor::access::full, &SCB->CPACR);
+    }
 
     // setup the irq handler before main is called. This
     // moves the vector table to ram so it can be changed
