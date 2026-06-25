@@ -15,7 +15,7 @@ namespace klib::usb::hid {
     enum class class_type: uint8_t {
         hid = 0x21,
         report = 0x22,
-        pyhisical = 0x23
+        physical = 0x23
     };
 
     /**
