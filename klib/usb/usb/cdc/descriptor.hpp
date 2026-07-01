@@ -62,7 +62,7 @@ namespace klib::usb::cdc {
         const detail::functional<header, detail::subtype::header> header;
 
         // usb specification number which device compies to
-        uint16_t bcdCDC;
+        setup::usb_version bcdCDC;
     };
 
     static_assert(sizeof(header) == 0x05, "Cdc functional header descriptor size is wrong");

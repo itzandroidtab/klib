@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "setup.hpp"
+
 // Push the current pack to the stack and set the pack to 1
 // as all these structs have specific sizes
 #pragma pack(push, 1)
@@ -123,7 +125,7 @@ namespace klib::usb::descriptor {
         const descriptor_type bDescriptionType = descriptor_type::device;
 
         // usb specification number which device compies to
-        uint16_t bcdUSB;
+        setup::usb_version bcdUSB;
 
         // class code
         class_type bDeviceClass;
@@ -332,7 +334,7 @@ namespace klib::usb::descriptor {
         const descriptor_type bDescriptionType = descriptor_type::device_qualifier;
 
         // usb specification number which device compies to
-        uint16_t bcdUSB;
+        setup::usb_version bcdUSB;
 
         // class code
         class_type bDeviceClass;

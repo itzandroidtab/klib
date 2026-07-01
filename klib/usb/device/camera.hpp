@@ -565,7 +565,7 @@ namespace klib::usb::device {
     protected:
         // device descriptor for the camera
         const __attribute__((aligned(4))) static inline descriptor::device device = {
-            .bcdUSB = static_cast<uint16_t>(setup::usb_version::usb_v1_1),
+            .bcdUSB = setup::usb_version::usb_v1_1,
             .bDeviceClass = descriptor::class_type::application_specific,
             .bDeviceSubClass = 0x02,
             .bDeviceProtocol = 0x01,

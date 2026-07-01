@@ -84,7 +84,7 @@ namespace klib::usb::device {
 
         // device descriptor for the serial device
         const __attribute__((aligned(4))) static inline descriptor::device device = {
-            .bcdUSB = static_cast<uint16_t>(setup::usb_version::usb_v2_0),
+            .bcdUSB = setup::usb_version::usb_v2_0,
             .bDeviceClass = descriptor::class_type::communication_and_cdc,
             .bDeviceSubClass = 0x02,
             .bDeviceProtocol = 0x00,
@@ -118,7 +118,7 @@ namespace klib::usb::device {
                 .iInterface = 0x00
             },
             {
-                .bcdCDC = static_cast<uint16_t>(setup::usb_version::usb_v1_1)
+                .bcdCDC = setup::usb_version::usb_v1_1,
             },
             {
                 .bmCapabilities = 0x00,
