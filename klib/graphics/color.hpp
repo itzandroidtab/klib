@@ -52,7 +52,7 @@ namespace klib::graphics {
     constexpr color yellow = {0xff, 0xff, 0x00, 0xff};
 
     [[maybe_unused]]
-    constexpr color transparent = {0x00, 0x00, 0x00, 0xff};
+    constexpr color transparent = {0x00, 0x00, 0x00, 0x00};
 }
 
 namespace klib::graphics {
