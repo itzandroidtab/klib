@@ -366,6 +366,10 @@ namespace klib::graphics::detail {
     template <mode Input, mode Output>
     constexpr pixel_conversion<Output>::type raw_to_raw(const typename pixel_conversion<Input>::type raw) {
         // convert from klib color to the raw pixel format
+        if constexpr (Input == Output) {
+            // nothing to convert when both sides use the same mode
+            return raw;
+        }
         if constexpr (Input == mode::mono) {
             // convert the input to either white or black. Let the compiler convert
             // it to the correct type
