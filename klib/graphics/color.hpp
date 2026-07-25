@@ -195,6 +195,25 @@ namespace klib::graphics::detail {
         constexpr static uint32_t bits = 32;
     };
 
+    // specialization for argb4444
+    template <>
+    struct pixel_conversion<mode::argb4444> {
+        using type = uint16_t;
+
+        // amount of bits used in type
+        constexpr static uint32_t bits = 16;
+    };
+
+    // specialization for argb1555
+    template <>
+    struct pixel_conversion<mode::argb1555> {
+        using type = uint16_t;
+
+        // amount of bits used in type
+        constexpr static uint32_t bits = 16;
+    };
+
+
     /**
      * @brief Generic Conversion from a klib color to a display mode. The alpha
      * channel is not handled in this conversion for color types except the 
@@ -236,6 +255,12 @@ namespace klib::graphics::detail {
         }
         else if constexpr (Mode == mode::argb8888) {
             return (col.alpha << 24) | (col.red << 16) | (col.green << 8) | (col.blue);
+        }
+        else if constexpr (Mode == mode::argb4444) {
+            return ((col.alpha >> 4) << 12) | ((col.red >> 4) << 8) | ((col.green >> 4) << 4) | (col.blue >> 4);
+        }
+        else if constexpr (Mode == mode::argb1555) {
+            return ((col.alpha >> 7) << 15) | ((col.red >> 3) << 10) | ((col.green >> 3) << 5) | (col.blue >> 3);
         }
         else {
             static_assert(
