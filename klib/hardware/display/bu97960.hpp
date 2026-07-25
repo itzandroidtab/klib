@@ -176,7 +176,7 @@ namespace klib::hardware::display {
             const uint32_t tx_size = 1 + ((index * 8) + height * width + 7) / 8;
 
             // only write the pixels we have in this dislay
-            Bus::write(Address, &framebuffer[index - 1], tx_size);
+            Bus::write(Address, {&framebuffer[index - 1], tx_size});
         }
 
         static void end_write() {
