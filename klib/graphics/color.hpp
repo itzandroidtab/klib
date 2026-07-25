@@ -404,6 +404,47 @@ namespace klib::graphics::detail {
                 .alpha = 0xff
             };
         }
+        else if constexpr (Mode == mode::argb4444) {
+            return {
+                .red = klib::map(static_cast<uint8_t>((raw >> 8) & 0xf), 0, 0xf, 0, 255),
+                .green = klib::map(static_cast<uint8_t>((raw >> 4) & 0xf), 0, 0xf, 0, 255),
+                .blue = klib::map(static_cast<uint8_t>(raw & 0xf), 0, 0xf, 0, 255),
+                .alpha = klib::map(static_cast<uint8_t>((raw >> 12) & 0xf), 0, 0xf, 0, 255),
+            };
+        }
+        else if constexpr (Mode == mode::argb1555) {
+            return {
+                .red = klib::map(static_cast<uint8_t>((raw >> 10) & 0x1f), 0, 0x1f, 0, 255),
+                .green = klib::map(static_cast<uint8_t>((raw >> 5) & 0x1f), 0, 0x1f, 0, 255),
+                .blue = klib::map(static_cast<uint8_t>(raw & 0x1f), 0, 0x1f, 0, 255),
+                .alpha = static_cast<uint8_t>(((raw >> 15) & 0x1) ? 0xff : 0x00),
+            };
+        }
+        else if constexpr (Mode == mode::lum8) {
+            // luminance is written to all three channels
+            return {
+                .red = static_cast<uint8_t>(raw),
+                .green = static_cast<uint8_t>(raw),
+                .blue = static_cast<uint8_t>(raw),
+                .alpha = 0xff,
+            };
+        }
+        else if constexpr (Mode == mode::alum44) {
+            return {
+                .red = klib::map(static_cast<uint8_t>(raw & 0xf), 0, 0xf, 0, 255),
+                .green = klib::map(static_cast<uint8_t>(raw & 0xf), 0, 0xf, 0, 255),
+                .blue = klib::map(static_cast<uint8_t>(raw & 0xf), 0, 0xf, 0, 255),
+                .alpha = klib::map(static_cast<uint8_t>((raw >> 4) & 0xf), 0, 0xf, 0, 255),
+            };
+        }
+        else if constexpr (Mode == mode::alum88) {
+            return {
+                .red = static_cast<uint8_t>(raw & 0xff),
+                .green = static_cast<uint8_t>(raw & 0xff),
+                .blue = static_cast<uint8_t>(raw & 0xff),
+                .alpha = static_cast<uint8_t>((raw >> 8) & 0xff),
+            };
+        }
         else {
             static_assert(
                 dependent_false<Mode>,
