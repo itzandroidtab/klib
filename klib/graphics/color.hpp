@@ -422,8 +422,10 @@ namespace klib::graphics::detail {
         if constexpr (Input == mode::mono) {
             // convert the input to either white or black. Let the compiler convert
             // it to the correct type
-            return (raw ? static_cast<pixel_conversion<Input>::type>(
-                0xffffff & (klib::exp2(pixel_conversion<Input>::bits) - 1)) : 0x0);
+            return (raw ?
+                color_to_raw<Output>(klib::graphics::white) :
+                color_to_raw<Output>(klib::graphics::black)
+            );
         }
         else {
             // convert the input back to a klib color and convert back to raw
