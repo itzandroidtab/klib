@@ -235,7 +235,10 @@ namespace klib::graphics::detail {
         // convert from klib color to the raw pixel format
         if constexpr (Mode == mode::mono) {
             // convert the input to either white or black
-            return (raw ? klib::graphics::color{0xff, 0xff, 0xff, false} : klib::graphics::color{0x00, 0x00, 0x00, false});
+            return (raw ?
+                klib::graphics::color{0xff, 0xff, 0xff, 0xff} :
+                klib::graphics::color{0x00, 0x00, 0x00, 0xff}
+            );
         }
         else if constexpr (Mode == mode::rgb222) {
             // convert the input back to a klib color
