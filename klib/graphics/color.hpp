@@ -86,13 +86,23 @@ namespace klib::graphics {
 }
 
 namespace klib::graphics::detail {
+    /**
+     * @brief Helper to make a static_assert dependent on the template
+     * parameter. Without this the assert would fire even when the
+     * branch is never instantiated
+     *
+     * @tparam Mode
+     */
+    template <mode Mode>
+    constexpr bool dependent_false = false;
+
     // using to determine the pixel type based on the template input
     template <mode Mode>
     struct pixel_conversion {
-        using type = void;
-
-        // amount of bits used in type
-        constexpr static uint32_t bits = 16;
+        static_assert(
+            dependent_false<Mode>,
+            "No pixel conversion available for this display mode"
+        );
     };
 
     // specialization for mono
