@@ -229,7 +229,7 @@ namespace klib::graphics::detail {
             return ((col.blue >> 3) << 11) | ((col.green >> 2) << 5) | (col.red >> 3);
         }
         else if constexpr (Mode == mode::rgb666) {
-            return ((col.blue >> 2) << 12) | ((col.green >> 2) << 6) | (col.red >> 2);
+            return ((col.red >> 2) << 12) | ((col.green >> 2) << 6) | (col.blue >> 2);
         }
         else if constexpr (Mode == mode::argb8888) {
             return (col.alpha << 24) | (col.red << 16) | (col.green << 8) | (col.blue);
