@@ -213,6 +213,46 @@ namespace klib::graphics::detail {
         constexpr static uint32_t bits = 16;
     };
 
+    // specialization for lum8
+    template <>
+    struct pixel_conversion<mode::lum8> {
+        using type = uint8_t;
+
+        // amount of bits used in type
+        constexpr static uint32_t bits = 8;
+    };
+
+    // specialization for alum44
+    template <>
+    struct pixel_conversion<mode::alum44> {
+        using type = uint8_t;
+
+        // amount of bits used in type
+        constexpr static uint32_t bits = 8;
+    };
+
+    // specialization for alum88
+    template <>
+    struct pixel_conversion<mode::alum88> {
+        using type = uint16_t;
+
+        // amount of bits used in type
+        constexpr static uint32_t bits = 16;
+    };
+
+    /**
+     * @brief Convert a color to a 8 bit luminance value. Uses the
+     * ITU-R BT.601 luma coefficients (0.299, 0.587, 0.114) scaled
+     * to 1/256 so we can use a shift instead of a division
+     *
+     * @param col
+     * @return constexpr uint8_t
+     */
+    constexpr uint8_t color_to_luminance(const klib::graphics::color &col) {
+        return static_cast<uint8_t>(
+            ((col.red * 77) + (col.green * 150) + (col.blue * 29)) >> 8
+        );
+    }
 
     /**
      * @brief Generic Conversion from a klib color to a display mode. The alpha
@@ -261,6 +301,15 @@ namespace klib::graphics::detail {
         }
         else if constexpr (Mode == mode::argb1555) {
             return ((col.alpha >> 7) << 15) | ((col.red >> 3) << 10) | ((col.green >> 3) << 5) | (col.blue >> 3);
+        }
+        else if constexpr (Mode == mode::lum8) {
+            return color_to_luminance(col);
+        }
+        else if constexpr (Mode == mode::alum44) {
+            return ((col.alpha >> 4) << 4) | (color_to_luminance(col) >> 4);
+        }
+        else if constexpr (Mode == mode::alum88) {
+            return (col.alpha << 8) | color_to_luminance(col);
         }
         else {
             static_assert(
