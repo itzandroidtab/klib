@@ -347,14 +347,19 @@ namespace klib::graphics::detail {
                 .alpha = (static_cast<uint8_t>((raw >> 24) & 0xff)),
             };
         }
-        else {
-            // return rgb888 when not in other cases
+        else if constexpr (Mode == mode::rgb888) {
             return {
                 .red = (static_cast<uint8_t>((raw >> 16) & 0xff)),
                 .green = (static_cast<uint8_t>((raw >> 8) & 0xff)),
                 .blue = (static_cast<uint8_t>(raw & 0xff)),
                 .alpha = 0xff
             };
+        }
+        else {
+            static_assert(
+                dependent_false<Mode>,
+                "No raw to color conversion available for this display mode"
+            );
         }
     }
 
