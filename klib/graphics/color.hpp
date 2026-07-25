@@ -231,12 +231,17 @@ namespace klib::graphics::detail {
         else if constexpr (Mode == mode::rgb666) {
             return ((col.red >> 2) << 12) | ((col.green >> 2) << 6) | (col.blue >> 2);
         }
+        else if constexpr (Mode == mode::rgb888) {
+            return (col.red << 16) | (col.green << 8) | (col.blue);
+        }
         else if constexpr (Mode == mode::argb8888) {
             return (col.alpha << 24) | (col.red << 16) | (col.green << 8) | (col.blue);
         }
         else {
-            // return rgb888 when not in other cases
-            return (col.red << 16) | (col.green << 8) | (col.blue);
+            static_assert(
+                dependent_false<Mode>,
+                "No color to raw conversion available for this display mode"
+            );
         }
     }
 
