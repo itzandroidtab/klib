@@ -85,7 +85,7 @@ namespace klib::hardware::touch {
             const uint8_t data[] = {static_cast<uint8_t>(command), static_cast<uint8_t>(args)...};
 
             // send the array to the bus
-            return Bus::write(address, data, sizeof(data));
+            return Bus::write(address, data);
         }
 
         /**
@@ -100,7 +100,7 @@ namespace klib::hardware::touch {
             }
 
             // read the data
-            Bus::read(address, rx, size);
+            Bus::read(address, {rx, size});
         }
 
     public:

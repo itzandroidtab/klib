@@ -2,6 +2,7 @@
 #define KLIB_ATMEL_ATSAM4S_I2C_HPP
 
 #include <klib/klib.hpp>
+#include <klib/math.hpp>
 #include <klib/multispan.hpp>
 #include <klib/io/bus/i2c.hpp>
 #include <klib/io/core_clock.hpp>
@@ -111,19 +112,53 @@ namespace klib::core::atsam4s::io {
         }
 
         /**
-         * @brief Internal read implementation
-         * 
-         * @note software doesnt check if stop is correctly send
-         * 
-         * @tparam SendStop 
-         * @tparam RepeatedStart
-         * @tparam std::span<const uint8_t> 
-         * @param address 
-         * @param data 
-         * @return true 
-         * @return false 
+         * @brief Helper function to read data and set the stop bit
+         * at the last byte. Returns false if an error occured
+         *
+         * @param data
+         * @param stop
+         * @return status
          */
-        template <bool SendStop = true, bool RepeatedStart = false, typename T = std::span<uint8_t>>
+        template <typename T>
+        constexpr static bool read_helper_impl(const T& data, const bool stop) {
+            // read all the data
+            for (uint32_t i = 0; i < data.size(); i++) {
+                // check if this is the last byte
+                if ((i + 1) >= data.size() && stop) {
+                    // mark the next byte is the last
+                    I2c::port->CR |= (0x1 << 1);
+                }
+
+                // wait until a nack or we have received data
+                const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 1));
+
+                // check if we have a nack or data
+                if (status & (0x1 << 8)) {
+                    // return a error
+                    return false;
+                }
+
+                // read the data into the array
+                data[i] = I2c::port->RHR & 0xff;
+            }
+
+            return true;
+        }
+
+        /**
+         * @brief Internal read implementation
+         *
+         * @note software doesnt check if stop is correctly send
+         *
+         * @tparam SendStop
+         * @tparam RepeatedStart
+         * @tparam std::span<const uint8_t>
+         * @param address
+         * @param data
+         * @return true
+         * @return false
+         */
+        template <bool SendStop = true, bool WaitForStatus = true, bool RepeatedStart = false, typename T = std::span<uint8_t>>
         constexpr static bool read_impl(const uint8_t address, const T& data, const uint32_t device_address = 0, const uint8_t device_address_size = 0) {
             // hardware does not writes with less than 1 byte
             if (!data.size()) {
@@ -150,25 +185,14 @@ namespace klib::core::atsam4s::io {
             // start the transaction
             I2c::port->CR = 0x1;
 
-            // read all the data
-            for (uint32_t i = 0; i < data.size(); i++) {
-                // check if this is the last byte
-                if ((i + 1) >= data.size() && SendStop) {
-                    // mark the next byte is the last
-                    I2c::port->CR |= (0x1 << 1);
-                }
+            // read all the data (sets the stop bit before the last byte)
+            if (!read_helper_impl(data, SendStop)) {
+                return false;
+            }
 
-                // wait until a nack or we have received data
-                const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 1));
-
-                // check if we have a nack or data
-                if (status & (0x1 << 8)) {
-                    // return a error
-                    return false;
-                }
-
-                // read the data into the array
-                data[i] = I2c::port->RHR & 0xff;
+            // check if we need to wait for the status
+            if constexpr (!WaitForStatus) {
+                return true;
             }
 
             // mask to check for
@@ -178,8 +202,8 @@ namespace klib::core::atsam4s::io {
             return (wait_for_status(mask) & mask) == 0x1;
         }
 
-        template <typename T = std::span<uint8_t>, typename G = std::span<uint8_t>>
-        constexpr static bool write_read_impl(const uint8_t address, const T& tx, const G& rx) {
+        template <typename T = std::span<const uint8_t>, typename G = std::span<uint8_t>>
+        constexpr static bool write_read_repeated_impl(const uint8_t address, const T& tx, const G& rx) {
             // check if data is out of range
             if (tx.size() > 3) {
                 return false;
@@ -192,9 +216,86 @@ namespace klib::core::atsam4s::io {
             }
 
             // read the data
-            return read_impl<true, true>(address, rx, addr, tx.size());
+            return read_impl<true, true, true>(address, rx, addr, tx.size());
         }
 
+        template <bool RepeatedStart = true, typename T = std::span<const uint8_t>, typename G = std::span<uint8_t>>
+        constexpr static bool write_read_impl(const uint8_t address, const T& tx, const G& rx) {
+            if constexpr (RepeatedStart) {
+                return write_read_repeated_impl(address, tx, rx);
+            }
+            else {
+                // write with a stop, then read in a separate transaction
+                if (!write_impl<true>(address, tx)) {
+                    return false;
+                }
+
+                // read the data (this sends the stop)
+                return read_impl<true, true, false>(address, rx);
+            }
+        }
+
+        /**
+         * @brief Internal length prefixed read implementation
+         *
+         * @details the length is not known until the prefix is read, so the
+         * prefix and the payload are read in a single transaction
+         *
+         * @tparam PrefixBytes
+         * @param address
+         * @param buffer
+         * @return status
+         */
+        template <uint8_t PrefixBytes = 1>
+        constexpr static bool read_length_prefixed_impl(const uint8_t address, const std::span<uint8_t>& buffer) {
+            static_assert(PrefixBytes <= 4, "Invalid prefix byte lenght. Up to 4 bytes is supported");
+
+            // make sure the size fits inside the buffer
+            if (buffer.size() < PrefixBytes) {
+                return false;
+            }
+
+
+            // start the read into our internal buffer
+            if (!read_impl<false, false>(address, {buffer.data(), PrefixBytes})) {
+                return false;
+            }
+            
+            // get the length
+            uint32_t length = 0;
+            
+            // copy the data into our length variable
+            for (uint32_t i = 0; i < PrefixBytes; i++) {
+                length <<= 8;
+                length |= buffer[i];
+            }
+
+            // clamp the amount to read to the buffer size
+            const uint32_t want = klib::min<uint32_t>(length, static_cast<uint32_t>(buffer.size() - PrefixBytes));
+
+            // check if we have something to read
+            if (want) {
+                if (!read_helper_impl(std::span<uint8_t>(buffer.data() + PrefixBytes, want), true)) {
+                    return false;
+                }
+            }
+            else {
+                uint8_t dummy[1];
+
+                // the device has no bytes. This should never
+                // happen. In the state machine we need to set
+                // a flag at the end to prevent it from getting
+                // stuck. Do a 1 byte read and set the stop bit.
+                // ignore the result
+                read_helper_impl(std::span<uint8_t>(dummy, sizeof(dummy)), true);
+            }
+
+            // mask to check for
+            constexpr uint32_t mask = (0x1 << 8) | 0x1;
+
+            // wait until we are done with the transaction
+            return (wait_for_status(mask) & mask) == 0x1;
+        }
     public:
         /**
          * @brief Init the i2c bus
@@ -223,89 +324,90 @@ namespace klib::core::atsam4s::io {
         /**
          * @brief Read from a device on the i2c bus
          *
-         * @tparam SendStop
          * @param address
          * @param data
-         * @param size
          * @return state if read was successfull
          */
-        template <bool SendStop = true>
         constexpr static bool read(const uint8_t address, const std::span<uint8_t>& data) {
-            return read_impl<SendStop>(address, data);
+            return read_impl(address, data);
         }
 
         /**
          * @brief Read from a device on the i2c bus
          *
-         * @tparam SendStop
          * @param address
          * @param data
-         * @param size
          * @return state if read was successfull
          */
-        template <bool SendStop = true>
         constexpr static bool read(const uint8_t address, const multispan<uint8_t>& data) {
-            return read_impl<SendStop>(address, data);
+            return read_impl(address, data);
         }
 
         /**
          * @brief Write to a device on the i2c bus
          *
-         * @tparam SendStop
          * @param address
          * @param data
-         * @param size
-         * @return state if read was successfull
+         * @return state if write was successfull
          */
-        template <bool SendStop = true>
         constexpr static bool write(const uint8_t address, const std::span<const uint8_t>& data) {
-            return write_impl<SendStop>(address, data);
+            return write_impl(address, data);
         }
 
         /**
          * @brief Write to a device on the i2c bus
          *
-         * @tparam SendStop
          * @param address
          * @param data
-         * @param size
-         * @return state if read was successfull
+         * @return state if write was successfull
          */
-        template <bool SendStop = true>
         constexpr static bool write(const uint8_t address, const multispan<const uint8_t>& data) {
-            return write_impl<SendStop>(address, data);
+            return write_impl(address, data);
         }
 
         /**
-         * @brief Write up to 3 bytes and read data. This 
-         * uses the repeated start in the i2c protocol. If
-         * you do not want to use repeated start use 
-         * write/read instead
+         * @brief Write up to 3 bytes and read data. By default this
+         * uses the repeated start in the i2c protocol. Setting
+         * RepeatedStart to false will do a write read cycle
          * 
          * @param address 
          * @param tx 
          * @param rx 
-         * @return true 
-         * @return false 
+         * @return status
          */
+        template <bool RepeatedStart = true>
         constexpr static bool write_read(const uint8_t address, const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
-            return write_read_impl(address, tx, rx);
+            return write_read_impl<RepeatedStart>(address, tx, rx);
         }
 
         /**
-         * @brief Write up to 3 bytes and read data. This 
-         * uses the repeated start in the i2c protocol. If
-         * you do not want to use repeated start use 
-         * write/read instead
+         * @brief Write up to 3 bytes and read data. By default this
+         * uses the repeated start in the i2c protocol. Setting
+         * RepeatedStart to false will do a write read cycle
          * 
          * @param address 
          * @param tx 
          * @param rx 
-         * @return true 
-         * @return false 
+         * @return status
          */
+        template <bool RepeatedStart = true>
         constexpr static bool write_read(const uint8_t address, const std::span<const uint8_t>& tx, const klib::multispan<uint8_t>& rx) {
-            return write_read_impl(address, tx, rx);
+            return write_read_impl<RepeatedStart>(address, tx, rx);
+        }
+
+        /**
+         * @brief Read a variable amount of bytes based on the data
+         * in the PrefixBytes first read. Length is clamped on the 
+         * buffer size. Buffer stores the length and then full payload
+         * 
+         * @tparam PrefixBytes 
+         * @param address 
+         * @param buffer 
+         * @return status
+         */
+        template <uint8_t PrefixBytes = 1>
+        constexpr static bool read_length_prefixed(const uint8_t address, const std::span<uint8_t>& buffer) {
+            return read_length_prefixed_impl<PrefixBytes>(address, buffer);
         }
     };
 }

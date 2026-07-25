@@ -226,7 +226,7 @@ namespace klib::hardware::touch {
             const uint8_t data[] = {command_prefix, static_cast<uint8_t>(sizeof...(Args)), static_cast<uint8_t>(args)...};
 
             // send the array to the bus
-            Bus::write(address, data, sizeof(data));
+            Bus::write(address, data);
         }
 
         /**
@@ -506,38 +506,39 @@ namespace klib::hardware::touch {
          *
          */
         void irq_handler() {
-            // variable to store the data
-            uint8_t length;
-
-            // read data from the bus. If we fail we exit
-            if (!Bus::template read<false>(address, &length, sizeof(length))) {
-                // no valid response from target exit
-                return;
-            }
-
             // create a buffer for the packet
             uint8_t buffer[255];
 
-            // request the rest of the message using the length
-            bool data_valid = Bus::template read<true, true>(address, buffer, klib::min(length, sizeof(buffer)));
-
-            // check if we received the amount of data we specified
-            if (!data_valid) {
+            // the first byte read denotes the number of bytes that follow
+            // use the Bus::read_length_prefixed to read all the data
+            if (!Bus::template read_length_prefixed<1>(address, buffer)) {
                 // invalid read exit
                 return;
             }
 
+            // the first byte is the amount of payload bytes that follow
+            const uint8_t length = buffer[0];
+
+            // check if we received any payload
+            if (length == 0) {
+                // invalid read exit
+                return;
+            }
+
+            // the payload starts right after the length prefix
+            const uint8_t *const payload = &buffer[1];
+
             // check if we received a touch or gesture packet
-            bool packet_type = buffer[0] & (1 << 2);
+            bool packet_type = payload[0] & (1 << 2);
 
             // check if we need to call the callback
             if (touch_callback && (packet_type == 0)) {
                 // copy the buffer to a uint64_t
-                const uint64_t data = static_cast<uint64_t>(buffer[0]) |
-                                static_cast<uint64_t>(buffer[1]) << 8 |
-                                static_cast<uint64_t>(buffer[2]) << 16 |
-                                static_cast<uint64_t>(buffer[3]) << 24 |
-                                static_cast<uint64_t>(buffer[4]) << 32;
+                const uint64_t data = static_cast<uint64_t>(payload[0]) |
+                                static_cast<uint64_t>(payload[1]) << 8 |
+                                static_cast<uint64_t>(payload[2]) << 16 |
+                                static_cast<uint64_t>(payload[3]) << 24 |
+                                static_cast<uint64_t>(payload[4]) << 32;
 
                 // create a touch packet
                 auto t = touch_packet(data);

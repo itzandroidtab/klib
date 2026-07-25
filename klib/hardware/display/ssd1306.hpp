@@ -115,7 +115,7 @@ namespace klib::hardware::display {
                 const uint8_t buffer[] = {cmd_prefix, data[i]};
 
                 // write all commands on the bus
-                (void)Bus::write(address, buffer, sizeof(buffer));
+                (void)Bus::write(address, buffer);
             }
         }
 
@@ -125,7 +125,7 @@ namespace klib::hardware::display {
                 const uint8_t buffer[] = {data_prefix, data[i]};
 
                 // write all commands on the bus
-                (void)Bus::write(address, buffer, sizeof(buffer));
+                (void)Bus::write(address, buffer);
             }
         }
 

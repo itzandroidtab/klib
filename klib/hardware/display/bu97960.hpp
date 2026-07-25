@@ -103,7 +103,7 @@ namespace klib::hardware::display {
             };
 
             // send the reset sequence
-            Bus::write(Address, init_cmd, sizeof(init_cmd));
+            Bus::write(Address, init_cmd);
 
             // enable command to turn on the display
             const uint8_t enable[] {
@@ -111,7 +111,7 @@ namespace klib::hardware::display {
                 (static_cast<uint8_t>(cmd::icset) | 0x1)
             };
 
-            Bus::write(Address, enable, sizeof(enable));
+            Bus::write(Address, enable);
 
             // clear the cursor
             cursor = {0, 0};

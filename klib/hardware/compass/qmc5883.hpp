@@ -85,8 +85,8 @@ namespace klib::hardware::compass {
                 // create a array to write to the i2c bus
                 const uint8_t buffer[] = {reg, value};
 
-                // write the data to the register (with no repeated start)
-                return Bus::write(address, buffer, sizeof(buffer));
+                // write the data to the register
+                return Bus::write(address, buffer);
             }
 
             /**
@@ -98,10 +98,10 @@ namespace klib::hardware::compass {
              */
             bool read(const register_loc reg, uint8_t *const data, const uint8_t size) {
                 // write the the address to the bus (with no repeated start)
-                (void)Bus::write(address, static_cast<const uint8_t*>(&reg), sizeof(reg));
+                (void)Bus::write(address, {static_cast<const uint8_t*>(&reg), sizeof(reg)});
 
-                // read the data from the device (with no repeated start)
-                return Bus::read(address, data, size);
+                // read the data from the device
+                return Bus::read(address, {data, size});
             }
 
         public:

@@ -23,10 +23,10 @@ namespace klib::hardware::adc {
             uint8_t buffer[] = {static_cast<uint8_t>((output_enabled << 6) | (channel & 0x3)), 0x00};
 
             // write the channel we want to read
-            (void)Bus::write(address, buffer, 1);
+            (void)Bus::write(address, {buffer, 1});
 
             // read the result from the bus (2 bytes as the first byte is the control byte)
-            (void)Bus::read(address, buffer, sizeof(buffer));
+            (void)Bus::read(address, buffer);
 
             // return the result
             return buffer[1];
@@ -42,11 +42,11 @@ namespace klib::hardware::adc {
             // write the full data only if the output is enabled
             if (output_enabled) {
                 // write to the bus
-                (void)Bus::write(address, buffer, sizeof(buffer));
+                (void)Bus::write(address, buffer);
             }
             else {
                 // write to the bus (only the first byte to disable the output)
-                (void)Bus::write(address, buffer, 1);
+                (void)Bus::write(address, {buffer, 1});
             }
         }
     };

@@ -6,6 +6,7 @@
 #include <max32660.hpp>
 
 #include <klib/io/core_clock.hpp>
+#include <klib/math.hpp>
 #include <klib/multispan.hpp>
 
 #include "clocks.hpp"
@@ -368,6 +369,37 @@ namespace klib::max32660::io {
             return true;
         }
 
+        /**
+         * @brief Helper to write and then read from a device on the i2c bus
+         *
+         * @tparam RepeatedStart
+         * @param address
+         * @param tx
+         * @param rx
+         * @return state if the transaction was successful
+         */
+        template <bool RepeatedStart, typename Tx, typename Rx>
+        constexpr static bool write_read_helper(const uint8_t address, const Tx& tx, const Rx& rx) {
+            if constexpr (RepeatedStart) {
+                // write without a stop so the read can use a repeated start
+                if (!write_helper<false, false>(address, tx)) {
+                    return false;
+                }
+
+                // read using a repeated start (this sends the stop)
+                return read_helper<true, true>(address, rx);
+            }
+            else {
+                // write with a stop
+                if (!write_helper<true, false>(address, tx)) {
+                    return false;
+                }
+
+                // read with a normal start (this sends the stop)
+                return read_helper<true, false>(address, rx);
+            }
+        }
+
     public:
         template <speed Speed = speed::fast>
         constexpr static void init() {
@@ -412,71 +444,125 @@ namespace klib::max32660::io {
         /**
          * @brief Read from a device on the i2c bus
          *
-         * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
-         * @param size
          * @return state if read was successfull
          */
-        template <bool SendStop = true, bool RepeatedStart = false>
         constexpr static bool read(const uint8_t address, const std::span<uint8_t>& data) {
-            return read_helper<SendStop, RepeatedStart>(address, data);
+            return read_helper<true, false>(address, data);
         }
 
         /**
          * @brief Read from a device on the i2c bus
          *
-         * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
-         * @param size
          * @return state if read was successfull
          */
-        template <bool SendStop = true, bool RepeatedStart = false>
         constexpr static bool read(const uint8_t address, const multispan<uint8_t>& data) {
-            return read_helper<SendStop, RepeatedStart>(address, data);
+            return read_helper<true, false>(address, data);
         }
 
         /**
          * @brief Write to a device on the i2c bus
          *
-         * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
-         * @param size
-         * @return state if read was successfull
+         * @return state if write was successfull
          */
-        template <bool SendStop = true, bool RepeatedStart = false>
         constexpr static bool write(const uint8_t address, const std::span<const uint8_t>& data) {
-            return write_helper<SendStop, RepeatedStart>(address, data);
+            return write_helper<true, false>(address, data);
         }
 
         /**
          * @brief Write to a device on the i2c bus
          *
-         * @tparam SendStop
-         * @tparam RepeatedStart
          * @param address
          * @param data
-         * @param size
-         * @return state if read was successfull
+         * @return state if write was successfull
          */
-        template <bool SendStop = true, bool RepeatedStart = false>
         constexpr static bool write(const uint8_t address, const multispan<const uint8_t>& data) {
-            return write_helper<SendStop, RepeatedStart>(address, data);
+            return write_helper<true, false>(address, data);
         }
 
         /**
-         * @brief Stop a transmission that has been started did
-         * not send a stop
-         *
+         * @brief Write and read data. By default this uses the 
+         * repeated start in the i2c protocol. Setting RepeatedStart 
+         * to false will do a write read cycle
+         * 
+         * @param address 
+         * @param tx 
+         * @param rx 
+         * @return status
          */
-        constexpr static void stop() {
-            // stop the current transmission
-            send_stop();
+        template <bool RepeatedStart = true>
+        constexpr static bool write_read(const uint8_t address, const std::span<const uint8_t>& tx, const std::span<uint8_t>& rx) {
+            return write_read_helper<RepeatedStart>(address, tx, rx);
+        }
+
+        /**
+         * @brief Write and read data. By default this uses the 
+         * repeated start in the i2c protocol. Setting RepeatedStart 
+         * to false will do a write read cycle
+         * 
+         * @param address 
+         * @param tx 
+         * @param rx 
+         * @return status
+         */
+        template <bool RepeatedStart = true>
+        constexpr static bool write_read(const uint8_t address, const std::span<const uint8_t>& tx, const multispan<uint8_t>& rx) {
+            return write_read_helper<RepeatedStart>(address, tx, rx);
+        }
+
+        /**
+         * @brief Read a variable amount of bytes based on the data
+         * in the PrefixBytes first read. Length is clamped on the 
+         * buffer size. Buffer stores the length and then full payload
+         * 
+         * @warning Uses a repeated start due to having to set the length
+         * beforehand in the hardware.
+         * 
+         * @tparam PrefixBytes 
+         * @param address 
+         * @param buffer 
+         * @return status
+         */
+        template <uint8_t PrefixBytes = 1>
+        constexpr static bool read_length_prefixed(const uint8_t address, const std::span<uint8_t>& buffer) {
+            // make sure the prefix fits inside the buffer
+            if (buffer.size() < PrefixBytes) {
+                return false;
+            }
+
+            // read the length prefix into the buffer without a stop so we can
+            // use a repeated start for the payload read
+            if (!read_helper<false, false>(address, std::span<uint8_t>(buffer.data(), PrefixBytes))) {
+                return false;
+            }
+
+            // get the length
+            uint32_t length = 0;
+            
+            // copy the data into our length variable
+            for (uint32_t i = 0; i < PrefixBytes; i++) {
+                length <<= 8;
+                length |= buffer[i];
+            }
+
+            // clamp the payload to the remaining buffer space
+            const uint32_t want = klib::min<uint32_t>(length, static_cast<uint32_t>(buffer.size() - PrefixBytes));
+
+            // release the bus if there is nothing to read
+            if (want == 0) {
+                send_stop();
+
+                return true;
+            }
+
+            // read the payload after the prefix using a 
+            // repeated start
+            return read_helper<true, true>(address, std::span<uint8_t>(buffer.data() + PrefixBytes, want));
         }
     };
 }
