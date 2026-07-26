@@ -440,7 +440,7 @@ namespace klib::hardware::touch {
          */
         template <bool Enter>
         void sleep() {
-            // set the irq pin low
+            // set the rst pin low
             RstPin::template set<Enter>();
         }
 
