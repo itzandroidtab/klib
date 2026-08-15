@@ -471,10 +471,14 @@ namespace klib::hardware::touch {
                 return {};
             }
 
+            const auto packet_raw = ((raw >> 6) & 0x3);
+
             // return the combined command and packet status
             return query_result {
-                static_cast<query_status>(raw & 0x3),
-                static_cast<packet_status>((raw >> 6) & 0x3),
+                static_cast<query_status>(raw & 0x3), ((packet_raw & 0x10) ? 
+                    packet_status::available :
+                    static_cast<packet_status>((raw >> 6) & 0x3)
+                ),
             };
         }
 
