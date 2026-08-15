@@ -6,6 +6,7 @@
 #include <klib/multispan.hpp>
 #include <klib/io/bus/i2c.hpp>
 #include <klib/io/core_clock.hpp>
+#include <klib/io/systick.hpp>
 
 #include <io/power.hpp>
 #include <io/port.hpp>
@@ -31,24 +32,50 @@ namespace klib::core::atsam4s::io {
          * @brief Wait until some bits are set in the status register
          *
          * @param bits
+         * @param timeout
          * @return constexpr uint32_t
          */
-        constexpr static uint32_t wait_for_status(const uint32_t bits) {
+        constexpr static uint32_t wait_for_status(const uint32_t bits, const klib::time::ms timeout) {
             // check for valid bits
             if (!bits) {
                 return 0x00;
             }
 
-            // loop until we have a match
-            while (true) {
+            const auto end = klib::io::systick<>::get_runtime() + timeout;
+            uint32_t status = 0x00;
+
+            // loop until we have a match or until we have 
+            // a timeout
+            while (end >= klib::io::systick<>::get_runtime()) {
                 // read the status (this can clear some bits)
-                const uint32_t status = I2c::port->SR;
+                status = I2c::port->SR;
 
                 // check if we have one of the bits set
                 if (status & bits) {
                     return status;
                 }
             }
+
+            return status;
+        }
+
+        /**
+         * @brief End the transaction and wait for the bus to 
+         * be released if we do not do this the bus gets stuck
+         *
+         */
+        constexpr static void send_stop() {
+            // write the stop to the har
+            I2c::port->CR = (0x1 << 1);
+
+            // wait on it with a hard cap
+            (void)wait_for_status(0x1, klib::time::ms(50));
+
+            // read the data and status register to clear 
+            // anything that might have come in while we
+            // were stopping everything
+            (void)I2c::port->RHR;
+            (void)I2c::port->SR;
         }
 
         /**
@@ -75,10 +102,12 @@ namespace klib::core::atsam4s::io {
             read_write_set_address<false>(address);
 
             // wait until we can write into the transmit holding register
-            const uint32_t s = wait_for_status((0x1 << 8) | (0x1 << 2));
+            const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 2), klib::time::ms(50));
 
-            // check if we have a nack
-            if (s & (0x1 << 8)) {
+            // check if we have a nack or received nothing
+            if (!(status & (0x1 << 2)) || (status & (0x1 << 8))) {
+                send_stop();
+
                 return false;
             }
 
@@ -88,18 +117,20 @@ namespace klib::core::atsam4s::io {
                 I2c::port->THR = data[i];
 
                 // wait on either a empty transmit hold register or a nack
-                const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 2));
+                const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 2), klib::time::ms(50));
 
                 // check if we are done transmitting or
                 // we have a nack
-                if (status & (0x1 << 8)) {
+                if (!(status & (0x1 << 2)) || (status & (0x1 << 8))) {
+                    send_stop();
+
                     // return a error
                     return false;
                 }
             }
 
-            // do not send the stop again if less or equal to 1 byte
-            if (data.size() > 1 && SendStop) {
+            // do not send the stop again
+            if constexpr (SendStop) {
                 // mark we are done transmitting (by setting the stop bit)
                 I2c::port->CR = (0x1 << 1);
             }
@@ -108,7 +139,13 @@ namespace klib::core::atsam4s::io {
             constexpr uint32_t mask = (0x1 << 8) | 0x1;
 
             // wait until we are done with the transaction
-            return (wait_for_status(mask) & mask) == 0x1;
+            if ((wait_for_status(mask, klib::time::ms(50)) & mask) != 0x1) {
+                send_stop();
+
+                return false;
+            }
+
+            return true;
         }
 
         /**
@@ -126,14 +163,16 @@ namespace klib::core::atsam4s::io {
                 // check if this is the last byte
                 if ((i + 1) >= data.size() && stop) {
                     // mark the next byte is the last
-                    I2c::port->CR |= (0x1 << 1);
+                    I2c::port->CR = (0x1 << 1);
                 }
 
                 // wait until a nack or we have received data
-                const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 1));
+                const uint32_t status = wait_for_status((0x1 << 8) | (0x1 << 1), klib::time::ms(50));
 
-                // check if we have a nack or data
-                if (status & (0x1 << 8)) {
+                // check if we have a nack, or we received nothing
+                if (!(status & (0x1 << 1)) || (status & (0x1 << 8))) {
+                    send_stop();
+
                     // return a error
                     return false;
                 }
@@ -182,11 +221,15 @@ namespace klib::core::atsam4s::io {
                 read_write_set_address<true>(address);
             }
 
+            // if we are reading a single byte we need to mark it as
+            // the last byte straight away in the first start
+            const bool single = SendStop && (data.size() == 1);
+
             // start the transaction
-            I2c::port->CR = 0x1;
+            I2c::port->CR = 0x1 | (single ? (0x1 << 1) : 0x0);
 
             // read all the data (sets the stop bit before the last byte)
-            if (!read_helper_impl(data, SendStop)) {
+            if (!read_helper_impl(data, SendStop && !single)) {
                 return false;
             }
 
@@ -199,7 +242,13 @@ namespace klib::core::atsam4s::io {
             constexpr uint32_t mask = (0x1 << 8) | 0x1;
 
             // wait until we are done with the transaction
-            return (wait_for_status(mask) & mask) == 0x1;
+            if ((wait_for_status(mask, klib::time::ms(50)) & mask) != 0x1) {
+                send_stop();
+
+                return false;
+            }
+
+            return true;
         }
 
         template <typename T = std::span<const uint8_t>, typename G = std::span<uint8_t>>
@@ -294,7 +343,13 @@ namespace klib::core::atsam4s::io {
             constexpr uint32_t mask = (0x1 << 8) | 0x1;
 
             // wait until we are done with the transaction
-            return (wait_for_status(mask) & mask) == 0x1;
+            if ((wait_for_status(mask, klib::time::ms(50)) & mask) != 0x1) {
+                send_stop();
+
+                return false;
+            }
+
+            return true;
         }
     public:
         /**
