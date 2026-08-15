@@ -60,14 +60,18 @@ namespace klib::hardware::touch {
             {}
 
             /**
-             * @brief 
+             * @brief create a new touch point from raw data
              * 
              */
             constexpr touch_point(const uint32_t packet):
                 touch_point(
                     static_cast<pressure_contact>((packet >> 24) & 0xf),
-                    (packet & 0xfff),
-                    ((packet >> 12) & 0xfff)
+                    static_cast<uint16_t>(
+                        (packet & 0xff) | (((packet >> 8) & 0x0f) << 8)
+                    ),
+                    static_cast<uint16_t>(
+                        ((packet >> 16) & 0xff) | (((packet >> 8) & 0xf0) << 4)
+                    )
                 )
             {}
         };
