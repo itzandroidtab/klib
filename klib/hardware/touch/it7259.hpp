@@ -108,6 +108,32 @@ namespace klib::hardware::touch {
             };
         };
 
+        enum class packet_status: uint8_t {
+            none = 0b00,
+            touching = 0b01,
+            available = 0b10,
+        };
+
+        enum class query_status: uint8_t {
+            done = 0b00,
+            busy = 0b01,
+            error = 0b10,
+            reserved = 0b11,
+        };
+
+        /**
+         * @brief Combined struct with both the query and 
+         * packet command status
+         * 
+         */
+        struct query_result {
+            // the command status
+            query_status command;
+
+            // the packet information status
+            packet_status packet;
+        };
+
     protected:
         // 7-bit base address of the it7259
         const uint8_t address = 0x46;
@@ -161,40 +187,14 @@ namespace klib::hardware::touch {
             auto_tune_cdc = 0x1c,
         };
 
-        enum class query_result: uint8_t {
-            done = 0b00,
-            busy = 0b01,
-            error = 0b10,
-            reserved = 0b11,
-        };
-
         /**
-         * @brief Read the current data in the query buffer
-         * 
-         * @return std::optional<query_result> 
+         * @brief Reads the bus until the command is done. Returns after 
+         * 50 tries
+         *
+         * @return query_result
          */
-        std::optional<query_result> get_query_buffer() {
-            const buffer query_buffer = buffer::query;
-            query_result response = query_result::busy;
-
-            // read the response from the device
-            if (!Bus::write_read(address,
-                std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(&query_buffer), sizeof(query_buffer)),
-                std::span<uint8_t>(reinterpret_cast<uint8_t*>(&response), sizeof(response)))) 
-            {
-                return {};
-            }
-
-            return response;
-        }
-
-        /**
-         * @brief Reads the bus until the command is done
-         * 
-         * @return query_result 
-         */
-        query_result wait_for_query_not_busy() {
-            while (true) {
+        query_status wait_for_query_not_busy() {
+            for (uint32_t i = 0; i < 50; i++) {
                 // get the current query buffer data
                 const auto res = get_query_buffer();
 
@@ -202,15 +202,21 @@ namespace klib::hardware::touch {
                 // a nack the hardware is not ready
                 // and we need to retry again. Same for
                 // if we are busy
-                if (!res || *res == query_result::busy) {
+                if (!res || res->command == query_status::busy) {
+                    klib::delay(klib::time::ms(1));
                     continue;
                 }
 
                 // we have some other result. Return
                 // it so the callee can do what they 
                 // want with it
-                return *res;
+                if (res) {
+                    return res->command;
+                }
             }
+
+            // nothing usable came back in time
+            return query_status::error;
         }
 
         /**
@@ -246,7 +252,7 @@ namespace klib::hardware::touch {
 
                 // wait until we are not busy anymore
                 switch (wait_for_query_not_busy()) {
-                    case query_result::done:
+                    case query_status::done:
                         complete = true;
                         break;
                     default:
@@ -290,7 +296,7 @@ namespace klib::hardware::touch {
          */
         bool init(const interrupt_callback callback = nullptr) {
             // make sure we are not busy
-            if (wait_for_query_not_busy() != query_result::done) {
+            if (wait_for_query_not_busy() != query_status::done) {
                 return false;
             }
 
@@ -449,6 +455,30 @@ namespace klib::hardware::touch {
         }
 
         /**
+         * @brief Read the current data in the query buffer
+         * 
+         * @return std::optional<query_result> 
+         */
+        std::optional<query_result> get_query_buffer() {
+            const buffer query_buffer = buffer::query;
+            uint8_t raw = 0;
+
+            // read the response from the device
+            if (!Bus::write_read(address,
+                std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(&query_buffer), sizeof(query_buffer)),
+                std::span<uint8_t>(&raw, sizeof(raw)))) 
+            {
+                return {};
+            }
+
+            // return the combined command and packet status
+            return query_result {
+                static_cast<query_status>(raw & 0x3),
+                static_cast<packet_status>((raw >> 6) & 0x3),
+            };
+        }
+
+        /**
          * @brief IRQ handler to call when the it7259 interrupt pin gets triggered.
          * User needs to call this function periodically or use a falling interrupt
          * on the irq pin.
@@ -456,6 +486,29 @@ namespace klib::hardware::touch {
          */
         template <typename TouchHelper>
         void irq_handler() {
+            // get the status from the device. We need to to this
+            // to prevent requesting data when the device is busy
+            // to stop it from locking up and not responding anymore
+            // until a full reset.
+            const auto status = get_query_buffer();
+
+            if (!status) {
+                // no answer means it is busy. Request the data 
+                // again later
+                return;
+            }
+
+            if (status->packet == packet_status::none) {
+                TouchHelper::unpress_all();
+
+                return;
+            }
+
+            // still being touched, but with nothing new to collect
+            if (status->packet != packet_status::available) {
+                return;
+            }
+
             // poll the it7259
             const auto data = poll();
 
